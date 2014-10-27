@@ -9,19 +9,23 @@
             icon="icons/16x16/category_json.png"
             level-id="json"
             name="JSON"
-            path="/manipulation/row/row-transform"/>
+            path="/labs"/>
    </extension>
    
    <extension point="org.knime.workbench.repository.nodes">
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.jsonpath.projection.JSONPathProjectionNodeFactory" id="org.knime.json.node.jsonpath.projection.JSONPathProjectionNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.toxml.JSONToXMLNodeFactory" id="org.knime.json.node.toxml.JSONToXMLNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.fromxml.XMLToJSONNodeFactory" id="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.fromstring.StringToJSONNodeFactory" id="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.reader.JSONReaderNodeFactory" id="org.knime.json.node.reader.JSONReaderNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory" id="org.knime.json.node.writer.JSONWriterNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" id="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory" id="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"/>
-      <node category-path="/manipulation/row/row-transform/json" factory-class="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory" id="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.fromstring.StringToJSONNodeFactory" id="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.reader.JSONReaderNodeFactory" id="org.knime.json.node.reader.JSONReaderNodeFactory" after="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory" id="org.knime.json.node.writer.JSONWriterNodeFactory" after="org.knime.json.node.reader.JSONReaderNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.toxml.JSONToXMLNodeFactory" id="org.knime.json.node.toxml.JSONToXMLNodeFactory" after="org.knime.json.node.writer.JSONWriterNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.fromxml.XMLToJSONNodeFactory" id="org.knime.json.node.fromxml.XMLToJSONNodeFactory" after="org.knime.json.node.toxml.JSONToXMLNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.jsonpath.projection.JSONPathProjectionNodeFactory" id="org.knime.json.node.jsonpath.projection.JSONPathProjectionNodeFactory" after="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory" id="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory" after="org.knime.json.node.jsonpath.projection.JSONPathProjectionNodeFactory"/>
+      <node category-path="/labs/json" factory-class="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" id="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" after="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"/>
+      <node
+            after="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory"
+            category-path="/labs/json"
+            factory-class="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory"
+            id="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory"/>
    </extension>
    <extension
            point="org.knime.workbench.repository.registeredFileExtensions">
