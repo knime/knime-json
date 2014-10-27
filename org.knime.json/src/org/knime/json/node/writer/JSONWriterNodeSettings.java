@@ -1,0 +1,271 @@
+package org.knime.json.node.writer;
+
+import java.net.URL;
+
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.StringValue;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+
+/**
+ * Node settings for the JSON writer node. Based on {@link org.knime.xml.node.writer.XMLWriterNodeSettings} from Heiko
+ * Hofer.
+ *
+ * @author Gabor Bakos
+ */
+class JSONWriterNodeSettings {
+    /**
+     *
+     */
+    private static final String JSON = "JSON";
+
+    /**
+     * Support for multiple files interface.
+     */
+    static interface SupportsMultipleFiles {
+        /**
+         * @return {@code true}, iff multiple files can be saved using that compression method.
+         */
+        boolean supportsMultipleFiles();
+    }
+
+    static enum CompressionMethods implements StringValue, SupportsMultipleFiles {
+        NONE {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public String getStringValue() {
+                return "<none>";
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public boolean supportsMultipleFiles() {
+                return false;
+            }
+        },
+        GZIP {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public String getStringValue() {
+                return "gzip";
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public boolean supportsMultipleFiles() {
+                return false;
+            }
+        },
+        ZIP {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public String getStringValue() {
+                return "zip";
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public boolean supportsMultipleFiles() {
+                return true;
+            }
+        };
+    }
+
+    /** Config key for the input column. */
+    private static final String INPUT_COLUMN = "inputColumn";
+
+    /** Config key for the output file (can be overrided with the URI port object). */
+    private static final String OUTPUT_LOCATION = "outputLocation";
+
+    /** Config key for: Overwrite existing files? */
+    private static final String OVERWRITE_EXISTING = "overwriteExistingFiles";
+
+    /** Config key for the file name extension. */
+    private static final String EXTENSION = "extension";
+
+    /** Config key for whether to compress the contents. */
+    private static final String COMPRESS_CONTENTS = "compressContents";
+
+    /** Config key for the compression method. @see CompressionMethods */
+    private static final String COMPRESSION_METHOD = "compressionMethod";
+
+    /** The JSON serialization format to use. @see JSONFormats */
+    private static final String FORMAT = "format";
+
+    private String m_inputColumn = null;
+
+    private String m_outputLocation = null;
+
+    private boolean m_overwriteExistingFiles = false;
+
+    private String m_extension = ".json";
+
+    private boolean m_compressContents = false;
+
+    private CompressionMethods m_compressionMethod = CompressionMethods.NONE;
+
+    private String m_format = JSON;
+
+    /**
+     * @return the inputColumn
+     */
+    String getInputColumn() {
+        return m_inputColumn;
+    }
+
+    /**
+     * @param inputColumn the inputColumn to set
+     */
+    void setInputColumn(final String inputColumn) {
+        m_inputColumn = inputColumn;
+    }
+
+    /**
+     * @return the output location (either folder, or a file when {@link SupportsMultipleFiles#supportsMultipleFiles()}
+     *         {@code ==true}) as a {@link URL}'s {@link String} format.
+     */
+    String getOutputLocation() {
+        return m_outputLocation;
+    }
+
+    /**
+     * @param location the folder or file to set
+     */
+    void setOutputLocation(final String location) {
+        m_outputLocation = location;
+    }
+
+    /**
+     * @return the overwriteExistingFiles
+     */
+    boolean getOverwriteExistingFiles() {
+        return m_overwriteExistingFiles;
+    }
+
+    /**
+     * @param overwriteExistingFiles the overwriteExistingFiles to set
+     */
+    void setOverwriteExisting(final boolean overwriteExistingFiles) {
+        m_overwriteExistingFiles = overwriteExistingFiles;
+    }
+
+    /**
+     * @return the extension
+     */
+    final String getExtension() {
+        return m_extension;
+    }
+
+    /**
+     * @param extension the extension to set
+     */
+    final void setExtension(final String extension) {
+        this.m_extension = extension;
+    }
+
+    /**
+     * @return the compressContents
+     */
+    final boolean isCompressContents() {
+        return m_compressContents;
+    }
+
+    /**
+     * @param compressContents the compressContents to set
+     */
+    final void setCompressContents(final boolean compressContents) {
+        this.m_compressContents = compressContents;
+    }
+
+    /**
+     * @return the compressionMethod
+     */
+    final CompressionMethods getCompressionMethod() {
+        return m_compressionMethod;
+    }
+
+    /**
+     * @param compressionMethod the compressionMethod to set
+     */
+    final void setCompressionMethod(final CompressionMethods compressionMethod) {
+        this.m_compressionMethod = compressionMethod;
+    }
+
+    /**
+     * @return the format
+     */
+    final String getFormat() {
+        return m_format;
+    }
+
+    /**
+     * @param format the format to set
+     */
+    final void setFormat(final String format) {
+        this.m_format = format;
+    }
+
+    /**
+     * Called from dialog when settings are to be loaded.
+     *
+     * @param settings To load from
+     * @param inSpec Input spec
+     */
+    void loadSettingsDialog(final NodeSettingsRO settings, final DataTableSpec inSpec) {
+        m_inputColumn = settings.getString(INPUT_COLUMN, null);
+        m_outputLocation = settings.getString(OUTPUT_LOCATION, null);
+        m_overwriteExistingFiles = settings.getBoolean(OVERWRITE_EXISTING, false);
+        m_extension = settings.getString(EXTENSION, ".json");
+        m_compressContents = settings.getBoolean(COMPRESS_CONTENTS, false);
+        //TODO ask preferred way of storing enums.
+        m_compressionMethod = CompressionMethods.values()[settings.getInt(COMPRESSION_METHOD, 0)];
+        m_format = settings.getString(FORMAT, JSON);
+    }
+
+    /**
+     * Called from model when settings are to be loaded.
+     *
+     * @param settings To load from
+     * @throws InvalidSettingsException If settings are invalid.
+     */
+    void loadSettingsModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_inputColumn = settings.getString(INPUT_COLUMN);
+        m_outputLocation = settings.getString(OUTPUT_LOCATION);
+        m_overwriteExistingFiles = settings.getBoolean(OVERWRITE_EXISTING);
+        m_extension = settings.getString(EXTENSION);
+        m_compressContents = settings.getBoolean(COMPRESS_CONTENTS);
+        m_compressionMethod = CompressionMethods.values()[settings.getInt(COMPRESSION_METHOD)];
+        m_format = settings.getString(FORMAT, JSON);
+        if (m_compressContents && m_compressionMethod == CompressionMethods.NONE) {
+            throw new InvalidSettingsException("Compression was selected, though compression method is <none>!");
+        }
+    }
+
+    /**
+     * Called from model and dialog to save current settings.
+     *
+     * @param settings To save to.
+     */
+    void saveSettings(final NodeSettingsWO settings) {
+        settings.addString(INPUT_COLUMN, m_inputColumn);
+        settings.addString(OUTPUT_LOCATION, m_outputLocation);
+        settings.addBoolean(OVERWRITE_EXISTING, m_overwriteExistingFiles);
+        settings.addString(EXTENSION, m_extension);
+        settings.addBoolean(COMPRESS_CONTENTS, m_compressContents);
+        settings.addInt(COMPRESSION_METHOD, m_compressionMethod.ordinal());
+        settings.addString(FORMAT, m_format);
+    }
+}
