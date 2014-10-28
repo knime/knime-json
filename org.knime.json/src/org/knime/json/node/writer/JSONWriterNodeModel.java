@@ -40,6 +40,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.FileUtil;
 import org.knime.json.internal.Activator;
 import org.knime.json.node.util.ReplaceOrAddColumnSettings;
@@ -88,20 +89,27 @@ public final class JSONWriterNodeModel extends NodeModel {
          * @throws IOException If cannot delete the file.
          */
         void ifExistsDelete(String fileName) throws IOException;
+
+        /**
+         * Deletes the generated resources if possible.
+         * @throws IOException When cannot delete the file from the file system.
+         */
+        void deleteGenerated() throws IOException;
     }
 
     static class ZipContainer implements Container {
         private ZipOutputStream m_zipOutputStream;
+        private Path m_path;
 
         /**
          * @throws IOException Error opening the connection.
          * @throws URISyntaxException Wrong container.
          */
         ZipContainer(final URL container) throws IOException, URISyntaxException {
-            Path path = FileUtil.resolveToPath(container);
+            m_path = FileUtil.resolveToPath(container);
             m_zipOutputStream =
-                new ZipOutputStream(path == null ? openConnection(container)
-                    : Files.newOutputStream(path, StandardOpenOption.CREATE));
+                new ZipOutputStream(m_path == null ? openConnection(container)
+                    : Files.newOutputStream(m_path, StandardOpenOption.CREATE));
         }
 
         /**
@@ -137,12 +145,22 @@ public final class JSONWriterNodeModel extends NodeModel {
         public void ifExistsDelete(final String fileName) {
             //Do nothing, it should not exists
         }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void deleteGenerated() throws IOException {
+            if (m_path != null) {
+                Files.deleteIfExists(m_path);
+            }
+        }
     }
 
     static class FolderContainer implements Container {
         private URL m_folder;
 
-        private Path m_path;
+        private Path m_path, m_lastPath;
 
         private boolean m_overwrite;
 
@@ -162,11 +180,11 @@ public final class JSONWriterNodeModel extends NodeModel {
         @Override
         public OutputStream nextOutputStream(final String fileName) throws IOException {
             if (m_path != null) {
-                Path path = m_path.resolve(fileName);
-                if (!m_overwrite && Files.exists(path)) {
-                    throw new IOException("File '" + path + "' already exists");
+                m_lastPath = m_path.resolve(fileName);
+                if (!m_overwrite && Files.exists(m_lastPath)) {
+                    throw new IOException("File '" + m_lastPath + "' already exists");
                 }
-                return Files.newOutputStream(path, StandardOpenOption.CREATE);
+                return Files.newOutputStream(m_lastPath, StandardOpenOption.CREATE);
             }
             return new BufferedOutputStream(openConnection(combine(m_folder, fileName)));
         }
@@ -195,6 +213,16 @@ public final class JSONWriterNodeModel extends NodeModel {
             if (m_path != null) {
                 Path path = m_path.resolve(fileName);
                 Files.deleteIfExists(path);
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void deleteGenerated() throws IOException {
+            if (m_lastPath != null) {
+                Files.deleteIfExists(m_lastPath);
             }
         }
 
@@ -242,6 +270,14 @@ public final class JSONWriterNodeModel extends NodeModel {
         public void ifExistsDelete(final String fileName) throws IOException {
             m_container.ifExistsDelete(fileName);
         }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void deleteGenerated() throws IOException {
+            m_container.deleteGenerated();
+        }
     }
 
     /**
@@ -259,6 +295,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         int count = 0;
         int missingCellCount = 0;
 
+        checkOutputLocation();
         URL container = FileUtil.toURL(m_settings.getOutputLocation());
         if (m_settings.isCompressContents() && m_settings.getCompressionMethod().supportsMultipleFiles()) {
             uriContents.add(new URIContent(container.toURI(), FilenameUtils.getExtension(container.toString())));
@@ -280,7 +317,12 @@ public final class JSONWriterNodeModel extends NodeModel {
 
         try (Container abstractContainer = createContainer(container)) {
             for (DataRow row : table) {
-                exec.checkCanceled();
+                try {
+                    exec.checkCanceled();
+                } catch (CanceledExecutionException e) {
+                    abstractContainer.deleteGenerated();
+                    throw e;
+                }
                 exec.setProgress(count / max, "Writing " + row.getKey() + m_settings.getExtension());
 
                 if (!m_settings.isCompressContents() || !m_settings.getCompressionMethod().supportsMultipleFiles()) {
@@ -400,6 +442,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         if (column == null) {
             column = handleNonSetColumn(table);
         }
+        checkOutputLocation();
         if (column.getType().isCompatible(JSONValue.class)) {
             return new PortObjectSpec[]{new URIPortObjectSpec(
                 m_settings.getCompressionMethod() == CompressionMethods.ZIP ? FilenameUtils.getExtension(m_settings
@@ -407,6 +450,17 @@ public final class JSONWriterNodeModel extends NodeModel {
         }
         throw new InvalidSettingsException("The selected column (" + m_settings.getInputColumn()
             + ") is not a JSON column.");
+    }
+
+    /**
+     * @throws InvalidSettingsException
+     */
+    private void checkOutputLocation() throws InvalidSettingsException {
+        if (m_settings.getCompressionMethod().supportsMultipleFiles()) {
+            CheckUtils.checkDestinationFile(m_settings.getOutputLocation(), m_settings.getOverwriteExistingFiles());
+        } else {
+            CheckUtils.checkDestinationDirectory(m_settings.getOutputLocation());
+        }
     }
 
     /**

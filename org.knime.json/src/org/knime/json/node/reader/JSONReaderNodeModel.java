@@ -14,9 +14,7 @@ import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
-import org.knime.core.data.uri.IURIPortObject;
 import org.knime.core.data.uri.URIContent;
-import org.knime.core.data.uri.URIPortObject;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -28,9 +26,8 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
-import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.core.node.port.PortType;
+import org.knime.core.util.FileUtil;
 
 /**
  * This is the model implementation of JSONReader. Reads {@code .json} files to {@link JSONValue}s.
@@ -44,7 +41,7 @@ public final class JSONReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected JSONReaderNodeModel() {
-        super(new PortType[]{new PortType(URIPortObject.class, true)}, new PortType[]{BufferedDataTable.TYPE});
+        super(0, 1);
     }
 
     /**
@@ -81,17 +78,10 @@ public final class JSONReaderNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected BufferedDataTable[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec) throws Exception {
         BufferedDataContainer container = exec.createDataContainer(configure((PortObjectSpec[])null)[0]);
         int rowId = 1;
-        if (inData[0] != null && inData[0] instanceof IURIPortObject) {
-            IURIPortObject uriPo = (IURIPortObject)inData[0];
-            for (URIContent content : uriPo.getURIContents()) {
-                rowId = readUriContent(container, rowId, content);
-            }
-        } else {
-            rowId = readUriContent(container, rowId, new URIContent(new URI(m_settings.getLocation()), ".json"));
-        }
+        rowId = readUriContent(container, rowId, new URIContent(FileUtil.toURL(m_settings.getLocation()).toURI(), ".json"));
         container.close();
         return new BufferedDataTable[]{container.getTable()};
     }
@@ -138,6 +128,20 @@ public final class JSONReaderNodeModel extends NodeModel {
      */
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
+        URL url;
+        try {
+            url = FileUtil.toURL(m_settings.getLocation());
+        } catch (MalformedURLException e) {
+            throw new InvalidSettingsException("Not a valid location: " + m_settings.getLocation(), e);
+        }
+        try {
+            File file = FileUtil.getFileFromURL(url);
+            if (!file.exists()) {
+                throw new InvalidSettingsException("File do not exists: " + m_settings.getLocation());
+            }
+        } catch (IllegalArgumentException e) {
+            //We do not mind if it is remote file, but in this case we do not check for existence either.
+        }
         final DataColumnSpec column = new DataColumnSpecCreator(m_settings.getColumnName(), JSONCell.TYPE).createSpec();
         return new DataTableSpec[]{new DataTableSpec(column)};
     }

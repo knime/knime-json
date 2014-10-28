@@ -30,6 +30,7 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.util.ColumnSelectionComboxBox;
 import org.knime.core.node.util.FilesHistoryPanel;
+import org.knime.core.node.util.FilesHistoryPanel.LocationValidation;
 import org.knime.core.node.workflow.FlowVariable.Type;
 import org.knime.json.node.util.GUIFactory;
 import org.knime.json.node.writer.JSONWriterNodeSettings.CompressionMethods;
@@ -151,7 +152,7 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
 //        ret.add(m_fileChooserPanel.getPanel(), c);
         m_container =
             new FilesHistoryPanel(createFlowVariableModel("jsonOutputContainer", Type.STRING),
-                "org.knime.json.node.writer", false, ".json", ".json.gz", ".zip"/*, ".smile", ".smile.gz"*/);
+                "org.knime.json.node.writer", LocationValidation.DirectoryOutput, ".json", ".json.gz", ".zip"/*, ".smile", ".smile.gz"*/);
         m_container.requestFocus();
         m_container.setSelectMode(JFileChooser.DIRECTORIES_ONLY);
         m_container.setBorder(null);
@@ -222,7 +223,7 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         m_settings.setExtension(m_extension.getText());
         m_settings.setCompressionMethod((CompressionMethods)m_compression.getSelectedItem());
         m_settings.setCompressContents(m_settings.getCompressionMethod() != CompressionMethods.NONE);
-        m_settings.setFormat(((StringValue)m_format.getSelectedItem()).getStringValue());
+        m_settings.setFormat((String)m_format.getSelectedItem());
         m_settings.saveSettings(settings);
     }
 }

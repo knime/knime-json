@@ -3,6 +3,7 @@ package org.knime.json.node.reader;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.net.MalformedURLException;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -19,7 +20,9 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponentFileChooser;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.node.util.StringHistory;
 import org.knime.core.node.workflow.FlowVariable.Type;
+import org.knime.core.util.FileUtil;
 import org.knime.json.node.util.GUIFactory;
 
 /**
@@ -28,6 +31,11 @@ import org.knime.json.node.util.GUIFactory;
  * @author Gabor Bakos
  */
 final class JSONReaderNodeDialog extends NodeDialogPane {
+    /**
+     *
+     */
+    static final String HISTORY_ID = "JSONReader";
+
     private JSONReaderSettings m_settings = JSONReaderNodeModel.createSettings();
 
     private DialogComponentFileChooser m_location;
@@ -54,7 +62,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
 
         gbc.gridwidth = 2;
         m_location =
-            new DialogComponentFileChooser(new SettingsModelString(JSONReaderSettings.LOCATION, ""), "JSONReader",
+            new DialogComponentFileChooser(new SettingsModelString(JSONReaderSettings.LOCATION, ""), HISTORY_ID,
                 JFileChooser.OPEN_DIALOG, false, createFlowVariableModel(JSONReaderSettings.LOCATION, Type.STRING),
                 "json|json.gz|zip;");
         panel.add(m_location.getComponentPanel(), gbc);
@@ -90,10 +98,24 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_settings.setLocation(((SettingsModelString)m_location.getModel()).getStringValue());
+        updateHistory(m_settings.getLocation());
         m_settings.setColumnName(m_columnName.getText());
         m_settings.setProcessOnlyJson(m_processOnlyJson.isSelected());
         m_settings.setAllowComments(m_allowComments.isSelected());
         m_settings.saveSettingsTo(settings);
+    }
+
+    /**
+     * @param location
+     */
+    private void updateHistory(final String location) {
+        try {
+            if (FileUtil.getFileFromURL(FileUtil.toURL(location)).exists()) {
+                StringHistory.getInstance(HISTORY_ID).add(location);
+            }
+        } catch (MalformedURLException | RuntimeException e) {
+            //We do not check whether it is well-formed or not
+        }
     }
 
     /**
