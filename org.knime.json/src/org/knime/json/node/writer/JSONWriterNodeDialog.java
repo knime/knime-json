@@ -148,13 +148,10 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         ret.add(labelOfContainer, c);
         c.gridx++;
         c.weightx = 1;
-//        m_fileChooserPanel = new RemoteFileChooserPanel(ret, labelOfContainer.getText(), false, "org.knime.json.node.writer", RemoteFileChooser.SELECT_FILE_OR_DIR, createFlowVariableModel("jsonOutputContainer", Type.STRING), null);
-//        ret.add(m_fileChooserPanel.getPanel(), c);
         m_container =
             new FilesHistoryPanel(createFlowVariableModel("jsonOutputContainer", Type.STRING),
                 "org.knime.json.node.writer", LocationValidation.DirectoryOutput, ".json", ".json.gz", ".zip"/*, ".smile", ".smile.gz"*/);
         m_container.requestFocus();
-        m_container.setSelectMode(JFileChooser.DIRECTORIES_ONLY);
         m_container.setBorder(null);
         ret.add(m_container, c);
         m_compression.addItemListener(new ItemListener() {
@@ -201,11 +198,6 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         m_inputColumn.update((DataTableSpec)specs[0], m_settings.getInputColumn());
         m_overwriteExisting.setSelected(m_settings.getOverwriteExistingFiles());
         m_container.setSelectedFile(m_settings.getOutputLocation());
-        //m_fileChooserPanel.setSelection(m_settings.getOutputLocation());
-//        if (specs.length > 1 && specs[1] instanceof ConnectionInformationPortObjectSpec) {
-//            ConnectionInformationPortObjectSpec spec = (ConnectionInformationPortObjectSpec)specs[1];
-//            m_fileChooserPanel.setConnectionInformation(spec.getConnectionInformation());
-//        }
         m_extension.setText(m_settings.getExtension());
         m_format.setSelectedItem(m_settings.getFormat());
         m_compression.setSelectedItem(m_settings.getCompressionMethod());
@@ -219,7 +211,7 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         m_settings.setInputColumn(m_inputColumn.getSelectedColumn());
         m_settings.setOverwriteExisting(m_overwriteExisting.isSelected());
         m_settings.setOutputLocation(m_container.getSelectedFile());
-//        m_settings.setOutputLocation(m_fileChooserPanel.getSelection());
+        m_container.addToHistory();
         m_settings.setExtension(m_extension.getText());
         m_settings.setCompressionMethod((CompressionMethods)m_compression.getSelectedItem());
         m_settings.setCompressContents(m_settings.getCompressionMethod() != CompressionMethods.NONE);

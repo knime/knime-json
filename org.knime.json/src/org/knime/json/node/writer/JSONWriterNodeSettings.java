@@ -64,23 +64,6 @@ class JSONWriterNodeSettings {
             public boolean supportsMultipleFiles() {
                 return false;
             }
-        },
-        ZIP {
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public String getStringValue() {
-                return "zip";
-            }
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public boolean supportsMultipleFiles() {
-                return true;
-            }
         };
     }
 

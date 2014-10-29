@@ -44,7 +44,6 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.FileUtil;
 import org.knime.json.internal.Activator;
 import org.knime.json.node.util.ReplaceOrAddColumnSettings;
-import org.knime.json.node.writer.JSONWriterNodeSettings.CompressionMethods;
 
 /**
  * This is the model implementation of JSONWriter. Writes {@code .json} files from {@link JSONValue}s.
@@ -405,8 +404,8 @@ public final class JSONWriterNodeModel extends NodeModel {
                 return new FolderContainer(container, m_settings.getOverwriteExistingFiles());
             case GZIP:
                 return new GzipperContainer(new FolderContainer(container, m_settings.getOverwriteExistingFiles()));
-            case ZIP:
-                return new ZipContainer(container);
+//            case ZIP:
+//                return new ZipContainer(container);
             default:
                 throw new UnsupportedOperationException("Not supported compression method: "
                     + m_settings.getCompressionMethod().getStringValue());
@@ -444,9 +443,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         }
         checkOutputLocation();
         if (column.getType().isCompatible(JSONValue.class)) {
-            return new PortObjectSpec[]{new URIPortObjectSpec(
-                m_settings.getCompressionMethod() == CompressionMethods.ZIP ? FilenameUtils.getExtension(m_settings
-                    .getOutputLocation()) : m_settings.getExtension())};
+            return new PortObjectSpec[]{new URIPortObjectSpec(m_settings.getExtension())};
         }
         throw new InvalidSettingsException("The selected column (" + m_settings.getInputColumn()
             + ") is not a JSON column.");
