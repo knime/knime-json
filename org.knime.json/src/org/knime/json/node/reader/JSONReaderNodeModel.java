@@ -5,15 +5,21 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.knime.base.node.util.BufferedFileReader;
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
+import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
+import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.uri.URIContent;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
@@ -24,10 +30,13 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
-import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.util.FileUtil;
+import org.knime.json.internal.Activator;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.jsonpointer.JsonPointer;
+import com.github.fge.jackson.jsonpointer.JsonPointerException;
 
 /**
  * This is the model implementation of JSONReader. Reads {@code .json} files to {@link JSONValue}s.
@@ -45,43 +54,24 @@ public final class JSONReaderNodeModel extends NodeModel {
     }
 
     /**
-     * @return A {@link SettingsModelBoolean} to allow or not comments in the input.
-     */
-    static SettingsModelBoolean createAllowComments() {
-        return new SettingsModelBoolean("allow.comments", false);
-    }
-
-    /**
-     * @return A {@link SettingsModelBoolean} to filter the content loaded from {@link #m_location} to {@code .json}
-     *         files ({@code true}).
-     */
-    static SettingsModelBoolean createProcessOnlyJson() {
-        return new SettingsModelBoolean("process.only.json", true);
-    }
-
-    /**
-     * @return A {@link SettingsModelString} for the column name of the resulting JSON content.
-     */
-    static SettingsModelString createColumnName() {
-        return new SettingsModelString("column.name", "json");
-    }
-
-    /**
-     * @return A {@link SettingsModelString} for the location of the JSON content (as a {@link URL}'s String
-     *         representation).
-     */
-    static SettingsModelString createLocation() {
-        return new SettingsModelString("location", "");
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec) throws Exception {
         BufferedDataContainer container = exec.createDataContainer(configure((PortObjectSpec[])null)[0]);
         int rowId = 1;
-        rowId = readUriContent(container, rowId, new URIContent(FileUtil.toURL(m_settings.getLocation()).toURI(), ".json"));
+        URL url = FileUtil.toURL(m_settings.getLocation());
+        try {
+            File file = FileUtil.getFileFromURL(url);
+            rowId =
+                readUriContent(container, rowId,
+                    new URIContent(file.toURI(), FilenameUtils.getExtension(file.getName())));
+        } catch (IllegalArgumentException e) {
+            //No problems
+            //We read as a file, this is not a folder.
+            rowId =
+                readUriContent(container, rowId, new URIContent(url.toURI(), FilenameUtils.getExtension(url.getPath())));
+        }
         container.close();
         return new BufferedDataTable[]{container.getTable()};
     }
@@ -98,18 +88,31 @@ public final class JSONReaderNodeModel extends NodeModel {
      */
     private int readUriContent(final BufferedDataContainer container, int rowId, final URIContent content)
         throws IOException, MalformedURLException {
+        JsonPointer jsonPointer;
+        try {
+            jsonPointer = new JsonPointer(m_settings.getJsonPointer());
+        } catch (JsonPointerException e) {
+            throw new IllegalStateException("The pointer has invalid syntax: " + m_settings.getJsonPointer());
+        }
+        JacksonConversions jacksonConversions = Activator.getInstance().getJacksonConversions();
         try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL())) {
             //do {
-            if (!content.getExtension().endsWith("json")
-                && !(reader.isZippedSource() && reader.getZipEntryName().toLowerCase().endsWith(".json"))) {
-                if (m_settings.isProcessOnlyJson()) {
-                    throw new IllegalStateException("The file is not a .json file: " + content.getExtension()
-                        + (reader.isZippedSource() ? ", " + reader.getZipEntryName() : ""));
-                //} else { we can just test whether we can read it.
+            JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader,
+                m_settings.isAllowComments());
+            DataCell value = (DataCell)jsonValue;
+            if (m_settings.isSelectPart()) {
+                JsonNode found = jsonPointer.get(jacksonConversions.toJackson(jsonValue.getJsonValue()));
+                if (found == null) {
+                    if (m_settings.isFailIfNotFound()) {
+                        throw new NullPointerException("Not found " + m_settings.getJsonPointer() + " in\n" + jsonValue);
+                } else {
+                    value = DataType.getMissingCell();
                 }
-            }
-            container.addRowToTable(new DefaultRow("Row" + rowId++, JSONCellFactory.create(reader,
-                m_settings.isAllowComments())));
+                } else {
+                    value = JSONCellFactory.create(jacksonConversions.toJSR353(found));
+                }
+            }//else we already set.
+            container.addRowToTable(new DefaultRow(RowKey.createRowKey(rowId++), value));
             //} while (reader.hasMoreZipEntries());
         }
         return rowId;
@@ -131,13 +134,16 @@ public final class JSONReaderNodeModel extends NodeModel {
         URL url;
         try {
             url = FileUtil.toURL(m_settings.getLocation());
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | InvalidPathException e) {
             throw new InvalidSettingsException("Not a valid location: " + m_settings.getLocation(), e);
         }
         try {
             File file = FileUtil.getFileFromURL(url);
             if (!file.exists()) {
                 throw new InvalidSettingsException("File do not exists: " + m_settings.getLocation());
+            }
+            if (file.isDirectory()) {
+                throw new InvalidSettingsException("Selected location is a directory: " + m_settings.getLocation());
             }
         } catch (IllegalArgumentException e) {
             //We do not mind if it is remote file, but in this case we do not check for existence either.

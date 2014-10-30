@@ -144,8 +144,12 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         c.gridx = 0;
         c.gridy++;
         c.weightx = 0;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
         final JLabel labelOfContainer = new JLabel("Selected directory:");
         ret.add(labelOfContainer, c);
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.BOTH;
         c.gridx++;
         c.weightx = 1;
         m_container =

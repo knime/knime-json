@@ -308,7 +308,7 @@ public final class JSONWriterNodeModel extends NodeModel {
                 Path parentPath = containerPath.getParent();
                 createFolder(parentPath);
             } else {
-                createFolder(containerPath);
+                //According to noding guidelines we cannot create parent folders.
             }
         } else {
             //We have to use URLConnections, though cannot create folders.

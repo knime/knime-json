@@ -3,25 +3,30 @@ package org.knime.json.node.reader;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeSettings;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
-import org.knime.core.node.defaultnodesettings.DialogComponentFileChooser;
-import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.node.util.FilesHistoryPanel;
+import org.knime.core.node.util.FilesHistoryPanel.LocationValidation;
 import org.knime.core.node.workflow.FlowVariable.Type;
 import org.knime.json.node.util.GUIFactory;
+
+import com.github.fge.jackson.jsonpointer.JsonPointer;
+import com.github.fge.jackson.jsonpointer.JsonPointerException;
 
 /**
  * <code>NodeDialog</code> for the "JSONReader" node. Reads {@code .json} files to {@link JSONValue}s.
@@ -36,11 +41,15 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
 
     private JSONReaderSettings m_settings = JSONReaderNodeModel.createSettings();
 
-    private DialogComponentFileChooser m_location;
+    private FilesHistoryPanel m_location;
 
     private JTextField m_columnName;
 
-    private JCheckBox m_processOnlyJson;
+    private final JCheckBox m_selectPart;
+
+    private final JTextField m_jsonPointer;
+
+    private final JCheckBox m_failIfNotFound;
 
     private JCheckBox m_allowComments;
 
@@ -52,21 +61,26 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         addTab("Settings", panel);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.weighty = 0;
 
         gbc.gridx = 0;
         gbc.gridy = 0;
 
-        gbc.gridwidth = 2;
+        panel.add(new JLabel("Location"), gbc);
+        gbc.gridx++;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.BOTH;
         m_location =
-            new DialogComponentFileChooser(new SettingsModelString(JSONReaderSettings.LOCATION, ""), HISTORY_ID,
-                JFileChooser.OPEN_DIALOG, false, createFlowVariableModel(JSONReaderSettings.LOCATION, Type.STRING),
-                "json|json.gz|zip;");
-        panel.add(m_location.getComponentPanel(), gbc);
+            new FilesHistoryPanel(createFlowVariableModel(JSONReaderSettings.LOCATION, Type.STRING), HISTORY_ID,
+                LocationValidation.FileInput, "json|json.gz|zip", "");
+        panel.add(m_location, gbc);
         gbc.gridy++;
         gbc.gridwidth = 1;
 
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.gridx = 0;
         panel.add(new JLabel("Output column name"), gbc);
         gbc.gridx = 1;
@@ -76,10 +90,67 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         gbc.gridy++;
 
         gbc.gridx = 1;
-        m_processOnlyJson = new JCheckBox("Process only files with .json extension");
-        panel.add(m_processOnlyJson, gbc);
-        m_processOnlyJson
-            .setToolTipText("If checked, other files are skipped, if unchecked, error will reported for non-json zip entries.");
+        m_selectPart = new JCheckBox("Select with JSON Pointer");
+        m_selectPart.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent ae) {
+                boolean select = m_selectPart.isSelected();
+                m_jsonPointer.setEnabled(select);
+                m_failIfNotFound.setEnabled(select);
+            }
+        });
+        m_selectPart.setSelected(true);
+        m_selectPart.setSelected(false);
+        panel.add(m_selectPart, gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        panel.add(new JLabel("JSON Pointer"), gbc);
+        gbc.gridx = 1;
+        m_jsonPointer = GUIFactory.createTextField("", 22);
+        m_jsonPointer.setToolTipText("Hint: Use the annotations to explain it.");
+        final JLabel warningLabel = new JLabel();
+        m_jsonPointer.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void removeUpdate(final DocumentEvent e) {
+                reportError();
+            }
+
+            @Override
+            public void insertUpdate(final DocumentEvent e) {
+                reportError();
+            }
+
+            @Override
+            public void changedUpdate(final DocumentEvent e) {
+                reportError();
+            }
+            private void reportError() {
+                try {
+                    new JsonPointer(m_jsonPointer.getText());
+                    noError();
+                } catch (JsonPointerException e) {
+                    error(e.getMessage());
+                }
+            }
+
+            private void error(final String message) {
+                warningLabel.setText(message);
+            }
+
+            private void noError() {
+                warningLabel.setText("");
+            }
+        });
+        panel.add(m_jsonPointer, gbc);
+        gbc.gridy++;
+        panel.add(warningLabel, gbc);
+        gbc.gridy++;
+
+        m_failIfNotFound = new JCheckBox("Fail if pointer not found");
+        m_failIfNotFound.setToolTipText("When unchecked and pointer do not match input, "
+            + "missing value will be generated.");
+        panel.add(m_failIfNotFound, gbc);
+        gbc.gridy++;
 
         gbc.gridy++;
         m_allowComments = new JCheckBox("Allow comments in JSON files");
@@ -96,10 +167,12 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         //We add the location to history using dummy save
-        m_location.saveSettingsTo(new NodeSettings(""));
-        m_settings.setLocation(((SettingsModelString)m_location.getModel()).getStringValue());
+        m_location.addToHistory();
+        m_settings.setLocation(m_location.getSelectedFile());
         m_settings.setColumnName(m_columnName.getText());
-        m_settings.setProcessOnlyJson(m_processOnlyJson.isSelected());
+        m_settings.setSelectPart(m_selectPart.isSelected());
+        m_settings.setJsonPointer(m_jsonPointer.getText());
+        m_settings.setFailIfNotFound(m_failIfNotFound.isSelected());
         m_settings.setAllowComments(m_allowComments.isSelected());
         m_settings.saveSettingsTo(settings);
     }
@@ -111,9 +184,11 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
         m_settings.loadSettingsForDialogs(settings, specs);
-        ((SettingsModelString)m_location.getModel()).setStringValue(m_settings.getLocation());
+        m_location.setSelectedFile(m_settings.getLocation());
+        m_selectPart.setSelected(m_settings.isSelectPart());
+        m_jsonPointer.setText(m_settings.getJsonPointer());
+        m_failIfNotFound.setSelected(m_settings.isFailIfNotFound());
         m_columnName.setText(m_settings.getColumnName());
-        m_processOnlyJson.setSelected(m_settings.isProcessOnlyJson());
         m_allowComments.setSelected(m_settings.isAllowComments());
     }
 }
