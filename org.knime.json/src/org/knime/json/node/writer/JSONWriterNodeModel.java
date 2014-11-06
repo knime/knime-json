@@ -24,10 +24,7 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.JSONCellWriter;
 import org.knime.core.data.json.JSONCellWriterFactory;
 import org.knime.core.data.json.JSONValue;
-import org.knime.core.data.uri.IURIPortObject;
 import org.knime.core.data.uri.URIContent;
-import org.knime.core.data.uri.URIPortObject;
-import org.knime.core.data.uri.URIPortObjectSpec;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -37,9 +34,6 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.port.PortObject;
-import org.knime.core.node.port.PortObjectSpec;
-import org.knime.core.node.port.PortType;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.FileUtil;
 import org.knime.json.internal.Activator;
@@ -60,8 +54,7 @@ public final class JSONWriterNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected JSONWriterNodeModel() {
-        super(new PortType[]{BufferedDataTable.TYPE/*, new PortType(ConnectionInformationPortObject.class, true)*/},
-            new PortType[]{IURIPortObject.TYPE});
+        super(1, 0);
     }
 
     static interface Container extends AutoCloseable {
@@ -283,10 +276,9 @@ public final class JSONWriterNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
-        BufferedDataTable table = (BufferedDataTable)inData[0];
-        DataTableSpec inputSpec = (DataTableSpec)inData[0].getSpec();
-        PortObjectSpec[] spec = configure(new PortObjectSpec[]{inputSpec/*, inData[1].getSpec()*/});
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec) throws Exception {
+        BufferedDataTable table = inData[0];
+        DataTableSpec inputSpec = inData[0].getSpec();
         JSONCellWriterFactory factory = Activator.getInstance().getJsonCellWriterFactory();
         int index = inputSpec.findColumnIndex(m_settings.getInputColumn());
         List<URIContent> uriContents = new ArrayList<>();
@@ -356,7 +348,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         if (missingCellCount > 0) {
             setWarningMessage("Skipped " + missingCellCount + " rows due " + "to missing values.");
         }
-        return new PortObject[]{new URIPortObject((URIPortObjectSpec)spec[0], uriContents)};
+        return new BufferedDataTable[0];
     }
 
     /**
@@ -435,15 +427,15 @@ public final class JSONWriterNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        final DataTableSpec table = (DataTableSpec)inSpecs[0];
+    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        final DataTableSpec table = inSpecs[0];
         DataColumnSpec column = table.getColumnSpec(m_settings.getInputColumn());
         if (column == null) {
             column = handleNonSetColumn(table);
         }
         checkOutputLocation();
         if (column.getType().isCompatible(JSONValue.class)) {
-            return new PortObjectSpec[]{new URIPortObjectSpec(m_settings.getExtension())};
+            return new DataTableSpec[0];
         }
         throw new InvalidSettingsException("The selected column (" + m_settings.getInputColumn()
             + ") is not a JSON column.");

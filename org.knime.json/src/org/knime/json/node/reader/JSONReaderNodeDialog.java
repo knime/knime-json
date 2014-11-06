@@ -1,10 +1,11 @@
 package org.knime.json.node.reader;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -61,51 +62,75 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         addTab("Settings", panel);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.weighty = 0;
 
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.weightx = 0;
 
         panel.add(new JLabel("Location"), gbc);
         gbc.gridx++;
+        gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.BOTH;
         m_location =
             new FilesHistoryPanel(createFlowVariableModel(JSONReaderSettings.LOCATION, Type.STRING), HISTORY_ID,
-                LocationValidation.FileInput, "json|json.gz|zip", "");
+                LocationValidation.FileInput, "json|json.gz", "");
         panel.add(m_location, gbc);
         gbc.gridy++;
         gbc.gridwidth = 1;
 
-        gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridx = 0;
+        gbc.weightx = 0;
         panel.add(new JLabel("Output column name"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
         m_columnName = GUIFactory.createTextField("", 22);
+        m_columnName.getDocument().addDocumentListener(new DocumentListener() {
+            private void reportError() {
+                if (m_columnName.getText().trim().isEmpty()) {
+                    error();
+                } else {
+                    noError();
+                }
+            }
+            private void noError() {
+                m_columnName.setBackground(Color.WHITE);
+                m_columnName.setToolTipText(null);
+            }
+            private void error() {
+                m_columnName.setBackground(Color.RED);
+                m_columnName.setToolTipText("Empty column names are not allowed");
+            }
+            @Override
+            public void insertUpdate(final DocumentEvent e) {
+                reportError();
+            }
+
+            @Override
+            public void removeUpdate(final DocumentEvent e) {
+                reportError();
+            }
+
+            @Override
+            public void changedUpdate(final DocumentEvent e) {
+                reportError();
+            }});
         panel.add(m_columnName, gbc);
 
         gbc.gridy++;
 
         gbc.gridx = 1;
         m_selectPart = new JCheckBox("Select with JSON Pointer");
-        m_selectPart.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent ae) {
-                boolean select = m_selectPart.isSelected();
-                m_jsonPointer.setEnabled(select);
-                m_failIfNotFound.setEnabled(select);
-            }
-        });
-        m_selectPart.setSelected(true);
-        m_selectPart.setSelected(false);
         panel.add(m_selectPart, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
+        gbc.weightx = 0;
         panel.add(new JLabel("JSON Pointer"), gbc);
         gbc.gridx = 1;
+        gbc.weightx = 1;
         m_jsonPointer = GUIFactory.createTextField("", 22);
         m_jsonPointer.setToolTipText("Hint: Use the annotations to explain it.");
         final JLabel warningLabel = new JLabel();
@@ -128,7 +153,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
                 try {
                     new JsonPointer(m_jsonPointer.getText());
                     noError();
-                } catch (JsonPointerException e) {
+                } catch (JsonPointerException | RuntimeException e) {
                     error(e.getMessage());
                 }
             }
@@ -149,6 +174,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         m_failIfNotFound = new JCheckBox("Fail if pointer not found");
         m_failIfNotFound.setToolTipText("When unchecked and pointer do not match input, "
             + "missing value will be generated.");
+        gbc.weightx = 1;
         panel.add(m_failIfNotFound, gbc);
         gbc.gridy++;
 
@@ -156,8 +182,22 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         m_allowComments = new JCheckBox("Allow comments in JSON files");
         panel.add(m_allowComments, gbc);
 
+        m_selectPart.getModel().addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(final ItemEvent e) {
+                boolean select = m_selectPart.isSelected();
+                m_jsonPointer.setEnabled(select);
+                m_failIfNotFound.setEnabled(select);
+            }
+        });
+        m_selectPart.setSelected(true);
+        m_selectPart.setSelected(false);
+
+        //Filling remaining space
         gbc.gridy++;
         gbc.weighty = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
         panel.add(new JPanel(), gbc);
     }
 

@@ -31,8 +31,8 @@
            point="org.knime.workbench.repository.registeredFileExtensions">
       <FileExtensionMapping
               NodeFactory="org.knime.json.node.reader.JSONReaderNodeFactory">
-         <FileExtension extension=".json">
-         </FileExtension>
+         <FileExtension extension=".json"/>
+         <FileExtension extension=".json.gz"/>
       </FileExtensionMapping>
    </extension>
    <extension

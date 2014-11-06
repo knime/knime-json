@@ -44,47 +44,65 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   16 Oct. 2014 (Gabor): created
+ *   5 Nov. 2014 (Gabor): created
  */
-package org.knime.json.node.util;
+package org.knime.json.node.jsonpath;
 
-import java.io.File;
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import org.knime.base.filehandling.remote.connectioninformation.port.ConnectionInformation;
-import org.knime.base.filehandling.remote.files.Connection;
-import org.knime.base.filehandling.remote.files.ConnectionMonitor;
-import org.knime.base.filehandling.remote.files.RemoteFile;
-import org.knime.base.filehandling.remote.files.RemoteFileFactory;
+import org.knime.json.internal.Activator;
+
+import com.jayway.jsonpath.JsonPath;
 
 /**
- * An abstraction between local and remote files.
+ * Some utility methods to ease JsonPath handling.
  *
  * @author Gabor Bakos
  */
-public class FileFactory {
-
-    /**
-     *
-     */
-    private FileFactory() {
-        super();
+public class JsonPathUtil {
+    private JsonPathUtil() {
+        //Hide constructor
     }
 
     /**
-     * Fixes (refer to file) if the URI do not specify scheme.
+     * Converts the result from {@link JsonPath#read(Object, com.jayway.jsonpath.Configuration)} to a {@link List} of {@link String}s.
      *
-     * @param uri The reference to the remote file.
-     * @param ci The {@link ConnectionInformation}.
-     * @param monitor The {@link ConnectionMonitor}.
-     * @return The {@link RemoteFile} corresponding to the {@code uri}.
-     * @throws Exception Problem creating the remote file reference.
+     * @param o Result from {@link JsonPath#read(Object, com.jayway.jsonpath.Configuration)}.
+     * @return A (potentially unmodifiable) {@link List} of {@link String}s. Never {@code null}.
      */
-    public static <C extends Connection> RemoteFile<C> createRemoteFile(URI uri, final ConnectionInformation ci,
-        final ConnectionMonitor<C> monitor) throws Exception {
-        if (uri.getScheme() == null) {
-            uri = new File(uri.toString()).toURI();
+    public static List<String> asList(final Object o) {
+        List<String> ret;
+        if (o instanceof List<?>) {
+            List<?> oldList = (List<?>)o;
+            ret = new ArrayList<>(oldList.size());
+            for (Object object : oldList) {
+                String str = object instanceof String ? (String)object : object.toString();
+                ret.add(str);
+            }
+            return ret;
         }
-        return RemoteFileFactory.createRemoteFile(uri, ci, monitor);
+        if (o instanceof Iterable<?>) {
+            Iterable<?> itr = (Iterable<?>)o;
+            ret = new ArrayList<>();
+            for (Object object : itr) {
+                String str = object instanceof String ? (String)object : object.toString();
+                ret.add(str);
+            }
+            return ret;
+        }
+        if (o instanceof String) {
+            String str = (String)o;
+            return Collections.singletonList(str);
+        }
+        if (o == null) {
+            return Collections.emptyList();
+        }
+        try {
+            return asList(Activator.getInstance().getJsonPathConfiguration().jsonProvider().toIterable(o));
+        } catch (RuntimeException e) {
+            return Collections.singletonList(o.toString());
+        }
     }
 }

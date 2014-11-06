@@ -57,9 +57,10 @@ public final class JSONReaderNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec) throws Exception {
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
+        throws Exception {
         BufferedDataContainer container = exec.createDataContainer(configure((PortObjectSpec[])null)[0]);
-        int rowId = 1;
+        int rowId = 0;
         URL url = FileUtil.toURL(m_settings.getLocation());
         try {
             File file = FileUtil.getFileFromURL(url);
@@ -90,24 +91,23 @@ public final class JSONReaderNodeModel extends NodeModel {
         throws IOException, MalformedURLException {
         JsonPointer jsonPointer;
         try {
-            jsonPointer = new JsonPointer(m_settings.getJsonPointer());
+            jsonPointer = new JsonPointer(m_settings.isSelectPart() ? m_settings.getJsonPointer() : "");
         } catch (JsonPointerException e) {
             throw new IllegalStateException("The pointer has invalid syntax: " + m_settings.getJsonPointer());
         }
         JacksonConversions jacksonConversions = Activator.getInstance().getJacksonConversions();
         try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL())) {
             //do {
-            JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader,
-                m_settings.isAllowComments());
+            JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader, m_settings.isAllowComments());
             DataCell value = (DataCell)jsonValue;
             if (m_settings.isSelectPart()) {
                 JsonNode found = jsonPointer.get(jacksonConversions.toJackson(jsonValue.getJsonValue()));
                 if (found == null) {
                     if (m_settings.isFailIfNotFound()) {
                         throw new NullPointerException("Not found " + m_settings.getJsonPointer() + " in\n" + jsonValue);
-                } else {
-                    value = DataType.getMissingCell();
-                }
+                    } else {
+                        value = DataType.getMissingCell();
+                    }
                 } else {
                     value = JSONCellFactory.create(jacksonConversions.toJSR353(found));
                 }
@@ -131,6 +131,7 @@ public final class JSONReaderNodeModel extends NodeModel {
      */
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
+        m_settings.checkColumnName();
         URL url;
         try {
             url = FileUtil.toURL(m_settings.getLocation());

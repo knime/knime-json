@@ -48,11 +48,8 @@
  */
 package org.knime.json.internal;
 
-import java.util.ServiceLoader;
-
 import org.knime.core.data.json.JSONCellWriterFactory;
 import org.knime.core.data.json.JacksonConversions;
-import org.knime.core.node.NodeLogger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -60,7 +57,6 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleWiring;
 
 import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.spi.json.JsonProvider;
 
 /**
  * Activator for the bundle.
@@ -86,53 +82,54 @@ public class Activator implements BundleActivator {
     @Override
     public void start(final BundleContext ctx) throws Exception {
         INSTANCE = this;
-        try {
-            Bundle jsonBundle = null, schemaCoreBundle = null, jsr353Bundle = null;
-            for (Bundle b : ctx.getBundles()) {
-                if ("com.jayway.jsonpath.json-path".equals(b.getSymbolicName())) {
-                    jsonBundle = b;
-                    //                } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
-                } else if ("com.github.fge.json-schema-core".equals(b.getSymbolicName())) {
-                    schemaCoreBundle = b;
-                } else if ("org.glassfish.javax.json".equals(b.getSymbolicName())) {
-                    jsr353Bundle = b;
-                }
+        Bundle jsonBundle = null, schemaCoreBundle = null, jsr353Bundle = null;
+        for (Bundle b : ctx.getBundles()) {
+            if ("com.jayway.jsonpath.json-path".equals(b.getSymbolicName())) {
+                jsonBundle = b;
+                //                } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
+            } else if ("com.github.fge.json-schema-core".equals(b.getSymbolicName())) {
+                schemaCoreBundle = b;
+            } else if ("org.glassfish.javax.json".equals(b.getSymbolicName())) {
+                jsr353Bundle = b;
             }
-            if (jsonBundle == null) {
-                throw new NullPointerException("JsonPath could not be loaded.");
-            }
-            if (schemaCoreBundle == null) {
-                throw new NullPointerException("JSON Schema validator could not be loaded.");
-            }
-            if (jsr353Bundle == null) {
-                throw new NullPointerException("JSR-353 implementation could not be loaded.");
-            }
-            m_jsr353ClassLoader = jsr353Bundle.adapt(BundleWiring.class).getClassLoader();
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(m_jsr353ClassLoader);
-                ServiceReference<JacksonConversions> serviceReference =
-                    ctx.getServiceReference(JacksonConversions.class);
-                m_jacksonConversions = ctx.getService(serviceReference);
-                m_jsonCellWriterFactory = ctx.getService(ctx.getServiceReference(JSONCellWriterFactory.class));
-            } finally {
-                Thread.currentThread().setContextClassLoader(cl);
-            }
-            m_jsonSchemaCoreClassLoader = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
-            try {
-                ClassLoader classLoader = jsonBundle.adapt(BundleWiring.class).getClassLoader();
-                Thread.currentThread().setContextClassLoader(classLoader);
-                m_jsonPathConfiguration =
-                    Configuration.builder()
-                        .jsonProvider(ServiceLoader.load(JsonProvider.class, classLoader).iterator().next()).build();
-            } finally {
-                Thread.currentThread().setContextClassLoader(cl);
-            }
-        } catch (RuntimeException e) {
-            NodeLogger.getLogger("org.knime.json")
-                .warn("Could not load Jackson driver for JsonPath, using default.", e);
-            m_jsonPathConfiguration = Configuration.defaultConfiguration();
         }
+        if (jsonBundle == null) {
+            throw new NullPointerException("JsonPath could not be loaded.");
+        }
+        if (schemaCoreBundle == null) {
+            throw new NullPointerException("JSON Schema validator could not be loaded.");
+        }
+        if (jsr353Bundle == null) {
+            throw new NullPointerException("JSR-353 implementation could not be loaded.");
+        }
+        m_jsr353ClassLoader = jsr353Bundle.adapt(BundleWiring.class).getClassLoader();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(m_jsr353ClassLoader);
+            ServiceReference<JacksonConversions> serviceReference = ctx.getServiceReference(JacksonConversions.class);
+            m_jacksonConversions = ctx.getService(serviceReference);
+            m_jsonCellWriterFactory = ctx.getService(ctx.getServiceReference(JSONCellWriterFactory.class));
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+        m_jsonSchemaCoreClassLoader = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
+        try {
+            ClassLoader classLoader = jsonBundle.adapt(BundleWiring.class).getClassLoader();
+            Thread.currentThread().setContextClassLoader(classLoader);
+            //When JsonPath will contain proper SPI services
+//            JsonProvider jsonProvider = ServiceLoader.load(JsonProvider.class, classLoader).iterator().next();
+            m_jsonPathConfiguration = Configuration.defaultConfiguration();
+            //m_jsonPathConfiguration = m_jsonPathConfiguration.jsonProvider(jsonProvider);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+        //When JsonPath contain OSGi services
+//        ServiceReference<JsonProvider> ref = ctx.getServiceReference(JsonProvider.class);
+//        if (ref != null) {
+//            JsonProvider service = ctx.getService(ref);
+//        } else {
+//            System.out.println("Json-path osgi service failed.");
+//        }
     }
 
     /**

@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
@@ -41,6 +43,16 @@ import org.knime.json.node.writer.JSONWriterNodeSettings.CompressionMethods;
  * @author Gabor Bakos
  */
 final class JSONWriterNodeDialog extends NodeDialogPane {
+    /**
+     * 
+     */
+    private static final String DOT_JSON_GZ = ".json.gz";
+
+    /**
+     * 
+     */
+    private static final String DOT_JSON = ".json";
+
     private final JSONWriterNodeSettings m_settings = new JSONWriterNodeSettings();
 
     private ColumnSelectionComboxBox m_inputColumn;
@@ -137,9 +149,27 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         ret.add(new JLabel("File extension:"), c);
         c.gridx++;
         c.weightx = 1;
-        m_extension = GUIFactory.createTextField(".json", 11);
-        m_extension.setBorder(null);
+        m_extension = GUIFactory.createTextField(DOT_JSON, 11);
         ret.add(m_extension, c);
+        m_compression.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                CompressionMethods selected = (CompressionMethods)m_compression.getSelectedItem();
+                switch (selected) {
+                    case GZIP:
+                        if (DOT_JSON.equals(m_extension.getText())) {
+                            m_extension.setText(DOT_JSON_GZ);
+                        }
+                        break;
+                    case NONE:
+                        if (DOT_JSON_GZ.equals(m_extension.getText())) {
+                            m_extension.setText(DOT_JSON);
+                        }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unknown compression format: " + selected);
+                }
+            }});
 
         c.gridx = 0;
         c.gridy++;
@@ -154,7 +184,7 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         c.weightx = 1;
         m_container =
             new FilesHistoryPanel(createFlowVariableModel("jsonOutputContainer", Type.STRING),
-                "org.knime.json.node.writer", LocationValidation.DirectoryOutput, ".json", ".json.gz", ".zip"/*, ".smile", ".smile.gz"*/);
+                "org.knime.json.node.writer", LocationValidation.DirectoryOutput, DOT_JSON, DOT_JSON_GZ, ".zip"/*, ".smile", ".smile.gz"*/);
         m_container.requestFocus();
         m_container.setBorder(null);
         ret.add(m_container, c);

@@ -60,15 +60,17 @@ import org.knime.core.node.port.PortObjectSpec;
  * @author Gabor Bakos
  */
 final class JSONReaderSettings {
-    static final String ALLOW_COMMENTS = "allow.comments",
-            COLUMN_NAME = "column.name", DEFAULT_COLUMN_NAME = "json", LOCATION = "json.location";
+    static final String ALLOW_COMMENTS = "allow.comments", COLUMN_NAME = "column.name", DEFAULT_COLUMN_NAME = "json",
+            LOCATION = "json.location";
 
-    static final String SELECT_PART = "select.part", JSON_POINTER = "json.pointer", FAIL_IF_NOT_FOUND = "fail.if.not.found";
+    static final String SELECT_PART = "select.part", JSON_POINTER = "json.pointer",
+            FAIL_IF_NOT_FOUND = "fail.if.not.found";
+
     static final String DEFAULT_JSON_POINTER = "";
 
     private boolean m_allowComments = false, m_selectPart = false, m_failIfNotFound;
 
-    private String m_columnName = DEFAULT_COLUMN_NAME, m_location = System.getProperty("user.home", "/"), m_jsonPointer;
+    private String m_columnName = DEFAULT_COLUMN_NAME, m_location = "", m_jsonPointer;
 
     /**
      * Constructs the object.
@@ -126,7 +128,25 @@ final class JSONReaderSettings {
      * @throws InvalidSettingsException No column was selected.
      */
     void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        if (settings.getString(COLUMN_NAME).isEmpty()) {
+        String colName = settings.getString(COLUMN_NAME);
+        checkColName(colName);
+    }
+
+    /**
+     * Checks whether the set column name is empty or not.
+     *
+     * @throws InvalidSettingsException The column name contains only white spaces.
+     */
+    void checkColumnName() throws InvalidSettingsException {
+        checkColName(getColumnName());
+    }
+
+    /**
+     * @param colName The expected column name.
+     * @throws InvalidSettingsException Only whitespaces.
+     */
+    private void checkColName(final String colName) throws InvalidSettingsException {
+        if (colName.trim().isEmpty()) {
             throw new InvalidSettingsException("Empty column name is not allowed.");
         }
     }

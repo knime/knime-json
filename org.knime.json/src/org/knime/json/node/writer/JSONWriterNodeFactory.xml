@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./default.png" type="Sink" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
-    <name>JSON writer</name>
+<knimeNode icon="./jsonwriter.png" type="Sink" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+    <name>JSON Writer</name>
     
     <shortDescription>
         Writes .json files.
@@ -11,7 +11,7 @@
         
         <option name="JSON column">Column containing JSON values</option>
         <option name="Export format">Format of the file (currently only JSON is supported)</option>
-        <option name="Compress">Output might be compressed with gzip, or keep uncompressed <tt>&lt;none&gt;</tt></option>
+        <option name="Compress">Output might be compressed with gzip, or keep them uncompressed: <tt>&lt;none&gt;</tt></option>
         <option name="File extension">The output files' extension.</option>
         <option name="Selected directory">The output directory for the JSON files</option>
         <option name="Overwrite existing files">When checked existing files will be overwritten (if possible), else execution will fail.</option>
@@ -19,6 +19,5 @@
     
     <ports>
         <inPort index="0" name="JSON">Table with JSON values</inPort>
-        <outPort index="0" name="URIs">The output locations</outPort>
     </ports>    
 </knimeNode>
