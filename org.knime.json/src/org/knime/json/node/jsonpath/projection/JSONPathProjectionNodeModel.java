@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.json.JsonValue;
+
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -30,6 +32,7 @@ import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
 import com.github.fge.jackson.jsonpointer.JsonPointerException;
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -128,7 +131,7 @@ public class JSONPathProjectionNodeModel extends SingleColumnReplaceOrAddNodeMod
                 DataCell cell = row.getCell(inputIndex);
                 if (cell instanceof JSONValue) {
                     JSONValue jsonCell = (JSONValue)cell;
-                    Object jsonValue = jsonCell.getJsonValue();
+                    JsonValue jsonValue = jsonCell.getJsonValue();
                     try {
                         List<Object> values;
                         if (jsonPath == null) {
@@ -138,8 +141,18 @@ public class JSONPathProjectionNodeModel extends SingleColumnReplaceOrAddNodeMod
                             JsonNode value = pointer.path(conv.toJackson(jsonCell.getJsonValue()));
                             values = Collections.<Object> singletonList(value);
                         } else {
-                            values =
-                                jsonPath.read(jsonValue.toString(), Activator.getInstance().getJsonPathConfiguration());
+                            Configuration jsonPathConfiguration = Activator.getInstance().getJsonPathConfiguration();
+                            Object read0;
+                            if (jsonPathConfiguration.jsonProvider().getClass().getName().contains("JacksonTree" )) {
+                                read0 = jsonPath.read(conv.toJackson(jsonValue), jsonPathConfiguration);
+                            } else {
+                                read0 = jsonPath.read(jsonValue.toString(), jsonPathConfiguration);
+                            }
+                            Iterable<?> read = jsonPathConfiguration.jsonProvider().toIterable(read0);
+                            values = new ArrayList<>();
+                            for (Object object : read) {
+                                values.add(object);
+                            }
                         }
                         List<DataCell> cells = new ArrayList<>();
                         for (Object v : values) {
