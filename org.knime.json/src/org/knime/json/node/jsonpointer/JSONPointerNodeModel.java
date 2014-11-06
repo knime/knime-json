@@ -1,10 +1,7 @@
-package org.knime.json.node.jsonpath.projection;
+package org.knime.json.node.jsonpointer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.json.JsonValue;
 
@@ -14,11 +11,10 @@ import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
-import org.knime.core.data.collection.CollectionCellFactory;
-import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
+import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.node.CanceledExecutionException;
@@ -32,19 +28,17 @@ import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
 import com.github.fge.jackson.jsonpointer.JsonPointerException;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
 
 /**
- * This is the model implementation of JSONPathProjection. Selects certain paths from the selected JSON column.
+ * This is the model implementation of JSONPointer. Selects certain pointers from the selected JSON column.
  *
  * @author Gabor Bakos
  */
-public class JSONPathProjectionNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPathProjectionSettings> {
+public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPointerSettings> {
     /**
      * Constructor for the node model.
      */
-    protected JSONPathProjectionNodeModel() {
+    protected JSONPointerNodeModel() {
         super(1, 1);
     }
 
@@ -106,23 +100,10 @@ public class JSONPathProjectionNodeModel extends SingleColumnReplaceOrAddNodeMod
         final int... otherColumns) {
         final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
         final JsonPointer pointer;
-        final JsonPath jsonPath;
-        final String pathType = getSettings().getPathType();
-        switch (pathType) {
-            case JSONPathProjectionSettings.JSON_PATH_OPTION:
-                jsonPath = JsonPath.compile(getSettings().getJsonPath());
-                pointer = null;
-                break;
-            case JSONPathProjectionSettings.JSON_POINTER_OPTION:
-                jsonPath = null;
-                try {
-                    pointer = new JsonPointer(getSettings().getJsonPath());
-                } catch (JsonPointerException e) {
-                    throw new IllegalStateException("Invalid pointer: " + e.getMessage(), e);
-                }
-                break;
-            default:
-                throw new IllegalStateException("Not supported path format: " + pathType);
+        try {
+            pointer = new JsonPointer(getSettings().getJsonPointer());
+        } catch (JsonPointerException e) {
+            throw new IllegalStateException("Invalid pointer: " + e.getMessage(), e);
         }
         return new SingleCellFactory(output) {
 
@@ -133,34 +114,8 @@ public class JSONPathProjectionNodeModel extends SingleColumnReplaceOrAddNodeMod
                     JSONValue jsonCell = (JSONValue)cell;
                     JsonValue jsonValue = jsonCell.getJsonValue();
                     try {
-                        List<Object> values;
-                        if (jsonPath == null) {
-                            if (pointer == null) {
-                                throw new IllegalStateException("Pointer should not be null at this point.");
-                            }
-                            JsonNode value = pointer.path(conv.toJackson(jsonCell.getJsonValue()));
-                            values = Collections.<Object> singletonList(value);
-                        } else {
-                            Configuration jsonPathConfiguration = Activator.getInstance().getJsonPathConfiguration();
-                            Object read0;
-                            if (jsonPathConfiguration.jsonProvider().getClass().getName().contains("JacksonTree" )) {
-                                read0 = jsonPath.read(conv.toJackson(jsonValue), jsonPathConfiguration);
-                            } else {
-                                read0 = jsonPath.read(jsonValue.toString(), jsonPathConfiguration);
-                            }
-                            Iterable<?> read = jsonPathConfiguration.jsonProvider().toIterable(read0);
-                            values = new ArrayList<>();
-                            for (Object object : read) {
-                                values.add(object);
-                            }
-                        }
-                        List<DataCell> cells = new ArrayList<>();
-                        for (Object v : values) {
-                            if (v != null) {
-                                cells.add(new StringCell(v.toString()));
-                            }
-                        }
-                        return CollectionCellFactory.createListCell(cells);
+                        JsonNode value = pointer.path(conv.toJackson(jsonValue));
+                        return JSONCellFactory.create(conv.toJSR353(value));
                     } catch (RuntimeException e) {
                         return new MissingCell(e.getMessage());
                     }
@@ -175,21 +130,21 @@ public class JSONPathProjectionNodeModel extends SingleColumnReplaceOrAddNodeMod
      */
     @Override
     protected DataColumnSpec createOutputSpec(final String outputColName) {
-        return new DataColumnSpecCreator(outputColName, ListCell.getCollectionType(StringCell.TYPE)).createSpec();
+        return new DataColumnSpecCreator(outputColName, JSONCell.TYPE).createSpec();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected JSONPathProjectionSettings createSettings() {
+    protected JSONPointerSettings createSettings() {
         return createJSONPathProjectionSettings();
     }
 
     /**
      * @return
      */
-    static JSONPathProjectionSettings createJSONPathProjectionSettings() {
-        return new JSONPathProjectionSettings();
+    static JSONPointerSettings createJSONPathProjectionSettings() {
+        return new JSONPointerSettings();
     }
 }

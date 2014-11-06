@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./default.png" type="Manipulator" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+<knimeNode icon="./jsonschemacheck.png" type="Manipulator" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
     <name>JSON Schema Validator</name>
     
     <shortDescription>
@@ -7,11 +7,14 @@
     </shortDescription>
     
     <fullDescription>
-        <intro>Validates JSON values based on the specified schema.</intro>
+        <intro><p>Validates JSON values based on the specified <a href="http://json-schema.org/">schema v3 or v4</a>.</p><p>
+        When the value do not satisfy the constraints of the schema, the node will fail with the error message and the row number.</p><p>
+        It uses the <a href="https://github.com/fge/json-schema-validator">fge/json-schema-validator</a> implementation.
+        </p></intro>
         
         
-        <option name="short name of first option (like in the dialog)">description of first option</option>
-        <option name="short name of second option (like in the dialog)">description of second option</option>
+        <option name="JSON column">The JSON column to validate</option>
+        <option name="Schema">The JSON schema used for validation</option>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--
         <tab name="Standard Options">
@@ -25,12 +28,9 @@
     </fullDescription>
     
     <ports>
-        <inPort index="0" name="In-Port name">Description of first input port...</inPort>
+        <inPort index="0" name="table with JSON">A table with JSON column to validate</inPort>
         <!-- possibly more input ports here-->
-        <outPort index="0" name="Out-Port name">Description of first output port...</outPort>
+        <!-- outPort index="0" name="Out-Port name">Description of first output port...</outPort-->
         <!-- possibly more output ports here-->
     </ports>    
-    <!-- views>
-        <view index="0" name="name of first view">Description of first view...</view>
-    </views-->
 </knimeNode>

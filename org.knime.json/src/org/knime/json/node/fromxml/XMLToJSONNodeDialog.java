@@ -42,7 +42,7 @@ public class XMLToJSONNodeDialog extends ReplaceOrAddColumnDialog<XMLToJSONSetti
         panel.add(new JLabel("Text body translated to JSON with key: "), gbc);
         gbc.gridx = 1;
         m_textKey = GUIFactory.createTextField("", 22);
-        panel.add(m_textKey);
+        panel.add(m_textKey, gbc);
         gbc.gridy++;
         return gbc.gridy;
     }

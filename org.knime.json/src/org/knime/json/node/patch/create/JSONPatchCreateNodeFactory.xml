@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./default.png" type="Manipulator" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
-    <name>JSON diff</name>
+<knimeNode icon="./jsondiff.png" type="Manipulator" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+    <name>JSON Diff</name>
     
     <shortDescription>
         Creates a patch/diff between two JSON columns.
     </shortDescription>
     
     <fullDescription>
-        <intro>Creates a patch/diff between two JSON columns.</intro>
+        <intro><p>Creates a <a href="http://tools.ietf.org/html/rfc6902">JSON patch</a>/diff between two JSON columns.</p><p>
+        When one of the values in the input column is missing, the result is also a missing value.</p><p>
+        See also the node: <a href="http://www.knime.org/files/node-documentation/org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory.html">JSON Transformer</a>.</p><p>
+        It uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p></intro>
         
         
-        <option name="short name of first option (like in the dialog)">description of first option</option>
-        <option name="short name of second option (like in the dialog)">description of second option</option>
+        <option name="Source (JSON) column">The input JSON column to be the base for the patch</option>
+        <option name="Target (JSON) column">The input JSON column to be the result after the patch</option>
+        <option name="Append new column">When checked, a new column will be appended, else the Source JSON column will be replaced</option>
+        <option name="New column">Name of the new (JSON) column</option>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--
         <tab name="Standard Options">
@@ -25,12 +30,9 @@
     </fullDescription>
     
     <ports>
-        <inPort index="0" name="In-Port name">Description of first input port...</inPort>
+        <inPort index="0" name="table with two JSON columns">A table containing two JSON columns</inPort>
         <!-- possibly more input ports here-->
-        <outPort index="0" name="Out-Port name">Description of first output port...</outPort>
+        <outPort index="0" name="table with JSON diff">Table containing patches from source to target</outPort>
         <!-- possibly more output ports here-->
     </ports>    
-    <!-- views>
-        <view index="0" name="name of first view">Description of first view...</view>
-    </views-->
 </knimeNode>

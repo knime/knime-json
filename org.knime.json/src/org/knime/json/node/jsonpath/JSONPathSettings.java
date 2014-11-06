@@ -46,11 +46,7 @@
  * History
  *   28 Sept 2014 (Gabor): created
  */
-package org.knime.json.node.jsonpath.projection;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+package org.knime.json.node.jsonpath;
 
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
@@ -60,27 +56,21 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.json.node.util.ReplaceOrAddColumnSettings;
 
 /**
- * The settings object for the JSONPathProjection node.
+ * The settings object for the JSONPath node.
  *
  * @author Gabor Bakos
  */
-final class JSONPathProjectionSettings extends ReplaceOrAddColumnSettings {
-    private static final String JSON_PATH = "jsonpath", PATH_TYPE = "path.type";
-
-    static final String JSON_PATH_OPTION = "JsonPath", JSON_POINTER_OPTION = "JSON Pointer";
+final class JSONPathSettings extends ReplaceOrAddColumnSettings {
+    private static final String JSON_PATH = "jsonpath";
 
     private static final String DEFAULT_JSON_PATH = "$..*";
 
-    private String m_jsonPath = DEFAULT_JSON_PATH, m_pathType = pathTypes().get(0);
-
-    static final List<String> pathTypes() {
-        return Collections.unmodifiableList(Arrays.asList(JSON_PATH_OPTION, JSON_POINTER_OPTION));
-    }
+    private String m_jsonPath = DEFAULT_JSON_PATH;
 
     /**
-     * Constructs the {@link JSONPathProjectionSettings} object.
+     * Constructs the {@link JSONPathSettings} object.
      */
-    JSONPathProjectionSettings() {
+    JSONPathSettings() {
         super(JSONValue.class);
     }
 
@@ -99,27 +89,12 @@ final class JSONPathProjectionSettings extends ReplaceOrAddColumnSettings {
     }
 
     /**
-     * @return the pathType
-     */
-    final String getPathType() {
-        return m_pathType;
-    }
-
-    /**
-     * @param pathType the pathType to set
-     */
-    final void setPathType(final String pathType) {
-        this.m_pathType = pathType;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         super.loadSettingsForDialogs(settings, specs);
         m_jsonPath = settings.getString(JSON_PATH, DEFAULT_JSON_PATH);
-        m_pathType = settings.getString(PATH_TYPE, pathTypes().get(0));
     }
 
     /**
@@ -129,10 +104,6 @@ final class JSONPathProjectionSettings extends ReplaceOrAddColumnSettings {
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.loadSettingsFrom(settings);
         m_jsonPath = settings.getString(JSON_PATH);
-        m_pathType = settings.getString(PATH_TYPE);
-        if (!pathTypes().contains(m_pathType)) {
-            throw new InvalidSettingsException("Not supported path selector option: " + m_pathType);
-        }
     }
 
     /**
@@ -142,6 +113,5 @@ final class JSONPathProjectionSettings extends ReplaceOrAddColumnSettings {
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         super.saveSettingsTo(settings);
         settings.addString(JSON_PATH, m_jsonPath);
-        settings.addString(PATH_TYPE, m_pathType);
     }
 }

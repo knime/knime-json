@@ -15,7 +15,7 @@
         <option name="Select with JSON Pointer">Select a part of the read JSON if checked</option>
         <option name="JSON Pointer">The part to select from the input JSON. Using <a href="http://tools.ietf.org/html/rfc6901">JSONPointer</a></option>
         <option name="Fail if pointer not found">If checked, execution will fail if no such part found. If unchecked and not found, the result will be an missing value.</option>
-        <option name="Allow comments in json files"><tt>/*</tt>...<tt>*/</tt> and the line comments <tt>//</tt>, <tt>#</tt> are interpreted as comments and get ignored instead of causing errors when this option is selected</option>
+        <option name="Allow comments in json files">When selected, <tt>/*</tt>...<tt>*/</tt> and the line comments <tt>//</tt>, <tt>#</tt> are interpreted as comments and get ignored instead of causing errors</option>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--
         <tab name="Standard Options">

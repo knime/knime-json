@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./jsonpointer.png" type="Manipulator" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+    <name>JSONPointer</name>
+    
+    <shortDescription>
+        Selects certain values from the a JSON column.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro><p><a href="http://tools.ietf.org/html/rfc6901">JSONPointer</a> can be used to select certain parts from a JSON value.</p><p>
+        When the specified part cannot be found, missing value will be added.</p><p>
+        This node uses the <a href="https://github.com/fge/jackson-coreutils">fge/jackson-coreutils</a> implementation.</p></intro>
+        
+        
+        <option name="JSON column">The JSON column to select the contents from</option>
+        <option name="JSONPointer">The JSONPointer to select</option>
+        <option name="Append new column">When checked, a new column will be appended, else the JSON column will be replaced</option>
+        <option name="New column">Name of the new (JSON) column</option>
+        <!-- possibly more options that can also be grouped by tabs -->
+        <!--
+        <tab name="Standard Options">
+            <option name="short name of first option (like in the dialog)">description of first option</option>
+            <option name="short name of second option (like in the dialog)">description of second option</option>
+        </tab>
+        <tab name="Advanced Options">
+            <option name="short name of first advanced option (like in the dialog)">description of first advanced option</option>
+        </tab>
+        -->
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="table with JSON">A table containing a JSON column</inPort>
+        <!-- possibly more input ports here-->
+        <outPort index="0" name="table with selected JSON">Table containing the pointed parts of JSON column</outPort>
+        <!-- possibly more output ports here-->
+    </ports>    
+    <!-- views>
+        <view index="0" name="name of first view">Description of first view...</view>
+    </views-->
+</knimeNode>

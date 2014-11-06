@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./jsonpath.png" type="Manipulator" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+    <name>JSONPath</name>
+    
+    <shortDescription>
+        Selects certain paths from the selected JSON column.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro><p><a href="http://goessner.net/articles/JsonPath/">JSONPath</a> is a similar to XPath alternative for JSON.</p><p>
+        It has two notations, dot-notation:<tt>$.repository[3].content</tt> and bracket-notation: <tt>$['repository'][3]['content']</tt></p><p>
+        It uses the <a href="https://github.com/jayway/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
+        </intro>
+        
+        <option name="JSON column">The JSON column to select the paths from</option>
+        <option name="JSONPath">The JSONPath to select</option>
+        <option name="Append new column">When checked, a new column will be appended, else the JSON column will be replaced</option>
+        <option name="New column">Name of the new (JSON) column</option>
+        <!-- possibly more options that can also be grouped by tabs -->
+        <!--
+        <tab name="Standard Options">
+            <option name="short name of first option (like in the dialog)">description of first option</option>
+            <option name="short name of second option (like in the dialog)">description of second option</option>
+        </tab>
+        <tab name="Advanced Options">
+            <option name="short name of first advanced option (like in the dialog)">description of first advanced option</option>
+        </tab>
+        -->
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Table with JSON">A table with JSON column</inPort>
+        <!-- possibly more input ports here-->
+        <outPort index="0" name="Table with String list">Table with the found parts as String lists</outPort>
+        <!-- possibly more output ports here-->
+    </ports>    
+</knimeNode>

@@ -231,4 +231,12 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         m_columnName.setText(m_settings.getColumnName());
         m_allowComments.setSelected(m_settings.isAllowComments());
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void onCancel() {
+        super.onCancel();
+    }
 }
