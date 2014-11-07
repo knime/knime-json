@@ -44,24 +44,4 @@
       <AggregationOperator AggregationOperator="org.knime.json.aggregation.JSONPathCollection" deprecated="false"/>
       <AggregationOperator AggregationOperator="org.knime.json.aggregation.JsonPointer" deprecated="false"/>
    </extension>
-   <extension
-         id="json"
-         name="JSON (JavaScript Object Notation)"
-         point="org.knime.base.filehandling.mimetypes">
-         <mimetype
-               name="application/json">
-            <fileextension
-                  name=".json">
-            </fileextension>
-         </mimetype>
-         <!--unofficial smile mime type-->
-         <!--mimetype
-               name="application/x-jackson-smile">
-            <fileextension
-                  name=".smile">
-            </fileextension>
-         </mimetype-->
-         <!--bson seems to have no mime type yet.-->
-   </extension>
-   
 </plugin>
