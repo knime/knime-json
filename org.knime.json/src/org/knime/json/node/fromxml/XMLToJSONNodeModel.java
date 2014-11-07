@@ -3,20 +3,10 @@ package org.knime.json.node.fromxml;
 import java.io.File;
 import java.io.IOException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.dom.DOMSource;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataType;
-import org.knime.core.data.MissingCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.json.JSONCellFactory;
@@ -30,14 +20,10 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.json.internal.Activator;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
+import org.knime.json.util.Xml2Json;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import com.ctc.wstx.osgi.InputFactoryProviderImpl;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 
 /**
  * This is the model implementation of XMLToJSON. Converts XML values to JSON values.
@@ -108,17 +94,17 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
     @Override
     protected CellFactory createCellFactory(final DataColumnSpec output, final int inputIndex,
         final int... otherColumns) {
-        final XmlMapper mapper = new XmlMapper();
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(Activator.getInstance().getJsr353ClassLoader());
-            mapper.registerModule(new JSR353Module());
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
-        mapper.getFactory().setXMLTextElementName(getSettings().getTextKey());
-        final XMLInputFactory fact = new InputFactoryProviderImpl().createInputFactory();
-        mapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
+//        final XmlMapper mapper = new XmlMapper();
+//        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+//        try {
+//            Thread.currentThread().setContextClassLoader(Activator.getInstance().getJsr353ClassLoader());
+//            mapper.registerModule(new JSR353Module());
+//        } finally {
+//            Thread.currentThread().setContextClassLoader(cl);
+//        }
+//        mapper.getFactory().setXMLTextElementName(getSettings().getTextKey());
+//        final XMLInputFactory fact = new InputFactoryProviderImpl().createInputFactory();
+//        mapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
         final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
         return new SingleCellFactory(output) {
 
@@ -131,21 +117,23 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
                     if (cell instanceof XMLValue) {
                         XMLValue xmlValue = (XMLValue)cell;
                         Document doc = xmlValue.getDocument();
-                        try {
-                            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                            Document newRoot = documentBuilder.newDocument();
-                            Element element = newRoot.createElement("fakeroot");
-                            element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
-                            XMLStreamReader reader = fact.createXMLStreamReader(new DOMSource(element));
-                            JsonNode treeNode = mapper.readValue(reader, JsonNode.class);
-                            //TODO find a way to skip serialization to String and parsing to JsonValue.
-                            //reader = fact.createXMLStreamReader(new DOMSource(doc.getDocumentElement()));
-                            return JSONCellFactory.create(conv.toJSR353(treeNode));
-                            /*mapper.readValue(reader, JsonObject.class)*///treeNode.toString(), false);
-                        } catch (IOException | XMLStreamException | FactoryConfigurationError
-                                | ParserConfigurationException e) {
-                            return new MissingCell(e.getMessage());
-                        }
+                        JsonNode json = new Xml2Json().toJson(doc);
+                        return JSONCellFactory.create(conv.toJSR353(json));
+//                        try {
+//                            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+//                            Document newRoot = documentBuilder.newDocument();
+//                            Element element = newRoot.createElement("fakeroot");
+//                            element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
+//                            XMLStreamReader reader = fact.createXMLStreamReader(new DOMSource(element));
+//                            JsonNode treeNode = mapper.readValue(reader, JsonNode.class);
+//                            //TODO find a way to skip serialization to String and parsing to JsonValue.
+//                            //reader = fact.createXMLStreamReader(new DOMSource(doc.getDocumentElement()));
+//                            return JSONCellFactory.create(conv.toJSR353(treeNode));
+//                            /*mapper.readValue(reader, JsonObject.class)*///treeNode.toString(), false);
+//                        } catch (IOException | XMLStreamException | FactoryConfigurationError
+//                                | ParserConfigurationException e) {
+//                            return new MissingCell(e.getMessage());
+//                        }
                     }
                     return DataType.getMissingCell();
                 } finally {

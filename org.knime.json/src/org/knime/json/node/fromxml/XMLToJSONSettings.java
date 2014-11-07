@@ -83,6 +83,7 @@ final class XMLToJSONSettings extends ReplaceOrAddColumnSettings {
     /**
      * @return the texts in xml are saved with this key in jsons
      */
+    @Deprecated
     final String getTextKey() {
         return m_textKey;
     }
@@ -90,6 +91,7 @@ final class XMLToJSONSettings extends ReplaceOrAddColumnSettings {
     /**
      * @param textKey the text key to set for json (text in xml).
      */
+    @Deprecated
     final void setTextKey(final String textKey) {
         this.m_textKey = textKey;
     }

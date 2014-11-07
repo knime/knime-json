@@ -65,8 +65,10 @@ import org.w3c.dom.Element;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
+ * Helper class to convert Jackson {@link JsonNode} to XML {@link Document}s.
  *
  * @author Gabor Bakos
+ * @since 2.11
  */
 public final class Json2Xml {
     /**
