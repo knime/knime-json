@@ -3,10 +3,16 @@ package org.knime.json.node.fromxml;
 import java.io.File;
 import java.io.IOException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataType;
+import org.knime.core.data.MissingCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.json.JSONCellFactory;
@@ -22,6 +28,7 @@ import org.knime.json.internal.Activator;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import org.knime.json.util.Xml2Json;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -117,8 +124,19 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
                     if (cell instanceof XMLValue) {
                         XMLValue xmlValue = (XMLValue)cell;
                         Document doc = xmlValue.getDocument();
-                        JsonNode json = new Xml2Json().toJson(doc);
-                        return JSONCellFactory.create(conv.toJSR353(json));
+                        try {
+                            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                            Document newRoot = documentBuilder.newDocument();
+                            Element element = newRoot.createElement("fakeroot");
+                            element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
+                            newRoot.appendChild(element);
+                            JsonNode json = Xml2Json.proposedSettings().toJson(newRoot);
+                            return JSONCellFactory.create(conv.toJSR353(json));
+                            /*mapper.readValue(reader, JsonObject.class)*///treeNode.toString(), false);
+                        } catch (FactoryConfigurationError
+                                | ParserConfigurationException e) {
+                            return new MissingCell(e.getMessage());
+                        }
 //                        try {
 //                            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 //                            Document newRoot = documentBuilder.newDocument();

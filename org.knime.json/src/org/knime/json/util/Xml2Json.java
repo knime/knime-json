@@ -48,6 +48,13 @@
  */
 package org.knime.json.util;
 
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -57,8 +64,10 @@ import org.w3c.dom.Notation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeCreator;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 /**
  * Helper class to convert XML {@link Document} to Jackson {@link JsonNode}.
@@ -67,22 +76,84 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @since 2.11
  */
 public class Xml2Json {
+    private enum Position {
+        First, Last;
+    }
+
+    private enum GroupingStrategy {
+        /** No grouping is performed. */
+        None,
+        /** Group consecutive array elements with same name to single element. */
+        OnlyIfSafe,
+        /**
+         * Use Object instead of array and resolve ambiguity by appending {@code _ddd} number, fail if that causes
+         * ambiguity.
+         */
+        //usually for text, comment and processing mixed
+            GroupWithNumber,
+            /** Group items with same name together, even if this make the positional information get lost. */
+            GroupWithoutPositionalInformation;
+    }
+
+    /**
+     * Where to put the attributes within the array?
+     */
+    private Position m_attributePosition = Position.First;
+
+    /**
+     * Should we omit the prefix/namespace properties of attributes and make them key/values. If {@code true} (and
+     * collapseSingle is {@code false}): {@code <a ns:a1="x" ns:a2="y"/>} becomes:
+     * <code>{"a":[[{"a1":"x","a2":"y"}]]}</code> If {@code false} (and noNamespaces also {@code false}):
+     * {@code <a ns:a1="x" ns:a2="y"/>} becomes:
+     * <code>{"a":[[{"__namespaceRef__":"ns", "a1":"x"},{"__namespaceRef__":"ns", "a2":"y"}]]}</code>
+     */
+    private boolean m_simpleAttributes = true;
+
+    /**
+     * Omit namespaces from the output.
+     */
+    private boolean m_noNamespaces = false;
+
+    /**
+     * When there are multiple elements with the same name
+     */
+    private GroupingStrategy m_groupingStrategy = GroupingStrategy.None;
+
+    /**
+     * When {@code false}, namespace info looks like a sibling of the real content within the object, when {@code true},
+     * the namespace info is added to the attributes.
+     */
+    private boolean m_treatNamespaceInfoAsAttribute = false;
+
     //attributes are arrays within the array of the content
     @Deprecated
     private String m_attribute = "__attribute__";
+
     private String m_processing = "__processing__";
+
     private String m_comment = "__comment__";
+
     //CDATA is not distinguished from text
     @Deprecated
     private String m_cdata = "__cdata__";
+
     //Text is not distinguished from CDATA
     @Deprecated
     private String m_text = "__text__";
+
     private String m_entity = "__entity__";
+
     private String m_entityRef = "__entityRef__";
+
     private String m_namespace = "__namespace__";
+
     private String m_namespaceRef = "__namespaceRef__";
+
     private String m_notation = "__notation__";
+
+    private String m_attributePrefix = "@";
+
+    private String m_processingPrefix = "?";
 
     /**
      *
@@ -92,6 +163,7 @@ public class Xml2Json {
 
     /**
      * Converts an XML {@link Document} to Jackson {@link JsonNode}.
+     *
      * @param doc The input XML {@link Document}.
      * @return The converted Jackson {@link JsonNode}.
      */
@@ -123,7 +195,9 @@ public class Xml2Json {
             objectNode.set(m_notation, notations);
         }
         Element element = doc.getDocumentElement();
-        process(objectNode, element);
+        if (element != null) {
+            process(objectNode, element);
+        }
         return objectNode;
     }
 
@@ -131,19 +205,252 @@ public class Xml2Json {
      * @param node
      * @param element
      */
-    private void process(final ObjectNode node, final Element element) {
-        String uri = element.getNamespaceURI();
-        if (uri != null) {
-            node.put(m_namespace, uri);
-            String prefix = element.getPrefix();
-            if (prefix != null) {
-                node.put(m_namespaceRef, prefix);
+    private ObjectNode process(final ObjectNode node, final Element element) {
+        if (!m_noNamespaces) {
+            String uri = element.getNamespaceURI();
+            if (uri != null) {
+                node.put(m_namespace, uri);
+                String prefix = element.getPrefix();
+                if (prefix != null) {
+                    node.put(m_namespaceRef, prefix);
+                }
             }
         }
-        ArrayNode arrayNode = node.arrayNode();
-        node.set(element.getNodeName(), arrayNode);
-        processAttributes(arrayNode, element);
-        processChildren(arrayNode, element.getChildNodes());
+        Map<String, JsonNode> group = groupingAllowed(element);
+        if (group != null) {
+            if (m_attributePosition == Position.First) {
+                processAttributes(node, element);
+            }
+            processChildren(node, element.getChildNodes(), group);
+            if (m_attributePosition == Position.Last) {
+                processAttributes(node, element);
+            }
+        } else {
+            ArrayNode arrayNode = node.arrayNode();
+            node.set(element.getNodeName(), arrayNode);
+            if (m_attributePosition == Position.First) {
+                processAttributes(arrayNode, element);
+            }
+            processChildren(arrayNode, element.getChildNodes());
+            if (m_attributePosition == Position.Last) {
+                processAttributes(arrayNode, element);
+            }
+        }
+        return node;
+    }
+
+    /**
+     * @param n
+     * @param childNodes
+     * @param group
+     */
+    private void processChildren(final ObjectNode o, final NodeList childNodes, final Map<String, JsonNode> group) {
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
+            switch (node.getNodeType()) {
+                case Node.CDATA_SECTION_NODE:
+                    put(group, m_cdata, node.getNodeValue(), o);
+                    break;
+                case Node.COMMENT_NODE:
+                    put(group, m_comment, node.getNodeValue(), o);
+                    break;
+                case Node.ENTITY_NODE:
+                    put(group, m_entity, node.getNodeName(), o);
+                    break;
+                case Node.ENTITY_REFERENCE_NODE:
+                    put(group, m_entityRef, node.getNodeName(), o);
+                    break;
+                case Node.PROCESSING_INSTRUCTION_NODE:
+                    if (m_processingPrefix != null) {
+                        put(group, m_processingPrefix + node.getNodeName(), node.getNodeValue(), o);
+                    } else {
+                        ObjectNode proc = o.objectNode();
+                        proc.put(node.getNodeName(), node.getNodeValue());
+                        put(group, m_processing, proc, o);
+                    }
+                    break;
+                case Node.TEXT_NODE:
+                    put(group, m_text, node.getNodeValue(), o);
+                    break;
+                case Node.ELEMENT_NODE:
+                    put(group, node.getNodeName(),
+                        process(o
+                            .objectNode()
+                            , (Element)node)
+                        , o)
+                        ;
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unknown node type: " + node.getNodeType() + "\n" + node);
+            }
+        }
+        if (group.size() == 1) {
+            Entry<String, JsonNode> entry = group.entrySet().iterator().next();
+            if (entry.getValue().get(entry.getKey()) != null && entry.getValue() instanceof ObjectNode) {
+                o.setAll((ObjectNode)entry.getValue());
+                return;
+            }
+        }
+        o.setAll(group);
+    }
+
+    /**
+     * @param group
+     * @param key
+     * @param obj
+     */
+    private void put(final Map<String, JsonNode> group, final String key, final JsonNode obj, final JsonNodeCreator creator) {
+        JsonNode old = group.get(key);
+        if (old == null) {
+            group.put(key, obj);
+        } else if (old instanceof ArrayNode) {
+            ArrayNode array = (ArrayNode)old;
+            array.add(obj);
+        } else {
+            ArrayNode array = creator.arrayNode();
+            array.add(old);
+            array.add(obj);
+            group.put(key, array);
+        }
+    }
+
+    /**
+     * @param group
+     * @param key
+     * @param nodeValue
+     * @param creator
+     */
+    private void put(final Map<String, JsonNode> group, final String key, final String nodeValue, final JsonNodeCreator creator) {
+        JsonNode old = group.get(key);
+        if (old == null) {
+            group.put(key, new TextNode(nodeValue));
+        } else if (old instanceof ArrayNode) {
+            ArrayNode array = (ArrayNode)old;
+            array.add(nodeValue);
+        } else {
+            ArrayNode array = creator.arrayNode();
+            array.add(old);
+            array.add(new TextNode(nodeValue));
+            group.put(key, array);
+        }
+    }
+
+    /**
+     * @param element
+     * @return
+     */
+    private Map<String, JsonNode> groupingAllowed(final Element element) {
+        switch (m_groupingStrategy) {
+            case None:
+                return null;
+            case OnlyIfSafe: {
+                String lastKey = null;
+                Set<String> keys = new LinkedHashSet<>();
+                if (m_attributePosition == Position.First) {
+                    Set<? extends String> attributeKeys = attributeKeys(element, keys);
+                    if (attributeKeys == null) {
+                        return null;
+                    }
+                    keys.addAll(attributeKeys);
+                }
+                for (int i = 0; i < element.getChildNodes().getLength(); ++i) {
+                    Node node = element.getChildNodes().item(i);
+                    String key;
+                    switch (node.getNodeType()) {
+                        case Node.CDATA_SECTION_NODE:
+                            key = m_cdata;
+                            break;
+                        case Node.TEXT_NODE:
+                            key = m_text;
+                            break;
+                        case Node.COMMENT_NODE:
+                            key = m_comment;
+                            break;
+                        case Node.NOTATION_NODE:
+                            key = m_notation;
+                            break;
+                        case Node.PROCESSING_INSTRUCTION_NODE:
+                            key = m_processingPrefix == null ? m_processing : m_processingPrefix + node.getNodeName();
+                            break;
+                        case Node.ENTITY_NODE:
+                            key = m_entity;
+                            break;
+                        case Node.ENTITY_REFERENCE_NODE:
+                            key = m_entityRef;
+                            break;
+                        case Node.ELEMENT_NODE:
+                            key = node.getNodeName();
+                            break;
+                        default:
+                            throw new IllegalStateException("Unknown type: " + node.getNodeType() + "\n" + node);
+                    }
+                    if (lastKey == null) {
+                        lastKey = key;
+                    }
+                    if (!keys.add(key) && lastKey != key) {
+                        return null;
+                    }
+                    lastKey = key;
+                }
+                if (m_attributePosition == Position.Last) {
+                    Set<? extends String> attributeKeys = attributeKeys(element, keys);
+                    if (attributeKeys == null) {
+                        return null;
+                    }
+                    keys.addAll(attributeKeys);
+                }
+                keys.removeAll(attributeKeys(element, new HashSet<String>()));
+                Map<String, JsonNode> ret = new LinkedHashMap<>();
+                for (String string : keys) {
+                    ret.put(string, null);
+                }
+                return ret;
+            }
+            case GroupWithoutPositionalInformation: {
+                Map<String, JsonNode> ret = new LinkedHashMap<>();
+                return ret;
+            }
+            case GroupWithNumber: {
+                Map<String, JsonNode> ret = new LinkedHashMap<>();
+                return ret;
+            }
+            default:
+                throw new UnsupportedOperationException("Not supported grouping strategy: " + m_groupingStrategy);
+        }
+    }
+
+    /**
+     * @param element
+     * @param keys
+     * @return
+     */
+    private Set<? extends String> attributeKeys(final Element element, final Set<String> keys) {
+        Set<String> ret = new LinkedHashSet<>();
+        if (m_treatNamespaceInfoAsAttribute && !m_noNamespaces) {
+            String namespace = element.getNamespaceURI();
+            String prefix = element.getPrefix();
+            if (namespace != null) {
+                ret.add(m_namespace);
+                if (prefix != null) {
+                    ret.add(m_namespaceRef);
+                }
+            }
+        }
+        String prefix;
+        if ((m_simpleAttributes || m_noNamespaces) && m_attributePrefix != null) {
+            prefix = m_attributePrefix;
+        } else {
+            prefix = "";
+        }
+        NamedNodeMap attributes = element.getAttributes();
+        for (int i = 0; i < attributes.getLength(); ++i) {
+            String name = prefix + attributes.item(i).getNodeName();
+            ret.add(name);
+            if (keys.contains(name)) {
+                return null;
+            }
+        }
+        return ret;
     }
 
     /**
@@ -157,33 +464,37 @@ public class Xml2Json {
             if (node.getNodeType() == Node.CDATA_SECTION_NODE || node.getNodeType() == Node.TEXT_NODE) {
                 rootNode.add(node.getTextContent());
             } else {
-            o =  rootNode.addObject();
-            switch (node.getNodeType()) {
-                case Node.CDATA_SECTION_NODE:
-                    throw new IllegalStateException("Should be handled in the if case!");
-                    //o.put(m_cdata, node.getNodeValue());
-                case Node.COMMENT_NODE:
-                    o.put(m_comment, node.getNodeValue());
-                    break;
-                case Node.ENTITY_NODE:
-                    o.put(m_entity, node.getNodeName());
-                    break;
-                case Node.ENTITY_REFERENCE_NODE:
-                    o.put(m_entityRef, node.getNodeName());
-                    break;
-                case Node.PROCESSING_INSTRUCTION_NODE:
-                    o.put(m_processing, node.getNodeName());
-                    break;
-                case Node.TEXT_NODE:
-                    throw new IllegalStateException("Should be handled in the if case!");
-                case Node.ELEMENT_NODE:
-                    //ObjectNode child = o.objectNode();
-                    process(o, (Element)node);
-                    //o.set(node.getNodeName(), child);
-                    break;
+                o = rootNode.addObject();
+                switch (node.getNodeType()) {
+                    case Node.CDATA_SECTION_NODE:
+                        throw new IllegalStateException("Should be handled in the if case!");
+                    case Node.COMMENT_NODE:
+                        o.put(m_comment, node.getNodeValue());
+                        break;
+                    case Node.ENTITY_NODE:
+                        o.put(m_entity, node.getNodeName());
+                        break;
+                    case Node.ENTITY_REFERENCE_NODE:
+                        o.put(m_entityRef, node.getNodeName());
+                        break;
+                    case Node.PROCESSING_INSTRUCTION_NODE:
+                        if (m_processingPrefix != null) {
+                            o.put(m_processingPrefix + node.getNodeName(), node.getNodeValue());
+                        } else {
+                            ObjectNode proc = o.objectNode();
+                            proc.put(node.getNodeName(), node.getNodeValue());
+                            o.set(m_processing, proc);
+                        }
+                        break;
+                    case Node.TEXT_NODE:
+                        throw new IllegalStateException("Should be handled in the if case!");
+                    case Node.ELEMENT_NODE:
+                        o.set(node.getNodeName(), process(o.objectNode(), (Element)node));
+                        break;
                     default:
-                        throw new UnsupportedOperationException("Unknown node type: " + node.getNodeType() + "\n" + node);
-            }
+                        throw new UnsupportedOperationException("Unknown node type: " + node.getNodeType() + "\n"
+                            + node);
+                }
             }
         }
     }
@@ -195,22 +506,89 @@ public class Xml2Json {
     private void processAttributes(final ArrayNode node, final Element element) {
         NamedNodeMap attributes = element.getAttributes();
         if (attributes.getLength() > 0) {
-            //arrayNode is necessary because of namespaces and prefixes
-            ArrayNode arrayNode = node.arrayNode();
-            node.add(arrayNode);
-            for (int i = 0; i < attributes.getLength(); ++i) {
-                Node attr = attributes.item(i);
-                String namespace = attr.getNamespaceURI();
-                String prefix = attr.getPrefix();
-                ObjectNode object = arrayNode.addObject();
-                if (namespace != null) {
-                    object.put(m_namespace, namespace);
-                    if (prefix != null) {
-                        object.put(m_namespaceRef, prefix);
-                    }
+            if (m_simpleAttributes || m_noNamespaces) {
+                ObjectNode objectNode = node.objectNode();
+                node.add(objectNode);
+                for (int i = 0; i < attributes.getLength(); ++i) {
+                    Node attr = attributes.item(i);
+                    objectNode.put(attr.getNodeName(), attr.getNodeValue());
                 }
-                object.put(attr.getNodeName(), attr.getNodeValue());
+            } else {
+                //arrayNode is necessary because of namespaces and prefixes
+                ArrayNode arrayNode = node.arrayNode();
+                node.add(arrayNode);
+                for (int i = 0; i < attributes.getLength(); ++i) {
+                    Node attr = attributes.item(i);
+                    ObjectNode object = arrayNode.addObject();
+                    String namespace = attr.getNamespaceURI();
+                    String prefix = attr.getPrefix();
+                    if (namespace != null) {
+                        object.put(m_namespace, namespace);
+                        if (prefix != null) {
+                            object.put(m_namespaceRef, prefix);
+                        }
+                    }
+                    object.put(attr.getNodeName(), attr.getNodeValue());
+                }
             }
         }
+    }
+
+    /**
+     * @param node
+     * @param element
+     */
+    private void processAttributes(final ObjectNode node, final Element element) {
+        NamedNodeMap attributes = element.getAttributes();
+        if (attributes.getLength() > 0) {
+            if (m_simpleAttributes || m_noNamespaces) {
+                for (int i = 0; i < attributes.getLength(); ++i) {
+                    Node attr = attributes.item(i);
+                    node.put(m_attributePrefix + attr.getNodeName(), attr.getNodeValue());
+                }
+            } else {
+                //arrayNode is necessary because of namespaces and prefixes
+                ArrayNode arrayNode = node.arrayNode();
+                node.set(m_attribute, arrayNode);
+                for (int i = 0; i < attributes.getLength(); ++i) {
+                    Node attr = attributes.item(i);
+                    ObjectNode object = arrayNode.addObject();
+                    String namespace = attr.getNamespaceURI();
+                    String prefix = attr.getPrefix();
+                    if (namespace != null) {
+                        object.put(m_namespace, namespace);
+                        if (prefix != null) {
+                            object.put(m_namespaceRef, prefix);
+                        }
+                    }
+                    object.put(attr.getNodeName(), attr.getNodeValue());
+                }
+            }
+        }
+    }
+
+    /**
+     * @param simpleAttributes the simpleAttributes to set
+     */
+    public void setSimpleAttributes(final boolean simpleAttributes) {
+        this.m_simpleAttributes = simpleAttributes;
+    }
+    public static Xml2Json proposedSettings() {
+        Xml2Json ret = new Xml2Json();
+        ret.m_attributePrefix = "@";
+        ret.m_attributePosition = Position.First;
+        ret.m_cdata = "#cdata-section";
+        ret.m_comment = "#comment";
+        ret.m_entity = null;
+        ret.m_entityRef = null;
+        ret.m_groupingStrategy = GroupingStrategy.OnlyIfSafe;
+        //ret.m_namespace =
+        //ret.m_namespaceRef =
+        ret.m_noNamespaces = true;
+        ret.m_processingPrefix = "?";
+        ret.m_simpleAttributes = true;
+        ret.m_text = "#text";
+        ret.m_treatNamespaceInfoAsAttribute = true;
+        return ret;
     }
 }
