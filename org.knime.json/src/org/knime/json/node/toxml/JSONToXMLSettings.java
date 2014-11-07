@@ -62,16 +62,10 @@ import org.knime.json.node.util.ReplaceOrAddColumnSettings;
  */
 final class JSONToXMLSettings extends ReplaceOrAddColumnSettings {
     //Further options would be:
-    //Write xml declaration (currently: always yes)
-    //write xml 1.1 header (currently: always yes)
-    /** The config key for the create arrays option. */
-    static final String CREATE_ARRAYS = "create.arrays";
-
-    /** By default do not create arrays. */
-    static final boolean DEFAULT_CREATE_ARRAYS = false;
-
-    private boolean m_createArrays = DEFAULT_CREATE_ARRAYS;
-
+    //Write xml declaration (currently: always false)
+    //write xml 1.1 header (currently: always false)
+    //name of the different elements
+    //Option to collapse root object if it has a single key/value content.
     /**
      * Constructs the object.
      */
@@ -84,7 +78,6 @@ final class JSONToXMLSettings extends ReplaceOrAddColumnSettings {
      */
     @Override
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
-        m_createArrays = settings.getBoolean(CREATE_ARRAYS, DEFAULT_CREATE_ARRAYS);
         super.loadSettingsForDialogs(settings, specs);
     }
 
@@ -93,7 +86,6 @@ final class JSONToXMLSettings extends ReplaceOrAddColumnSettings {
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_createArrays = settings.getBoolean(CREATE_ARRAYS);
         super.loadSettingsFrom(settings);
     }
 
@@ -103,21 +95,5 @@ final class JSONToXMLSettings extends ReplaceOrAddColumnSettings {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         super.saveSettingsTo(settings);
-        settings.addBoolean(CREATE_ARRAYS, m_createArrays);
-    }
-
-    /**
-     * @return the createArrays (If the input contains array JSON values as the root object, that cannot be translated
-     *         to XML, so an array/list will be created always; else it will fail for those cases.)
-     */
-    final boolean isCreateArrays() {
-        return m_createArrays;
-    }
-
-    /**
-     * @param createArrays the createArrays to set
-     */
-    final void setCreateArrays(final boolean createArrays) {
-        this.m_createArrays = createArrays;
     }
 }

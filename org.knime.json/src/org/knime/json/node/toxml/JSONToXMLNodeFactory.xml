@@ -15,7 +15,6 @@
         
         
         <option name="JSON column">The column containing JSON values</option>
-        <option name="Arrays in the result">When checked, the node will create XML collections regardless of its input, else it will fail if there are more than one values/objects in the JSON cell</option>
         <option name="Append new column">When checked, a new column will be appended, else the JSON column will be replaced</option>
         <option name="New column">Name of the new (XML) column</option>
         <!-- possibly more options that can also be grouped by tabs -->
