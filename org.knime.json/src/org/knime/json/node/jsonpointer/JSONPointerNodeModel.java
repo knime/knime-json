@@ -2,6 +2,8 @@ package org.knime.json.node.jsonpointer;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
 
 import javax.json.JsonValue;
 
@@ -13,16 +15,22 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.json.JSONCell;
+import org.knime.core.data.date.DateAndTimeCell;
+import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.json.internal.Activator;
+import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,6 +43,7 @@ import com.github.fge.jackson.jsonpointer.JsonPointerException;
  * @author Gabor Bakos
  */
 public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPointerSettings> {
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONPointerNodeModel.class);
     /**
      * Constructor for the node model.
      */
@@ -105,6 +114,7 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
         } catch (JsonPointerException e) {
             throw new IllegalStateException("Invalid pointer: " + e.getMessage(), e);
         }
+        final OutputType returnType = getSettings().getReturnType();
         return new SingleCellFactory(output) {
 
             @Override
@@ -115,8 +125,26 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                     JsonValue jsonValue = jsonCell.getJsonValue();
                     try {
                         JsonNode value = pointer.path(conv.toJackson(jsonValue));
-                        return JSONCellFactory.create(conv.toJSR353(value));
-                    } catch (RuntimeException e) {
+                        if (value.isMissingNode()) {
+                            return DataType.getMissingCell();
+                        }
+                        switch (returnType) {
+                            case Bool:
+                                return BooleanCell.get(value.asBoolean());
+                            case Int:
+                                return new IntCell(value.asInt());
+                            case DateTime:
+                                return new DateAndTimeCell(DateFormat.getInstance().parse(value.asText()).getTime(), getSettings().isHasDate(), getSettings().isHasTime(), getSettings().isHasMillis());
+                            case Json:
+                                return JSONCellFactory.create(conv.toJSR353(value));
+                            case Real:
+                                return new DoubleCell(value.asDouble());
+                            case String:
+                                return new StringCell(value.toString());
+                            default:
+                                throw new UnsupportedOperationException("Not supported return type: " + returnType);
+                        }
+                    } catch (ParseException | RuntimeException e) {
                         return new MissingCell(e.getMessage());
                     }
                 }
@@ -130,7 +158,7 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
      */
     @Override
     protected DataColumnSpec createOutputSpec(final String outputColName) {
-        return new DataColumnSpecCreator(outputColName, JSONCell.TYPE).createSpec();
+        return new DataColumnSpecCreator(outputColName, getSettings().getReturnType().getDataType()).createSpec();
     }
 
     /**
@@ -145,6 +173,6 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
      * @return
      */
     static JSONPointerSettings createJSONPathProjectionSettings() {
-        return new JSONPointerSettings();
+        return new JSONPointerSettings(LOGGER);
     }
 }

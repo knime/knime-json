@@ -12,13 +12,28 @@
         It uses the <a href="https://github.com/jayway/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
         </intro>
         
+        <tab name="Settings">
         <option name="JSON column">The JSON column to select the paths from</option>
         <option name="JSONPath">The JSONPath to select</option>
+        <option name="Result type">The expected result type. (If something is found at that path and cannot convert to the expected type missing value is returned. If not found, missing value will be returned. You can set the date details you want to keep.)</option>
+        <option name="Result is list">When checked the result column will have a collection type.</option>
+        <option name="Strategy for multiple results">Specify what to do when single result should be returned, but multiple found:
+        <ul>
+        <li><b>Fail</b> Execution will stop.</li>
+        <li><b>Missing</b> Result is a missing value.</li>
+        <li><b>First</b> Result is the first element.</li>
+        <li><b>Last</b> Result is the last element.</li>
+        <li><b>Concatenate</b> Result is the concatenation of the intermediate results (only valid for <i>String</i> and <i>JSON</i> result types).</li>
+        </ul>
+        </option>
         <option name="Remove source column">When checked, the source column will be removed</option>
         <option name="New column">Name of the new (JSON) column</option>
+        </tab>
+        <tab name="Advanced">
+        <option name="Return the paths instead of values">When checked, the paths found for the JSONPath will be returned (as <i>String</i>s) as a list for each row, not the values there.</option>
+        </tab>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--
-        <tab name="Standard Options">
             <option name="short name of first option (like in the dialog)">description of first option</option>
             <option name="short name of second option (like in the dialog)">description of second option</option>
         </tab>
@@ -31,7 +46,7 @@
     <ports>
         <inPort index="0" name="Table with JSON">A table with JSON column</inPort>
         <!-- possibly more input ports here-->
-        <outPort index="0" name="Table with String list">Table with the found parts as String lists</outPort>
+        <outPort index="0" name="Table with String list">Table with the found parts</outPort>
         <!-- possibly more output ports here-->
     </ports>    
 </knimeNode>

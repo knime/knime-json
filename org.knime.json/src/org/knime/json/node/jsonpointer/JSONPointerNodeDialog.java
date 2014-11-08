@@ -7,28 +7,31 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.json.node.util.GUIFactory;
-import org.knime.json.node.util.ReplaceOrAddColumnDialog;
+import org.knime.json.node.util.PathOrPointerDialog;
+
+import com.github.fge.jackson.jsonpointer.JsonPointer;
+import com.github.fge.jackson.jsonpointer.JsonPointerException;
 
 /**
  * <code>NodeDialog</code> for the "JSONPointer" Node. Selects certain pointers from the selected JSON column.
  *
  * @author Gabor Bakos
  */
-public class JSONPointerNodeDialog extends ReplaceOrAddColumnDialog<JSONPointerSettings> {
-    private JTextField m_path;
+public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettings> {
+    //TODO error message on typing
+    private JTextField m_pointer;
 
     /**
      * New pane for configuring the JSONPointer node.
      */
     protected JSONPointerNodeDialog() {
-        super(JSONPointerNodeModel.createJSONPathProjectionSettings(), "JSON column", JSONValue.class);
+        super(JSONPointerNodeModel.createJSONPathProjectionSettings());
     }
 
     /**
@@ -42,10 +45,10 @@ public class JSONPointerNodeDialog extends ReplaceOrAddColumnDialog<JSONPointerS
         gbc.gridx = 0;
         panel.add(new JLabel("JSONPointer:"), gbc);
         gbc.gridx = 1;
-        m_path = GUIFactory.createTextField("", 33);
-        panel.add(m_path, gbc);
+        m_pointer = GUIFactory.createTextField("", 33);
+        panel.add(m_pointer, gbc);
         gbc.gridy++;
-        return gbc.gridy;
+        return addOutputTypePanel(panel, gbc.gridy);
     }
 
     /**
@@ -55,7 +58,7 @@ public class JSONPointerNodeDialog extends ReplaceOrAddColumnDialog<JSONPointerS
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
         super.loadSettingsFrom(settings, specs);
-        m_path.setText(getSettings().getJsonPointer());
+        m_pointer.setText(getSettings().getJsonPointer());
     }
 
     /**
@@ -63,7 +66,12 @@ public class JSONPointerNodeDialog extends ReplaceOrAddColumnDialog<JSONPointerS
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        getSettings().setJsonPath(m_path.getText());
+        try {
+            new JsonPointer(m_pointer.getText());
+        } catch (RuntimeException | JsonPointerException e) {
+            throw new InvalidSettingsException("Wrong pointer: " + m_pointer.getText() + "\n" + e.getMessage(), e);
+        }
+        getSettings().setJsonPath(m_pointer.getText());
         super.saveSettingsTo(settings);
     }
 }

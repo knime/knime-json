@@ -48,31 +48,98 @@
  */
 package org.knime.json.node.jsonpath;
 
-import org.knime.core.data.json.JSONValue;
+import java.util.EnumSet;
+
+import org.knime.core.data.StringValue;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.ReplaceOrAddColumnSettings;
+import org.knime.json.node.util.OutputType;
+import org.knime.json.node.util.PathOrPointerSettings;
 
 /**
  * The settings object for the JSONPath node.
  *
  * @author Gabor Bakos
  */
-final class JSONPathSettings extends ReplaceOrAddColumnSettings {
+final class JSONPathSettings extends PathOrPointerSettings {
     private static final String JSON_PATH = "jsonpath";
 
     private static final String DEFAULT_JSON_PATH = "$..*";
 
     private String m_jsonPath = DEFAULT_JSON_PATH;
 
+    private static final String RESULT_IS_LIST = "result.is.list";
+
+    private static final boolean DEFAULT_RESULT_IS_LIST = true;
+
+    private boolean m_resultIsList = DEFAULT_RESULT_IS_LIST;
+
+    private static final String RETURN_PATHS = "return.paths.instead.of.values";
+
+    private static final boolean DEFAULT_RETURN_PATHS = false;
+
+    private boolean m_returnPaths = DEFAULT_RETURN_PATHS;
+
+    /** Options to do if there are multiple results, but we expected a single. */
+    static enum OnMultipleResults implements StringValue {
+        Fail, Missing, First, Last, Concatenate;
+
+        public boolean supportsConcatenate(final OutputType type) {
+            return this == Concatenate && (type == OutputType.Json || type == OutputType.String);
+        }
+
+        public EnumSet<OutputType> supportedOutputTypes() {
+            switch (this) {
+                case Concatenate:
+                    return EnumSet.of(OutputType.String, OutputType.Json);
+                case Fail://intentional fall through
+                case First://intentional fall through
+                case Last://intentional fall through
+                case Missing:
+                    return EnumSet.allOf(OutputType.class);
+                default:
+                    throw new UnsupportedOperationException("Unknown type: " + this);
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getStringValue() {
+            switch (this) {
+                case Fail:
+                    return "Fail on multiple values";
+                case First:
+                    return "Select the first value";
+                case Last:
+                    return "Select the last value";
+                case Missing:
+                    return "Provide missing value";
+                case Concatenate:
+                    return "Concatenate the results";
+                default:
+                    throw new UnsupportedOperationException("Unknown multiple result strategy: " + this);
+            }
+        }
+    }
+
+    private static final String ON_MULTIPLE_RESULTS = "on.multiple.results";
+
+    private static final OnMultipleResults DEFAULT_ON_MULTIPLE_RESULTS = OnMultipleResults.Missing;
+
+    private OnMultipleResults m_onMultipleResults = DEFAULT_ON_MULTIPLE_RESULTS;
+
     /**
      * Constructs the {@link JSONPathSettings} object.
+     *
+     * @param logger The logger to log warnings and errors.
      */
-    JSONPathSettings() {
-        super(JSONValue.class);
-        setRemoveInputColumn(false);
+    JSONPathSettings(final NodeLogger logger) {
+        super(logger);
     }
 
     /**
@@ -90,12 +157,63 @@ final class JSONPathSettings extends ReplaceOrAddColumnSettings {
     }
 
     /**
+     * @return the resultIsList
+     */
+    final boolean isResultIsList() {
+        return m_resultIsList;
+    }
+
+    /**
+     * @param resultIsList the resultIsList to set
+     */
+    final void setResultIsList(final boolean resultIsList) {
+        this.m_resultIsList = resultIsList;
+    }
+
+    /**
+     * @return the returnPaths
+     */
+    final boolean isReturnPaths() {
+        return m_returnPaths;
+    }
+
+    /**
+     * @param returnPaths the returnPaths to set
+     */
+    final void setReturnPaths(final boolean returnPaths) {
+        this.m_returnPaths = returnPaths;
+    }
+
+    /**
+     * @return the onMultipleResults
+     */
+    final OnMultipleResults getOnMultipleResults() {
+        return m_onMultipleResults;
+    }
+
+    /**
+     * @param onMultipleResults the onMultipleResults to set
+     */
+    final void setOnMultipleResults(final OnMultipleResults onMultipleResults) {
+        this.m_onMultipleResults = onMultipleResults;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         super.loadSettingsForDialogs(settings, specs);
         m_jsonPath = settings.getString(JSON_PATH, DEFAULT_JSON_PATH);
+        m_resultIsList = settings.getBoolean(RESULT_IS_LIST, DEFAULT_RESULT_IS_LIST);
+        m_returnPaths = settings.getBoolean(RETURN_PATHS, DEFAULT_RETURN_PATHS);
+        try {
+            m_onMultipleResults =
+                toOnMultipleResults(settings.getString(ON_MULTIPLE_RESULTS, DEFAULT_ON_MULTIPLE_RESULTS.name()));
+        } catch (InvalidSettingsException e) {
+            getLogger().debug("\nProbably the workflow was saved with a newer version of KNIME.", e);
+            m_onMultipleResults = DEFAULT_ON_MULTIPLE_RESULTS;
+        }
     }
 
     /**
@@ -105,6 +223,9 @@ final class JSONPathSettings extends ReplaceOrAddColumnSettings {
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.loadSettingsFrom(settings);
         m_jsonPath = settings.getString(JSON_PATH);
+        m_resultIsList = settings.getBoolean(RESULT_IS_LIST);
+        m_returnPaths = settings.getBoolean(RETURN_PATHS);
+        m_onMultipleResults = toOnMultipleResults(settings.getString(ON_MULTIPLE_RESULTS));
     }
 
     /**
@@ -114,5 +235,21 @@ final class JSONPathSettings extends ReplaceOrAddColumnSettings {
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         super.saveSettingsTo(settings);
         settings.addString(JSON_PATH, m_jsonPath);
+        settings.addBoolean(RESULT_IS_LIST, m_resultIsList);
+        settings.addBoolean(RETURN_PATHS, m_returnPaths);
+        settings.addString(ON_MULTIPLE_RESULTS, m_onMultipleResults.name());
+    }
+
+    /**
+     * @param onMultipleResultsName An {@link OnMultipleResults#name()}.
+     * @return The {@link OnMultipleResults} value belonging to {@code onMultipleResultsName.}
+     * @throws InvalidSettingsException Invalid {@link OnMultipleResults#name()} or <code>null</code>.
+     */
+    private OnMultipleResults toOnMultipleResults(final String onMultipleResultsName) throws InvalidSettingsException {
+        try {
+            return OnMultipleResults.valueOf(onMultipleResultsName);
+        } catch (RuntimeException e) {
+            throw new InvalidSettingsException("Unknown strategy for multiple results: " + onMultipleResultsName, e);
+        }
     }
 }

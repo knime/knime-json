@@ -47,6 +47,8 @@ import org.knime.json.node.util.ReplaceOrAddColumnSettings;
 public final class JSONWriterNodeModel extends NodeModel {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONWriterNodeModel.class);
 
+    private static final String OUTPUT_LOCATION_FLOW_VAR_NAME = "json.writer.location";
+
     /** The settings for the save. */
     private final JSONWriterNodeSettings m_settings = new JSONWriterNodeSettings();
 
@@ -348,6 +350,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         if (missingCellCount > 0) {
             setWarningMessage("Skipped " + missingCellCount + " rows due " + "to missing values.");
         }
+        pushFlowVariableString(OUTPUT_LOCATION_FLOW_VAR_NAME, m_settings.getOutputLocation());
         return new BufferedDataTable[0];
     }
 

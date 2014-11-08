@@ -44,75 +44,79 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   28 Sept 2014 (Gabor): created
+ *   8 Nov. 2014 (Gabor): created
  */
-package org.knime.json.node.jsonpointer;
+package org.knime.json.node.util;
 
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.PathOrPointerSettings;
+import org.knime.core.data.DataType;
+import org.knime.core.data.StringValue;
+import org.knime.core.data.date.DateAndTimeCell;
+import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
 
 /**
- * The settings object for the JSONPointer node.
+ * Possible output types for JSONPath and JSONPointer. (JSONPath can return multiple values, so there should be an
+ * option to return collections too.)
  *
  * @author Gabor Bakos
  */
-final class JSONPointerSettings extends PathOrPointerSettings {
-    private static final String JSON_POINTER = "jsonpointer";
-
-    private static final String DEFAULT_JSON_POINTER = "";
-
-    private String m_jsonPointer = DEFAULT_JSON_POINTER;
-
-    /**
-     * Constructs the {@link JSONPointerSettings} object.
-     * @param logger The logger to log errors, warnings.
-     */
-    JSONPointerSettings(final NodeLogger logger) {
-        super(logger);
-    }
-
-    /**
-     * @return the jsonPointer
-     */
-    final String getJsonPointer() {
-        return m_jsonPointer;
-    }
-
-    /**
-     * @param jsonPointer the jsonPointer to set
-     */
-    final void setJsonPath(final String jsonPointer) {
-        this.m_jsonPointer = jsonPointer;
-    }
-
+public enum OutputType implements StringValue {
+    /** Logical */
+    Bool,
+    /** Integral */
+    Int,
+    /** Real */
+    Real,
+    /** Time */
+    DateTime,
+    /** Text */
+    String,
+    /** Object */
+    Json;
     /**
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
-        super.loadSettingsForDialogs(settings, specs);
-        m_jsonPointer = settings.getString(JSON_POINTER, DEFAULT_JSON_POINTER);
+    public String getStringValue() {
+        switch (this) {
+            case Bool:
+                return "Boolean (Boolean cell type)";
+            case Int:
+                return "Number (Integer cell type)";
+            case Real:
+                return "Number (Double cell type)";
+            case String:
+                return "String (String cell type)";
+            case Json:
+                return "JSON (JSON cell type)";
+            case DateTime:
+                return "Date (Date-time cell type)";
+            default:
+                throw new IllegalStateException("Unknown enum value: " + this);
+        }
     }
-
     /**
-     * {@inheritDoc}
+     * @return The {@link DataType} to use in KNIME for this kind of output.
      */
-    @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        super.loadSettingsFrom(settings);
-        m_jsonPointer = settings.getString(JSON_POINTER);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) {
-        super.saveSettingsTo(settings);
-        settings.addString(JSON_POINTER, m_jsonPointer);
+    public DataType getDataType() {
+        switch (this) {
+            case Bool:
+                return BooleanCell.TYPE;
+            case DateTime:
+                return DateAndTimeCell.TYPE;
+            case Int:
+                return IntCell.TYPE;
+            case Real:
+                return DoubleCell.TYPE;
+            case String:
+                return StringCell.TYPE;
+            case Json:
+                return JSONCell.TYPE;
+            default:
+                throw new IllegalStateException("Unknown enum value: " + this);
+        }
     }
 }

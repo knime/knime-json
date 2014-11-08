@@ -180,6 +180,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
 
         gbc.gridy++;
         m_allowComments = new JCheckBox("Allow comments in JSON files");
+        m_allowComments.setToolTipText("/*...*/, // or #");
         panel.add(m_allowComments, gbc);
 
         m_selectPart.getModel().addItemListener(new ItemListener() {

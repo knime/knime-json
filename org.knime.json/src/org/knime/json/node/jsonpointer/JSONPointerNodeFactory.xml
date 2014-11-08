@@ -14,6 +14,7 @@
         
         <option name="JSON column">The JSON column to select the contents from</option>
         <option name="JSONPointer">The JSONPointer to select</option>
+        <option name="Result type">The expected result type. (If something is found at that path we try to convert to the expected type and return that value. If not found, missing value will be returned. You can set the date details you want to keep.)</option>
         <option name="Remove source column">When checked, the source column will be removed</option>
         <option name="New column">Name of the new (JSON) column</option>
         <!-- possibly more options that can also be grouped by tabs -->
