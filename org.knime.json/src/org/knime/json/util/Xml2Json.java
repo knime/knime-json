@@ -49,6 +49,7 @@
 package org.knime.json.util;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -284,13 +285,13 @@ public class Xml2Json {
                     throw new UnsupportedOperationException("Unknown node type: " + node.getNodeType() + "\n" + node);
             }
         }
-        if (group.size() == 1) {
-            Entry<String, JsonNode> entry = group.entrySet().iterator().next();
-            if (entry.getValue().get(entry.getKey()) != null && entry.getValue() instanceof ObjectNode) {
-                o.setAll((ObjectNode)entry.getValue());
-                return;
-            }
-        }
+//        if (group.size() == 1) {
+//            Entry<String, JsonNode> entry = group.entrySet().iterator().next();
+//            if (entry.getValue().get(entry.getKey()) != null && entry.getValue() instanceof ObjectNode) {
+//                o.setAll((ObjectNode)entry.getValue());
+//                return;
+//            }
+//        }
         o.setAll(group);
     }
 
@@ -302,6 +303,15 @@ public class Xml2Json {
     private void put(final Map<String, JsonNode> group, final String key, final JsonNode obj, final JsonNodeCreator creator) {
         JsonNode old = group.get(key);
         if (old == null) {
+            if (obj instanceof ObjectNode) {
+                ObjectNode objNode = (ObjectNode)obj;
+                Iterator<Entry<String, JsonNode>> it = objNode.fields();
+                if (it.hasNext() && it.next().getKey().equals(key) && !it.hasNext() && objNode.get(key) instanceof ArrayNode) {
+                    //We have to correct the #processAttributes(ArrayNode, Element) extra key.
+                    group.put(key, objNode.get(key));
+                    return;
+                }
+            }
             group.put(key, obj);
         } else if (old instanceof ArrayNode) {
             ArrayNode array = (ArrayNode)old;
