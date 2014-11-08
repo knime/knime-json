@@ -70,7 +70,7 @@ final class JSONPatchCreateSettings extends ReplaceOrAddColumnSettings {
      */
     JSONPatchCreateSettings() {
         super(JSONValue.class);
-        setAppend(true);
+        setRemoveInputColumn(false);
     }
 
     /**

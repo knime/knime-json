@@ -84,6 +84,7 @@ final class JSONPatchApplySettings extends ReplaceOrAddColumnSettings {
      */
     JSONPatchApplySettings() {
         super(JSONValue.class);
+        setRemoveInputColumn(true);
     }
 
     /**

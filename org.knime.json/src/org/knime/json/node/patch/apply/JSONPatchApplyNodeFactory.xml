@@ -16,7 +16,7 @@
         <option name="JSON column">The column containing JSON values</option>
         <option name="Patch type">Either <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge and patch</a></option>
         <option name="Patch">A JSON of the selected patch type compatible with the JSON values</option>
-        <option name="Append new column">When checked, a new column will be appended, else the JSON column will be replaced</option>
+        <option name="Remove source column">When checked, the source column will be removed</option>
         <option name="New column">Name of the new (JSON) column</option>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--

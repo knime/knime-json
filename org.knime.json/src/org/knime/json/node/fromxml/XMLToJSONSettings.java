@@ -78,6 +78,7 @@ final class XMLToJSONSettings extends ReplaceOrAddColumnSettings {
      */
     XMLToJSONSettings() {
         super(XMLValue.class);
+        setRemoveInputColumn(true);
     }
 
     /**

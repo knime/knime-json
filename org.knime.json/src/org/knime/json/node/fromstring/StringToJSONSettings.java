@@ -70,6 +70,7 @@ final class StringToJSONSettings extends ReplaceOrAddColumnSettings {
      */
     StringToJSONSettings() {
         super(StringValue.class);
+        setRemoveInputColumn(true);
     }
 
     /**

@@ -62,15 +62,18 @@ import org.knime.json.node.util.ReplaceOrAddColumnSettings;
  */
 final class JSONToXMLSettings extends ReplaceOrAddColumnSettings {
     //Further options would be:
-    //Write xml declaration (currently: always false)
+    //Write xml declaration (currently: always true)
     //write xml 1.1 header (currently: always false)
     //name of the different elements
     //Option to collapse root object if it has a single key/value content.
+    //Set namespace of root element
+    //Set the name of the root element
     /**
      * Constructs the object.
      */
     public JSONToXMLSettings() {
         super(JSONValue.class);
+        setRemoveInputColumn(true);
     }
 
     /**

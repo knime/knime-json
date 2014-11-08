@@ -77,9 +77,9 @@ import org.knime.core.node.port.PortType;
  */
 public abstract class SingleColumnReplaceOrAddNodeModel<S extends ReplaceOrAddColumnSettings> extends NodeModel {
     /**
-     * The key for the append or not boolean value ({@code true} means append).
+     * The key for the remove or not the source/input column boolean value ({@code true} means remove).
      */
-    protected static final String APPEND = "append";
+    protected static final String REMOVE_SOURCE = "remove.input.column";
 
     /**
      * The key for the input column.
@@ -256,14 +256,12 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends ReplaceOrAddCo
             newColumnName = input;
         }
         String outputColName =
-            m_settings.isAppend() ? DataTableSpec.getUniqueColumnName(inSpecs, newColumnName) : m_settings
-                .getInputColumnName();
+            DataTableSpec.getUniqueColumnName(inSpecs, newColumnName);
         DataColumnSpec output = createOutputSpec(outputColName);
         CellFactory factory = createCellFactory(output, inputIndex, otherIndices);
-        if (m_settings.isAppend()) {
             ret.append(factory);
-        } else {
-            ret.replace(factory, input);
+        if (m_settings.isRemoveInputColumn()) {
+            ret.remove(input);
         }
         return ret;
     }

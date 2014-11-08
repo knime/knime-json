@@ -86,7 +86,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
 
     private JTextField m_newColumnName;
 
-    private JCheckBox m_appendNewColumn;
+    private JCheckBox m_removeSourceColumn;
 
     private int m_inputTable;
 
@@ -148,14 +148,14 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         panel.add(m_inputColumn, gbc);
         gridY = addAfterInputColumn(panel, gbc.gridy + 1);
         gbc.gridy = gridY;
-        m_appendNewColumn = new JCheckBox("Append new column", m_settings.isAppend());
-        m_appendNewColumn.addActionListener(new ActionListener() {
+        m_removeSourceColumn = new JCheckBox("Remove source column", m_settings.isRemoveInputColumn());
+        m_removeSourceColumn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                onAppendNewColumnChanged(m_appendNewColumn);
+                onRemoveSourceColumnChanged(m_removeSourceColumn);
             }
         });
-        panel.add(m_appendNewColumn, gbc);
+        panel.add(m_removeSourceColumn, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 0;
@@ -205,20 +205,21 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
             }
         };
         m_newColumnName.getDocument().addDocumentListener(docListener);
-        m_appendNewColumn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                m_newColumnName.setEnabled(m_appendNewColumn.isSelected());
-                if (m_appendNewColumn.isSelected()) {
-                    onNewColumnTextChanged(m_newColumnName);
-                }
-                docListener.changedUpdate(null);
-            }
-        });
+//        m_removeSourceColumn.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(final ActionEvent e) {
+//                m_newColumnName.setEnabled(m_removeSourceColumn.isSelected());
+//                if (m_removeSourceColumn.isSelected()) {
+//                    onNewColumnTextChanged(m_newColumnName);
+//                }
+//                docListener.changedUpdate(null);
+//            }
+//        });
         panel.add(m_newColumnName, gbc);
         gbc.gridy++;
         afterNewColumnName(panel, gbc.gridy);
-        m_newColumnName.setEnabled(m_appendNewColumn.isSelected());
+//        m_newColumnName.setEnabled(m_removeSourceColumn.isSelected());
+        docListener.changedUpdate(null);
     }
 
     /**
@@ -275,9 +276,9 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         if (m_inputColumn.getSelectedColumn().isEmpty()) {
             throw new InvalidSettingsException("No input column selected!");
         }
-        m_settings.setAppend(m_appendNewColumn.isSelected());
+        m_settings.setRemoveInputColumn(m_removeSourceColumn.isSelected());
         m_settings.setNewColumnName(m_newColumnName.getText());
-        if (m_appendNewColumn.isSelected() && m_newColumnName.getText().isEmpty()) {
+        if (m_newColumnName.getText().trim().isEmpty()) {
             throw new InvalidSettingsException("No name specified for the new column.");
         }
         m_settings.saveSettingsTo(settings);
@@ -299,7 +300,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         m_settings.loadSettingsForDialogs(settings, specs);
         m_inputColumn.setSelectedColumn(m_settings.getInputColumnName());
         m_inputColumn.update((DataTableSpec)specs[m_inputTable], m_settings.getInputColumnName());
-        m_appendNewColumn.setSelected(m_settings.isAppend());
+        m_removeSourceColumn.setSelected(m_settings.isRemoveInputColumn());
         m_newColumnName.setText(m_settings.getNewColumnName());
         notifyListeners();
     }
@@ -311,7 +312,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         for (ActionListener listener : m_inputColumn.getActionListeners()) {
             listener.actionPerformed(null);
         }
-        for (ActionListener listener : m_appendNewColumn.getActionListeners()) {
+        for (ActionListener listener : m_removeSourceColumn.getActionListeners()) {
             listener.actionPerformed(null);
         }
         for (ActionListener listener : m_newColumnName.getActionListeners()) {
@@ -329,11 +330,11 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
     }
 
     /**
-     * This method gets called when the output changes between append and replace (or the model get loaded).
+     * This method gets called when the output changes between remove or not (or the model get loaded).
      *
-     * @param checkbox The {@link JCheckBox} used to set the append new column.
+     * @param checkbox The {@link JCheckBox} used to set the remove source column.
      */
-    protected void onAppendNewColumnChanged(final JCheckBox checkbox) {
+    protected void onRemoveSourceColumnChanged(final JCheckBox checkbox) {
 
     }
 

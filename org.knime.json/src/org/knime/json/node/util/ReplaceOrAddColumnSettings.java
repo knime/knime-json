@@ -58,7 +58,7 @@ import org.knime.core.node.port.PortObjectSpec;
  * Common node settings to specify whether to replace a single column or add a new one. <br/>
  * <b>Do not use the following keys:</b>
  * <ul>
- * <li>{@value SingleColumnReplaceOrAddNodeModel#APPEND}</li>
+ * <li>{@value SingleColumnReplaceOrAddNodeModel#REMOVE_SOURCE}</li>
  * <li>{@value SingleColumnReplaceOrAddNodeModel#INPUT_COLUMN}</li>
  * <li>{@value SingleColumnReplaceOrAddNodeModel#NEW_COLUMN_NAME}</li>
  * </ul>
@@ -74,7 +74,7 @@ public class ReplaceOrAddColumnSettings {
 
     private String m_newColumnName, m_inputColumnName;
 
-    private boolean m_append;
+    private boolean m_removeInputColumn;
 
     private final Class<? extends DataValue> m_inputColumnType;
 
@@ -115,65 +115,70 @@ public class ReplaceOrAddColumnSettings {
     }
 
     /**
-     * @return the append
+     * @return the removeInputColumn
      */
-    protected final boolean isAppend() {
-        return m_append;
+    protected final boolean isRemoveInputColumn() {
+        return m_removeInputColumn;
     }
 
     /**
-     * @param append the append to set
+     * @param removeInputColumn the removeInputColumn to set
      */
-    protected final void setAppend(final boolean append) {
-        this.m_append = append;
+    protected final void setRemoveInputColumn(final boolean removeInputColumn) {
+        this.m_removeInputColumn = removeInputColumn;
     }
 
     /**
+     * Loads the settings for the node model without defaults assumed.
      *
-     * @param settings
-     * @throws InvalidSettingsException
+     * @param settings The readable {@link NodeSettingsRO}.
+     * @throws InvalidSettingsException Failed to load all settings.
      */
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_inputColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.INPUT_COLUMN);
-        m_append = settings.getBoolean(SingleColumnReplaceOrAddNodeModel.APPEND);
+        m_removeInputColumn = settings.getBoolean(SingleColumnReplaceOrAddNodeModel.REMOVE_SOURCE);
         m_newColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.NEW_COLUMN_NAME);
     }
 
     /**
+     * Checks the settings -preferable before {@link #loadSettingsFrom(NodeSettingsRO)}.
      *
-     * @param settings
-     * @throws InvalidSettingsException
+     * @param settings The readable {@link NodeSettingsRO}.
+     * @throws InvalidSettingsException The settings are not valid or missing.
      */
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         String inputColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.INPUT_COLUMN);
         if (inputColumnName.isEmpty()) {
             throw new InvalidSettingsException("No input column was selected!");
         }
-        boolean append = settings.getBoolean(SingleColumnReplaceOrAddNodeModel.APPEND);
+        settings.getBoolean(SingleColumnReplaceOrAddNodeModel.REMOVE_SOURCE);
         String newColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.NEW_COLUMN_NAME);
-        if (append && newColumnName.isEmpty()) {
+        if (newColumnName.trim().isEmpty()) {
             throw new InvalidSettingsException("No new column name was specified!");
         }
 
     }
 
     /**
+     * Saves the settings to {@code settings}.
      *
-     * @param settings
+     * @param settings A {@link NodeSettingsWO}.
      */
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addString(SingleColumnReplaceOrAddNodeModel.INPUT_COLUMN, m_inputColumnName);
-        settings.addBoolean(SingleColumnReplaceOrAddNodeModel.APPEND, m_append);
+        settings.addBoolean(SingleColumnReplaceOrAddNodeModel.REMOVE_SOURCE, m_removeInputColumn);
         settings.addString(SingleColumnReplaceOrAddNodeModel.NEW_COLUMN_NAME, m_newColumnName);
     }
 
     /**
-     * @param settings
-     * @param specs
+     * Loads settings with defaults -ideal for dialogs, which might be opened first time.
+     *
+     * @param settings The readable {@link NodeSettingsRO}.
+     * @param specs The input port specs.
      */
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         m_inputColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.INPUT_COLUMN, "");
-        m_append = settings.getBoolean(SingleColumnReplaceOrAddNodeModel.APPEND, false);
+        m_removeInputColumn = settings.getBoolean(SingleColumnReplaceOrAddNodeModel.REMOVE_SOURCE, true);
         m_newColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.NEW_COLUMN_NAME, "");
     }
 

@@ -72,6 +72,7 @@ final class JSONPathSettings extends ReplaceOrAddColumnSettings {
      */
     JSONPathSettings() {
         super(JSONValue.class);
+        setRemoveInputColumn(false);
     }
 
     /**

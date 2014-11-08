@@ -72,6 +72,7 @@ final class JSONPointerSettings extends ReplaceOrAddColumnSettings {
      */
     JSONPointerSettings() {
         super(JSONValue.class);
+        setRemoveInputColumn(false);
     }
 
     /**
