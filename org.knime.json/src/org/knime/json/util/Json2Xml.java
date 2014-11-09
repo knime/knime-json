@@ -74,6 +74,41 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @since 2.11
  */
 public final class Json2Xml {
+    /**
+     *
+     */
+    public static final String LIST_NAMESPACE = "http://www.w3.org/2001/XMLSchema/list";
+
+    /**
+     *
+     */
+    public static final String STRING_NAMESPACE = "http://www.w3.org/2001/XMLSchema/string";
+
+    /**
+     *
+     */
+    public static final String NULL_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
+
+    /**
+     *
+     */
+    public static final String INTEGER_NAMESPACE = "http://www.w3.org/2001/XMLSchema/integer";
+
+    /**
+     *
+     */
+    public static final String DECIMAL_NAMESPACE = "http://www.w3.org/2001/XMLSchema/decimal";
+
+    /**
+     *
+     */
+    public static final String BOOLEAN_NAMESPACE = "http://www.w3.org/2001/XMLSchema/boolean";
+
+    /**
+     *
+     */
+    public static final String BINARY_NAMESPACE = "http://www.w3.org/2001/XMLSchema/binary";
+
     private String m_rootName = "root";
 
     private String m_primitiveArrayItem = "item";
@@ -154,43 +189,46 @@ public final class Json2Xml {
         Set<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
         if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
             doc.appendChild(doc.createElement(m_array == null ? m_rootName : m_array + ":" + m_rootName));
-            doc.getDocumentElement().setAttribute("xmlns:" + m_array, "http://www.w3.org/2001/XMLSchema/list");
+            doc.getDocumentElement().setAttribute("xmlns:" + m_array, LIST_NAMESPACE);
+//            if (m_namespace != null) {
+//                doc.getDocumentElement().setAttribute("xmlns", m_namespace);
+//            }
             return doc;
         }
-        doc.appendChild(doc.createElement(m_rootName));
+        doc.appendChild(m_namespace == null ? doc.createElement(m_rootName) : doc.createElementNS(m_namespace, m_rootName));
         doc.setDocumentURI(m_namespace);
+//        if (m_namespace != null) {
+//            doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:", m_namespace);
+//        }
         create(null, null, node, doc.getDocumentElement(), types);
         for (JsonPrimitiveTypes jsonPrimitiveTypes : types) {
             switch (jsonPrimitiveTypes) {
                 case BINARY:
                     doc.getDocumentElement().setAttribute("xmlns:" + m_binary,
-                        "http://www.w3.org/2001/XMLSchema/binary");
+                        BINARY_NAMESPACE);
                     break;
                 case BOOLEAN:
                     doc.getDocumentElement()
-                        .setAttribute("xmlns:" + m_bool, "http://www.w3.org/2001/XMLSchema/boolean");
+                        .setAttribute("xmlns:" + m_bool, BOOLEAN_NAMESPACE);
                     break;
                 case FLOAT:
                     doc.getDocumentElement()
-                        .setAttribute("xmlns:" + m_real, "http://www.w3.org/2001/XMLSchema/decimal");
+                        .setAttribute("xmlns:" + m_real, DECIMAL_NAMESPACE);
                     break;
                 case INT:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_int, "http://www.w3.org/2001/XMLSchema/integer");
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_int, INTEGER_NAMESPACE);
                     break;
                 case NULL:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_null, "http://www.w3.org/2001/XMLSchema");
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_null, NULL_NAMESPACE);
                     break;
                 case TEXT:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_text, "http://www.w3.org/2001/XMLSchema/string");
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_text, STRING_NAMESPACE);
                     break;
 
                 default:
                     break;
             }
         }
-        //        Document ret = documentBuilder.newDocument();
-        //        ret.appendChild(ret.adoptNode(doc.getDocumentElement().getFirstChild()));
-        //        return ret;
         return doc;
     }
 
@@ -280,7 +318,9 @@ public final class Json2Xml {
             } else if (node.isObject()) {
                 elem.appendChild(create(entry.getKey(), objectNode, node, elem, types));
             } else if (node.isArray()) {
-                elem.appendChild(create(null, objectNode, node, elem, types));
+                for (JsonNode jsonNode : node) {
+                    elem.appendChild(create(null, node, jsonNode, elem, types));
+                }
             }
         }
         return elem;
@@ -318,27 +358,29 @@ public final class Json2Xml {
         JsonNode v = entry.getValue();
         if (v.isValueNode()) {
             String val = v.asText();
+            String key = entry.getKey();
+            key = key.replaceAll("[^\\w]", "");
             if (m_looseTypeInfo) {
-                element.setAttribute(entry.getKey(), val);
+                element.setAttribute(key, val);
             } else if (v.isIntegralNumber()) {
                 types.add(JsonPrimitiveTypes.INT);
-                element.setAttribute(m_int + ":" + entry.getKey(), val);
+                element.setAttribute(m_int + ":" + key, val);
             } else if (v.isFloatingPointNumber()) {
                 types.add(JsonPrimitiveTypes.FLOAT);
-                element.setAttribute(m_real + ":" + entry.getKey(), val);
+                element.setAttribute(m_real + ":" + key, val);
             } else if (v.isTextual()) {
                 types.add(JsonPrimitiveTypes.TEXT);
-                element.setAttribute(m_text + ":" + entry.getKey(), val);
+                element.setAttribute(m_text + ":" + key, val);
             } else if (v.isNull()) {
                 types.add(JsonPrimitiveTypes.NULL);
-                element.setAttribute(m_null + ":" + entry.getKey(), "");
+                element.setAttribute(m_null + ":" + key, "");
             } else if (v.isBinary()) {
                 types.add(JsonPrimitiveTypes.BINARY);
                 //TODO should we encode?
-                element.setAttribute(m_binary + ":" + entry.getKey(), val);
+                element.setAttribute(m_binary + ":" + key, val);
             } else if (v.isBoolean()) {
                 types.add(JsonPrimitiveTypes.BOOLEAN);
-                element.setAttribute(m_bool + ":" + entry.getKey(), val);
+                element.setAttribute(m_bool + ":" + key, val);
             } else {
                 assert false : entry;
             }
@@ -469,9 +511,9 @@ public final class Json2Xml {
     }
 
     /**
-     * @param array the array root name to set
+     * @param array the array prefix name to set
      */
-    public final void setArrayRoot(final String array) {
+    public final void setArrayPrefix(final String array) {
         this.m_array = array;
     }
 

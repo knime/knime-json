@@ -100,6 +100,7 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
     protected CellFactory createCellFactory(final DataColumnSpec output, final int inputIndex,
         final int... otherColumns) {
         final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final Json2Xml converter = createConverter();
 
         //final XMLInputFactory fact = new InputFactoryProviderImpl().createInputFactory();
         //mapper.setSerializerProvider(new OutputFactoryProviderImpl().createOutputFactory());
@@ -123,7 +124,7 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
              */
             private DataCell createXmlCell(final TreeNode node) {
                 try {
-                    DataCell ret = XMLCellFactory.create(new Json2Xml().toXml((JsonNode)node));
+                    DataCell ret = XMLCellFactory.create(converter.toXml((JsonNode)node));
                     return ret;
                 } catch (IllegalArgumentException | /*JsonProcessingException |*/ParserConfigurationException
                         | IOException e) {
@@ -131,6 +132,24 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
                 }
             }
         };
+    }
+
+    /**
+     * @return
+     */
+    private Json2Xml createConverter() {
+        Json2Xml ret = new Json2Xml();
+        ret.setArrayPrefix(getSettings().getArray());
+        ret.setBinary(getSettings().getBinary());
+        ret.setBool(getSettings().getBoolean());
+        ret.setInt(getSettings().getInteger());
+        ret.setNamespace(getSettings().isSpecifyNamespace() ? getSettings().getNamespace() : null);
+        ret.setNull(getSettings().getNull());
+        ret.setReal(getSettings().getDecimal());
+        ret.setRootName(getSettings().getRoot());
+        ret.setText(getSettings().getString());
+        ret.setLooseTypeInfo(getSettings().isOmitTypeInfo());
+        return ret;
     }
 
     /**
