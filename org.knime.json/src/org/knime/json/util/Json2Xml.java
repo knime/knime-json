@@ -65,6 +65,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Helper class to convert Jackson {@link JsonNode} to XML {@link Document}s.
@@ -79,14 +80,7 @@ public final class Json2Xml {
 
     private String m_namespace = null;
 
-    private boolean m_collapseToAttributes = false;
-
     private boolean m_looseTypeInfo = false;
-
-    /**
-     *
-     */
-    private String m_object = "Object";
 
     /**
      *
@@ -133,11 +127,19 @@ public final class Json2Xml {
      * Attributes of
      */
     public enum Options {
-        CollapseToAttributes, looseTypeInfo;
+        /**
+         * Collapse the attributes, this is the default behaviour, cannot be changed.
+         */
+        @Deprecated
+        CollapseToAttributes,
+        /**
+         * Loose the type information when we just use text for all types, else we use namespaces.
+         */
+        looseTypeInfo;
     }
 
     /**
-     * Converts a {@link JsonNode} {@code node} to an XML {@link Document}. TODO Exception normalization
+     * Converts a {@link JsonNode} {@code node} to an XML {@link Document}.
      *
      * @param node A Jackson {@link JsonNode}.
      * @return The converted XML {@link Document}.
@@ -145,9 +147,11 @@ public final class Json2Xml {
      * @throws DOMException
      * @throws IOException
      */
+    //TODO Exception normalization
     public Document toXml(final JsonNode node) throws ParserConfigurationException, DOMException, IOException {
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = documentBuilder.newDocument();
+        Set<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
         if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
             doc.appendChild(doc.createElement(m_array == null ? m_rootName : m_array + ":" + m_rootName));
             doc.getDocumentElement().setAttribute("xmlns:" + m_array, "http://www.w3.org/2001/XMLSchema/list");
@@ -155,8 +159,8 @@ public final class Json2Xml {
         }
         doc.appendChild(doc.createElement(m_rootName));
         doc.setDocumentURI(m_namespace);
-        Set<JsonPrimitiveTypes> usedAttributes = create(null, node, doc.getDocumentElement());
-        for (JsonPrimitiveTypes jsonPrimitiveTypes : usedAttributes) {
+        create(null, null, node, doc.getDocumentElement(), types);
+        for (JsonPrimitiveTypes jsonPrimitiveTypes : types) {
             switch (jsonPrimitiveTypes) {
                 case BINARY:
                     doc.getDocumentElement().setAttribute("xmlns:" + m_binary,
@@ -191,152 +195,221 @@ public final class Json2Xml {
     }
 
     /**
-     * @param node
-     * @param element
+     * @param origKey The parent's key that led to this call.
+     * @param parent The parent node.
+     * @param node The current node to convert.
+     * @param parentElement The current element to transform or append attributes/children.
+     * @return The created element.
+     * @throws IOException
+     * @throws DOMException
+     */
+    private Element create(final String origKey, final JsonNode parent, final JsonNode node, final Element parentElement,
+        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        if (node.isMissingNode()) {
+            return parentElement;
+        }
+        Document doc = parentElement.getOwnerDocument();
+        if (origKey == null) {
+            //we are in the root, or in an array
+            assert parent == null || parent.isArray(): parent;
+            if (node.isValueNode()) {
+                Element element = createItem(node, parentElement, types);
+                parentElement.appendChild(element);
+                return element;
+            }
+            if (node.isArray()) {
+                for (JsonNode child : node) {
+                    if (child.isObject() || child.isArray()) {
+                        parentElement.appendChild(createItem(child, doc.createElement(m_primitiveArrayItem), types));
+                    } else {
+                        Element arrayItem = createItem(child, parentElement, types);
+                        parentElement.appendChild(arrayItem);
+                    }
+                }
+                return parentElement;
+            }
+            if (node.isObject()) {
+                if (parent == null) {
+                    //First object
+                    return createObjectWithoutParent((ObjectNode)node, parentElement, types);
+                }
+                //object within array
+                return createItem(node, parentElement, types);
+            }
+                //We already handled the missing case and object.
+                assert false: node;
+            throw new IllegalStateException("Should not reach this! " + node);
+        } else {
+            //We have parent key, we are within an object
+            if (node.isArray()) {
+                for (JsonNode jsonNode : node) {
+                    Element elem = doc.createElement(origKey);
+                    if (jsonNode.isObject()) {
+                        parentElement.appendChild(create(null, node, jsonNode, elem, types));
+                    } else {
+                        parentElement.appendChild(createItem(jsonNode, elem, types));
+                    }
+                }
+                return parentElement;
+            }
+            if (node.isObject()) {
+                Element elem = doc.createElement(origKey);
+                parentElement.appendChild(elem);
+                return createSubObject(elem, (ObjectNode)node, types);
+            }
+            assert false: node;
+            throw new IllegalStateException("Should not reach this! " + node);
+        }
+    }
+
+    /**
+     * @param elem
+     * @param fields
+     * @param types
      * @return
      * @throws IOException
      * @throws DOMException
      */
-    private Set<JsonPrimitiveTypes> create(final String origKey, final JsonNode node, final Element element)
-        throws DOMException, IOException {
-        if (node.isMissingNode()) {
-            return EnumSet.noneOf(JsonPrimitiveTypes.class);
-        }
-        EnumSet<JsonPrimitiveTypes> ret = EnumSet.noneOf(JsonPrimitiveTypes.class);
-        Document doc = element.getOwnerDocument();
-        if (node.isValueNode()) {//We are inside an array, origKey should be null
-            assert origKey == null : origKey;
-            if (node.isBoolean()) {
-                String elementName = elementName(m_bool, ret, JsonPrimitiveTypes.BOOLEAN);
-                element.appendChild(doc.createElement(elementName)).setTextContent(Boolean.toString(node.asBoolean()));
-            } else if (node.isIntegralNumber()) {
-                String elementName = elementName(m_int, ret, JsonPrimitiveTypes.INT);
-                element.appendChild(doc.createElement(elementName)).setTextContent(node.bigIntegerValue().toString());
-            } else if (node.isFloatingPointNumber()) {
-                String elementName = elementName(m_text, ret, JsonPrimitiveTypes.TEXT);
-                element.appendChild(doc.createElement(elementName)).setTextContent(node.decimalValue().toString());
-            } else if (node.isTextual()) {
-                String elementName = elementName(m_text, ret, JsonPrimitiveTypes.TEXT);
-                element.appendChild(doc.createElement(elementName)).setTextContent(node.textValue());
-            } else if (node.isBinary()) {
-                String elementName = elementName(m_binary, ret, JsonPrimitiveTypes.BINARY);
-                element.appendChild(doc.createElement(elementName)).setTextContent(
-                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")));
-            } else if (node.isNull()) {
-                String elementName = elementName(m_null, ret, JsonPrimitiveTypes.NULL);
-                element.appendChild(doc.createElement(elementName));
-            }
-        } else if (node.isArray()) {
-            if (origKey == null) {
-                //            Element array = doc.createElement(m_array);
-                //            element.appendChild(array);
-                for (JsonNode jsonNode : node) {
-                    if (jsonNode.isValueNode()) {
-                        ret.addAll(create(null, jsonNode, element));
-                    } else {
-                        Element item = doc.createElement(m_primitiveArrayItem);
-                        element.appendChild(item);
-                        //                ret.addAll(create(jsonNode, array));
-                        ret.addAll(create(null, jsonNode, item));
-                    }
-                }
-            } else {
-                for (JsonNode jsonNode : node) {
-                    if (jsonNode.isValueNode()) {
-                        ret.addAll(create(null, jsonNode, element));
-                    } else {
-                        Element item = doc.createElement(origKey);
-                        element.appendChild(item);
-                        //                ret.addAll(create(jsonNode, array));
-                        ret.addAll(create(null, jsonNode, item));
-                    }
-                }
-            }
-        } else if (node.isObject()) {
-            if (m_collapseToAttributes) {
-                if (origKey != null) {
-                    Element obj = doc.createElement(origKey);
-                    element.appendChild(obj);
-                    for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-                        Entry<String, JsonNode> entry = it.next();
-                        Element newRoot = doc.createElement(entry.getKey());
-                        obj.appendChild(newRoot);
-                        createValue(entry.getValue(), newRoot);
-                    }
-                } else {
-                    handleCollapsedObject(origKey, node, element, ret);
-                }
-            } else {
-                Element obj = doc.createElement(m_object);
-                element.appendChild(obj);
-                for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-                    Entry<String, JsonNode> entry = it.next();
-                    Element newRoot = doc.createElement(entry.getKey());
-                    obj.appendChild(newRoot);
-                    createValue(entry.getValue(), newRoot);
-                }
+    private Element createSubObject(final Element elem, final ObjectNode objectNode,
+        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        for (Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
+            Entry<String, JsonNode> entry = fields.next();
+            JsonNode node = entry.getValue();
+            if (node.isValueNode()) {
+                addValueAsAttribute(elem, entry, types);
+            } else if (node.isObject()) {
+                elem.appendChild(create(entry.getKey(), objectNode, node, elem, types));
+            } else if (node.isArray()) {
+                elem.appendChild(create(null, objectNode, node, elem, types));
             }
         }
-        return ret;
+        return elem;
     }
 
     /**
      * @param node
      * @param element
-     * @param ret
-     * @param doc
+     * @param types
+     * @return
      * @throws IOException
+     * @throws DOMException
      */
-    private void handleCollapsedObject(final String origKey, final JsonNode node, final Element element,
-        final EnumSet<JsonPrimitiveTypes> ret) throws IOException {
-        Document doc = element.getOwnerDocument();
-        for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+    private Element createObjectWithoutParent(final ObjectNode node, final Element element, final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        for (Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
             Entry<String, JsonNode> entry = it.next();
-            JsonNode v = entry.getValue();
-            if (v.isValueNode()) {
-                String val = v.asText();
-                if (m_looseTypeInfo) {
-                    element.setAttribute(entry.getKey(), val);
-                } else if (v.isIntegralNumber()) {
-                    ret.add(JsonPrimitiveTypes.INT);
-                    element.setAttribute(m_int + ":" + entry.getKey(), val);
-                } else if (v.isFloatingPointNumber()) {
-                    ret.add(JsonPrimitiveTypes.FLOAT);
-                    element.setAttribute(m_real + ":" + entry.getKey(), val);
-                } else if (v.isTextual()) {
-                    ret.add(JsonPrimitiveTypes.TEXT);
-                    element.setAttribute(m_text + ":" + entry.getKey(), val);
-                } else if (v.isNull()) {
-                    ret.add(JsonPrimitiveTypes.NULL);
-                    element.setAttribute(m_null + ":" + entry.getKey(), "");
-                } else if (v.isBinary()) {
-                    ret.add(JsonPrimitiveTypes.BINARY);
-                    element.setAttribute(m_binary + ":" + entry.getKey(), val);
-                } else if (v.isBoolean()) {
-                    ret.add(JsonPrimitiveTypes.BOOLEAN);
-                    element.setAttribute(m_bool + ":" + entry.getKey(), val);
-                } else {
-                    assert false : entry;
-                }
-                //            } else if (v.isArray()) {
-                //                Element newRoot = doc.createElement(m_primitiveArrayItem);
-                //                element.appendChild(newRoot);
-                //                ret.addAll(create(v, newRoot));
+            if (entry.getValue().isValueNode()) {
+                addValueAsAttribute(element, entry, types);
+            } else if (entry.getValue().isObject()) {
+                return create(entry.getKey(), node, entry.getValue(), element, types);
+            } else if (entry.getValue().isArray()) {
+                return create(entry.getKey(), node, entry.getValue(), element, types);
             } else {
-                if (origKey == null) {
-                    if (entry.getValue().isArray()) {
-                        ret.addAll(create(entry.getKey(), entry.getValue(), element));
-                    } else {
-                        Element newRoot = doc.createElement(entry.getKey());
-                        element.appendChild(newRoot);
-                        createValue(v, newRoot);
-                    }
-//                    handleCollapsedObject(entry.getKey(), entry.getValue(), element, ret);
-                } else {
-                    ret.addAll(create(entry.getKey(), v, element));
-                }
+                assert false: entry.getValue();
             }
         }
+        return element;
+    }
+
+    /**
+     * @param element
+     * @param entry
+     */
+    private void addValueAsAttribute(final Element element, final Entry<String, JsonNode> entry, final Set<JsonPrimitiveTypes> types) {
+        JsonNode v = entry.getValue();
+        if (v.isValueNode()) {
+            String val = v.asText();
+            if (m_looseTypeInfo) {
+                element.setAttribute(entry.getKey(), val);
+            } else if (v.isIntegralNumber()) {
+                types.add(JsonPrimitiveTypes.INT);
+                element.setAttribute(m_int + ":" + entry.getKey(), val);
+            } else if (v.isFloatingPointNumber()) {
+                types.add(JsonPrimitiveTypes.FLOAT);
+                element.setAttribute(m_real + ":" + entry.getKey(), val);
+            } else if (v.isTextual()) {
+                types.add(JsonPrimitiveTypes.TEXT);
+                element.setAttribute(m_text + ":" + entry.getKey(), val);
+            } else if (v.isNull()) {
+                types.add(JsonPrimitiveTypes.NULL);
+                element.setAttribute(m_null + ":" + entry.getKey(), "");
+            } else if (v.isBinary()) {
+                types.add(JsonPrimitiveTypes.BINARY);
+                //TODO should we encode?
+                element.setAttribute(m_binary + ":" + entry.getKey(), val);
+            } else if (v.isBoolean()) {
+                types.add(JsonPrimitiveTypes.BOOLEAN);
+                element.setAttribute(m_bool + ":" + entry.getKey(), val);
+            } else {
+                assert false : entry;
+            }
+        } else {
+            assert false: v;
+        }
+    }
+
+    /**
+     * @param node
+     * @param element
+     * @param types
+     * @return
+     * @throws IOException
+     * @throws DOMException
+     */
+    private Element createItem(final JsonNode node, final Element element, final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        Document doc = element.getOwnerDocument();
+        if (node.isValueNode()) {//We are inside an array, origKey should be null
+            if (node.isBoolean()) {
+                return createElementWithContent(m_bool, JsonPrimitiveTypes.BOOLEAN, Boolean.toString(node.asBoolean()), doc, types);
+            }
+            if (node.isIntegralNumber()) {
+                return createElementWithContent(m_int, JsonPrimitiveTypes.INT, node.bigIntegerValue().toString(), doc, types);
+            }
+            if (node.isFloatingPointNumber()) {
+                return createElementWithContent(m_real, JsonPrimitiveTypes.FLOAT, Double.toString(node.asDouble()), doc, types);
+            } else if (node.isTextual()) {
+                return createElementWithContent(m_text, JsonPrimitiveTypes.TEXT, node.textValue(), doc, types);
+            } else if (node.isBinary()) {
+                return createElementWithContent(m_binary, JsonPrimitiveTypes.BINARY,
+                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")), doc, types);
+            } else if (node.isNull()) {
+                return createElementWithContent(m_null, JsonPrimitiveTypes.NULL, "", doc, types);
+            } else {
+                assert false: node;
+            }
+        } else if (node.isArray()) {
+            for (JsonNode item : node) {
+                Element arrayItem = doc.createElement(m_primitiveArrayItem);
+                Element elem = create(null, node, item, arrayItem, types);
+                element.appendChild(elem);
+            }
+            return element;
+        } else if (node.isObject()) {
+            //Element elem = doc.createElement(m_primitiveArrayItem);
+            return createObjectWithoutParent((ObjectNode)node, element, types);
+//            Element arrayItem = doc.createElement(m_primitiveArrayItem);
+//            for (final Iterator<Entry<String, JsonNode>>it = node.fields(); it.hasNext();) {
+//                Entry<String, JsonNode> entry = it.next();
+//                arrayItem.appendChild(create(entry.getKey(), node, entry.getValue(), arrayItem, types));
+//            }
+        }
+        assert false: node;
+        return null;
+    }
+
+    /**
+     * @param prefix
+     * @param type
+     * @param content
+     * @param doc
+     * @param types
+     * @return
+     */
+    private Element createElementWithContent(final String prefix, final JsonPrimitiveTypes type, final String content, final Document doc,
+        final Set<JsonPrimitiveTypes> types) {
+        String elementName = elementName(prefix, types, type);
+        Element elem = doc.createElement(elementName);
+        elem.setTextContent(content);
+        return elem;
     }
 
     /**
@@ -345,73 +418,12 @@ public final class Json2Xml {
      * @param type
      * @return
      */
-    private String
-        elementName(final String prefix, final EnumSet<JsonPrimitiveTypes> ret, final JsonPrimitiveTypes type) {
+    private String elementName(final String prefix, final Set<JsonPrimitiveTypes> ret, final JsonPrimitiveTypes type) {
         if (m_looseTypeInfo) {
             return m_primitiveArrayItem;
         }
         ret.add(type);
         return prefix == null || prefix.isEmpty() ? m_primitiveArrayItem : prefix + ":" + m_primitiveArrayItem;
-    }
-
-    private Set<JsonPrimitiveTypes> createValue(final JsonNode node, final Element element) throws DOMException,
-        IOException {
-        if (node.isMissingNode()) {
-            return EnumSet.noneOf(JsonPrimitiveTypes.class);
-        }
-        EnumSet<JsonPrimitiveTypes> ret = EnumSet.noneOf(JsonPrimitiveTypes.class);
-        Document doc = element.getOwnerDocument();
-        if (node.isValueNode()) {//Never reached when Options.CollapseToAttributes
-            if (node.isBoolean()) {
-                element.setTextContent(Boolean.toString(node.asBoolean()));
-            } else if (node.isIntegralNumber()) {
-                element.setTextContent(node.bigIntegerValue().toString());
-            } else if (node.isFloatingPointNumber()) {
-                element.setTextContent(node.decimalValue().toString());
-            } else if (node.isTextual()) {
-                element.setTextContent(node.textValue());
-            } else if (node.isBinary()) {
-                element.setTextContent(new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")));
-            } else if (node.isNull()) {
-                element.appendChild(doc.createElement(m_null));
-            }
-        } else if (node.isArray()) {
-            for (JsonNode jsonNode : node) {
-                if (jsonNode.isValueNode()) {
-                    ret.addAll(create(null, jsonNode, element));
-                } else {
-                    Element item = doc.createElement(m_primitiveArrayItem);
-                    element.appendChild(item);
-                    ret.addAll(create(null, jsonNode, item));
-                }
-            }
-        } else if (node.isObject()) {
-            if (m_collapseToAttributes) {
-                handleCollapsedObject(null, node, element, ret);
-            } else {
-                for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-                    Entry<String, JsonNode> entry = it.next();
-                    Element newRoot = doc.createElement(entry.getKey());
-                    element.appendChild(newRoot);
-                    createValue(entry.getValue(), newRoot);
-                }
-            }
-        }
-        return ret;
-    }
-
-    /**
-     * @return the collapseToAttributes
-     */
-    public final boolean isCollapseToAttributes() {
-        return m_collapseToAttributes;
-    }
-
-    /**
-     * @param collapseToAttributes the collapseToAttributes to set
-     */
-    public final void setCollapseToAttributes(final boolean collapseToAttributes) {
-        this.m_collapseToAttributes = collapseToAttributes;
     }
 
     /**
@@ -454,13 +466,6 @@ public final class Json2Xml {
      */
     public final void setNamespace(final String namespace) {
         this.m_namespace = namespace;
-    }
-
-    /**
-     * @param object the object root name to set
-     */
-    public final void setObjectRoot(final String object) {
-        this.m_object = object;
     }
 
     /**
@@ -512,6 +517,11 @@ public final class Json2Xml {
         this.m_bool = bool;
     }
 
+    /**
+     * Sets the boolean options in a single step.
+     * @param os The {@link Options}.
+     */
+    @Deprecated
     public void setOptions(final Options... os) {
         switch (os.length) {
             case 0:
@@ -528,11 +538,15 @@ public final class Json2Xml {
         }
     }
 
+    /**
+     * Sets the boolean options in a single step.
+     * @param os The {@link Options}.
+     */
+    @Deprecated
     public void setOptions(final Set<Options> os) {
         for (Options o : Options.values()) {
             switch (o) {
                 case CollapseToAttributes:
-                    setCollapseToAttributes(os.contains(o));
                     break;
                 case looseTypeInfo:
                     setLooseTypeInfo(os.contains(o));
