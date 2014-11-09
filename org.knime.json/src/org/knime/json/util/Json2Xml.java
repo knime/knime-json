@@ -50,8 +50,10 @@ package org.knime.json.util;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,6 +73,16 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @since 2.11
  */
 public final class Json2Xml {
+    private String m_rootName = "root";
+
+    private String m_primitiveArrayItem = "item";
+
+    private String m_namespace = null;
+
+    private boolean m_collapseToAttributes = false;
+
+    private boolean m_looseTypeInfo = false;
+
     /**
      *
      */
@@ -118,8 +130,14 @@ public final class Json2Xml {
     }
 
     /**
-     * Converts a {@link JsonNode} {@code node} to an XML {@link Document}.
-     * TODO Exception normalization
+     * Attributes of
+     */
+    public enum Options {
+        CollapseToAttributes, looseTypeInfo;
+    }
+
+    /**
+     * Converts a {@link JsonNode} {@code node} to an XML {@link Document}. TODO Exception normalization
      *
      * @param node A Jackson {@link JsonNode}.
      * @return The converted XML {@link Document}.
@@ -130,63 +148,186 @@ public final class Json2Xml {
     public Document toXml(final JsonNode node) throws ParserConfigurationException, DOMException, IOException {
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = documentBuilder.newDocument();
-        doc.appendChild(doc.createElement("xml"));
-        create(node, doc.getDocumentElement());
-        Document ret = documentBuilder.newDocument();
-        ret.appendChild(ret.adoptNode(doc.getDocumentElement().getFirstChild()));
+        if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
+            doc.appendChild(doc.createElement(m_array == null ? m_rootName : m_array + ":" + m_rootName));
+            doc.getDocumentElement().setAttribute("xmlns:" + m_array, "http://www.w3.org/2001/XMLSchema/list");
+            return doc;
+        }
+        doc.appendChild(doc.createElement(m_rootName));
+        doc.setDocumentURI(m_namespace);
+        Set<JsonPrimitiveTypes> usedAttributes = create(node, doc.getDocumentElement());
+        for (JsonPrimitiveTypes jsonPrimitiveTypes : usedAttributes) {
+            switch (jsonPrimitiveTypes) {
+                case BINARY:
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_binary,
+                        "http://www.w3.org/2001/XMLSchema/binary");
+                    break;
+                case BOOLEAN:
+                    doc.getDocumentElement()
+                        .setAttribute("xmlns:" + m_bool, "http://www.w3.org/2001/XMLSchema/boolean");
+                    break;
+                case FLOAT:
+                    doc.getDocumentElement()
+                        .setAttribute("xmlns:" + m_real, "http://www.w3.org/2001/XMLSchema/decimal");
+                    break;
+                case INT:
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_int, "http://www.w3.org/2001/XMLSchema/integer");
+                    break;
+                case NULL:
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_null, "http://www.w3.org/2001/XMLSchema");
+                    break;
+                case TEXT:
+                    doc.getDocumentElement().setAttribute("xmlns:" + m_text, "http://www.w3.org/2001/XMLSchema/string");
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        //        Document ret = documentBuilder.newDocument();
+        //        ret.appendChild(ret.adoptNode(doc.getDocumentElement().getFirstChild()));
+        //        return ret;
+        return doc;
+    }
+
+    /**
+     * @param node
+     * @param element
+     * @return
+     * @throws IOException
+     * @throws DOMException
+     */
+    private Set<JsonPrimitiveTypes> create(final JsonNode node, final Element element) throws DOMException, IOException {
+        if (node.isMissingNode()) {
+            return EnumSet.noneOf(JsonPrimitiveTypes.class);
+        }
+        EnumSet<JsonPrimitiveTypes> ret = EnumSet.noneOf(JsonPrimitiveTypes.class);
+        Document doc = element.getOwnerDocument();
+        if (node.isValueNode()) {
+            if (node.isBoolean()) {
+                String elementName = elementName(m_bool, ret, JsonPrimitiveTypes.BOOLEAN);
+                element.appendChild(doc.createElement(elementName)).setTextContent(Boolean.toString(node.asBoolean()));
+            } else if (node.isIntegralNumber()) {
+                String elementName = elementName(m_int, ret, JsonPrimitiveTypes.INT);
+                element.appendChild(doc.createElement(elementName)).setTextContent(node.bigIntegerValue().toString());
+            } else if (node.isFloatingPointNumber()) {
+                String elementName = elementName(m_text, ret, JsonPrimitiveTypes.TEXT);
+                element.appendChild(doc.createElement(elementName)).setTextContent(node.decimalValue().toString());
+            } else if (node.isTextual()) {
+                String elementName = elementName(m_text, ret, JsonPrimitiveTypes.TEXT);
+                element.appendChild(doc.createElement(elementName)).setTextContent(node.textValue());
+            } else if (node.isBinary()) {
+                String elementName = elementName(m_binary, ret, JsonPrimitiveTypes.BINARY);
+                element.appendChild(doc.createElement(elementName)).setTextContent(
+                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")));
+            } else if (node.isNull()) {
+                String elementName = elementName(m_null, ret, JsonPrimitiveTypes.NULL);
+                element.appendChild(doc.createElement(elementName));
+            }
+        } else if (node.isArray()) {
+            //            Element array = doc.createElement(m_array);
+            //            element.appendChild(array);
+            for (JsonNode jsonNode : node) {
+                if (jsonNode.isValueNode()) {
+                    ret.addAll(create(jsonNode, element));
+                } else {
+                    Element item = doc.createElement(m_primitiveArrayItem);
+                    element.appendChild(item);
+                    //                ret.addAll(create(jsonNode, array));
+                    ret.addAll(create(jsonNode, item));
+                }
+            }
+        } else if (node.isObject()) {
+            if (m_collapseToAttributes) {
+                handleCollapsedObject(node, element, ret);
+            } else {
+                Element obj = doc.createElement(m_object);
+                element.appendChild(obj);
+                for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+                    Entry<String, JsonNode> entry = it.next();
+                    Element newRoot = doc.createElement(entry.getKey());
+                    obj.appendChild(newRoot);
+                    createValue(entry.getValue(), newRoot);
+                }
+            }
+        }
         return ret;
     }
 
     /**
      * @param node
      * @param element
+     * @param ret
+     * @param doc
      * @throws IOException
-     * @throws DOMException
      */
-    private void create(final JsonNode node, final Element element) throws DOMException, IOException {
-        if (node.isMissingNode()) {
-            return;
-        }
+    private void
+        handleCollapsedObject(final JsonNode node, final Element element, final EnumSet<JsonPrimitiveTypes> ret)
+            throws IOException {
         Document doc = element.getOwnerDocument();
-        if (node.isValueNode()) {
-            if (node.isBoolean()) {
-                element.appendChild(doc.createElement(m_bool)).setTextContent(Boolean.toString(node.asBoolean()));
-            } else if (node.isIntegralNumber()) {
-                element.appendChild(doc.createElement(m_int)).setTextContent(node.bigIntegerValue().toString());
-            } else if (node.isFloatingPointNumber()) {
-                element.appendChild(doc.createElement(m_real)).setTextContent(node.decimalValue().toString());
-            } else if (node.isTextual()) {
-                element.appendChild(doc.createElement(m_text)).setTextContent(node.textValue());
-            } else if (node.isBinary()) {
-                element.appendChild(doc.createElement(m_binary)).setTextContent(
-                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")));
-            } else if (node.isNull()) {
-                element.appendChild(doc.createElement(m_null));
-            }
-        } else if (node.isArray()) {
-            Element array = doc.createElement(m_array);
-            element.appendChild(array);
-            for (JsonNode jsonNode : node) {
-                createValue(jsonNode, array);
-            }
-        } else if (node.isObject()) {
-            Element obj = doc.createElement(m_object);
-            element.appendChild(obj);
-            for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-                Entry<String, JsonNode> entry = it.next();
+        for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+            Entry<String, JsonNode> entry = it.next();
+            JsonNode v = entry.getValue();
+            if (v.isValueNode()) {
+                String val = v.asText();
+                if (m_looseTypeInfo) {
+                    element.setAttribute(entry.getKey(), val);
+                } else if (v.isIntegralNumber()) {
+                    ret.add(JsonPrimitiveTypes.INT);
+                    element.setAttribute(m_int + ":" + entry.getKey(), val);
+                } else if (v.isFloatingPointNumber()) {
+                    ret.add(JsonPrimitiveTypes.FLOAT);
+                    element.setAttribute(m_real + ":" + entry.getKey(), val);
+                } else if (v.isTextual()) {
+                    ret.add(JsonPrimitiveTypes.TEXT);
+                    element.setAttribute(m_text + ":" + entry.getKey(), val);
+                } else if (v.isNull()) {
+                    ret.add(JsonPrimitiveTypes.NULL);
+                    element.setAttribute(m_null + ":" + entry.getKey(), "");
+                } else if (v.isBinary()) {
+                    ret.add(JsonPrimitiveTypes.BINARY);
+                    element.setAttribute(m_binary + ":" + entry.getKey(), val);
+                } else if (v.isBoolean()) {
+                    ret.add(JsonPrimitiveTypes.BOOLEAN);
+                    element.setAttribute(m_bool + ":" + entry.getKey(), val);
+                } else {
+                    assert false : entry;
+                }
+                //            } else if (v.isArray()) {
+                //                Element newRoot = doc.createElement(m_primitiveArrayItem);
+                //                element.appendChild(newRoot);
+                //                ret.addAll(create(v, newRoot));
+            } else {
                 Element newRoot = doc.createElement(entry.getKey());
-                obj.appendChild(newRoot);
-                createValue(entry.getValue(), newRoot);
+                element.appendChild(newRoot);
+                createValue(v, newRoot);
             }
         }
     }
 
-    private void createValue(final JsonNode node, final Element element) throws DOMException, IOException {
-        if (node.isMissingNode()) {
-            return;
+    /**
+     * @param prefix
+     * @param ret
+     * @param type
+     * @return
+     */
+    private String
+        elementName(final String prefix, final EnumSet<JsonPrimitiveTypes> ret, final JsonPrimitiveTypes type) {
+        if (m_looseTypeInfo) {
+            return m_primitiveArrayItem;
         }
+        ret.add(type);
+        return prefix == null || prefix.isEmpty() ? m_primitiveArrayItem : prefix + ":" + m_primitiveArrayItem;
+    }
+
+    private Set<JsonPrimitiveTypes> createValue(final JsonNode node, final Element element) throws DOMException,
+        IOException {
+        if (node.isMissingNode()) {
+            return EnumSet.noneOf(JsonPrimitiveTypes.class);
+        }
+        EnumSet<JsonPrimitiveTypes> ret = EnumSet.noneOf(JsonPrimitiveTypes.class);
         Document doc = element.getOwnerDocument();
-        if (node.isValueNode()) {
+        if (node.isValueNode()) {//Never reached when Options.CollapseToAttributes
             if (node.isBoolean()) {
                 element.setTextContent(Boolean.toString(node.asBoolean()));
             } else if (node.isIntegralNumber()) {
@@ -202,16 +343,83 @@ public final class Json2Xml {
             }
         } else if (node.isArray()) {
             for (JsonNode jsonNode : node) {
-                create(jsonNode, element);
+                if (jsonNode.isValueNode()) {
+                    ret.addAll(create(jsonNode, element));
+                } else {
+                    Element item = doc.createElement(m_primitiveArrayItem);
+                    element.appendChild(item);
+                    ret.addAll(create(jsonNode, item));
+                }
             }
         } else if (node.isObject()) {
-            for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-                Entry<String, JsonNode> entry = it.next();
-                Element newRoot = doc.createElement(entry.getKey());
-                element.appendChild(newRoot);
-                createValue(entry.getValue(), newRoot);
+            if (m_collapseToAttributes) {
+                handleCollapsedObject(node, element, ret);
+            } else {
+                for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+                    Entry<String, JsonNode> entry = it.next();
+                    Element newRoot = doc.createElement(entry.getKey());
+                    element.appendChild(newRoot);
+                    createValue(entry.getValue(), newRoot);
+                }
             }
         }
+        return ret;
+    }
+
+    /**
+     * @return the collapseToAttributes
+     */
+    public final boolean isCollapseToAttributes() {
+        return m_collapseToAttributes;
+    }
+
+    /**
+     * @param collapseToAttributes the collapseToAttributes to set
+     */
+    public final void setCollapseToAttributes(final boolean collapseToAttributes) {
+        this.m_collapseToAttributes = collapseToAttributes;
+    }
+
+    /**
+     * @return the looseTypeInfo
+     */
+    public final boolean isLooseTypeInfo() {
+        return m_looseTypeInfo;
+    }
+
+    /**
+     * @param looseTypeInfo the looseTypeInfo to set
+     */
+    public final void setLooseTypeInfo(final boolean looseTypeInfo) {
+        this.m_looseTypeInfo = looseTypeInfo;
+    }
+
+    /**
+     * @return the rootName
+     */
+    public final String getRootName() {
+        return m_rootName;
+    }
+
+    /**
+     * @param rootName the rootName to set
+     */
+    public final void setRootName(final String rootName) {
+        this.m_rootName = rootName;
+    }
+
+    /**
+     * @return the namespace
+     */
+    public final String getNamespace() {
+        return m_namespace;
+    }
+
+    /**
+     * @param namespace the namespace to set
+     */
+    public final void setNamespace(final String namespace) {
+        this.m_namespace = namespace;
     }
 
     /**
@@ -268,5 +476,35 @@ public final class Json2Xml {
      */
     public final void setBool(final String bool) {
         this.m_bool = bool;
+    }
+
+    public void setOptions(final Options... os) {
+        switch (os.length) {
+            case 0:
+                setOptions(EnumSet.noneOf(Options.class));
+                break;
+            case 1:
+                setOptions(EnumSet.of(os[0]));
+                break;
+            default:
+                Options[] rest = new Options[os.length - 1];
+                System.arraycopy(os, 1, rest, 0, os.length - 1);
+                setOptions(EnumSet.of(os[0], rest));
+                break;
+        }
+    }
+
+    public void setOptions(final Set<Options> os) {
+        for (Options o : Options.values()) {
+            switch (o) {
+                case CollapseToAttributes:
+                    setCollapseToAttributes(os.contains(o));
+                    break;
+                case looseTypeInfo:
+                    setLooseTypeInfo(os.contains(o));
+                default:
+                    break;
+            }
+        }
     }
 }
