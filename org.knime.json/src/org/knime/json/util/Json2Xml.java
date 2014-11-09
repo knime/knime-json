@@ -155,7 +155,7 @@ public final class Json2Xml {
         }
         doc.appendChild(doc.createElement(m_rootName));
         doc.setDocumentURI(m_namespace);
-        Set<JsonPrimitiveTypes> usedAttributes = create(node, doc.getDocumentElement());
+        Set<JsonPrimitiveTypes> usedAttributes = create(null, node, doc.getDocumentElement());
         for (JsonPrimitiveTypes jsonPrimitiveTypes : usedAttributes) {
             switch (jsonPrimitiveTypes) {
                 case BINARY:
@@ -197,13 +197,15 @@ public final class Json2Xml {
      * @throws IOException
      * @throws DOMException
      */
-    private Set<JsonPrimitiveTypes> create(final JsonNode node, final Element element) throws DOMException, IOException {
+    private Set<JsonPrimitiveTypes> create(final String origKey, final JsonNode node, final Element element)
+        throws DOMException, IOException {
         if (node.isMissingNode()) {
             return EnumSet.noneOf(JsonPrimitiveTypes.class);
         }
         EnumSet<JsonPrimitiveTypes> ret = EnumSet.noneOf(JsonPrimitiveTypes.class);
         Document doc = element.getOwnerDocument();
-        if (node.isValueNode()) {
+        if (node.isValueNode()) {//We are inside an array, origKey should be null
+            assert origKey == null : origKey;
             if (node.isBoolean()) {
                 String elementName = elementName(m_bool, ret, JsonPrimitiveTypes.BOOLEAN);
                 element.appendChild(doc.createElement(elementName)).setTextContent(Boolean.toString(node.asBoolean()));
@@ -225,21 +227,45 @@ public final class Json2Xml {
                 element.appendChild(doc.createElement(elementName));
             }
         } else if (node.isArray()) {
-            //            Element array = doc.createElement(m_array);
-            //            element.appendChild(array);
-            for (JsonNode jsonNode : node) {
-                if (jsonNode.isValueNode()) {
-                    ret.addAll(create(jsonNode, element));
-                } else {
-                    Element item = doc.createElement(m_primitiveArrayItem);
-                    element.appendChild(item);
-                    //                ret.addAll(create(jsonNode, array));
-                    ret.addAll(create(jsonNode, item));
+            if (origKey == null) {
+                //            Element array = doc.createElement(m_array);
+                //            element.appendChild(array);
+                for (JsonNode jsonNode : node) {
+                    if (jsonNode.isValueNode()) {
+                        ret.addAll(create(null, jsonNode, element));
+                    } else {
+                        Element item = doc.createElement(m_primitiveArrayItem);
+                        element.appendChild(item);
+                        //                ret.addAll(create(jsonNode, array));
+                        ret.addAll(create(null, jsonNode, item));
+                    }
+                }
+            } else {
+                for (JsonNode jsonNode : node) {
+                    if (jsonNode.isValueNode()) {
+                        ret.addAll(create(null, jsonNode, element));
+                    } else {
+                        Element item = doc.createElement(origKey);
+                        element.appendChild(item);
+                        //                ret.addAll(create(jsonNode, array));
+                        ret.addAll(create(null, jsonNode, item));
+                    }
                 }
             }
         } else if (node.isObject()) {
             if (m_collapseToAttributes) {
-                handleCollapsedObject(node, element, ret);
+                if (origKey != null) {
+                    Element obj = doc.createElement(origKey);
+                    element.appendChild(obj);
+                    for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+                        Entry<String, JsonNode> entry = it.next();
+                        Element newRoot = doc.createElement(entry.getKey());
+                        obj.appendChild(newRoot);
+                        createValue(entry.getValue(), newRoot);
+                    }
+                } else {
+                    handleCollapsedObject(origKey, node, element, ret);
+                }
             } else {
                 Element obj = doc.createElement(m_object);
                 element.appendChild(obj);
@@ -261,9 +287,8 @@ public final class Json2Xml {
      * @param doc
      * @throws IOException
      */
-    private void
-        handleCollapsedObject(final JsonNode node, final Element element, final EnumSet<JsonPrimitiveTypes> ret)
-            throws IOException {
+    private void handleCollapsedObject(final String origKey, final JsonNode node, final Element element,
+        final EnumSet<JsonPrimitiveTypes> ret) throws IOException {
         Document doc = element.getOwnerDocument();
         for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
             Entry<String, JsonNode> entry = it.next();
@@ -298,9 +323,18 @@ public final class Json2Xml {
                 //                element.appendChild(newRoot);
                 //                ret.addAll(create(v, newRoot));
             } else {
-                Element newRoot = doc.createElement(entry.getKey());
-                element.appendChild(newRoot);
-                createValue(v, newRoot);
+                if (origKey == null) {
+                    if (entry.getValue().isArray()) {
+                        ret.addAll(create(entry.getKey(), entry.getValue(), element));
+                    } else {
+                        Element newRoot = doc.createElement(entry.getKey());
+                        element.appendChild(newRoot);
+                        createValue(v, newRoot);
+                    }
+//                    handleCollapsedObject(entry.getKey(), entry.getValue(), element, ret);
+                } else {
+                    ret.addAll(create(entry.getKey(), v, element));
+                }
             }
         }
     }
@@ -344,16 +378,16 @@ public final class Json2Xml {
         } else if (node.isArray()) {
             for (JsonNode jsonNode : node) {
                 if (jsonNode.isValueNode()) {
-                    ret.addAll(create(jsonNode, element));
+                    ret.addAll(create(null, jsonNode, element));
                 } else {
                     Element item = doc.createElement(m_primitiveArrayItem);
                     element.appendChild(item);
-                    ret.addAll(create(jsonNode, item));
+                    ret.addAll(create(null, jsonNode, item));
                 }
             }
         } else if (node.isObject()) {
             if (m_collapseToAttributes) {
-                handleCollapsedObject(node, element, ret);
+                handleCollapsedObject(null, node, element, ret);
             } else {
                 for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
                     Entry<String, JsonNode> entry = it.next();
