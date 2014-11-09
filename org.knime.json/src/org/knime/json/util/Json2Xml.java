@@ -318,8 +318,10 @@ public final class Json2Xml {
             } else if (node.isObject()) {
                 elem.appendChild(create(entry.getKey(), objectNode, node, elem, types));
             } else if (node.isArray()) {
+                Element element = elem.getOwnerDocument().createElement(entry.getKey());
+                elem.appendChild(element);
                 for (JsonNode jsonNode : node) {
-                    elem.appendChild(create(null, node, jsonNode, elem, types));
+                    element.appendChild(create(null, node, jsonNode, element, types));
                 }
             }
         }
