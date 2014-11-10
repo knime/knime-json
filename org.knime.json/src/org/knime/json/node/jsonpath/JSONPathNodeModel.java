@@ -2,6 +2,8 @@ package org.knime.json.node.jsonpath;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +41,12 @@ import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BigIntegerNode;
+import com.fasterxml.jackson.databind.node.BinaryNode;
+import com.fasterxml.jackson.databind.node.DecimalNode;
+import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -159,9 +166,6 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                             }
                             return CollectionCellFactory.createListCell(cells);
                         }
-                        if (getSettings().isResultIsList()) {
-                            return CollectionCellFactory.createListCell(cells);
-                        }
                         if (getSettings().getOnMultipleResults().supportsConcatenate(returnType) && values.size() > 1) {
                             //Concatenate
                             JsonNodeFactory jsonNodeFactory = JsonNodeFactory.withExactBigDecimals(true);
@@ -215,71 +219,11 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                             }
                         } else {
                             for (final Object object : values) {
-                                try {
-                                    switch (returnType) {
-                                        case Bool:
-                                            Boolean bool =
-                                                mappingProvider.map(object, Boolean.class, config);
-                                            if (bool == null) {
-                                                cells.add(DataType.getMissingCell());
-                                            } else {
-                                                cells.add(BooleanCell.get(bool.booleanValue()));
-                                            }
-                                            break;
-                                        case DateTime:
-                                            Date date = mappingProvider.map(object, Date.class, config);
-                                            if (date == null) {
-                                                cells.add(DataType.getMissingCell());
-                                            } else {
-                                                cells.add(new DateAndTimeCell(date.getTime(),
-                                                    getSettings().isHasDate(), getSettings().isHasTime(), getSettings()
-                                                        .isHasMillis()));
-                                            }
-                                            break;
-                                        case Int:
-                                            Integer integer =
-                                                mappingProvider.map(object, Integer.class, config);
-                                            if (integer == null) {
-                                                cells.add(DataType.getMissingCell());
-                                            } else {
-                                                cells.add(new IntCell(integer.intValue()));
-                                            }
-                                            break;
-                                        case Json:
-                                            cells.add(object == null ? DataType.getMissingCell() : JSONCellFactory
-                                                .create(object.toString(), false));
-                                            break;
-                                        case Real:
-                                            Double d = mappingProvider.map(object, Double.class, config);
-                                            if (d == null) {
-                                                cells.add(DataType.getMissingCell());
-                                            } else {
-                                                cells.add(new DoubleCell(d.doubleValue()));
-                                            }
-                                            break;
-                                        case String:
-                                            cells.add(object == null ? DataType.getMissingCell() : new StringCell(
-                                                object.toString()));
-                                            break;
-                                        case Binary:
-                                            if (object == null) {
-                                                cells.add(DataType.getMissingCell());
-                                            } else {
-                                                byte[] arr = (byte[])object;
-                                                DenseByteVectorCellFactory factory = new DenseByteVectorCellFactory(arr.length);
-                                                for(int i = arr.length; i-->0;) {
-                                                    factory.setValue(i, arr[i] < 0 ? arr[i] + 256 : arr[i]);
-                                                }
-                                                cells.add(factory.createDataCell());
-                                            }
-                                        default:
-                                            throw new UnsupportedOperationException("Unsupported return type: "
-                                                + returnType);
-                                    }
-                                } catch (IOException | RuntimeException e) {
-                                    cells.add(new MissingCell(e.getMessage()));
-                                }
+                                cells.add(convertObjectToReturnType(returnType, object));
                             }
+                        }
+                        if (getSettings().isResultIsList()) {
+                            return CollectionCellFactory.createListCell(cells);
                         }
                         if (cells.size() > 1) {
                             switch (getSettings().getOnMultipleResults()) {
@@ -300,11 +244,109 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                                             + getSettings().getOnMultipleResults());
                             }
                         }
+                        //At most one element
+                        if (cells.size() == 1) {
+                            return cells.get(0);
+                        }
                     } catch (RuntimeException e) {
                         return new MissingCell(e.getMessage());
                     }
                 }
                 return DataType.getMissingCell();
+            }
+
+            /**
+             * @param returnType
+             * @param object
+             * @return
+             */
+            private DataCell convertObjectToReturnType(final OutputType returnType, final Object object) {
+                try {
+                    switch (returnType) {
+                        case Bool:
+                            Boolean bool = mappingProvider.map(object, Boolean.class, config);
+                            if (bool == null) {
+                                return BooleanCell.get(Boolean.parseBoolean(object.toString()));
+                            }
+                            return BooleanCell.get(bool.booleanValue());
+                        case DateTime:
+                            Date date = mappingProvider.map(object, Date.class, config);
+                            if (date == null) {
+                                return DataType.getMissingCell();
+                            }
+                            return new DateAndTimeCell(date.getTime(), getSettings().isHasDate(), getSettings()
+                                .isHasTime(), getSettings().isHasMillis());
+                        case Int:
+                            Integer integer = mappingProvider.map(object, Integer.class, config);
+                            if (integer == null) {
+                                return new IntCell(Integer.parseInt(object.toString()));
+                            }
+                            return new IntCell(integer.intValue());
+                        case Json:
+                            return asJson(object);
+                        case Real:
+                            Double d = mappingProvider.map(object, Double.class, config);
+                            if (d == null) {
+                                return DataType.getMissingCell();
+                            }
+                            return new DoubleCell(d.doubleValue());
+                        case String:
+                            return object == null ? DataType.getMissingCell() : new StringCell(object.toString());
+                        case Binary:
+                            if (object == null) {
+                                return DataType.getMissingCell();
+                            }
+                            byte[] arr = (byte[])object;
+                            DenseByteVectorCellFactory factory = new DenseByteVectorCellFactory(arr.length);
+                            for (int i = arr.length; i-- > 0;) {
+                                factory.setValue(i, arr[i] < 0 ? arr[i] + 256 : arr[i]);
+                            }
+                            return factory.createDataCell();
+                        default:
+                            throw new UnsupportedOperationException("Unsupported return type: " + returnType);
+                    }
+                } catch (IOException | RuntimeException e) {
+                    return new MissingCell(e.getMessage());
+                }
+            }
+
+            /**
+             * @param object
+             * @return
+             * @throws IOException
+             */
+            private DataCell asJson(final Object object) throws IOException {
+                if (object instanceof JsonNode) {
+                    return JSONCellFactory.create(conv.toJSR353((JsonNode)object));
+                }
+                if (object instanceof String) {
+                    String str = (String)object;
+                    return JSONCellFactory.create(conv.toJSR353(new TextNode(str)));
+                }
+                if (object instanceof Number) {
+                    Number num = (Number)object;
+                    if (num instanceof Short || num instanceof Integer || num instanceof Long
+                        || num instanceof BigInteger) {
+                        //integral
+                        return JSONCellFactory
+                            .create(conv.toJSR353(new BigIntegerNode(new BigInteger(num.toString()))));
+                    }
+                    try {
+                        return JSONCellFactory.create(conv.toJSR353(new DecimalNode(new BigDecimal(num.toString()))));
+                    } catch (NumberFormatException e) {
+                        //Probably NaN or Infinity
+                        return JSONCellFactory.create(conv.toJSR353(new DoubleNode(num.doubleValue())));
+                    }
+                }
+                if (object instanceof byte[]) {
+                    byte[] bs = (byte[])object;
+                    return JSONCellFactory.create(conv.toJSR353(new BinaryNode(bs)));
+                }
+                if (object instanceof Boolean) {
+                    Boolean b = (Boolean)object;
+                    return JSONCellFactory.create(Boolean.toString(b), false);
+                }
+                return object == null ? DataType.getMissingCell() : JSONCellFactory.create(object.toString(), false);
             }
         };
     }
