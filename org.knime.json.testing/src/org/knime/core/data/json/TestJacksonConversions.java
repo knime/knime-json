@@ -52,14 +52,11 @@ import static org.junit.Assert.assertEquals;
 import static org.knime.core.data.json.TestJSONCell.norm;
 
 import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.knime.core.data.json.internal.JacksonConversionsImpl;
-import org.knime.core.data.json.internal.KNIMEJsonProvider;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -77,10 +74,7 @@ public class TestJacksonConversions {
      */
     @Before
     public void serviceReference() {
-        BundleContext ctx = FrameworkUtil.getBundle(JSONValue.class).getBundleContext();
-        ServiceReference<JacksonConversions> ref = ctx.getServiceReference(JacksonConversions.class);
-        m_conversions = ctx.getService(ref);
-
+        m_conversions = new JacksonConversionsImpl();
     }
 
     /**
@@ -89,7 +83,7 @@ public class TestJacksonConversions {
     @Test
     public void testToJackson() {
         // JsonValue input = JsonProvider.provider().createObjectBuilder().add("hello", "world").build();
-        JsonValue input = new KNIMEJsonProvider().createObjectBuilder().add("hello", "world").build();
+        JsonValue input = JsonProvider.provider().createObjectBuilder().add("hello", "world").build();
         JsonNode node = m_conversions.toJackson(input);
         assertEquals(norm(input.toString()), norm(node.toString()));
     }

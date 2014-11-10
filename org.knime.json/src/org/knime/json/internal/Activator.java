@@ -50,10 +50,10 @@ package org.knime.json.internal;
 
 import org.knime.core.data.json.JSONCellWriterFactory;
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.data.json.internal.JacksonConversionsImpl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleWiring;
 
 import com.jayway.jsonpath.Configuration;
@@ -104,14 +104,8 @@ public class Activator implements BundleActivator {
         }
         m_jsr353ClassLoader = jsr353Bundle.adapt(BundleWiring.class).getClassLoader();
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(m_jsr353ClassLoader);
-            ServiceReference<JacksonConversions> serviceReference = ctx.getServiceReference(JacksonConversions.class);
-            m_jacksonConversions = ctx.getService(serviceReference);
-            m_jsonCellWriterFactory = ctx.getService(ctx.getServiceReference(JSONCellWriterFactory.class));
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+            m_jacksonConversions = new JacksonConversionsImpl();
+            m_jsonCellWriterFactory = new org.knime.core.data.json.io.JSONCellWriterFactory();
         m_jsonSchemaCoreClassLoader = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
         try {
             ClassLoader classLoader = jsonBundle.adapt(BundleWiring.class).getClassLoader();
