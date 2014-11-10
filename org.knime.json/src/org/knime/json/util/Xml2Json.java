@@ -583,6 +583,9 @@ public class Xml2Json {
     public void setSimpleAttributes(final boolean simpleAttributes) {
         this.m_simpleAttributes = simpleAttributes;
     }
+    /**
+     * @return The preconfigured {@link Xml2Json} object with proposed settings.
+     */
     public static Xml2Json proposedSettings() {
         Xml2Json ret = new Xml2Json();
         ret.m_attributePrefix = "@";

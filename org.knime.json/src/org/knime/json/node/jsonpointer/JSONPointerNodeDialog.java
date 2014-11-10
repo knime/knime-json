@@ -6,6 +6,8 @@ import java.awt.GridBagConstraints;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -24,8 +26,8 @@ import com.github.fge.jackson.jsonpointer.JsonPointerException;
  * @author Gabor Bakos
  */
 public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettings> {
-    //TODO error message on typing
     private JTextField m_pointer;
+    private JLabel m_error;
 
     /**
      * New pane for configuring the JSONPointer node.
@@ -40,6 +42,7 @@ public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettin
     @Override
     protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
         panel.setPreferredSize(new Dimension(800, 300));
+        m_error = new JLabel();
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = afterInput;
         gbc.gridx = 0;
@@ -48,7 +51,39 @@ public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettin
         m_pointer = GUIFactory.createTextField("", 33);
         panel.add(m_pointer, gbc);
         gbc.gridy++;
+
+        panel.add(m_error, gbc);
+        gbc.gridy++;
+
+        m_pointer.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void removeUpdate(final DocumentEvent e) {
+                updateError();
+            }
+
+            @Override
+            public void insertUpdate(final DocumentEvent e) {
+                updateError();
+            }
+
+            @Override
+            public void changedUpdate(final DocumentEvent e) {
+                updateError();
+            }
+        });
         return addOutputTypePanel(panel, gbc.gridy);
+    }
+
+    /**
+     *
+     */
+    protected void updateError() {
+        m_error.setText("");
+        try {
+            new JsonPointer(m_pointer.getText());
+        } catch (JsonPointerException e) {
+            m_error.setText(e.getMessage());
+        }
     }
 
     /**
