@@ -26,6 +26,7 @@ import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.data.vector.bytevector.DenseByteVectorCellFactory;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
@@ -260,6 +261,17 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                                             cells.add(object == null ? DataType.getMissingCell() : new StringCell(
                                                 object.toString()));
                                             break;
+                                        case Binary:
+                                            if (object == null) {
+                                                cells.add(DataType.getMissingCell());
+                                            } else {
+                                                byte[] arr = (byte[])object;
+                                                DenseByteVectorCellFactory factory = new DenseByteVectorCellFactory(arr.length);
+                                                for(int i = arr.length; i-->0;) {
+                                                    factory.setValue(i, arr[i] < 0 ? arr[i] + 256 : arr[i]);
+                                                }
+                                                cells.add(factory.createDataCell());
+                                            }
                                         default:
                                             throw new UnsupportedOperationException("Unsupported return type: "
                                                 + returnType);

@@ -88,13 +88,14 @@ final class JSONPathSettings extends PathOrPointerSettings {
         Fail, Missing, First, Last, Concatenate;
 
         public boolean supportsConcatenate(final OutputType type) {
+            //TODO should we also support binary?
             return this == Concatenate && (type == OutputType.Json || type == OutputType.String);
         }
 
         public EnumSet<OutputType> supportedOutputTypes() {
             switch (this) {
                 case Concatenate:
-                    return EnumSet.of(OutputType.String, OutputType.Json);
+                    return EnumSet.of(OutputType.String, OutputType.Json);//TODO OutputType#Binary too?
                 case Fail://intentional fall through
                 case First://intentional fall through
                 case Last://intentional fall through

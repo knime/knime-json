@@ -211,6 +211,10 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
         super.saveSettingsTo(settings);
     }
 
+    /**
+     * @param type An {@link OutputType}.
+     * @return The {@link ButtonModel} that belongs to {@code type}.
+     */
     protected final ButtonModel getOutputTypeButtonModel(final OutputType type) {
         return m_buttonModels.get(type);
     }

@@ -56,6 +56,7 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCell;
+import org.knime.core.data.vector.bytevector.DenseByteVectorCell;
 
 /**
  * Possible output types for JSONPath and JSONPointer. (JSONPath can return multiple values, so there should be an
@@ -75,7 +76,9 @@ public enum OutputType implements StringValue {
     /** Text */
     String,
     /** Object */
-    Json;
+    Json,
+    /** Binary content */
+    Binary;
     /**
      * {@inheritDoc}
      */
@@ -94,6 +97,8 @@ public enum OutputType implements StringValue {
                 return "JSON (JSON cell type)";
             case DateTime:
                 return "Date (Date-time cell type)";
+            case Binary:
+                return "Binary (Byte array cell type)";
             default:
                 throw new IllegalStateException("Unknown enum value: " + this);
         }
@@ -115,6 +120,8 @@ public enum OutputType implements StringValue {
                 return StringCell.TYPE;
             case Json:
                 return JSONCell.TYPE;
+            case Binary:
+                return DenseByteVectorCell.TYPE;
             default:
                 throw new IllegalStateException("Unknown enum value: " + this);
         }

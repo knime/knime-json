@@ -23,6 +23,7 @@ import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.data.vector.bytevector.DenseByteVectorCellFactory;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
@@ -34,6 +35,7 @@ import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
 import com.github.fge.jackson.jsonpointer.JsonPointerException;
 
@@ -141,6 +143,17 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                                 return new DoubleCell(value.asDouble());
                             case String:
                                 return new StringCell(value.toString());
+                            case Binary:
+                                if (value instanceof BinaryNode) {
+                                    final BinaryNode bn = (BinaryNode)value;
+                                    final byte[] bs = bn.binaryValue();
+                                    final DenseByteVectorCellFactory factory = new DenseByteVectorCellFactory(bs.length);
+                                    for (int i = bs.length; i-->0;) {
+                                        factory.setValue(i, bs[i] < 0 ? bs[i] + 256: bs[i]);
+                                    }
+                                    return factory.createDataCell();
+                                }
+                                return DataType.getMissingCell();
                             default:
                                 throw new UnsupportedOperationException("Not supported return type: " + returnType);
                         }
