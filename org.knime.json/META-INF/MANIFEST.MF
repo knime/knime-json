@@ -21,7 +21,7 @@ Require-Bundle: com.jayway.jsonpath.json-path;bundle-version="[1.1.0,2.0.0)",
  com.github.fge.json-schema-core;bundle-version="[1.2.4,2.0.0)",
  com.github.fge.json-patch;bundle-version="[1.7.0,2.0.0)",
  org.fife.rsyntaxtextarea;bundle-version="[2.5.3,3.0.0)",
- org.glassfish.javax.json;bundle-version="(1.0.4,1.0.5)";visibility:=reexport
+ org.glassfish.javax.json;bundle-version="[1.0.4,2.0.0)";visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.knime.json.internal.Activator
 Export-Package: org.knime.core.data.json,
