@@ -101,8 +101,6 @@ import com.jayway.jsonpath.Option;
  * @author Gabor Bakos
  */
 public final class JSONPathCollection extends AggregationOperator {
-    private static final JacksonConversions CONV = Activator.getInstance().getJacksonConversions();
-
     private static final String RESULT_TYPE = "result.type", JSON_PATH = "JSON-path", DEFAULT_JSON_PATH = "$..*",
             EMPTY_LEAF_AS_MISSING = "empty leaf as missing";
 
@@ -272,7 +270,7 @@ public final class JSONPathCollection extends AggregationOperator {
          */
         @Override
         public DataCell result() {
-            return JSONCellFactory.create(CONV.toJSR353(m_array));
+            return JSONCellFactory.create(JacksonConversions.getInstance().toJSR353(m_array));
         }
     }
 
@@ -418,7 +416,7 @@ public final class JSONPathCollection extends AggregationOperator {
     protected boolean computeInternal(final DataCell cell) {
         if (cell instanceof JSONValue) {
             JSONValue jv = (JSONValue)cell;
-            String json = CONV.toJackson(jv.getJsonValue()).toString();
+            String json = JacksonConversions.getInstance().toJackson(jv.getJsonValue()).toString();
             List<Object> res = m_jsonPathCompiled.read(json, m_jsonPathConfiguration);
             m_aggregate.addItems(res);
         }

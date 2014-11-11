@@ -51,25 +51,29 @@ package org.knime.core.data.json;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.knime.core.data.json.internal.JSONCellWriterFactoryImpl;
+
 /**
  * An interface for classes creating {@link JSONCellWriter}s.
  *
  * @author Gabor Bakos
  * @since 2.11
- * @see #DEFAULT
  */
-public interface JSONCellWriterFactory {
-
+public abstract class JSONCellWriterFactory {
     /**
      * @param os A non-{@link OutputStream#close() closed}, non-{@code null} {@link OutputStream}.
      * @param format the serialization format
      * @return The {@link JSONCellWriter} writing to {@code os}.
      * @throws IOException Problem during save.
      */
-    JSONCellWriter create(OutputStream os) throws IOException;
+    public abstract JSONCellWriter create(OutputStream os) throws IOException;
 
     /**
      * Default implementation of {@link JSONCellWriterFactory}.
+     *
+     * @return a new instance
      */
-    public static final JSONCellWriterFactory DEFAULT = new org.knime.core.data.json.io.JSONCellWriterFactory();
+    public static JSONCellWriterFactory getInstance() {
+        return JSONCellWriterFactoryImpl.INSTANCE;
+    }
 }

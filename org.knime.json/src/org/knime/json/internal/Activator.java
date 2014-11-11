@@ -48,9 +48,6 @@
  */
 package org.knime.json.internal;
 
-import org.knime.core.data.json.JSONCellWriterFactory;
-import org.knime.core.data.json.JacksonConversions;
-import org.knime.core.data.json.internal.JacksonConversionsImpl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -66,15 +63,11 @@ import com.jayway.jsonpath.Configuration;
 public class Activator implements BundleActivator {
     private static Activator INSTANCE;
 
-    private JacksonConversions m_jacksonConversions;
-
     private Configuration m_jsonPathConfiguration;
 
     private ClassLoader m_jsonSchemaCoreClassLoader;
 
     private ClassLoader m_jsr353ClassLoader;
-
-    private JSONCellWriterFactory m_jsonCellWriterFactory;
 
     /**
      * {@inheritDoc}
@@ -104,8 +97,6 @@ public class Activator implements BundleActivator {
         }
         m_jsr353ClassLoader = jsr353Bundle.adapt(BundleWiring.class).getClassLoader();
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            m_jacksonConversions = new JacksonConversionsImpl();
-            m_jsonCellWriterFactory = new org.knime.core.data.json.io.JSONCellWriterFactory();
         m_jsonSchemaCoreClassLoader = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
         try {
             ClassLoader classLoader = jsonBundle.adapt(BundleWiring.class).getClassLoader();
@@ -143,13 +134,6 @@ public class Activator implements BundleActivator {
     }
 
     /**
-     * @return the jacksonConversions
-     */
-    public JacksonConversions getJacksonConversions() {
-        return m_jacksonConversions;
-    }
-
-    /**
      * @return the jsonPathConfiguration
      */
     public Configuration getJsonPathConfiguration() {
@@ -168,12 +152,5 @@ public class Activator implements BundleActivator {
      */
     public ClassLoader getJsr353ClassLoader() {
         return m_jsr353ClassLoader;
-    }
-
-    /**
-     * @return the jsonCellWriterFactory
-     */
-    public JSONCellWriterFactory getJsonCellWriterFactory() {
-        return m_jsonCellWriterFactory;
     }
 }

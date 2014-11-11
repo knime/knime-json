@@ -66,30 +66,26 @@ import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
  *
  * @author Gabor Bakos
  */
-public final class JacksonConversionsImpl implements JacksonConversions {
+public final class JacksonConversionsImpl extends JacksonConversions {
+    /**
+     * Singleton instance.
+     */
+    public static final JacksonConversions INSTANCE = new JacksonConversionsImpl();
+
+    private final ObjectMapper m_mapper = newMapper().registerModule(new JSR353Module());
+
+    private JacksonConversionsImpl() {}
 
     /**
-     * Return a preconfigured {@link ObjectMapper}
-     *
-     * <p>The returned mapper will have the following features enabled:</p>
-     *
-     * <ul>
-     *     <li>{@link DeserializationFeature#USE_BIG_DECIMAL_FOR_FLOATS};</li>
-     *     <li>{@link SerializationFeature#WRITE_BIGDECIMAL_AS_PLAIN};</li>
-     *     <li>{@link SerializationFeature#INDENT_OUTPUT}.</li>
-     * </ul>
-     *
-     * <p>This returns a new instance each time.</p>
-     *
-     * @return an {@link ObjectMapper}
+     * {@inheritDoc}
      */
-    public static ObjectMapper newMapper() {
+    @Override
+    public ObjectMapper newMapper() {
         return new ObjectMapper().setNodeFactory(JsonNodeFactory.instance)
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
             .enable(SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN)
             .enable(SerializationFeature.INDENT_OUTPUT);
     }
-    private static final ObjectMapper MAPPER = newMapper().registerModule(new JSR353Module());
 
     /**
      * {@inheritDoc}
@@ -100,7 +96,7 @@ public final class JacksonConversionsImpl implements JacksonConversions {
         ClassLoader cl = currentThread.getContextClassLoader();
         try {
             currentThread.setContextClassLoader(JSONValue.class.getClassLoader());
-            return MAPPER.convertValue(input, JsonNode.class);
+            return m_mapper.convertValue(input, JsonNode.class);
         } finally {
             currentThread.setContextClassLoader(cl);
         }
@@ -115,7 +111,7 @@ public final class JacksonConversionsImpl implements JacksonConversions {
         ClassLoader cl = currentThread.getContextClassLoader();
         try {
             currentThread.setContextClassLoader(JSONValue.class.getClassLoader());
-            return MAPPER.convertValue(input, JsonValue.class);
+            return m_mapper.convertValue(input, JsonValue.class);
         } finally {
             currentThread.setContextClassLoader(cl);
         }

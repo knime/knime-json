@@ -24,7 +24,6 @@ import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.json.internal.Activator;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import org.knime.json.util.Xml2Json;
 import org.w3c.dom.Document;
@@ -112,7 +111,7 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
 //        mapper.getFactory().setXMLTextElementName(getSettings().getTextKey());
 //        final XMLInputFactory fact = new InputFactoryProviderImpl().createInputFactory();
 //        mapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
-        final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final JacksonConversions conv = JacksonConversions.getInstance();
         return new SingleCellFactory(output) {
 
             @Override

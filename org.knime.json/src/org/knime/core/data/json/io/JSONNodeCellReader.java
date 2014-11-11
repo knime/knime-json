@@ -55,7 +55,7 @@ import javax.json.JsonValue;
 
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
-import org.knime.core.data.json.internal.JacksonConversionsImpl;
+import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.xml.io.XMLCellReader;
 import org.xml.sax.InputSource;
 
@@ -87,7 +87,7 @@ class JSONNodeCellReader implements JSONCellReader {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(JSONValue.class.getClassLoader());
-            ObjectMapper mapper = JacksonConversionsImpl.newMapper().registerModule(new JSR353Module());
+            ObjectMapper mapper = JacksonConversions.getInstance().newMapper().registerModule(new JSR353Module());
             ObjectReader reader = mapper.reader();
             JsonFactory factory = reader.getFactory();
             factory = factory.configure(JsonParser.Feature.ALLOW_COMMENTS, allowComments);

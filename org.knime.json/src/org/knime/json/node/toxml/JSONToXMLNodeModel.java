@@ -23,7 +23,6 @@ import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.json.internal.Activator;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import org.knime.json.util.Json2Xml;
 
@@ -99,7 +98,7 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
     @Override
     protected CellFactory createCellFactory(final DataColumnSpec output, final int inputIndex,
         final int... otherColumns) {
-        final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final JacksonConversions conv = JacksonConversions.getInstance();
         final Json2Xml converter = createConverter();
 
         //final XMLInputFactory fact = new InputFactoryProviderImpl().createInputFactory();

@@ -32,7 +32,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 /**
  * This is the model implementation of the "JSONSchemaCheck" node. Checks a JSON column's values against a Schema and
  * fails if it do not match.
- * 
+ *
  * @author Gabor Bakos
  */
 public final class JSONSchemaCheckNodeModel extends NodeModel {
@@ -91,7 +91,7 @@ public final class JSONSchemaCheckNodeModel extends NodeModel {
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
         throws Exception {
-        final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final JacksonConversions conv = JacksonConversions.getInstance();
         final JsonSchema schema;
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {

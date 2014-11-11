@@ -81,7 +81,6 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
-import org.knime.json.internal.Activator;
 import org.knime.json.node.util.GUIFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -95,8 +94,6 @@ import com.github.fge.jackson.jsonpointer.JsonPointerException;
  * @author Gabor Bakos
  */
 public class JsonPointer extends AggregationOperator {
-    private static final JacksonConversions CONV = Activator.getInstance().getJacksonConversions();
-
     private static final String RESULT_TYPE = "result type", JSON_POINTER = "json pointer",
             NO_MATCH_HANDLING = "on no match";
 
@@ -218,7 +215,7 @@ public class JsonPointer extends AggregationOperator {
     protected boolean computeInternal(final DataCell cell) {
         if (cell instanceof JSONValue) {
             JSONValue jv = (JSONValue)cell;
-            JsonNode jsonNode = m_jsonPointer.path(CONV.toJackson(jv.getJsonValue()));
+            JsonNode jsonNode = m_jsonPointer.path(JacksonConversions.getInstance().toJackson(jv.getJsonValue()));
             if (jsonNode.isMissingNode()) {
                 if (m_noMatchFail.isSelected()) {
                     throw new IllegalArgumentException("Could not select \"" + m_pointer.getText() + "\" from "
@@ -260,8 +257,8 @@ public class JsonPointer extends AggregationOperator {
         if (m_missing) {
             return DataType.getMissingCell();
         }
-        return m_resultIsJsonArray.isSelected() ? JSONCellFactory.create(CONV.toJSR353(m_array))
-            : CollectionCellFactory.createListCell(m_cells);
+        return m_resultIsJsonArray.isSelected() ? JSONCellFactory.create(JacksonConversions.getInstance().toJSR353(
+            m_array)) : CollectionCellFactory.createListCell(m_cells);
     }
 
     /**

@@ -123,7 +123,7 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
     @Override
     protected CellFactory createCellFactory(final DataColumnSpec output, final int inputIndex,
         final int... otherColumns) {
-        final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final JacksonConversions conv = JacksonConversions.getInstance();
         Configuration jsonPathConfiguration = Activator.getInstance().getJsonPathConfiguration();
         List<Option> options = new ArrayList<>();
         if (getSettings().isReturnPaths()) {

@@ -45,7 +45,7 @@
  * History
  *   08.03.2011 (hofer): created
  */
-package org.knime.core.data.json.io;
+package org.knime.core.data.json.internal;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,7 +55,7 @@ import javax.json.JsonValue;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellWriter;
 import org.knime.core.data.json.JSONValue;
-import org.knime.core.data.json.internal.JacksonConversionsImpl;
+import org.knime.core.data.json.JacksonConversions;
 
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -90,7 +90,8 @@ class JSONMultiCellWriter implements JSONCellWriter {
         final ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(JSONValue.class.getClassLoader());
-            ObjectMapper mapper = JacksonConversionsImpl.newMapper().configure(Feature.AUTO_CLOSE_TARGET, false)
+            ObjectMapper mapper =
+                JacksonConversions.getInstance().newMapper().configure(Feature.AUTO_CLOSE_TARGET, false)
                     .configure(Feature.AUTO_CLOSE_JSON_CONTENT, false);
             m_writer = mapper.registerModule(new JSR353Module());
             m_writer.disable(SerializationFeature.CLOSE_CLOSEABLE);

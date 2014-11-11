@@ -18,7 +18,6 @@ import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.json.internal.Activator;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,7 +46,7 @@ public final class JSONPatchCreateNodeModel extends SingleColumnReplaceOrAddNode
     protected CellFactory createCellFactory(final DataColumnSpec output, final int inputIndex,
         final int... otherColumns) throws IOException {
         final int rightIndex = otherColumns[0];
-        final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final JacksonConversions conv = JacksonConversions.getInstance();
         //final JsonPatch patch = JsonPatch.fromJson(patchNode);
         return new SingleCellFactory(output) {
             @Override

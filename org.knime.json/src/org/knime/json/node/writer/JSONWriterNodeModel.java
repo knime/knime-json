@@ -36,7 +36,6 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.FileUtil;
-import org.knime.json.internal.Activator;
 import org.knime.json.node.util.ReplaceOrAddColumnSettings;
 
 /**
@@ -281,7 +280,7 @@ public final class JSONWriterNodeModel extends NodeModel {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec) throws Exception {
         BufferedDataTable table = inData[0];
         DataTableSpec inputSpec = inData[0].getSpec();
-        JSONCellWriterFactory factory = Activator.getInstance().getJsonCellWriterFactory();
+        JSONCellWriterFactory factory = JSONCellWriterFactory.getInstance();
         int index = inputSpec.findColumnIndex(m_settings.getInputColumn());
         List<URIContent> uriContents = new ArrayList<>();
         double max = table.getRowCount();

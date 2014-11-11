@@ -53,16 +53,34 @@ import javax.json.JsonValue;
 import org.knime.core.data.json.internal.JacksonConversionsImpl;
 
 import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * An interface to convert between JSR-353 {@link JsonValue}s and Jackson {@link JsonNode}s.
  *
  * @author Gabor Bakos
  * @since 2.11
- * @see #DEFAULT
  */
-public interface JacksonConversions {
+public abstract class JacksonConversions {
+    /**
+     * Return a preconfigured {@link ObjectMapper}
+     *
+     * <p>The returned mapper will have the following features enabled:</p>
+     *
+     * <ul>
+     *     <li>{@link DeserializationFeature#USE_BIG_DECIMAL_FOR_FLOATS};</li>
+     *     <li>{@link SerializationFeature#WRITE_BIGDECIMAL_AS_PLAIN};</li>
+     *     <li>{@link SerializationFeature#INDENT_OUTPUT}.</li>
+     * </ul>
+     *
+     * <p>This returns a new instance each time.</p>
+     *
+     * @return an {@link ObjectMapper}
+     */
+    public abstract ObjectMapper newMapper();
 
     /**
      * @param input A JSR-353 {@link JsonValue}.
@@ -78,6 +96,10 @@ public interface JacksonConversions {
 
     /**
      * Default implementation of {@link JacksonConversions}.
+     *
+     * @return a new instance
      */
-    public static final JacksonConversions DEFAULT = new JacksonConversionsImpl();
+    public static JacksonConversions getInstance() {
+        return JacksonConversionsImpl.INSTANCE;
+    }
 }

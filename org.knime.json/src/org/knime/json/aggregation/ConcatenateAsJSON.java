@@ -57,7 +57,6 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
-import org.knime.json.internal.Activator;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.fge.jackson.JacksonUtils;
@@ -76,8 +75,6 @@ public class ConcatenateAsJSON extends AggregationOperator {
     private ArrayNode initArray() {
         return new ArrayNode(JacksonUtils.nodeFactory());
     }
-
-    private final JacksonConversions m_conv = Activator.getInstance().getJacksonConversions();
 
     /**
      *
@@ -135,7 +132,7 @@ public class ConcatenateAsJSON extends AggregationOperator {
     protected boolean computeInternal(final DataCell cell) {
         if (cell instanceof JSONValue) {
             JSONValue jsonVal = (JSONValue)cell;
-            m_array.add(m_conv.toJackson(jsonVal.getJsonValue()));
+            m_array.add(JacksonConversions.getInstance().toJackson(jsonVal.getJsonValue()));
         }
         return false;
     }
@@ -156,7 +153,7 @@ public class ConcatenateAsJSON extends AggregationOperator {
      */
     @Override
     protected DataCell getResultInternal() {
-        return JSONCellFactory.create(m_conv.toJSR353(m_array));
+        return JSONCellFactory.create(JacksonConversions.getInstance().toJSR353(m_array));
     }
 
     /**

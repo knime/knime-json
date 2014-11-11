@@ -32,7 +32,6 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.util.FileUtil;
-import org.knime.json.internal.Activator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
@@ -95,7 +94,7 @@ public final class JSONReaderNodeModel extends NodeModel {
         } catch (JsonPointerException e) {
             throw new IllegalStateException("The pointer has invalid syntax: " + m_settings.getJsonPointer());
         }
-        JacksonConversions jacksonConversions = Activator.getInstance().getJacksonConversions();
+        JacksonConversions jacksonConversions = JacksonConversions.getInstance();
         try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL())) {
             //do {
             JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader, m_settings.isAllowComments());

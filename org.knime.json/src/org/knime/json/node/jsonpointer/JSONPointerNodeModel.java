@@ -30,7 +30,6 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.json.internal.Activator;
 import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
@@ -109,7 +108,7 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
     @Override
     protected CellFactory createCellFactory(final DataColumnSpec output, final int inputIndex,
         final int... otherColumns) {
-        final JacksonConversions conv = Activator.getInstance().getJacksonConversions();
+        final JacksonConversions conv = JacksonConversions.getInstance();
         final JsonPointer pointer;
         try {
             pointer = new JsonPointer(getSettings().getJsonPointer());

@@ -56,7 +56,6 @@ import javax.json.spi.JsonProvider;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.knime.core.data.json.internal.JacksonConversionsImpl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -74,7 +73,7 @@ public class TestJacksonConversions {
      */
     @Before
     public void serviceReference() {
-        m_conversions = new JacksonConversionsImpl();
+        m_conversions = JacksonConversions.getInstance();
     }
 
     /**
@@ -82,7 +81,6 @@ public class TestJacksonConversions {
      */
     @Test
     public void testToJackson() {
-        // JsonValue input = JsonProvider.provider().createObjectBuilder().add("hello", "world").build();
         JsonValue input = JsonProvider.provider().createObjectBuilder().add("hello", "world").build();
         JsonNode node = m_conversions.toJackson(input);
         assertEquals(norm(input.toString()), norm(node.toString()));
@@ -94,7 +92,7 @@ public class TestJacksonConversions {
      */
     @Test
     public void testToJSR353() {
-        JsonNode input = JacksonConversionsImpl.newMapper().createObjectNode().put("hello", "world");
+        JsonNode input = m_conversions.newMapper().createObjectNode().put("hello", "world");
         JsonValue node = m_conversions.toJSR353(input);
         assertEquals(norm(input.toString()), norm(node.toString()));
     }

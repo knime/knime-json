@@ -43,45 +43,74 @@
  * ------------------------------------------------------------------------
  *
  * History
- *   08.03.2011 (hofer): created
+ *   09.03.2011 (hofer): created
  */
 package org.knime.core.data.json.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.Reader;
 
-import org.knime.core.data.json.JSONCellWriter;
+import org.knime.core.data.xml.io.XMLCellReaderFactory;
 
 /**
- * Factory class to create @link{JSONCellWriter}. <br/>
- * Based on {@link org.knime.core.data.xml.io.XMLCellWriterFactory}.
+ * Factory class for {@link JSONCellReader}. <br/>
+ * Based on {@link XMLCellReaderFactory}.
  *
- * @author Heiko Hofer
+ * @since 2.11
+ *
  * @author Gabor Bakos
+ * @author Heiko Hofer
  */
-public class JSONCellWriterFactory implements org.knime.core.data.json.JSONCellWriterFactory {
+public class JSONCellReaderFactoryImpl {
     /**
-     * Creates the factory.
-     */
-    public JSONCellWriterFactory() {
-    }
-
-    /**
-     * Create writer to write JSON cells.
+     * Creates a {@link JSONCellReader} to read a single cell from given
+     * 
+     * @link{InputStream . <br/>
+     *                   It does not allow comments within JSON content.
      *
-     * @param os the JSON cells are written to this resource (with the default -{@code UTF-8}- encoding).
-     * @return the @link{JSONWriter}
-     * @throws IOException when writer could not be initialized and when header could not be written
+     * @param is the JSON document
+     * @return {@link JSONCellReader} to read a single cell from given {@link InputStream} using the default
+     *         {@code UTF-8} encoding.
      */
-    public static JSONCellWriter createJSONCellWriter(final OutputStream os) throws IOException {
-        return new JSONMultiCellWriter(os);
+    public static JSONCellReader createJSONCellReader(final InputStream is) {
+        return new JSONNodeCellReader(is);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a {@link JSONCellReader} to read a single cell from given
+     * 
+     * @link{InputStream .
+     *
+     * @param is the JSON document
+     * @param allowComments allow or not comments in the document
+     * @return {@link JSONCellReader} to read a single cell from given {@link InputStream} using the default
+     *         {@code UTF-8} encoding.
      */
-    @Override
-    public JSONCellWriter create(final OutputStream os) throws IOException {
-        return new JSONMultiCellWriter(os);
+    public static JSONCellReader createJSONCellReader(final InputStream is, final boolean allowComments) {
+        return new JSONNodeCellReader(is, allowComments);
+    }
+
+    /**
+     * Creates a {@link JSONCellReader} to read a single cell from given {@link Reader}. <br/>
+     * It does not allow comments within the JSON documents.
+     *
+     * @param reader a reader for the JSON document
+     * @return @link{JSONCellReader} to read a single cell from given
+     * @link{InputStream .
+     */
+    public static JSONCellReader createJSONCellReader(final Reader reader) {
+        return new JSONNodeCellReader(reader);
+    }
+
+    /**
+     * Creates a {@link JSONCellReader} to read a single cell from given {@link Reader}
+     *
+     * @param reader a reader for the JSON document
+     * @param allowComments allow or not comments in the document
+     * @return @link{JSONCellReader} to read a single cell from given
+     * @link{InputStream .
+     */
+    public static JSONCellReader createJSONCellReader(final Reader reader, final boolean allowComments) {
+        return new JSONNodeCellReader(reader, allowComments);
     }
 }
