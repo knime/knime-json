@@ -50,6 +50,8 @@ package org.knime.core.data.json;
 
 import javax.json.JsonValue;
 
+import org.knime.core.data.json.internal.JacksonConversionsImpl;
+
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -58,6 +60,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  *
  * @author Gabor Bakos
  * @since 2.11
+ * @see #DEFAULT
  */
 public interface JacksonConversions {
 
@@ -72,4 +75,9 @@ public interface JacksonConversions {
      * @return The converted JSR-353 {@link JsonValue}.
      */
     public abstract JsonValue toJSR353(TreeNode input);
+
+    /**
+     * Default implementation of {@link JacksonConversions}.
+     */
+    public static final JacksonConversions DEFAULT = new JacksonConversionsImpl();
 }

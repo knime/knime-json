@@ -56,6 +56,7 @@ import java.io.OutputStream;
  *
  * @author Gabor Bakos
  * @since 2.11
+ * @see #DEFAULT
  */
 public interface JSONCellWriterFactory {
 
@@ -66,4 +67,9 @@ public interface JSONCellWriterFactory {
      * @throws IOException Problem during save.
      */
     JSONCellWriter create(OutputStream os) throws IOException;
+
+    /**
+     * Default implementation of {@link JSONCellWriterFactory}.
+     */
+    public static final JSONCellWriterFactory DEFAULT = new org.knime.core.data.json.io.JSONCellWriterFactory();
 }
