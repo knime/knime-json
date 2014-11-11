@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME GmbH, Konstanz, Germany
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
@@ -40,42 +41,79 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ------------------------------------------------------------------------
+ * ---------------------------------------------------------------------
  *
  * History
- *   09.03.2011 (hofer): created
+ *   11.11.2014 (thor): created
  */
-package org.knime.core.data.json.io;
+package org.knime.core.data.json;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
-import org.knime.core.data.json.JSONValue;
+import org.knime.core.data.json.internal.JSONCellReaderFactoryImpl;
+import org.knime.core.data.xml.io.XMLCellReaderFactory;
 
 /**
- * An object to read @link{DataCell}s that can safely be casted to
- * 
- * @link{JSONValue . <br/>
- *                 Based on {@link org.knime.core.data.xml.io.XMLCellReader}.
+ * Factory class for {@link JSONCellReader}. <br/>
+ * Based on {@link XMLCellReaderFactory}.
+ *
  * @since 2.11
  *
  * @author Gabor Bakos
  * @author Heiko Hofer
  */
-public interface JSONCellReader extends AutoCloseable {
+public abstract class JSONCellReaderFactory {
     /**
-     * Reads the next JSON @link{DataCell}.
+     * Creates a {@link JSONCellReader} to read a single cell from given
      *
-     * @return The next @link{DataCell} or null when there is nothing to read. Note that this data cell implements
-     *         @link{JSONValue}.
-     * @throws IOException If an error occurred during the read process.
+     * @link{InputStream . <br/>
+     *                   It does not allow comments within JSON content.
+     *
+     * @param is the JSON document
+     * @return {@link JSONCellReader} to read a single cell from given {@link InputStream} using the default
+     *         {@code UTF-8} encoding.
      */
-    JSONValue readJSON() throws IOException;
+    public abstract JSONCellReader createJSONCellReader(final InputStream is);
 
     /**
-     * Closes any resources need for the read process.
-     * 
-     * @throws IOException If an error occurred.
+     * Creates a {@link JSONCellReader} to read a single cell from given
+     *
+     * @link{InputStream .
+     *
+     * @param is the JSON document
+     * @param allowComments allow or not comments in the document
+     * @return {@link JSONCellReader} to read a single cell from given {@link InputStream} using the default
+     *         {@code UTF-8} encoding.
      */
-    @Override
-    void close() throws IOException;
+    public abstract JSONCellReader createJSONCellReader(final InputStream is, final boolean allowComments);
+
+    /**
+     * Creates a {@link JSONCellReader} to read a single cell from given {@link Reader}. <br/>
+     * It does not allow comments within the JSON documents.
+     *
+     * @param reader a reader for the JSON document
+     * @return @link{JSONCellReader} to read a single cell from given
+     * @link{InputStream .
+     */
+    public abstract JSONCellReader createJSONCellReader(final Reader reader);
+
+    /**
+     * Creates a {@link JSONCellReader} to read a single cell from given {@link Reader}
+     *
+     * @param reader a reader for the JSON document
+     * @param allowComments allow or not comments in the document
+     * @return @link{JSONCellReader} to read a single cell from given
+     * @link{InputStream .
+     */
+    public abstract JSONCellReader createJSONCellReader(final Reader reader, final boolean allowComments);
+
+    /**
+     * Returns an instance of a {@link JSONCellReaderFactory}.
+     *
+     * @return a new instance
+     */
+    public static JSONCellReaderFactory getInstance() {
+        return JSONCellReaderFactoryImpl.INSTANCE;
+    }
 }

@@ -76,7 +76,7 @@ public class TestJSONCellWriter {
     public void testCreateJSONCellWriter() throws IOException {
         String reference = "{}";
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (JSONCellWriter writer = org.knime.core.data.json.internal.JSONCellWriterFactoryImpl.createJSONCellWriter(baos)) {
+        try (JSONCellWriter writer = JSONCellWriterFactory.getInstance().create(baos)) {
             writer.write((JSONValue)JSONCellFactory.create(reference, false));
         }
         String got = toString(baos);

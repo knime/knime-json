@@ -45,11 +45,13 @@
  * History
  *   09.03.2011 (hofer): created
  */
-package org.knime.core.data.json.io;
+package org.knime.core.data.json.internal;
 
 import java.io.InputStream;
 import java.io.Reader;
 
+import org.knime.core.data.json.JSONCellReader;
+import org.knime.core.data.json.JSONCellReaderFactory;
 import org.knime.core.data.xml.io.XMLCellReaderFactory;
 
 /**
@@ -61,10 +63,18 @@ import org.knime.core.data.xml.io.XMLCellReaderFactory;
  * @author Gabor Bakos
  * @author Heiko Hofer
  */
-public class JSONCellReaderFactoryImpl {
+public class JSONCellReaderFactoryImpl extends JSONCellReaderFactory {
+    /**
+     * Singleton instance.
+     */
+    public static final JSONCellReaderFactory INSTANCE = new JSONCellReaderFactoryImpl();
+
+    private JSONCellReaderFactoryImpl() {}
+
+
     /**
      * Creates a {@link JSONCellReader} to read a single cell from given
-     * 
+     *
      * @link{InputStream . <br/>
      *                   It does not allow comments within JSON content.
      *
@@ -72,13 +82,14 @@ public class JSONCellReaderFactoryImpl {
      * @return {@link JSONCellReader} to read a single cell from given {@link InputStream} using the default
      *         {@code UTF-8} encoding.
      */
-    public static JSONCellReader createJSONCellReader(final InputStream is) {
+    @Override
+    public JSONCellReader createJSONCellReader(final InputStream is) {
         return new JSONNodeCellReader(is);
     }
 
     /**
      * Creates a {@link JSONCellReader} to read a single cell from given
-     * 
+     *
      * @link{InputStream .
      *
      * @param is the JSON document
@@ -86,7 +97,8 @@ public class JSONCellReaderFactoryImpl {
      * @return {@link JSONCellReader} to read a single cell from given {@link InputStream} using the default
      *         {@code UTF-8} encoding.
      */
-    public static JSONCellReader createJSONCellReader(final InputStream is, final boolean allowComments) {
+    @Override
+    public JSONCellReader createJSONCellReader(final InputStream is, final boolean allowComments) {
         return new JSONNodeCellReader(is, allowComments);
     }
 
@@ -98,7 +110,8 @@ public class JSONCellReaderFactoryImpl {
      * @return @link{JSONCellReader} to read a single cell from given
      * @link{InputStream .
      */
-    public static JSONCellReader createJSONCellReader(final Reader reader) {
+    @Override
+    public JSONCellReader createJSONCellReader(final Reader reader) {
         return new JSONNodeCellReader(reader);
     }
 
@@ -110,7 +123,8 @@ public class JSONCellReaderFactoryImpl {
      * @return @link{JSONCellReader} to read a single cell from given
      * @link{InputStream .
      */
-    public static JSONCellReader createJSONCellReader(final Reader reader, final boolean allowComments) {
+    @Override
+    public JSONCellReader createJSONCellReader(final Reader reader, final boolean allowComments) {
         return new JSONNodeCellReader(reader, allowComments);
     }
 }

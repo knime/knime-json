@@ -45,7 +45,7 @@
  * History
  *   31.03.2011 (hofer): created
  */
-package org.knime.core.data.json.io;
+package org.knime.core.data.json.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +54,7 @@ import java.io.Reader;
 import javax.json.JsonValue;
 
 import org.knime.core.data.json.JSONCellFactory;
+import org.knime.core.data.json.JSONCellReader;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.xml.io.XMLCellReader;

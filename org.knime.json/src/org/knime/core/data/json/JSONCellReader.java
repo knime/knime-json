@@ -43,40 +43,38 @@
  * ------------------------------------------------------------------------
  *
  * History
- *   08.03.2011 (hofer): created
+ *   09.03.2011 (hofer): created
  */
-package org.knime.core.data.json.internal;
+package org.knime.core.data.json;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
-import org.knime.core.data.json.JSONCellWriter;
-import org.knime.core.data.json.JSONCellWriterFactory;
 
 /**
- * Factory class to create @link{JSONCellWriter}. <br/>
- * Based on {@link org.knime.core.data.xml.io.XMLCellWriterFactory}.
+ * An object to read @link{DataCell}s that can safely be casted to
+ * 
+ * @link{JSONValue . <br/>
+ *                 Based on {@link org.knime.core.data.xml.io.XMLCellReader}.
+ * @since 2.11
  *
- * @author Heiko Hofer
  * @author Gabor Bakos
+ * @author Heiko Hofer
  */
-public class JSONCellWriterFactoryImpl extends JSONCellWriterFactory {
+public interface JSONCellReader extends AutoCloseable {
     /**
-     * Singleton instance.
+     * Reads the next JSON @link{DataCell}.
+     *
+     * @return The next @link{DataCell} or null when there is nothing to read. Note that this data cell implements
+     *         @link{JSONValue}.
+     * @throws IOException If an error occurred during the read process.
      */
-    public static final JSONCellWriterFactory INSTANCE = new JSONCellWriterFactoryImpl();
+    JSONValue readJSON() throws IOException;
 
     /**
-     * Creates the factory.
-     */
-    private JSONCellWriterFactoryImpl() {
-    }
-
-    /**
-     * {@inheritDoc}
+     * Closes any resources need for the read process.
+     * 
+     * @throws IOException If an error occurred.
      */
     @Override
-    public JSONCellWriter create(final OutputStream os) throws IOException {
-        return new JSONMultiCellWriter(os);
-    }
+    void close() throws IOException;
 }

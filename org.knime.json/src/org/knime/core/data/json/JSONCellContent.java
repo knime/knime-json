@@ -56,9 +56,6 @@ import java.lang.ref.SoftReference;
 
 import javax.json.JsonValue;
 
-import org.knime.core.data.json.internal.JSONCellWriterFactoryImpl;
-import org.knime.core.data.json.io.JSONCellReader;
-import org.knime.core.data.json.io.JSONCellReaderFactoryImpl;
 import org.knime.core.data.xml.XMLCellContent;
 import org.knime.core.node.NodeLogger;
 
@@ -188,7 +185,7 @@ public class JSONCellContent implements JSONValue {
 
     private static String serialize(final JsonValue json) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try (JSONCellWriter writer = JSONCellWriterFactoryImpl.createJSONCellWriter(os)) {
+        try (JSONCellWriter writer = JSONCellWriterFactory.getInstance().create(os)) {
             writer.write(new JSONValue() {
                 @Override
                 public JsonValue getJsonValue() {
@@ -205,19 +202,20 @@ public class JSONCellContent implements JSONValue {
 
     private static JsonValue parse(final String jsonString, final boolean allowComments) throws IOException {
         try (JSONCellReader reader =
-            JSONCellReaderFactoryImpl.createJSONCellReader(new StringReader(jsonString), allowComments)) {
+            JSONCellReaderFactory.getInstance().createJSONCellReader(new StringReader(jsonString), allowComments)) {
             return reader.readJSON().getJsonValue();
         }
     }
 
     private static JsonValue parse(final InputStream is, final boolean allowComments) throws IOException {
-        try (JSONCellReader reader = JSONCellReaderFactoryImpl.createJSONCellReader(is, allowComments)) {
+        try (JSONCellReader reader = JSONCellReaderFactory.getInstance().createJSONCellReader(is, allowComments)) {
             return reader.readJSON().getJsonValue();
         }
     }
 
     private static JsonValue parse(final Reader reader, final boolean allowComments) throws IOException {
-        try (JSONCellReader jsonReader = JSONCellReaderFactoryImpl.createJSONCellReader(reader, allowComments)) {
+        try (JSONCellReader jsonReader =
+            JSONCellReaderFactory.getInstance().createJSONCellReader(reader, allowComments)) {
             return jsonReader.readJSON().getJsonValue();
         }
     }
