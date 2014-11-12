@@ -67,10 +67,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 
 /**
- * A @link{JSONCellReader} to read a single cell from given
- *
- * @link{InputStream . <br/>
- *                   Based on {@link XMLCellReader}.
+ * A @link{JSONCellReader} to read a single cell from given @link{InputStream}.<br/>
+ * Based on {@link XMLCellReader}.
  *
  * @author Heiko Hofer
  * @author Gabor Bakos
@@ -84,20 +82,13 @@ class JSONNodeCellReader implements JSONCellReader {
 
     private JSONNodeCellReader(final InputSource is, final boolean allowComments) {
         m_in = is;
-        //JsonProvider provider = JsonProvider.provider();
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(JSONValue.class.getClassLoader());
-            ObjectMapper mapper = JacksonConversions.getInstance().newMapper().registerModule(new JSR353Module());
-            ObjectReader reader = mapper.reader();
-            JsonFactory factory = reader.getFactory();
-            factory = factory.configure(JsonParser.Feature.ALLOW_COMMENTS, allowComments);
-            factory = factory.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, allowComments);
-            reader = reader.with(factory);
-            m_builder = reader;
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+        ObjectMapper mapper = JacksonConversions.getInstance().newMapper().registerModule(new JSR353Module());
+        ObjectReader reader = mapper.reader();
+        JsonFactory factory = reader.getFactory();
+        factory = factory.configure(JsonParser.Feature.ALLOW_COMMENTS, allowComments);
+        factory = factory.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, allowComments);
+        reader = reader.with(factory);
+        m_builder = reader;
     }
 
     /**
@@ -133,22 +124,16 @@ class JSONNodeCellReader implements JSONCellReader {
     public JSONValue readJSON() throws IOException {
         if (m_first) {
             m_first = false;
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(JSONValue.class.getClassLoader());
-                final JsonFactory jsonFactory = m_builder.getFactory();
-                JsonValue json;
-                Reader characterStream = m_in.getCharacterStream();
-                //Class<?> cls = Activator.getJsonProviderClassLoader().loadClass("javax.json.JsonValue");
-                if (characterStream != null) {
-                    json = m_builder.readValue(jsonFactory.createParser(characterStream), JsonValue.class);
-                } else {
-                    json = m_builder.readValue(jsonFactory.createParser(m_in.getByteStream()), JsonValue.class);
-                }
-                return (JSONValue)JSONCellFactory.create(json);
-            } finally {
-                Thread.currentThread().setContextClassLoader(cl);
+            final JsonFactory jsonFactory = m_builder.getFactory();
+            JsonValue json;
+            Reader characterStream = m_in.getCharacterStream();
+            //Class<?> cls = Activator.getJsonProviderClassLoader().loadClass("javax.json.JsonValue");
+            if (characterStream != null) {
+                json = m_builder.readValue(jsonFactory.createParser(characterStream), JsonValue.class);
+            } else {
+                json = m_builder.readValue(jsonFactory.createParser(m_in.getByteStream()), JsonValue.class);
             }
+            return (JSONValue)JSONCellFactory.create(json);
         } else {
             return null;
         }

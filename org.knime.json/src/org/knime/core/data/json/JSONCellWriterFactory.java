@@ -62,7 +62,6 @@ import org.knime.core.data.json.internal.JSONCellWriterFactoryImpl;
 public abstract class JSONCellWriterFactory {
     /**
      * @param os A non-{@link OutputStream#close() closed}, non-{@code null} {@link OutputStream}.
-     * @param format the serialization format
      * @return The {@link JSONCellWriter} writing to {@code os}.
      * @throws IOException Problem during save.
      */

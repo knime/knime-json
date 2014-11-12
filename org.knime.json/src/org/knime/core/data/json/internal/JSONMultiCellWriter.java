@@ -87,17 +87,11 @@ class JSONMultiCellWriter implements JSONCellWriter {
      * Initialize the stream writer object.
      */
     private void initWriter() {
-        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(JSONValue.class.getClassLoader());
-            ObjectMapper mapper =
-                JacksonConversions.getInstance().newMapper().configure(Feature.AUTO_CLOSE_TARGET, false)
-                    .configure(Feature.AUTO_CLOSE_JSON_CONTENT, false);
-            m_writer = mapper.registerModule(new JSR353Module());
-            m_writer.disable(SerializationFeature.CLOSE_CLOSEABLE);
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+        ObjectMapper mapper =
+            JacksonConversions.getInstance().newMapper().configure(Feature.AUTO_CLOSE_TARGET, false)
+                .configure(Feature.AUTO_CLOSE_JSON_CONTENT, false);
+        m_writer = mapper.registerModule(new JSR353Module());
+        m_writer.disable(SerializationFeature.CLOSE_CLOSEABLE);
     }
 
     /**
@@ -117,5 +111,4 @@ class JSONMultiCellWriter implements JSONCellWriter {
         // close stream since m_writer.close() does no necessarily do it
         m_os.close();
     }
-
 }

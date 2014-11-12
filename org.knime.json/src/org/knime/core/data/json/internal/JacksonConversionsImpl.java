@@ -50,7 +50,6 @@ package org.knime.core.data.json.internal;
 
 import javax.json.JsonValue;
 
-import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 
 import com.fasterxml.jackson.core.TreeNode;
@@ -92,14 +91,7 @@ public final class JacksonConversionsImpl extends JacksonConversions {
      */
     @Override
     public JsonNode toJackson(final JsonValue input) {
-        Thread currentThread = Thread.currentThread();
-        ClassLoader cl = currentThread.getContextClassLoader();
-        try {
-            currentThread.setContextClassLoader(JSONValue.class.getClassLoader());
-            return m_mapper.convertValue(input, JsonNode.class);
-        } finally {
-            currentThread.setContextClassLoader(cl);
-        }
+        return m_mapper.convertValue(input, JsonNode.class);
     }
 
     /**
@@ -107,13 +99,6 @@ public final class JacksonConversionsImpl extends JacksonConversions {
      */
     @Override
     public JsonValue toJSR353(final TreeNode input) {
-        Thread currentThread = Thread.currentThread();
-        ClassLoader cl = currentThread.getContextClassLoader();
-        try {
-            currentThread.setContextClassLoader(JSONValue.class.getClassLoader());
-            return m_mapper.convertValue(input, JsonValue.class);
-        } finally {
-            currentThread.setContextClassLoader(cl);
-        }
+        return m_mapper.convertValue(input, JsonValue.class);
     }
 }
