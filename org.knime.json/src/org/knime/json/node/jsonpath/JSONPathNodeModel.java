@@ -166,7 +166,7 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                             }
                             return CollectionCellFactory.createListCell(cells);
                         }
-                        if (getSettings().getOnMultipleResults().supportsConcatenate(returnType) && values.size() > 1) {
+                        if (!getSettings().isResultIsList() && getSettings().getOnMultipleResults().supportsConcatenate(returnType) && values.size() > 1) {
                             //Concatenate
                             JsonNodeFactory jsonNodeFactory = JsonNodeFactory.withExactBigDecimals(true);
                             switch (returnType) {

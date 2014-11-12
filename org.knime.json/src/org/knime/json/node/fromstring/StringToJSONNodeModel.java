@@ -77,12 +77,12 @@ final class StringToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<Stri
                         return JSONCellFactory.create(sv.getStringValue(), getSettings().isAllowComments());
                     }
                     if (getSettings().isFailOnError()) {
-                        throw new IllegalStateException("Not supported type: " + cell.getType());
+                        throw new IllegalStateException("Not supported type: " + cell.getType() + " in row: " + row.getKey());
                     }
                     return DataType.getMissingCell();
                 } catch (IOException | RuntimeException e) {
                     if (getSettings().isFailOnError()) {
-                        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
+                        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e.getMessage() + "\nin row: " + row.getKey(), e));
                     }
                     return new MissingCell(e.getMessage());
                 }
