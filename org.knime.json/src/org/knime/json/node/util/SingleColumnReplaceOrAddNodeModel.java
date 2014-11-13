@@ -252,8 +252,8 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends ReplaceOrAddCo
         final int inputIndex = inSpecs.findColumnIndex(input);
         final int[] otherIndices = findOtherIndices(inSpecs);
         String newColumnName = m_settings.getNewColumnName();
-        if (newColumnName == null) {
-            newColumnName = input;
+        if (newColumnName == null || newColumnName.trim().isEmpty()) {
+            throw new InvalidSettingsException("Please specify the output column's name");
         }
         String outputColName =
             DataTableSpec.getUniqueColumnName(inSpecs, newColumnName);

@@ -48,7 +48,7 @@ public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettin
         gbc.gridx = 0;
         panel.add(new JLabel("JSONPointer:"), gbc);
         gbc.gridx = 1;
-        m_pointer = GUIFactory.createTextField("", 33);
+        m_pointer = GUIFactory.createTextField("", 11);
         panel.add(m_pointer, gbc);
         gbc.gridy++;
 

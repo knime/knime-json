@@ -148,12 +148,12 @@ public class ReplaceOrAddColumnSettings {
      */
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         String inputColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.INPUT_COLUMN);
-        if (inputColumnName.isEmpty()) {
+        if (inputColumnName == null || inputColumnName.isEmpty()) {
             throw new InvalidSettingsException("No input column was selected!");
         }
         settings.getBoolean(SingleColumnReplaceOrAddNodeModel.REMOVE_SOURCE);
         String newColumnName = settings.getString(SingleColumnReplaceOrAddNodeModel.NEW_COLUMN_NAME);
-        if (newColumnName.trim().isEmpty()) {
+        if (newColumnName == null || newColumnName.trim().isEmpty()) {
             throw new InvalidSettingsException("No new column name was specified!");
         }
 
