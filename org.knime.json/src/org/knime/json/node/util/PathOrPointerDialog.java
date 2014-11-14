@@ -71,12 +71,6 @@ import org.knime.core.node.port.PortObjectSpec;
  * @param <S> The type of the implementation-specific {@link PathOrPointerSettings}.
  */
 public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> extends ReplaceOrAddColumnDialog<S> {
-//    /**
-//     *
-//     */
-//    private static final String NONE = "NONE";
-//    private CardLayout m_cardLayout;
-//    private EnumMap<OutputType, JPanel> m_configPanels;
     private DefaultComboBoxModel<OutputType> m_outputTypeModel;
 
     /**
@@ -107,47 +101,21 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
      * @return The new y position of {@link GridBagConstraints}.
      */
     protected int addOutputTypePanel(final JPanel panel, final int gridy) {
-//        m_configPanels = new EnumMap<>(OutputType.class);
         final GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = gridy;
-//        final JPanel typePanel = new JPanel(new GridBagLayout());
-//        typePanel.setName("Type selector and related configs");
-//        final JPanel subPanel = new JPanel();
-//        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.PAGE_AXIS));
-//        subPanel.setName("Just type selector");
-//        m_cardLayout = new CardLayout();
-//        final JPanel configPanel = new JPanel(m_cardLayout );
-//        configPanel.setName("Type-related configs");
-//        configPanel.add(new JLabel(), NONE);
-
 
         panel.add(new JLabel("Result type"), gbc);
         gbc.gridx = 1;
-//        gbc.gridwidth = 2;
-//        typePanel.setBorder(new TitledBorder("Result type"));
-//        GridBagConstraints gbcType = createInitialConstraints();
-//        typePanel.add(subPanel, gbcType);
-//        gbcType.gridy = 1;
-//        typePanel.add(configPanel, gbcType);
         m_outputTypeModel = new DefaultComboBoxModel<>(OutputType.values());
         final JComboBox<OutputType> outputTypes = new JComboBox<>(m_outputTypeModel);
-//        subPanel.add(outputTypes);
         outputTypes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 OutputType type = (OutputType)m_outputTypeModel.getSelectedItem();
-//                m_cardLayout.show(configPanel, type == null ? NONE : type.name());
                 outputTypeGotSelected(type);
             }});
-//        for (final OutputType type : OutputType.values()) {
-//            final JPanel specConfig = createConfigPanel(type);
-//            m_configPanels.put(type, specConfig);
-//            configPanel.add(specConfig, type.name());
-//        }
-//        panel.add(typePanel, gbc);
         panel.add(outputTypes, gbc);
         gbc.gridy++;
-//        gbc.gridwidth = 1;
 
         return gbc.gridy;
     }
@@ -159,16 +127,6 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
     protected void outputTypeGotSelected(final OutputType type) {
         //Do nothing by default
     }
-
-//    /**
-//     * @param type The {@link OutputType} to create the config panel.
-//     * @return The create config panel.
-//     */
-//    protected JPanel createConfigPanel(final OutputType type) {
-//        JPanel ret = new JPanel();
-//        ret.setName(type.name());
-//        return ret;
-//    }
 
     /**
      * {@inheritDoc}

@@ -34,7 +34,7 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
 
     private JCheckBox m_resultIsList;
 
-    private final JCheckBox m_returnPaths = new JCheckBox("Return the paths instead of values");
+    private JCheckBox m_returnPaths;
 
     private JLabel m_nonDefiniteWarning, m_syntaxError;
 
@@ -43,16 +43,6 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
      */
     protected JSONPathNodeDialog() {
         super(JSONPathNodeModel.createJSONPathProjectionSettings());
-        final JPanel advanced = new JPanel();
-        addTab("Advanced", advanced);
-        advanced.add(m_returnPaths);
-        m_returnPaths.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                updateEnabled();
-            }
-        });
-//        getPanel().setPreferredSize(new Dimension(600, 500));
         updateEnabled();
     }
 
@@ -60,7 +50,7 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
      * {@inheritDoc}
      */
     @Override
-    protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
+    protected void afterNewColumnName(final JPanel panel, final int afterInput) {
         m_nonDefiniteWarning = new JLabel("Path is non-definite");
         m_syntaxError = new JLabel();
         panel.setPreferredSize(new Dimension(800, 300));
@@ -92,6 +82,16 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
         gbc.gridy++;
         gbc.gridy = addOutputTypePanel(panel, gbc.gridy);
 
+        m_returnPaths = new JCheckBox("Return the paths instead of values");
+        m_returnPaths.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                updateEnabled();
+            }
+        });
+        panel.add(m_returnPaths, gbc);
+        gbc.gridy++;
+
         gbc.gridx = 0;
         panel.add(m_nonDefiniteWarning, gbc);
         m_nonDefiniteWarning.setVisible(false);
@@ -107,7 +107,6 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
                 updateEnabled();
             }
         });
-        return gbc.gridy;
     }
 
     private void updateEnabled() {
@@ -115,6 +114,7 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
             getOutputTypeModel().setSelectedItem(OutputType.String);
         }
         m_resultIsList.setEnabled(!m_returnPaths.isSelected());
+        m_resultIsList.setSelected(m_returnPaths.isSelected() || m_resultIsList.isSelected());
         OutputType selectedOutputType = (OutputType)getOutputTypeModel().getSelectedItem();
         if (!m_resultIsList.isSelected()) {
             EnumSet<OutputType> supportedOutputTypes =

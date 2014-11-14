@@ -34,6 +34,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.json.internal.Activator;
+import org.knime.json.node.util.ErrorHandling;
 import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
@@ -280,8 +281,7 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
      * @return The shortened (at most {@code atMost} character) long version of {@code string}.
      */
     protected String shorten(final String string, final int atMost) {
-        return string == null ? "null" : (string.length() > atMost) ? string.substring(0, atMost / 2) + "\u2026"
-            + string.substring(string.length() - atMost / 2) : string;
+        return ErrorHandling.shorten(string, atMost);
     }
 
     /**

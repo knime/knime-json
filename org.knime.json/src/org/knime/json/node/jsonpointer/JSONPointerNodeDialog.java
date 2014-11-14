@@ -39,8 +39,7 @@ public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettin
      * {@inheritDoc}
      */
     @Override
-    protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
-//        panel.setPreferredSize(new Dimension(800, 300));
+    protected void afterNewColumnName(final JPanel panel, final int afterInput) {
         m_error = new JLabel();
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = afterInput;
@@ -70,7 +69,7 @@ public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettin
                 updateError();
             }
         });
-        return addOutputTypePanel(panel, gbc.gridy);
+        addOutputTypePanel(panel, gbc.gridy);
     }
 
     /**
