@@ -69,19 +69,23 @@ public class Activator implements BundleActivator {
 
     private ClassLoader m_jsr353ClassLoader;
 
+    private ClassLoader m_jsonSchemaValidatorClassLoader;
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void start(final BundleContext ctx) throws Exception {
         INSTANCE = this;
-        Bundle jsonBundle = null, schemaCoreBundle = null, jsr353Bundle = null;
+        Bundle jsonBundle = null, schemaCoreBundle = null, schemaValidatorBundle = null, jsr353Bundle = null;
         for (Bundle b : ctx.getBundles()) {
             if ("com.jayway.jsonpath.json-path".equals(b.getSymbolicName())) {
                 jsonBundle = b;
                 //                } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
             } else if ("com.github.fge.json-schema-core".equals(b.getSymbolicName())) {
                 schemaCoreBundle = b;
+            } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
+                schemaValidatorBundle = b;
             } else if ("org.glassfish.javax.json".equals(b.getSymbolicName())) {
                 jsr353Bundle = b;
             }
@@ -89,7 +93,7 @@ public class Activator implements BundleActivator {
         if (jsonBundle == null) {
             throw new NullPointerException("JsonPath could not be loaded.");
         }
-        if (schemaCoreBundle == null) {
+        if (schemaCoreBundle == null || schemaValidatorBundle == null) {
             throw new NullPointerException("JSON Schema validator could not be loaded.");
         }
         if (jsr353Bundle == null) {
@@ -98,23 +102,43 @@ public class Activator implements BundleActivator {
         m_jsr353ClassLoader = jsr353Bundle.adapt(BundleWiring.class).getClassLoader();
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         m_jsonSchemaCoreClassLoader = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
+        m_jsonSchemaValidatorClassLoader = schemaValidatorBundle.adapt(BundleWiring.class).getClassLoader();
+
+        //This initializes the SchemaVersion enum with the schema core bundle, as the schema validator bundle
+        //does not contain a required schema
+        try {
+            Thread.currentThread().setContextClassLoader(m_jsonSchemaCoreClassLoader);
+            Class.forName("com.github.fge.jsonschema.SchemaVersion", true, m_jsonSchemaCoreClassLoader);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+        //Unfortunately this seems to have no effect on error messages. :(
+//        try {
+//            Thread.currentThread().setContextClassLoader(m_jsonSchemaValidatorClassLoader);
+//            MessageBundles.getBundle((Class<? extends MessageBundleLoader>)Class.forName(
+//                JsonSchemaValidationBundle.class.getName(), true, m_jsonSchemaValidatorClassLoader));
+//            MessageBundles.getBundle((Class<? extends MessageBundleLoader>)Class.forName(
+//                JsonSchemaCoreMessageBundle.class.getName(), true, m_jsonSchemaValidatorClassLoader));
+//        } finally {
+//            Thread.currentThread().setContextClassLoader(cl);
+//        }
         try {
             ClassLoader classLoader = jsonBundle.adapt(BundleWiring.class).getClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
             //When JsonPath will contain proper SPI services
-//            JsonProvider jsonProvider = ServiceLoader.load(JsonProvider.class, classLoader).iterator().next();
+            //            JsonProvider jsonProvider = ServiceLoader.load(JsonProvider.class, classLoader).iterator().next();
             m_jsonPathConfiguration = Configuration.defaultConfiguration();
             //m_jsonPathConfiguration = m_jsonPathConfiguration.jsonProvider(jsonProvider);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
         //When JsonPath contain OSGi services
-//        ServiceReference<JsonProvider> ref = ctx.getServiceReference(JsonProvider.class);
-//        if (ref != null) {
-//            JsonProvider service = ctx.getService(ref);
-//        } else {
-//            System.out.println("Json-path osgi service failed.");
-//        }
+        //        ServiceReference<JsonProvider> ref = ctx.getServiceReference(JsonProvider.class);
+        //        if (ref != null) {
+        //            JsonProvider service = ctx.getService(ref);
+        //        } else {
+        //            System.out.println("Json-path osgi service failed.");
+        //        }
     }
 
     /**
@@ -122,8 +146,7 @@ public class Activator implements BundleActivator {
      */
     @Override
     public void stop(final BundleContext ctx) throws Exception {
-        // TODO Auto-generated method stub
-
+        //Do nothing
     }
 
     /**
@@ -145,6 +168,13 @@ public class Activator implements BundleActivator {
      */
     public ClassLoader getJsonSchemaCoreClassLoader() {
         return m_jsonSchemaCoreClassLoader;
+    }
+
+    /**
+     * @return the jsonSchemaValidatorClassLoader
+     */
+    public ClassLoader getJsonSchemaValidatorClassLoader() {
+        return m_jsonSchemaValidatorClassLoader;
     }
 
     /**

@@ -48,6 +48,7 @@
  */
 package org.knime.json.node.schema.check;
 
+import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettings;
 import org.knime.core.node.NodeSettingsRO;
@@ -63,12 +64,24 @@ public class JSONSchemaCheckSettings {
     /** config key for input schema */
     static final String INPUT_SCHEMA = "json.schema",
     /** Config key for the input column. */
-    INPUT_COLUMN = "input.column";
+    INPUT_COLUMN = "input.column",
+    /** Config key for the error messages column. */
+    ERROR_MESSAGES_COLUMN = "error.messages.column",
+    /** Config key for fail on invalid json or append error messages. */
+    FAIL_ON_INVALID_JSON = "fail.on.invalid.json";
 
     /** The default schema. */
-    static final String DEFAULT_SCHEMA = "{}";
+    static final String DEFAULT_SCHEMA = "{}",
+    /** The default error message column */
+    DEFAULT_ERROR_MESSAGES_COLUMN = "invalid schema message";
 
-    private String m_inputSchema = DEFAULT_SCHEMA, m_inputColumn = null;
+    /** Should it fail on invalid json, or append error message to a new column? */
+    static final boolean DEFAULT_FAIL_ON_INVALID_JSON = true;
+
+    private String m_inputSchema = DEFAULT_SCHEMA, m_inputColumn = null,
+            m_errorMessageColumn = DEFAULT_ERROR_MESSAGES_COLUMN;
+
+    private boolean m_failOnInvalidJson = DEFAULT_FAIL_ON_INVALID_JSON;
 
     /**
      * Constructs the settings object.
@@ -85,6 +98,9 @@ public class JSONSchemaCheckSettings {
     void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         m_inputColumn = settings.getString(INPUT_COLUMN, "");
         m_inputSchema = settings.getString(INPUT_SCHEMA, DEFAULT_SCHEMA);
+        m_errorMessageColumn = settings.getString(ERROR_MESSAGES_COLUMN, DataTableSpec.getUniqueColumnName((DataTableSpec)specs[0], DEFAULT_ERROR_MESSAGES_COLUMN));
+        m_failOnInvalidJson = settings.getBoolean(FAIL_ON_INVALID_JSON, DEFAULT_FAIL_ON_INVALID_JSON);
+
     }
 
     /**
@@ -95,6 +111,8 @@ public class JSONSchemaCheckSettings {
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_inputColumn = settings.getString(INPUT_COLUMN);
         m_inputSchema = settings.getString(INPUT_SCHEMA);
+        m_errorMessageColumn = settings.getString(ERROR_MESSAGES_COLUMN);
+        m_failOnInvalidJson = settings.getBoolean(FAIL_ON_INVALID_JSON);
     }
 
     /**
@@ -105,6 +123,8 @@ public class JSONSchemaCheckSettings {
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addString(INPUT_COLUMN, m_inputColumn);
         settings.addString(INPUT_SCHEMA, m_inputSchema);
+        settings.addString(ERROR_MESSAGES_COLUMN, m_errorMessageColumn);
+        settings.addBoolean(FAIL_ON_INVALID_JSON, m_failOnInvalidJson);
     }
 
     /**
@@ -116,6 +136,26 @@ public class JSONSchemaCheckSettings {
     void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         if (settings.getString(INPUT_COLUMN).isEmpty()) {
             throw new InvalidSettingsException("No input column was selected.");
+        }
+        checkErrorColumn(settings.getBoolean(FAIL_ON_INVALID_JSON), settings.getString(ERROR_MESSAGES_COLUMN));
+    }
+
+    /**
+     * Checks the error column validity.
+     * @throws InvalidSettingsException
+     */
+    void checkSettings() throws InvalidSettingsException {
+        checkErrorColumn(m_failOnInvalidJson, m_errorMessageColumn);
+    }
+
+    /**
+     * @param failOnInvalidJson
+     * @param errorMessageColumn
+     * @throws InvalidSettingsException
+     */
+    private void checkErrorColumn(final boolean failOnInvalidJson, final String errorMessageColumn) throws InvalidSettingsException {
+        if (!failOnInvalidJson && (errorMessageColumn == null || errorMessageColumn.trim().isEmpty())) {
+            throw new InvalidSettingsException("No error message column was specified.");
         }
     }
 
@@ -145,6 +185,34 @@ public class JSONSchemaCheckSettings {
      */
     final void setInputColumn(final String inputColumn) {
         this.m_inputColumn = inputColumn;
+    }
+
+    /**
+     * @return the errorMessageColumn
+     */
+    final String getErrorMessageColumn() {
+        return m_errorMessageColumn;
+    }
+
+    /**
+     * @param errorMessageColumn the errorMessageColumn to set
+     */
+    final void setErrorMessageColumn(final String errorMessageColumn) {
+        this.m_errorMessageColumn = errorMessageColumn;
+    }
+
+    /**
+     * @return the failOnInvalidJson
+     */
+    final boolean isFailOnInvalidJson() {
+        return m_failOnInvalidJson;
+    }
+
+    /**
+     * @param failOnInvalidJson the failOnInvalidJson to set
+     */
+    final void setFailOnInvalidJson(final boolean failOnInvalidJson) {
+        this.m_failOnInvalidJson = failOnInvalidJson;
     }
 
 }

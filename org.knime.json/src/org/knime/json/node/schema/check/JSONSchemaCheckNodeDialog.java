@@ -52,8 +52,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.fife.rsyntaxarea.internal.RSyntaxAreaActivator;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -68,6 +70,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.util.ColumnSelectionComboxBox;
+import org.knime.json.node.util.GUIFactory;
 
 /**
  * <code>NodeDialog</code> for the "JSONSchemaCheck" node. Checks a JSON column's values against a Schema and fails if
@@ -84,6 +87,10 @@ public final class JSONSchemaCheckNodeDialog extends NodeDialogPane {
     private ColumnSelectionComboxBox m_input = new ColumnSelectionComboxBox(JSONValue.class);
 
     private RSyntaxTextArea m_schema = new RSyntaxTextArea(20, 100);
+
+    private JCheckBox m_failOnError = new JCheckBox("Fail on invalid JSON value");
+
+    private JTextField m_errorMessageColumnName = GUIFactory.createTextField(JSONSchemaCheckSettings.DEFAULT_ERROR_MESSAGES_COLUMN, 22);
 
     private JSONSchemaCheckSettings m_settings;
 
@@ -112,6 +119,17 @@ public final class JSONSchemaCheckNodeDialog extends NodeDialogPane {
         gbc.gridx = 1;
         panel.add(new RTextScrollPane(m_schema), gbc);
         gbc.gridy++;
+
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        panel.add(m_failOnError, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+        panel.add(new JLabel("Error message column:"), gbc);
+        gbc.gridx = 1;
+        panel.add(m_errorMessageColumnName, gbc);
+        gbc.gridy++;
+
         gbc.weighty = 1;
         panel.add(new JPanel(), gbc);
     }
@@ -123,6 +141,9 @@ public final class JSONSchemaCheckNodeDialog extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_settings.setInputColumn(m_input.getSelectedColumn());
         m_settings.setInputSchema(m_schema.getText());
+        m_settings.setFailOnInvalidJson(m_failOnError.isSelected());
+        m_settings.setErrorMessageColumn(m_errorMessageColumnName.getText());
+        m_settings.checkSettings();
         m_settings.saveSettingsTo(settings);
     }
 
@@ -136,6 +157,8 @@ public final class JSONSchemaCheckNodeDialog extends NodeDialogPane {
         m_input.setSelectedColumn(m_settings.getInputColumn());
         m_input.update((DataTableSpec)specs[0], m_settings.getInputColumn());
         m_schema.setText(m_settings.getInputSchema());
+        m_failOnError.setSelected(m_settings.isFailOnInvalidJson());
+        m_errorMessageColumnName.setText(m_settings.getErrorMessageColumn());
     }
 
     /**

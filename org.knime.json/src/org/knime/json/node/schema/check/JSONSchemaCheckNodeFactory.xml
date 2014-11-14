@@ -8,13 +8,15 @@
     
     <fullDescription>
         <intro><p>Validates JSON values based on the specified <a href="http://json-schema.org/">schema v3 or v4</a>.</p><p>
-        When the value do not satisfy the constraints of the schema, the node will fail with the error message and the row number.</p><p>
+        When the value do not satisfy the constraints of the schema, the node will fail with the error message and the row number or collect the errors in a new column.</p><p>
         It uses the <a href="https://github.com/fge/json-schema-validator">fge/json-schema-validator</a> implementation.
         </p></intro>
         
         
         <option name="JSON column">The JSON column to validate</option>
         <option name="Schema">The JSON schema used for validation</option>
+        <option name="Fail on invalid JSON value">If checked, execution will stop on first value that violates the specified schema.</option>
+        <option name="Error message column">Name of the column for the collected error messages</option>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--
         <tab name="Standard Options">
@@ -30,7 +32,7 @@
     <ports>
         <inPort index="0" name="table with JSON">A table with JSON column to validate</inPort>
         <!-- possibly more input ports here-->
-        <!-- outPort index="0" name="Out-Port name">Description of first output port...</outPort-->
+        <outPort index="0" name="table with errors">The table with the error messages column</outPort>
         <!-- possibly more output ports here-->
     </ports>    
 </knimeNode>

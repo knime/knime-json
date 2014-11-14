@@ -60,14 +60,11 @@ import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.json.JSONCell;
-import org.knime.core.node.BufferedDataTable;
-import org.knime.core.node.CanceledExecutionException;
-import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.port.PortType;
+import org.knime.core.node.streamable.simple.SimpleStreamableFunctionNodeModel;
 
 /**
  * This {@link NodeModel} abstraction handles the case of a single column change or add using a {@link ColumnRearranger}
@@ -76,7 +73,8 @@ import org.knime.core.node.port.PortType;
  * @author Gabor Bakos
  * @param <S> The type of the model-specific {@link RemoveOrAddColumnSettings}.
  */
-public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddColumnSettings> extends NodeModel {
+public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddColumnSettings> extends
+    SimpleStreamableFunctionNodeModel {
     /**
      * The key for the remove or not the source/input column boolean value ({@code true} means remove).
      */
@@ -94,19 +92,6 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
 
     private final S m_settings = createSettings();
 
-    //    protected final SettingsModelString m_inputColumnName = createInputColumnName();
-    //
-    //    protected final SettingsModelBoolean m_append = createAppend();
-    //
-    //    protected final SettingsModelString m_newColumnName = createNewColumnName();
-    //
-    //    /**
-    //     * @return
-    //     */
-    //    public static SettingsModelString createNewColumnName() {
-    //        return new SettingsModelString(NEW_COLUMN_NAME, "");
-    //    }
-    //
     /**
      * @return The actual settings used in the {@link SingleColumnReplaceOrAddNodeModel}.
      */
@@ -117,16 +102,20 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
      * @param nrOutDataPorts
      */
     public SingleColumnReplaceOrAddNodeModel(final int nrInDataPorts, final int nrOutDataPorts) {
-        super(nrInDataPorts, nrOutDataPorts);
+        super();
+        if (nrInDataPorts != 1 || nrOutDataPorts != 1) {
+            throw new IllegalArgumentException();
+        }
     }
 
-    /**
-     * @param inPortTypes
-     * @param outPortTypes
-     */
-    public SingleColumnReplaceOrAddNodeModel(final PortType[] inPortTypes, final PortType[] outPortTypes) {
-        super(inPortTypes, outPortTypes);
-    }
+    //
+    //    /**
+    //     * @param inPortTypes
+    //     * @param outPortTypes
+    //     */
+    //    public SingleColumnReplaceOrAddNodeModel(final PortType[] inPortTypes, final PortType[] outPortTypes) {
+    //        super();
+    //    }
 
     /**
      * Creates the output spec based on the output column name. By default it creates JSON output column, override if it
@@ -177,20 +166,20 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
         m_settings.validateSettings(settings);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IOException Problem during execution
-     * @throws CanceledExecutionException Execution cancelled
-     * @throws InvalidSettingsException Autoguessing of column name failed.
-     */
-    @Override
-    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
-        throws IOException, CanceledExecutionException, InvalidSettingsException {
-        int inputTableIndex = m_settings.inputTableIndex();
-        return new BufferedDataTable[]{exec.createColumnRearrangeTable(inData[inputTableIndex],
-            createRearranger(inData[inputTableIndex].getDataTableSpec()), exec)};
-    }
+//    /**
+//     * {@inheritDoc}
+//     *
+//     * @throws IOException Problem during execution
+//     * @throws CanceledExecutionException Execution cancelled
+//     * @throws InvalidSettingsException Autoguessing of column name failed.
+//     */
+//    @Override
+//    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
+//        throws IOException, CanceledExecutionException, InvalidSettingsException {
+//        int inputTableIndex = m_settings.inputTableIndex();
+//        return new BufferedDataTable[]{exec.createColumnRearrangeTable(inData[inputTableIndex],
+//            createColumnRearranger(inData[inputTableIndex].getDataTableSpec()), exec)};
+//    }
 
     /**
      * This method gets called when no column was selected.
@@ -226,11 +215,11 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
      *
      * @param inSpecs The input table spec.
      * @return The {@link ColumnRearranger}.
-     * @throws IOException Problem during initialization of {@link ColumnRearranger}.
-     * @throws InvalidSettingsException When autoguessing of column name failed.
+     * @throws InvalidSettingsException When autoguessing of column name failed or problem during initialization of
+     *             {@link ColumnRearranger}..
      */
-    protected ColumnRearranger createRearranger(final DataTableSpec inSpecs) throws IOException,
-        InvalidSettingsException {
+    @Override
+    protected ColumnRearranger createColumnRearranger(final DataTableSpec inSpecs) throws InvalidSettingsException {
         ColumnRearranger ret = new ColumnRearranger(inSpecs);
         String input = m_settings.getInputColumnName();
         if (input == null || !inSpecs.containsName(input)) {
@@ -249,11 +238,15 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
             throw new InvalidSettingsException("Please specify the output column's name");
         }
         DataTableSpec specs = removeInputIfRequired(inSpecs, input);
-        String outputColName =
-            DataTableSpec.getUniqueColumnName(specs, newColumnName);
+        String outputColName = DataTableSpec.getUniqueColumnName(specs, newColumnName);
         DataColumnSpec output = createOutputSpec(outputColName);
-        CellFactory factory = createCellFactory(output, inputIndex, otherIndices);
-        applyFactory(ret, input, factory);
+        CellFactory factory;
+        try {
+            factory = createCellFactory(output, inputIndex, otherIndices);
+            applyFactory(ret, input, factory);
+        } catch (IOException e) {
+            throw new InvalidSettingsException(e);
+        }
         return ret;
     }
 
@@ -308,17 +301,18 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
         return new int[0];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-        try {
-            return new DataTableSpec[]{createRearranger(inSpecs[m_settings.inputTableIndex()]).createSpec()};
-        } catch (IOException e) {
-            throw new InvalidSettingsException(e.getMessage(), e);
-        }
-    }
+    //
+    //    /**
+    //     * {@inheritDoc}
+    //     */
+    //    @Override
+    //    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+    //        try {
+    //            return new DataTableSpec[]{createColumnRearranger(inSpecs[m_settings.inputTableIndex()]).createSpec()};
+    //        } catch (IOException e) {
+    //            throw new InvalidSettingsException(e.getMessage(), e);
+    //        }
+    //    }
 
     /**
      * @return the settings
