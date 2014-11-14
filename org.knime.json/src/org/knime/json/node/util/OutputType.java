@@ -50,7 +50,6 @@ package org.knime.json.node.util;
 
 import org.knime.core.data.DataType;
 import org.knime.core.data.StringValue;
-import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -71,8 +70,6 @@ public enum OutputType implements StringValue {
     Int,
     /** Real */
     Real,
-    /** Time */
-    DateTime,
     /** Text */
     String,
     /** Object */
@@ -95,8 +92,6 @@ public enum OutputType implements StringValue {
                 return "String (String cell type)";
             case Json:
                 return "JSON (JSON cell type)";
-            case DateTime:
-                return "Date (Date-time cell type)";
             case Binary:
                 return "Binary (Byte array cell type)";
             default:
@@ -110,8 +105,6 @@ public enum OutputType implements StringValue {
         switch (this) {
             case Bool:
                 return BooleanCell.TYPE;
-            case DateTime:
-                return DateAndTimeCell.TYPE;
             case Int:
                 return IntCell.TYPE;
             case Real:

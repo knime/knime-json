@@ -1,6 +1,5 @@
 package org.knime.json.node.jsonpointer;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 
 import javax.swing.JLabel;
@@ -41,7 +40,7 @@ public class JSONPointerNodeDialog extends PathOrPointerDialog<JSONPointerSettin
      */
     @Override
     protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
-        panel.setPreferredSize(new Dimension(800, 300));
+//        panel.setPreferredSize(new Dimension(800, 300));
         m_error = new JLabel();
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = afterInput;

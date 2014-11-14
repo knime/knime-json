@@ -48,7 +48,6 @@
  */
 package org.knime.json.node.util;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -179,32 +178,32 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
                 onNewColumnTextChanged(m_newColumnName);
             }
         });
-        final Color origBackground = m_newColumnName.getBackground();
-        final DocumentListener docListener = new DocumentListener() {
-            @Override
-            public void removeUpdate(final DocumentEvent e) {
-                changeBackground();
-            }
-
-            @Override
-            public void insertUpdate(final DocumentEvent e) {
-                changeBackground();
-            }
-
-            @Override
-            public void changedUpdate(final DocumentEvent e) {
-                changeBackground();
-            }
-
-            private void changeBackground() {
-                if (m_newColumnName.isEnabled()) {
-                    m_newColumnName.setBackground(m_newColumnName.getText().isEmpty() ? Color.RED : origBackground);
-                } else {
-                    m_newColumnName.setBackground(null);
-                }
-            }
-        };
-        m_newColumnName.getDocument().addDocumentListener(docListener);
+//        final Color origBackground = m_newColumnName.getBackground();
+//        final DocumentListener docListener = new DocumentListener() {
+//            @Override
+//            public void removeUpdate(final DocumentEvent e) {
+//                changeBackground();
+//            }
+//
+//            @Override
+//            public void insertUpdate(final DocumentEvent e) {
+//                changeBackground();
+//            }
+//
+//            @Override
+//            public void changedUpdate(final DocumentEvent e) {
+//                changeBackground();
+//            }
+//
+//            private void changeBackground() {
+//                if (m_newColumnName.isEnabled()) {
+//                    m_newColumnName.setBackground(m_newColumnName.getText().isEmpty() ? Color.RED : origBackground);
+//                } else {
+//                    m_newColumnName.setBackground(null);
+//                }
+//            }
+//        };
+//        m_newColumnName.getDocument().addDocumentListener(docListener);
 //        m_removeSourceColumn.addActionListener(new ActionListener() {
 //            @Override
 //            public void actionPerformed(final ActionEvent e) {
@@ -219,7 +218,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         gbc.gridy++;
         afterNewColumnName(panel, gbc.gridy);
 //        m_newColumnName.setEnabled(m_removeSourceColumn.isSelected());
-        docListener.changedUpdate(null);
+//        docListener.changedUpdate(null);
     }
 
     /**

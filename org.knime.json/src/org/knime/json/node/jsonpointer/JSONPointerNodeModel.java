@@ -2,8 +2,6 @@ package org.knime.json.node.jsonpointer;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
 
 import javax.json.JsonValue;
 
@@ -15,7 +13,6 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -134,8 +131,6 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                                 return BooleanCell.get(value.asBoolean());
                             case Int:
                                 return new IntCell(value.asInt());
-                            case DateTime:
-                                return new DateAndTimeCell(DateFormat.getInstance().parse(value.asText()).getTime(), getSettings().isHasDate(), getSettings().isHasTime(), getSettings().isHasMillis());
                             case Json:
                                 return JSONCellFactory.create(conv.toJSR353(value));
                             case Real:
@@ -156,7 +151,7 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                             default:
                                 throw new UnsupportedOperationException("Not supported return type: " + returnType);
                         }
-                    } catch (ParseException | RuntimeException e) {
+                    } catch (RuntimeException e) {
                         return new MissingCell(e.getMessage());
                     }
                 }

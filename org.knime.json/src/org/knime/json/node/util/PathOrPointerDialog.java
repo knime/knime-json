@@ -48,22 +48,14 @@
  */
 package org.knime.json.node.util;
 
-import java.awt.CardLayout;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.util.EnumMap;
-import java.util.Map.Entry;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
-import javax.swing.JCheckBox;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
@@ -79,11 +71,13 @@ import org.knime.core.node.port.PortObjectSpec;
  * @param <S> The type of the implementation-specific {@link PathOrPointerSettings}.
  */
 public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> extends ReplaceOrAddColumnDialog<S> {
-    private CardLayout m_cardLayout;
-    private EnumMap<OutputType, JPanel> m_configPanels;
-    private EnumMap<OutputType, ButtonModel> m_buttonModels;
-    private JCheckBox m_hasDate, m_hasTime, m_hasMillis;
-    private ButtonGroup m_typeGroup;
+//    /**
+//     *
+//     */
+//    private static final String NONE = "NONE";
+//    private CardLayout m_cardLayout;
+//    private EnumMap<OutputType, JPanel> m_configPanels;
+    private DefaultComboBoxModel<OutputType> m_outputTypeModel;
 
     /**
      * Constructs {@link PathOrPointerDialog}.
@@ -113,47 +107,47 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
      * @return The new y position of {@link GridBagConstraints}.
      */
     protected int addOutputTypePanel(final JPanel panel, final int gridy) {
-        m_buttonModels = new EnumMap<>(OutputType.class);
-        m_configPanels = new EnumMap<>(OutputType.class);
+//        m_configPanels = new EnumMap<>(OutputType.class);
         final GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = gridy;
-        final JPanel typePanel = new JPanel(new GridBagLayout());
-        typePanel.setName("Type selector and related configs");
-        final JPanel subPanel = new JPanel();
-        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.PAGE_AXIS));
-        subPanel.setName("Just type selector");
-        m_typeGroup = new ButtonGroup();
-        m_cardLayout = new CardLayout();
-        final JPanel configPanel = new JPanel(m_cardLayout );
-        configPanel.setName("Type-related configs");
+//        final JPanel typePanel = new JPanel(new GridBagLayout());
+//        typePanel.setName("Type selector and related configs");
+//        final JPanel subPanel = new JPanel();
+//        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.PAGE_AXIS));
+//        subPanel.setName("Just type selector");
+//        m_cardLayout = new CardLayout();
+//        final JPanel configPanel = new JPanel(m_cardLayout );
+//        configPanel.setName("Type-related configs");
+//        configPanel.add(new JLabel(), NONE);
 
-        gbc.gridwidth = 2;
-        typePanel.setBorder(new TitledBorder("Result type"));
-        GridBagConstraints gbcType = createInitialConstraints();
-        typePanel.add(subPanel, gbcType);
-        gbcType.gridy = 1;
-        typePanel.add(configPanel, gbcType);
-        for (final OutputType type : OutputType.values()) {
-            final JRadioButton radioButton = new JRadioButton(type.getStringValue());
-            radioButton.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(final ChangeEvent e) {
-                    if (radioButton.isSelected()) {
-                        m_cardLayout.show(configPanel, type.name());
-                        outputTypeGotSelected(type);
-                    }
-                }
-            });
-            m_typeGroup.add(radioButton);
-            m_buttonModels.put(type, radioButton.getModel());
-            subPanel.add(radioButton);
-            final JPanel specConfig = createConfigPanel(type);
-            m_configPanels.put(type, specConfig);
-            configPanel.add(specConfig, type.name());
-        }
-        panel.add(typePanel, gbc);
+
+        panel.add(new JLabel("Result type"), gbc);
+        gbc.gridx = 1;
+//        gbc.gridwidth = 2;
+//        typePanel.setBorder(new TitledBorder("Result type"));
+//        GridBagConstraints gbcType = createInitialConstraints();
+//        typePanel.add(subPanel, gbcType);
+//        gbcType.gridy = 1;
+//        typePanel.add(configPanel, gbcType);
+        m_outputTypeModel = new DefaultComboBoxModel<>(OutputType.values());
+        final JComboBox<OutputType> outputTypes = new JComboBox<>(m_outputTypeModel);
+//        subPanel.add(outputTypes);
+        outputTypes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                OutputType type = (OutputType)m_outputTypeModel.getSelectedItem();
+//                m_cardLayout.show(configPanel, type == null ? NONE : type.name());
+                outputTypeGotSelected(type);
+            }});
+//        for (final OutputType type : OutputType.values()) {
+//            final JPanel specConfig = createConfigPanel(type);
+//            m_configPanels.put(type, specConfig);
+//            configPanel.add(specConfig, type.name());
+//        }
+//        panel.add(typePanel, gbc);
+        panel.add(outputTypes, gbc);
         gbc.gridy++;
-        gbc.gridwidth = 1;
+//        gbc.gridwidth = 1;
 
         return gbc.gridy;
     }
@@ -166,44 +160,22 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
         //Do nothing by default
     }
 
-    /**
-     * @param type The {@link OutputType} to create the config panel.
-     * @return The create config panel.
-     */
-    protected JPanel createConfigPanel(final OutputType type) {
-        m_hasDate = new JCheckBox("Keep date (year, month, day) part");
-        m_hasTime = new JCheckBox("Keep time part (hours, minutes, seconds)");
-        m_hasMillis = new JCheckBox("Keep the milliseconds");
-        JPanel ret = new JPanel();
-        ret.setName(type.name());
-        switch (type) {
-            case DateTime:
-                ret.setLayout(new FlowLayout(FlowLayout.LEADING));
-                ret.add(m_hasDate);
-                ret.add(m_hasTime);
-                ret.add(m_hasMillis);
-                break;
-            default:
-                //No other requires further adjustments.
-                break;
-        }
-        return ret;
-    }
+//    /**
+//     * @param type The {@link OutputType} to create the config panel.
+//     * @return The create config panel.
+//     */
+//    protected JPanel createConfigPanel(final OutputType type) {
+//        JPanel ret = new JPanel();
+//        ret.setName(type.name());
+//        return ret;
+//    }
 
     /**
      * {@inheritDoc}
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        getSettings().setHasDate(m_hasDate.isSelected());
-        getSettings().setHasTime(m_hasTime.isSelected());
-        getSettings().setHasMillis(m_hasMillis.isSelected());
-        OutputType outputType = null;
-        for (Entry<OutputType, ButtonModel> entry : m_buttonModels.entrySet()) {
-            if (entry.getValue().isSelected()) {
-                outputType = entry.getKey();
-            }
-        }
+        OutputType outputType = (OutputType)m_outputTypeModel.getSelectedItem();
         if (outputType == null) {
             throw new InvalidSettingsException("No result type was selected! Please specify");
         }
@@ -212,22 +184,18 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
     }
 
     /**
-     * @param type An {@link OutputType}.
-     * @return The {@link ButtonModel} that belongs to {@code type}.
-     */
-    protected final ButtonModel getOutputTypeButtonModel(final OutputType type) {
-        return m_buttonModels.get(type);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
         super.loadSettingsFrom(settings, specs);
-        m_buttonModels.get(getSettings().getReturnType()).setSelected(true);
-        m_hasDate.setSelected(getSettings().isHasDate());
-        m_hasTime.setSelected(getSettings().isHasTime());
-        m_hasMillis.setSelected(getSettings().isHasMillis());
+        m_outputTypeModel.setSelectedItem(getSettings().getReturnType());
+    }
+
+    /**
+     * @return the outputTypeModel
+     */
+    public DefaultComboBoxModel<OutputType> getOutputTypeModel() {
+        return m_outputTypeModel;
     }
 }

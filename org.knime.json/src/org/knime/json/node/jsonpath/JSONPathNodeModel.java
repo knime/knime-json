@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.json.JsonValue;
@@ -20,7 +19,6 @@ import org.knime.core.data.collection.CollectionCellFactory;
 import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -40,12 +38,10 @@ import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BigIntegerNode;
 import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -134,133 +130,60 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
         final Configuration config = jsonPathConfiguration.setOptions(options.toArray(new Option[0]));
         final MappingProvider mappingProvider = config.mappingProvider();
         final JsonPath jsonPath = JsonPath.compile(getSettings().getJsonPath());
+        final OutputType returnType = getSettings().getReturnType();
+        final boolean resultIsList = getSettings().isResultIsList();
         return new SingleCellFactory(output) {
-
             @Override
             public DataCell getCell(final DataRow row) {
                 DataCell cell = row.getCell(inputIndex);
                 if (cell instanceof JSONValue) {
                     JSONValue jsonCell = (JSONValue)cell;
                     JsonValue jsonValue = jsonCell.getJsonValue();
-                    try {
-                        List<Object> values;
-                        Object readObject;
-                        if (config.jsonProvider().getClass().getName().contains("JacksonTree")) {
-                            readObject = jsonPath.read(conv.toJackson(jsonValue), config);
-                        } else {
-                            readObject = jsonPath.read(jsonValue.toString(), config);
-                        }
-                        Iterable<?> read = config.jsonProvider().toIterable(readObject);
-                        values = new ArrayList<>();
-                        for (Object object : read) {
-                            values.add(object);
-                        }
-                        List<DataCell> cells = new ArrayList<>();
-                        OutputType returnType = getSettings().getReturnType();
-                        if (getSettings().isReturnPaths()
-                            || (returnType == OutputType.String && getSettings().isResultIsList())) {
-                            for (Object v : values) {
-                                if (v != null) {
-                                    cells.add(new StringCell(v.toString()));
-                                }
-                            }
-                            return CollectionCellFactory.createListCell(cells);
-                        }
-                        if (!getSettings().isResultIsList() && getSettings().getOnMultipleResults().supportsConcatenate(returnType) && values.size() > 1) {
-                            //Concatenate
-                            JsonNodeFactory jsonNodeFactory = JsonNodeFactory.withExactBigDecimals(true);
-                            switch (returnType) {
-                                case Json:
-                                    try {
-                                        ArrayNode array = new ArrayNode(jsonNodeFactory);
-                                        try {
-                                            for (Object object : values) {
-                                                if (object instanceof String) {
-                                                    String str = (String)object;
-                                                    array.add(str);
-                                                } else if (object instanceof Boolean) {
-                                                    Boolean bool = (Boolean)object;
-                                                    array.add(bool);
-                                                } else if (object instanceof Integer) {
-                                                    Integer integer = (Integer)object;
-                                                    array.add(integer);
-                                                } else if (object instanceof Number) {
-                                                    Number num = (Number)object;
-                                                    array.add(num.doubleValue());
-                                                } else if (object instanceof JsonNode) {
-                                                    JsonNode node = (JsonNode)object;
-                                                    array.add(node);
-                                                } else if (object == null) {
-                                                    array.addNull();
-                                                } else {
-                                                    array.addPOJO(object);
-                                                }
-                                            }
-                                        } catch (RuntimeException e) {
-                                            array.add(jsonNodeFactory.nullNode());
-                                        }
-                                        return JSONCellFactory.create(array.toString(), false);
-                                    } catch (IOException | RuntimeException e) {
-                                        return new MissingCell(e.getMessage());
-                                    }
-                                case String:
-                                    StringBuilder builder = new StringBuilder("[");
-                                    for (Object object : values) {
-                                        builder.append(object).append(',');
-                                    }
-                                    if (builder.length() > 2) {
-                                        builder.setCharAt(builder.length() - 1, ']');
-                                    }
-                                    return new StringCell(builder.toString());
-                                default:
-                                    getLogger().coding(
-                                        "The result type " + returnType + " does not support concatenation.");
-                                    throw new UnsupportedOperationException("Not supported: " + returnType);
-                            }
-                        } else {
-                            for (final Object object : values) {
-                                cells.add(convertObjectToReturnType(returnType, object));
+                    List<Object> values;
+                    Object readObject;
+                    if (config.jsonProvider().getClass().getName().contains("JacksonTree")) {
+                        readObject = jsonPath.read(conv.toJackson(jsonValue), config);
+                    } else {
+                        readObject = jsonPath.read(jsonValue.toString(), config);
+                    }
+                    Iterable<?> read = config.jsonProvider().toIterable(readObject);
+                    values = new ArrayList<>();
+                    for (Object object : read) {
+                        values.add(object);
+                    }
+                    List<DataCell> cells = new ArrayList<>();
+                    if (getSettings().isReturnPaths() || (returnType == OutputType.String && resultIsList)) {
+                        for (Object v : values) {
+                            if (v != null) {
+                                cells.add(new StringCell(v.toString()));
                             }
                         }
-                        if (getSettings().isResultIsList()) {
-                            return CollectionCellFactory.createListCell(cells);
+                        return CollectionCellFactory.createListCell(cells);
+                    }
+                    if (!resultIsList && values.size() > 1) {
+                        throw new IllegalStateException("Expected at most one result, but got: " + values.size() + " ["
+                            + shorten(values.toString()) + "]" + "\n   in row: " + row.getKey());
+                    } else {
+                        for (final Object object : values) {
+                            cells.add(convertObjectToReturnType(object));
                         }
-                        if (cells.size() > 1) {
-                            switch (getSettings().getOnMultipleResults()) {
-                                case Fail:
-                                    throw new IllegalStateException("Expected at most one result, but got: "
-                                        + cells.size() + " [" + cells + "]" + "\n   in row: " + row.getKey());
-                                case First:
-                                    return cells.get(0);
-                                case Last:
-                                    return cells.get(cells.size() - 1);
-                                case Concatenate:
-                                    throw new IllegalStateException("Should already be concatenated if supported.");
-                                case Missing:
-                                    return new MissingCell(cells.toString());
-                                default:
-                                    throw new UnsupportedOperationException(
-                                        "Not supported on multiple results strategy: "
-                                            + getSettings().getOnMultipleResults());
-                            }
-                        }
-                        //At most one element
-                        if (cells.size() == 1) {
-                            return cells.get(0);
-                        }
-                    } catch (RuntimeException e) {
-                        return new MissingCell(e.getMessage());
+                    }
+                    if (resultIsList) {
+                        return CollectionCellFactory.createListCell(cells);
+                    }
+                    //At most one element
+                    if (cells.size() == 1) {
+                        return cells.get(0);
                     }
                 }
                 return DataType.getMissingCell();
             }
 
             /**
-             * @param returnType
              * @param object
              * @return
              */
-            private DataCell convertObjectToReturnType(final OutputType returnType, final Object object) {
+            private DataCell convertObjectToReturnType(final Object object) {
                 try {
                     switch (returnType) {
                         case Bool:
@@ -269,13 +192,6 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                                 return BooleanCell.get(Boolean.parseBoolean(object.toString()));
                             }
                             return BooleanCell.get(bool.booleanValue());
-                        case DateTime:
-                            Date date = mappingProvider.map(object, Date.class, config);
-                            if (date == null) {
-                                return DataType.getMissingCell();
-                            }
-                            return new DateAndTimeCell(date.getTime(), getSettings().isHasDate(), getSettings()
-                                .isHasTime(), getSettings().isHasMillis());
                         case Int:
                             Integer integer = mappingProvider.map(object, Integer.class, config);
                             if (integer == null) {
@@ -349,6 +265,23 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                 return object == null ? DataType.getMissingCell() : JSONCellFactory.create(object.toString(), false);
             }
         };
+    }
+
+    /**
+     * @param string A possibly long {@link String}.
+     * @return The shortened (at most 33 character) long version of {@code string}.
+     */
+    protected String shorten(final String string) {
+        return shorten(string, 33);
+    }
+    /**
+     * @param string A possibly long {@link String}.
+     * @param atMost The longest possible returned {@link String}.
+     * @return The shortened (at most {@code atMost} character) long version of {@code string}.
+     */
+    protected String shorten(final String string, final int atMost) {
+        return string == null ? "null" : (string.length() > atMost) ? string.substring(0, atMost / 2) + "\u2026"
+            + string.substring(string.length() - atMost / 2) : string;
     }
 
     /**

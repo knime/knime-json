@@ -128,12 +128,6 @@ final class JSONPathSettings extends PathOrPointerSettings {
         }
     }
 
-    private static final String ON_MULTIPLE_RESULTS = "on.multiple.results";
-
-    private static final OnMultipleResults DEFAULT_ON_MULTIPLE_RESULTS = OnMultipleResults.Missing;
-
-    private OnMultipleResults m_onMultipleResults = DEFAULT_ON_MULTIPLE_RESULTS;
-
     /**
      * Constructs the {@link JSONPathSettings} object.
      *
@@ -186,20 +180,6 @@ final class JSONPathSettings extends PathOrPointerSettings {
     }
 
     /**
-     * @return the onMultipleResults
-     */
-    final OnMultipleResults getOnMultipleResults() {
-        return m_onMultipleResults;
-    }
-
-    /**
-     * @param onMultipleResults the onMultipleResults to set
-     */
-    final void setOnMultipleResults(final OnMultipleResults onMultipleResults) {
-        this.m_onMultipleResults = onMultipleResults;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -208,13 +188,6 @@ final class JSONPathSettings extends PathOrPointerSettings {
         m_jsonPath = settings.getString(JSON_PATH, DEFAULT_JSON_PATH);
         m_resultIsList = settings.getBoolean(RESULT_IS_LIST, DEFAULT_RESULT_IS_LIST);
         m_returnPaths = settings.getBoolean(RETURN_PATHS, DEFAULT_RETURN_PATHS);
-        try {
-            m_onMultipleResults =
-                toOnMultipleResults(settings.getString(ON_MULTIPLE_RESULTS, DEFAULT_ON_MULTIPLE_RESULTS.name()));
-        } catch (InvalidSettingsException e) {
-            getLogger().debug("\nProbably the workflow was saved with a newer version of KNIME.", e);
-            m_onMultipleResults = DEFAULT_ON_MULTIPLE_RESULTS;
-        }
     }
 
     /**
@@ -226,7 +199,6 @@ final class JSONPathSettings extends PathOrPointerSettings {
         m_jsonPath = settings.getString(JSON_PATH);
         m_resultIsList = settings.getBoolean(RESULT_IS_LIST);
         m_returnPaths = settings.getBoolean(RETURN_PATHS);
-        m_onMultipleResults = toOnMultipleResults(settings.getString(ON_MULTIPLE_RESULTS));
     }
 
     /**
@@ -238,19 +210,5 @@ final class JSONPathSettings extends PathOrPointerSettings {
         settings.addString(JSON_PATH, m_jsonPath);
         settings.addBoolean(RESULT_IS_LIST, m_resultIsList);
         settings.addBoolean(RETURN_PATHS, m_returnPaths);
-        settings.addString(ON_MULTIPLE_RESULTS, m_onMultipleResults.name());
-    }
-
-    /**
-     * @param onMultipleResultsName An {@link OnMultipleResults#name()}.
-     * @return The {@link OnMultipleResults} value belonging to {@code onMultipleResultsName.}
-     * @throws InvalidSettingsException Invalid {@link OnMultipleResults#name()} or <code>null</code>.
-     */
-    private OnMultipleResults toOnMultipleResults(final String onMultipleResultsName) throws InvalidSettingsException {
-        try {
-            return OnMultipleResults.valueOf(onMultipleResultsName);
-        } catch (RuntimeException e) {
-            throw new InvalidSettingsException("Unknown strategy for multiple results: " + onMultipleResultsName, e);
-        }
     }
 }

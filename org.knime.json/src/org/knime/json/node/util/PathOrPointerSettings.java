@@ -48,7 +48,6 @@
  */
 package org.knime.json.node.util;
 
-import org.knime.core.data.date.DateAndTimeCell;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
@@ -72,27 +71,6 @@ public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
     protected static final String RETURN_TYPE = "returnType";
 
     private OutputType m_returnType = DEFAULT_RETURN_TYPE;
-
-    /** Key for date and time has date or not @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean) */
-    protected static final String DATETIME_HAS_DATE = "date-time.has.date";
-
-    /** Key for date and time has time or not @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean) */
-    protected static final String DATETIME_HAS_TIME = "date-time.has.time";
-
-    /** Key for date and time has millisecs or not @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean) */
-    protected static final String DATETIME_HAS_MILLIS = "date-time.has.millis";
-
-    /** Default value for hasDate */
-    protected static final boolean DEFAULT_DATETIME_HAS_DATE = true;
-
-    /** Default value for hasTime */
-    protected static final boolean DEFAULT_DATETIME_HAS_TIME = true;
-
-    /** Default value for hasMillis */
-    protected static final boolean DEFAULT_DATETIME_HAS_MILLIS = true;
-
-    private boolean m_hasDate = DEFAULT_DATETIME_HAS_DATE, m_hasTime = DEFAULT_DATETIME_HAS_TIME,
-            m_hasMillis = DEFAULT_DATETIME_HAS_MILLIS;
 
     private final NodeLogger m_logger;
 
@@ -118,10 +96,6 @@ public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
                 "Failed to load settings. Probably tried to load a workflow saved a newer version of KNIME", e);
             m_returnType = DEFAULT_RETURN_TYPE;
         }
-
-        m_hasDate = settings.getBoolean(DATETIME_HAS_DATE, DEFAULT_DATETIME_HAS_DATE);
-        m_hasTime = settings.getBoolean(DATETIME_HAS_TIME, DEFAULT_DATETIME_HAS_TIME);
-        m_hasMillis = settings.getBoolean(DATETIME_HAS_MILLIS, DEFAULT_DATETIME_HAS_MILLIS);
     }
 
     /**
@@ -131,10 +105,6 @@ public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.loadSettingsFrom(settings);
         m_returnType = toOutputType(settings.getString(RETURN_TYPE));
-
-        m_hasDate = settings.getBoolean(DATETIME_HAS_DATE);
-        m_hasTime = settings.getBoolean(DATETIME_HAS_TIME);
-        m_hasMillis = settings.getBoolean(DATETIME_HAS_MILLIS);
     }
 
     /**
@@ -144,9 +114,6 @@ public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         super.saveSettingsTo(settings);
         settings.addString(RETURN_TYPE, m_returnType.name());
-        settings.addBoolean(DATETIME_HAS_DATE, m_hasDate);
-        settings.addBoolean(DATETIME_HAS_TIME, m_hasTime);
-        settings.addBoolean(DATETIME_HAS_MILLIS, m_hasMillis);
     }
 
     /**
@@ -157,10 +124,6 @@ public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
         super.validateSettings(settings);
         String outputType = settings.getString(RETURN_TYPE);
         toOutputType(outputType);
-
-        settings.getBoolean(DATETIME_HAS_DATE);
-        settings.getBoolean(DATETIME_HAS_TIME);
-        settings.getBoolean(DATETIME_HAS_MILLIS);
     }
 
     /**
@@ -188,54 +151,6 @@ public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
         } catch (RuntimeException e) {
             throw new InvalidSettingsException("Invalid return type: " + outputType, e);
         }
-    }
-
-    /**
-     * @return the hasDate
-     * @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean)
-     */
-    public final boolean isHasDate() {
-        return m_hasDate;
-    }
-
-    /**
-     * @param hasDate the hasDate to set
-     * @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean)
-     */
-    public final void setHasDate(final boolean hasDate) {
-        this.m_hasDate = hasDate;
-    }
-
-    /**
-     * @return the hasTime
-     * @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean)
-     */
-    public final boolean isHasTime() {
-        return m_hasTime;
-    }
-
-    /**
-     * @param hasTime the hasTime to set
-     * @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean)
-     */
-    public final void setHasTime(final boolean hasTime) {
-        this.m_hasTime = hasTime;
-    }
-
-    /**
-     * @return the hasMillis
-     * @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean)
-     */
-    public final boolean isHasMillis() {
-        return m_hasMillis;
-    }
-
-    /**
-     * @param hasMillis the hasMillis to set
-     * @see DateAndTimeCell#DateAndTimeCell(long, boolean, boolean, boolean)
-     */
-    public final void setHasMillis(final boolean hasMillis) {
-        this.m_hasMillis = hasMillis;
     }
 
     /**
