@@ -53,14 +53,14 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.ReplaceOrAddColumnSettings;
+import org.knime.json.node.util.RemoveOrAddColumnSettings;
 
 /**
  * Settings for JSONDiff node.
  *
  * @author Gabor Bakos
  */
-final class JSONPatchCreateSettings extends ReplaceOrAddColumnSettings {
+final class JSONPatchCreateSettings extends RemoveOrAddColumnSettings {
     static final String INPUT_COLUMN_RIGHT = "input.column.right", DEFAULT_INPUT_COLUMN_RIGHT = "";
 
     private String m_inputColumnRight = DEFAULT_INPUT_COLUMN_RIGHT;

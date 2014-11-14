@@ -55,6 +55,7 @@ import java.util.List;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataTableSpecCreator;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
@@ -73,9 +74,9 @@ import org.knime.core.node.port.PortType;
  * . It provides the settings in the form of custom settings.
  *
  * @author Gabor Bakos
- * @param <S> The type of the model-specific {@link ReplaceOrAddColumnSettings}.
+ * @param <S> The type of the model-specific {@link RemoveOrAddColumnSettings}.
  */
-public abstract class SingleColumnReplaceOrAddNodeModel<S extends ReplaceOrAddColumnSettings> extends NodeModel {
+public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddColumnSettings> extends NodeModel {
     /**
      * The key for the remove or not the source/input column boolean value ({@code true} means remove).
      */
@@ -111,20 +112,6 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends ReplaceOrAddCo
      */
     protected abstract S createSettings();
 
-    //    /**
-    //     * @return {@link SettingsModelString} for the input column name.
-    //     */
-    //    public static SettingsModelString createInputColumnName() {
-    //        return new SettingsModelString(INPUT_COLUMN, "");
-    //    }
-    //
-    //    /**
-    //     * @return
-    //     */
-    //    public static SettingsModelBoolean createAppend() {
-    //        return new SettingsModelBoolean(APPEND, false);
-    //    }
-    //
     /**
      * @param nrInDataPorts
      * @param nrOutDataPorts
@@ -246,24 +233,69 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends ReplaceOrAddCo
         InvalidSettingsException {
         ColumnRearranger ret = new ColumnRearranger(inSpecs);
         String input = m_settings.getInputColumnName();
-        if (input == null) {
+        if (input == null || !inSpecs.containsName(input)) {
             input = handleNonSetColumn(inSpecs).getName();
         }
         final int inputIndex = inSpecs.findColumnIndex(input);
         final int[] otherIndices = findOtherIndices(inSpecs);
         String newColumnName = m_settings.getNewColumnName();
+        if (m_settings instanceof ReplaceColumnSettings) {
+            ReplaceColumnSettings s = (ReplaceColumnSettings)m_settings;
+            if (s.isRemoveInputColumn()) {
+                newColumnName = s.getInputColumnName();
+            }
+        }
         if (newColumnName == null || newColumnName.trim().isEmpty()) {
             throw new InvalidSettingsException("Please specify the output column's name");
         }
+        DataTableSpec specs = removeInputIfRequired(inSpecs, input);
         String outputColName =
-            DataTableSpec.getUniqueColumnName(inSpecs, newColumnName);
+            DataTableSpec.getUniqueColumnName(specs, newColumnName);
         DataColumnSpec output = createOutputSpec(outputColName);
         CellFactory factory = createCellFactory(output, inputIndex, otherIndices);
-            ret.append(factory);
+        applyFactory(ret, input, factory);
+        return ret;
+    }
+
+    /**
+     * @param inSpecs
+     * @param input
+     * @return
+     */
+    private DataTableSpec removeInputIfRequired(final DataTableSpec inSpecs, final String input) {
+        DataTableSpec specs = inSpecs;
+        if (getSettings().isRemoveInputColumn() && inSpecs.containsName(input)) {
+            int numColumns = specs.getNumColumns();
+            DataColumnSpec[] newSpecs = new DataColumnSpec[numColumns - 1];
+            int j = 0;
+            for (int i = 0; i < numColumns; ++i) {
+                DataColumnSpec spec = specs.getColumnSpec(i);
+                if (!spec.getName().equals(input)) {
+                    newSpecs[j++] = spec;
+                }
+            }
+            specs = new DataTableSpecCreator().addColumns(newSpecs).createSpec();
+        }
+        return specs;
+    }
+
+    /**
+     * @param ret
+     * @param input
+     * @param factory
+     */
+    private void applyFactory(final ColumnRearranger ret, final String input, final CellFactory factory) {
+        if (m_settings instanceof ReplaceColumnSettings) {
+            ReplaceColumnSettings s = (ReplaceColumnSettings)m_settings;
+            if (s.isRemoveInputColumn()) {
+                ret.replace(factory, input);
+                return;
+            }
+        }
+        ret.append(factory);
         if (m_settings.isRemoveInputColumn()) {
             ret.remove(input);
         }
-        return ret;
     }
 
     /**

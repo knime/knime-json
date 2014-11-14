@@ -53,14 +53,14 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.ReplaceOrAddColumnSettings;
+import org.knime.json.node.util.RemoveOrAddColumnSettings;
 
 /**
  * The settings object of the XMLToJSON node.
  *
  * @author Gabor Bakos
  */
-final class XMLToJSONSettings extends ReplaceOrAddColumnSettings {
+final class XMLToJSONSettings extends RemoveOrAddColumnSettings {
     /**
      * The default value for key of the text node translation to json.
      */

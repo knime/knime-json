@@ -53,14 +53,14 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.ReplaceOrAddColumnSettings;
+import org.knime.json.node.util.RemoveOrAddColumnSettings;
 
 /**
  * Settings object for the JSONToXML node.
  *
  * @author Gabor Bakos
  */
-final class JSONToXMLSettings extends ReplaceOrAddColumnSettings {
+final class JSONToXMLSettings extends RemoveOrAddColumnSettings {
     //Further options would be:
     //Write xml declaration (currently: always true)
     //write xml 1.1 header (currently: always false)

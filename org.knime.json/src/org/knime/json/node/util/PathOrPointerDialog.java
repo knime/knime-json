@@ -70,7 +70,7 @@ import org.knime.core.node.port.PortObjectSpec;
  * @author Gabor Bakos
  * @param <S> The type of the implementation-specific {@link PathOrPointerSettings}.
  */
-public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> extends ReplaceOrAddColumnDialog<S> {
+public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> extends RemoveOrAddColumnDialog<S> {
     private DefaultComboBoxModel<OutputType> m_outputTypeModel;
 
     /**

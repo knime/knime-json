@@ -68,7 +68,7 @@ public class JSONSchemaCheckSettings {
     /** The default schema. */
     static final String DEFAULT_SCHEMA = "{}";
 
-    private String m_inputSchema = DEFAULT_SCHEMA, m_inputColumn = "";
+    private String m_inputSchema = DEFAULT_SCHEMA, m_inputColumn = null;
 
     /**
      * Constructs the settings object.

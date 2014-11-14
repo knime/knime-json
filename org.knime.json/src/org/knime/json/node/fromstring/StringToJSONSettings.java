@@ -53,14 +53,14 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.ReplaceOrAddColumnSettings;
+import org.knime.json.node.util.ReplaceColumnSettings;
 
 /**
  * Node settings for the StringToJSON node.
  *
  * @author Gabor Bakos
  */
-final class StringToJSONSettings extends ReplaceOrAddColumnSettings {
+final class StringToJSONSettings extends ReplaceColumnSettings {
     private static String ALLOW_COMMENTS = "allow.comments", FAIL_ON_ERROR = "fail.on.error";
 
     private boolean m_allowComments = true, m_failOnError = true;

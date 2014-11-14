@@ -48,6 +48,7 @@
  */
 package org.knime.json.node.util;
 
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -62,6 +63,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
@@ -76,18 +78,18 @@ import org.knime.core.node.util.ColumnSelectionComboxBox;
  * output could be specified.
  *
  * @author Gabor Bakos
- * @param <S> The type of {@link ReplaceOrAddColumnSettings} to set.
+ * @param <S> The type of {@link RemoveOrAddColumnSettings} to set.
  */
-public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> extends NodeDialogPane {
+public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extends NodeDialogPane {
     private S m_settings;
 
     private ColumnSelectionComboxBox m_inputColumn;
 
-    private JTextField m_newColumnName;
+    private final JTextField m_newColumnName = GUIFactory.createTextField("", 22);
 
-    private JCheckBox m_removeSourceColumn;
+    protected final JCheckBox m_removeSourceColumn = new JCheckBox("Remove source column");
 
-    private int m_inputTable;
+    private final int m_inputTable;
 
     /**
      * Constructs the dialog for the first input table with {@link S#getInputColumnType() the data value type} from the
@@ -96,7 +98,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
      * @param settings The node specific settings.
      * @param inputColumnLabel The label of the input column.
      */
-    public ReplaceOrAddColumnDialog(final S settings, final String inputColumnLabel) {
+    public RemoveOrAddColumnDialog(final S settings, final String inputColumnLabel) {
         this(settings, inputColumnLabel, 0, settings.getInputColumnType());
     }
 
@@ -107,7 +109,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
      * @param inputColumnLabel The label of the input column.
      * @param inputValueClass The possible input value class.
      */
-    public ReplaceOrAddColumnDialog(final S settings, final String inputColumnLabel,
+    public RemoveOrAddColumnDialog(final S settings, final String inputColumnLabel,
         final Class<? extends DataValue> inputValueClass) {
         this(settings, inputColumnLabel, 0, inputValueClass);
     }
@@ -120,7 +122,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
      * @param inputTable The {@code 0}-based index of the input table.
      * @param inputValueClass The possible input value class.
      */
-    public ReplaceOrAddColumnDialog(final S settings, final String inputColumnLabel, final int inputTable,
+    public RemoveOrAddColumnDialog(final S settings, final String inputColumnLabel, final int inputTable,
         final Class<? extends DataValue> inputValueClass) {
         m_settings = settings;
         this.m_inputTable = inputTable;
@@ -128,6 +130,22 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         addTab("Settings", panel);
         GridBagConstraints gbc = createInitialConstraints();
         int gridY = addBeforeInputColumn(panel);
+        addInputColumn(inputColumnLabel, inputValueClass, panel, gbc, gridY);
+        gridY = addAfterInputColumn(panel, gbc.gridy + 1);
+        gbc.gridy = gridY;
+        addRemoveAndAddNewColumn(panel, gbc);
+        afterNewColumnName(panel, gbc.gridy);
+    }
+
+    /**
+     * @param inputColumnLabel
+     * @param inputValueClass
+     * @param panel
+     * @param gbc
+     * @param gridY
+     */
+    protected void addInputColumn(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass,
+        final JPanel panel, final GridBagConstraints gbc, final int gridY) {
         gbc.gridy = gridY;
         panel.add(new JLabel(inputColumnLabel), gbc);
         gbc.gridx++;
@@ -145,9 +163,13 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         }
         m_inputColumn.setBorder(null);
         panel.add(m_inputColumn, gbc);
-        gridY = addAfterInputColumn(panel, gbc.gridy + 1);
-        gbc.gridy = gridY;
-        m_removeSourceColumn = new JCheckBox("Remove source column", m_settings.isRemoveInputColumn());
+    }
+
+    /**
+     * @param panel
+     * @param gbc
+     */
+    protected void addRemoveAndAddNewColumn(final JPanel panel, final GridBagConstraints gbc) {
         m_removeSourceColumn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -161,26 +183,27 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         panel.add(new JLabel("New column"), gbc);
         gbc.gridx = 1;
         gbc.gridwidth = 1;
-        m_newColumnName = GUIFactory.createTextField("", 22);
-        m_newColumnName.getDocument().addDocumentListener(new DocumentListener() {
+        getNewColumnName().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(final DocumentEvent e) {
-                onNewColumnTextChanged(m_newColumnName);
+                onNewColumnTextChanged(getNewColumnName());
             }
 
             @Override
             public void removeUpdate(final DocumentEvent e) {
-                onNewColumnTextChanged(m_newColumnName);
+                onNewColumnTextChanged(getNewColumnName());
             }
 
             @Override
             public void changedUpdate(final DocumentEvent e) {
-                onNewColumnTextChanged(m_newColumnName);
+                onNewColumnTextChanged(getNewColumnName());
             }
         });
-        panel.add(m_newColumnName, gbc);
+        JPanel newNamePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        newNamePanel.add(new JLabel(DataType.getUtilityFor(m_settings.getInputColumnType()).getIcon()));
+        newNamePanel.add(getNewColumnName());
+        panel.add(newNamePanel, gbc);
         gbc.gridy++;
-        afterNewColumnName(panel, gbc.gridy);
     }
 
     /**
@@ -238,8 +261,8 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
             throw new InvalidSettingsException("No input column selected!");
         }
         m_settings.setRemoveInputColumn(m_removeSourceColumn.isSelected());
-        m_settings.setNewColumnName(m_newColumnName.getText());
-        if (m_newColumnName.getText().trim().isEmpty()) {
+        m_settings.setNewColumnName(getNewColumnName().getText());
+        if (getNewColumnName().getText().trim().isEmpty()) {
             throw new InvalidSettingsException("No name specified for the new column.");
         }
         m_settings.saveSettingsTo(settings);
@@ -262,7 +285,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         m_inputColumn.setSelectedColumn(m_settings.getInputColumnName());
         m_inputColumn.update((DataTableSpec)specs[m_inputTable], m_settings.getInputColumnName());
         m_removeSourceColumn.setSelected(m_settings.isRemoveInputColumn());
-        m_newColumnName.setText(m_settings.getNewColumnName());
+        getNewColumnName().setText(m_settings.getNewColumnName());
         notifyListeners();
     }
 
@@ -276,7 +299,7 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
         for (ActionListener listener : m_removeSourceColumn.getActionListeners()) {
             listener.actionPerformed(null);
         }
-        for (ActionListener listener : m_newColumnName.getActionListeners()) {
+        for (ActionListener listener : getNewColumnName().getActionListeners()) {
             listener.actionPerformed(null);
         }
     }
@@ -306,5 +329,26 @@ public class ReplaceOrAddColumnDialog<S extends ReplaceOrAddColumnSettings> exte
      */
     protected void onNewColumnTextChanged(final JTextField textfield) {
 
+    }
+
+    /**
+     * @return the newColumnName
+     */
+    protected JTextField getNewColumnName() {
+        return m_newColumnName;
+    }
+
+    /**
+     * @return the inputColumn
+     */
+    protected ColumnSelectionComboxBox getInputColumn() {
+        return m_inputColumn;
+    }
+
+    /**
+     * @param inputColumn the inputColumn to set
+     */
+    protected void setInputColumn(final ColumnSelectionComboxBox inputColumn) {
+        this.m_inputColumn = inputColumn;
     }
 }

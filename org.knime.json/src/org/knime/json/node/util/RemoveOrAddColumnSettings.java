@@ -65,7 +65,7 @@ import org.knime.core.node.port.PortObjectSpec;
  *
  * @author Gabor Bakos
  */
-public class ReplaceOrAddColumnSettings {
+public class RemoveOrAddColumnSettings {
     /**
      * The default error message for no JSON columns.
      */
@@ -81,7 +81,7 @@ public class ReplaceOrAddColumnSettings {
     /**
      * @param inputColumnType
      */
-    public ReplaceOrAddColumnSettings(final Class<? extends DataValue> inputColumnType) {
+    public RemoveOrAddColumnSettings(final Class<? extends DataValue> inputColumnType) {
         super();
         m_inputColumnType = inputColumnType;
     }

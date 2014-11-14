@@ -60,7 +60,7 @@ import org.knime.core.node.port.PortObjectSpec;
  *
  * @author Gabor Bakos
  */
-public class PathOrPointerSettings extends ReplaceOrAddColumnSettings {
+public class PathOrPointerSettings extends RemoveOrAddColumnSettings {
     //TODO option to fail or result in missing value if not found or cannot be converted to result type?
     //TODO probably a locale and date format would be a good idea to not rely on computer (and lib) settings for dates.
 

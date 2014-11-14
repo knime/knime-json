@@ -46,57 +46,78 @@
  * History
  *   14 Nov. 2014 (Gabor): created
  */
-package org.knime.json.node.toxml;
+package org.knime.json.node.util;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
+import org.knime.core.data.DataValue;
 
 /**
- * <code>NodeFactory</code> for the "JSONToXML" Node.
- *
+ * A {@link RemoveOrAddColumnSettings} which allows to replace the content instead of just remove and add a new column.
+ * Do not use the following key in your settings:
+ * {@value #REPLACE_INPUT_COLUMN}
  *
  * @author Gabor Bakos
  */
-public class JSONToXMLNodeFactory extends NodeFactory<JSONToXMLNodeModel> {
+public class ReplaceColumnSettings extends RemoveOrAddColumnSettings {
+//    /** The config key whether to replace column or not. */
+//    protected static final String REPLACE_INPUT_COLUMN = "replace.input.column";
+//    private static final boolean DEFAULT_REPLACE_INPUT_COLUMN = true;
+//
+//    private boolean m_replaceColumn = DEFAULT_REPLACE_INPUT_COLUMN;
 
     /**
-     * {@inheritDoc}
+     * @param inputColumnType The input column's {@link DataValue} class.
      */
-    @Override
-    public JSONToXMLNodeModel createNodeModel() {
-        return new JSONToXMLNodeModel();
+    public ReplaceColumnSettings(final Class<? extends DataValue> inputColumnType) {
+        super(inputColumnType);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getNrNodeViews() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<JSONToXMLNodeModel> createNodeView(final int viewIndex, final JSONToXMLNodeModel nodeModel) {
-        throw new IllegalStateException("No views: " + viewIndex);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new JSONToXMLNodeDialog();
-    }
+//
+//    /**
+//     * @return the replaceColumn
+//     */
+//    final boolean isReplaceColumn() {
+//        return m_replaceColumn;
+//    }
+//
+//    /**
+//     * @param replaceColumn the replaceColumn to set
+//     */
+//    final void setReplaceColumn(final boolean replaceColumn) {
+//        this.m_replaceColumn = replaceColumn;
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+//        super.validateSettings(settings);
+//        settings.getBoolean(REPLACE_INPUT_COLUMN);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
+//        super.loadSettingsForDialogs(settings, specs);
+//        m_replaceColumn = settings.getBoolean(REPLACE_INPUT_COLUMN, DEFAULT_REPLACE_INPUT_COLUMN);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+//        super.loadSettingsFrom(settings);
+//        m_replaceColumn = settings.getBoolean(REPLACE_INPUT_COLUMN);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    protected void saveSettingsTo(final NodeSettingsWO settings) {
+//        super.saveSettingsTo(settings);
+//        settings.addBoolean(REPLACE_INPUT_COLUMN, m_replaceColumn);
+//    }
 }

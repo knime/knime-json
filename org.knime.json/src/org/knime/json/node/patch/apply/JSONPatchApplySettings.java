@@ -57,14 +57,14 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.ReplaceOrAddColumnSettings;
+import org.knime.json.node.util.RemoveOrAddColumnSettings;
 
 /**
  * The settings object for the JSONTransformer node.
  *
  * @author Gabor Bakos
  */
-final class JSONPatchApplySettings extends ReplaceOrAddColumnSettings {
+final class JSONPatchApplySettings extends RemoveOrAddColumnSettings {
     static final String PATCH_OPTION = "patch";
 
     static final String MERGE_PATCH_OPTION = "merge and patch";
