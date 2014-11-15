@@ -54,7 +54,6 @@ import org.knime.core.data.DataValue;
  * A {@link RemoveOrAddColumnSettings} which allows to replace the content instead of just remove and add a new column.
  *
  * @author Gabor Bakos
- * @since 2.11
  */
 public class ReplaceColumnSettings extends RemoveOrAddColumnSettings {
     /**

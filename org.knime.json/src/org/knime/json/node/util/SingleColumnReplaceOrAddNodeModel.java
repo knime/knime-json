@@ -98,8 +98,8 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     protected abstract S createSettings();
 
     /**
-     * @param nrInDataPorts
-     * @param nrOutDataPorts
+     * @param nrInDataPorts Number of input data ports. Should be {@code 1}.
+     * @param nrOutDataPorts Number of output data ports. Should be {@code 1}.
      */
     public SingleColumnReplaceOrAddNodeModel(final int nrInDataPorts, final int nrOutDataPorts) {
         super();
@@ -107,15 +107,6 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
             throw new IllegalArgumentException();
         }
     }
-
-    //
-    //    /**
-    //     * @param inPortTypes
-    //     * @param outPortTypes
-    //     */
-    //    public SingleColumnReplaceOrAddNodeModel(final PortType[] inPortTypes, final PortType[] outPortTypes) {
-    //        super();
-    //    }
 
     /**
      * Creates the output spec based on the output column name. By default it creates JSON output column, override if it
@@ -165,21 +156,6 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_settings.validateSettings(settings);
     }
-
-//    /**
-//     * {@inheritDoc}
-//     *
-//     * @throws IOException Problem during execution
-//     * @throws CanceledExecutionException Execution cancelled
-//     * @throws InvalidSettingsException Autoguessing of column name failed.
-//     */
-//    @Override
-//    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
-//        throws IOException, CanceledExecutionException, InvalidSettingsException {
-//        int inputTableIndex = m_settings.inputTableIndex();
-//        return new BufferedDataTable[]{exec.createColumnRearrangeTable(inData[inputTableIndex],
-//            createColumnRearranger(inData[inputTableIndex].getDataTableSpec()), exec)};
-//    }
 
     /**
      * This method gets called when no column was selected.
@@ -251,9 +227,11 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     }
 
     /**
-     * @param inSpecs
-     * @param input
-     * @return
+     * Removes the input column if that settings is valid.
+     *
+     * @param inSpecs The input {@link DataTableSpec}.
+     * @param input The input column's name.
+     * @return The update {@link DataTableSpec}.
      */
     private DataTableSpec removeInputIfRequired(final DataTableSpec inSpecs, final String input) {
         DataTableSpec specs = inSpecs;
@@ -273,21 +251,23 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     }
 
     /**
-     * @param ret
-     * @param input
-     * @param factory
+     * Adds the {@code factory} and optionally replaces (in case the settings is a {@link ReplaceColumnSettings}) or removes the {@code input} column.
+     *
+     * @param rearranger The {@link ColumnRearranger}.
+     * @param input The input column's name.
+     * @param factory The {@link SingleCellFactory} to add.
      */
-    private void applyFactory(final ColumnRearranger ret, final String input, final CellFactory factory) {
+    private void applyFactory(final ColumnRearranger rearranger, final String input, final CellFactory factory) {
         if (m_settings instanceof ReplaceColumnSettings) {
             ReplaceColumnSettings s = (ReplaceColumnSettings)m_settings;
             if (s.isRemoveInputColumn()) {
-                ret.replace(factory, input);
+                rearranger.replace(factory, input);
                 return;
             }
         }
-        ret.append(factory);
+        rearranger.append(factory);
         if (m_settings.isRemoveInputColumn()) {
-            ret.remove(input);
+            rearranger.remove(input);
         }
     }
 
@@ -300,19 +280,6 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     protected int[] findOtherIndices(final DataTableSpec inSpecs) {
         return new int[0];
     }
-
-    //
-    //    /**
-    //     * {@inheritDoc}
-    //     */
-    //    @Override
-    //    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-    //        try {
-    //            return new DataTableSpec[]{createColumnRearranger(inSpecs[m_settings.inputTableIndex()]).createSpec()};
-    //        } catch (IOException e) {
-    //            throw new InvalidSettingsException(e.getMessage(), e);
-    //        }
-    //    }
 
     /**
      * @return the settings

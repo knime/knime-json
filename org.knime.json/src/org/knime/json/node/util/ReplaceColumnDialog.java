@@ -78,7 +78,6 @@ import org.knime.core.node.util.ColumnSelectionComboxBox;
 /**
  * A dialog with option to replace the original column (not just possibly remove and add).
  *
- * @since 2.11
  * @author Gabor Bakos
  * @param <S> The actual type of the {@link ReplaceColumnSettings} object.
  */
@@ -88,25 +87,25 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
     private ButtonGroup m_buttonGroup;
 
     /**
-     * @param settings
-     * @param inputColumnLabel
+     * @param settings The settings to use.
+     * @param inputColumnLabel The input column label (not used in this implementation).
      */
     public ReplaceColumnDialog(final S settings, final String inputColumnLabel) {
         this(settings, inputColumnLabel, settings.getInputColumnType());
     }
     /**
-     * @param settings
-     * @param inputColumnLabel
-     * @param inputValueClass
+     * @param settings The settings to use.
+     * @param inputColumnLabel The input column label (not used in this implementation).
+     * @param inputValueClass The type of the input column.
      */
     public ReplaceColumnDialog(final S settings, final String inputColumnLabel, final Class<? extends DataValue> inputValueClass) {
         this(settings, inputColumnLabel, 0, inputValueClass);
     }
     /**
-     * @param settings
-     * @param inputColumnLabel
-     * @param inputTable
-     * @param inputValueClass
+     * @param settings The settings to use.
+     * @param inputColumnLabel The input column label (not used in this implementation).
+     * @param inputTable The position of input table (not used in this implementation).
+     * @param inputValueClass The type of the input column.
      */
     public ReplaceColumnDialog(final S settings, final String inputColumnLabel, final int inputTable,
         final Class<? extends DataValue> inputValueClass) {
@@ -140,8 +139,6 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
     protected void addInputColumn(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass, final JPanel panel,
         final GridBagConstraints gbc, final int gridY) {
         gbc.gridy = gridY;
-//        gbc.gridwidth = 2;
-//        panel.add(m_replaceButton, gbc);
         gbc.weightx = 1;
         {
             @SuppressWarnings("unchecked")
@@ -232,7 +229,6 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-//        getSettings().setReplaceColumn(m_replaceButton.isSelected());
         getRemoveSourceColumn().setSelected(m_replaceButton.isSelected());
         super.saveSettingsTo(settings);
     }

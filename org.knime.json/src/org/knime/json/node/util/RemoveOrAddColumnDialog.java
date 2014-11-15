@@ -132,12 +132,14 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
     }
 
     /**
-     * @param inputColumnLabel
-     * @param inputValueClass
-     * @param panel
+     * This method fills the contents of the "Settings" panel.
+     *
+     * @param inputColumnLabel The suggested label for the input column.
+     * @param inputValueClass The type of the input column.
+     * @param panel The "Settings" panel.
      */
     protected void addContentsToSettings(final String inputColumnLabel,
-        final Class<? extends DataValue> inputValueClass, JPanel panel) {
+        final Class<? extends DataValue> inputValueClass, final JPanel panel) {
         GridBagConstraints gbc = createInitialConstraints();
         int gridY = addBeforeInputColumn(panel);
         addInputColumn(inputColumnLabel, inputValueClass, panel, gbc, gridY);
@@ -148,11 +150,13 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
     }
 
     /**
-     * @param inputColumnLabel
-     * @param inputValueClass
-     * @param panel
-     * @param gbc
-     * @param gridY
+     * Adds the input column control to {@code panel}. As a side effect it might change the {@code gbc}.
+     *
+     * @param inputColumnLabel The suggested input column label.
+     * @param inputValueClass The type of the expected column.
+     * @param panel The panel to use.
+     * @param gbc The {@link GridBagConstraints} to use.
+     * @param gridY The suggested gridy value of {@code gbc}.
      */
     protected void addInputColumn(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass,
         final JPanel panel, final GridBagConstraints gbc, final int gridY) {
@@ -176,8 +180,10 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
     }
 
     /**
-     * @param panel
-     * @param gbc
+     * Adds the remove original and the new column controls to {@code panel}
+     *
+     * @param panel A {@link JPanel} with {@link GridBagConstraints}.
+     * @param gbc The suggested {@link GridBagConstraints}.
      */
     protected void addRemoveAndAddNewColumn(final JPanel panel, final GridBagConstraints gbc) {
         getRemoveSourceColumn().addActionListener(new ActionListener() {
