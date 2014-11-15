@@ -87,7 +87,7 @@ public class ConcatenateAsJSON extends AggregationOperator {
      * @return
      */
     private static OperatorData createOperatorData() {
-        return new OperatorData("Concate as JSON array", false, false, JSONValue.class, false);
+        return new OperatorData("Concatenate as JSON array", false, false, JSONValue.class, false);
     }
 
     /**

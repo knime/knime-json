@@ -43,6 +43,7 @@
             deprecated="false"/>
       <AggregationOperator AggregationOperator="org.knime.json.aggregation.JSONPathCollection" deprecated="false"/>
       <AggregationOperator AggregationOperator="org.knime.json.aggregation.JsonPointer" deprecated="false"/>
+      <AggregationOperator AggregationOperator="org.knime.json.aggregation.ToJson" deprecated="false"/>
    </extension>
    <extension
          point="org.knime.core.DataValueRenderer">
