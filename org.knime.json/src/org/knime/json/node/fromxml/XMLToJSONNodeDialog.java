@@ -61,14 +61,14 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.json.node.util.GUIFactory;
-import org.knime.json.node.util.RemoveOrAddColumnDialog;
+import org.knime.json.node.util.ReplaceColumnDialog;
 
 /**
  * <code>NodeDialog</code> for the "XMLToJSON" Node. Converts XML values to JSON values.
  *
  * @author Gabor Bakos
  */
-public class XMLToJSONNodeDialog extends RemoveOrAddColumnDialog<XMLToJSONSettings> {
+public class XMLToJSONNodeDialog extends ReplaceColumnDialog<XMLToJSONSettings> {
 
     private JTextField m_textKey;
 
@@ -83,7 +83,7 @@ public class XMLToJSONNodeDialog extends RemoveOrAddColumnDialog<XMLToJSONSettin
      * {@inheritDoc}
      */
     @Override
-    protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
+    protected void afterNewColumnName(final JPanel panel, final int afterInput) {
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridx = 0;
         gbc.gridy = afterInput;
@@ -92,7 +92,6 @@ public class XMLToJSONNodeDialog extends RemoveOrAddColumnDialog<XMLToJSONSettin
         m_textKey = GUIFactory.createTextField("", 22);
         panel.add(m_textKey, gbc);
         gbc.gridy++;
-        return gbc.gridy;
     }
 
     /**

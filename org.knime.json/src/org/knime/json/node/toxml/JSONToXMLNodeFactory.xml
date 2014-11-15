@@ -15,17 +15,17 @@
         
         
         <tab name="Standard Options">
-        <option name="JSON column">The column containing JSON values</option>
+        <option name="Input column">Column containing JSON values</option>
+        <option name="Replace input column">Replace input column, keep its name</option>
+        <option name="Append new column">Name of the new (XML) column</option>
         <option name="Specify namespace">If unchecked, no base namespace will be set.</option>
         <option name="Namespace">The base namespace</option>
         <option name="Omit type information">When checked, the JSON type information will not be provided, numbers, booleans, ... will be represented as text. If checked, these will be prefixed with the prefixes specified on the <u>Namespace/prefix</u> tab.</option>
         <option name="Root element name">There is always a root element, you can specify its name.</option>
         <option name="Array item name">Array items not always can be represented as trees (for example arrays within arrays, or primitive types within arrays), in that case an element will be created with this name for each array item.</option>
-        <option name="Remove source column">When checked, the source column will be removed</option>
-        <option name="New column">Name of the new (XML) column</option>
         </tab>
         <tab name="Namespace/prefix">
-        <option name="Empty list">Only used for the [] when the <u>Omit type information</u> is unchecked. Otherwise it is not possible to distinguish between <tt>[]</tt> and <tt>{}</tt>.</option>
+        <option name="Empty list">Only used for the <tt>[]</tt> JSON array when the <u>Omit type information</u> is unchecked. Otherwise it is not possible to distinguish between <tt>[]</tt> and <tt>{}</tt>.</option>
         <option name="Binary content">Prefix for the binary contents.</option>
         <option name="Boolean">Prefix for the boolean values.</option>
         <option name="Decimal">Prefix for the floating point/decimal values.</option>

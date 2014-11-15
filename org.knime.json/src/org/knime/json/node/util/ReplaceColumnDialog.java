@@ -50,6 +50,7 @@ package org.knime.json.node.util;
 
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -60,6 +61,7 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -76,6 +78,7 @@ import org.knime.core.node.util.ColumnSelectionComboxBox;
 /**
  * A dialog with option to replace the original column (not just possibly remove and add).
  *
+ * @since 2.11
  * @author Gabor Bakos
  * @param <S> The actual type of the {@link ReplaceColumnSettings} object.
  */
@@ -114,14 +117,31 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
      * {@inheritDoc}
      */
     @Override
+    protected void addContentsToSettings(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass,
+        final JPanel panel) {
+        GridBagConstraints gbc = createInitialConstraints();
+        int gridY = addBeforeInputColumn(panel);
+        JPanel inputColumnPanel = new JPanel(new GridBagLayout());
+        inputColumnPanel.setBorder(new TitledBorder("Input column"));
+        gbc.gridwidth = 2;
+        addInputColumn(inputColumnLabel, inputValueClass, inputColumnPanel, gbc, 0);
+        gbc.gridy = gridY;
+        panel.add(inputColumnPanel, gbc);
+        gbc.gridy = addAfterInputColumn(inputColumnPanel, 1);
+        addRemoveAndAddNewColumn(inputColumnPanel, gbc);
+        gridY++;
+        afterNewColumnName(panel, gridY);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected void addInputColumn(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass, final JPanel panel,
         final GridBagConstraints gbc, final int gridY) {
-        m_buttonGroup = new ButtonGroup();
         gbc.gridy = gridY;
-        m_replaceButton = new JRadioButton("Replace/" + inputColumnLabel);
-        m_buttonGroup.add(m_replaceButton);
-        panel.add(m_replaceButton, gbc);
-        gbc.gridx++;
+//        gbc.gridwidth = 2;
+//        panel.add(m_replaceButton, gbc);
         gbc.weightx = 1;
         {
             @SuppressWarnings("unchecked")
@@ -144,11 +164,17 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
     @Override
     protected void addRemoveAndAddNewColumn(final JPanel panel, final GridBagConstraints gbc) {
         gbc.gridx = 0;
-        m_addButton = new JRadioButton("Append");
+        gbc.gridwidth = 2;
+        m_buttonGroup = new ButtonGroup();
+        m_replaceButton = new JRadioButton("Replace input column");
+        panel.add(m_replaceButton, gbc);
+        m_buttonGroup.add(m_replaceButton);
+        m_addButton = new JRadioButton("Append new column");
+        gbc.gridwidth = 1;
+        gbc.gridy++;
         panel.add(m_addButton, gbc);
         m_buttonGroup.add(m_addButton);
         gbc.gridx = 1;
-        gbc.gridwidth = 1;
         getNewColumnName().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(final DocumentEvent e) {
@@ -207,7 +233,7 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
 //        getSettings().setReplaceColumn(m_replaceButton.isSelected());
-        m_removeSourceColumn.setSelected(m_replaceButton.isSelected());
+        getRemoveSourceColumn().setSelected(m_replaceButton.isSelected());
         super.saveSettingsTo(settings);
     }
 }

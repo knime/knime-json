@@ -87,7 +87,7 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
 
     private final JTextField m_newColumnName = GUIFactory.createTextField("", 22);
 
-    protected final JCheckBox m_removeSourceColumn = new JCheckBox("Remove source column");
+    private final JCheckBox m_removeSourceColumn = new JCheckBox("Remove source column");
 
     private final int m_inputTable;
 
@@ -128,6 +128,16 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
         this.m_inputTable = inputTable;
         JPanel panel = new JPanel(new GridBagLayout());
         addTab("Settings", panel);
+        addContentsToSettings(inputColumnLabel, inputValueClass, panel);
+    }
+
+    /**
+     * @param inputColumnLabel
+     * @param inputValueClass
+     * @param panel
+     */
+    protected void addContentsToSettings(final String inputColumnLabel,
+        final Class<? extends DataValue> inputValueClass, JPanel panel) {
         GridBagConstraints gbc = createInitialConstraints();
         int gridY = addBeforeInputColumn(panel);
         addInputColumn(inputColumnLabel, inputValueClass, panel, gbc, gridY);
@@ -170,13 +180,13 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
      * @param gbc
      */
     protected void addRemoveAndAddNewColumn(final JPanel panel, final GridBagConstraints gbc) {
-        m_removeSourceColumn.addActionListener(new ActionListener() {
+        getRemoveSourceColumn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                onRemoveSourceColumnChanged(m_removeSourceColumn);
+                onRemoveSourceColumnChanged(getRemoveSourceColumn());
             }
         });
-        panel.add(m_removeSourceColumn, gbc);
+        panel.add(getRemoveSourceColumn(), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 0;
@@ -260,7 +270,7 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
         if (m_inputColumn.getSelectedColumn().isEmpty()) {
             throw new InvalidSettingsException("No input column selected!");
         }
-        m_settings.setRemoveInputColumn(m_removeSourceColumn.isSelected());
+        m_settings.setRemoveInputColumn(getRemoveSourceColumn().isSelected());
         m_settings.setNewColumnName(getNewColumnName().getText());
         if (getNewColumnName().getText().trim().isEmpty()) {
             throw new InvalidSettingsException("No name specified for the new column.");
@@ -284,7 +294,7 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
         m_settings.loadSettingsForDialogs(settings, specs);
         m_inputColumn.setSelectedColumn(m_settings.getInputColumnName());
         m_inputColumn.update((DataTableSpec)specs[m_inputTable], m_settings.getInputColumnName());
-        m_removeSourceColumn.setSelected(m_settings.isRemoveInputColumn());
+        getRemoveSourceColumn().setSelected(m_settings.isRemoveInputColumn());
         getNewColumnName().setText(m_settings.getNewColumnName());
         notifyListeners();
     }
@@ -296,7 +306,7 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
         for (ActionListener listener : m_inputColumn.getActionListeners()) {
             listener.actionPerformed(null);
         }
-        for (ActionListener listener : m_removeSourceColumn.getActionListeners()) {
+        for (ActionListener listener : getRemoveSourceColumn().getActionListeners()) {
             listener.actionPerformed(null);
         }
         for (ActionListener listener : getNewColumnName().getActionListeners()) {
@@ -350,5 +360,12 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
      */
     protected void setInputColumn(final ColumnSelectionComboxBox inputColumn) {
         this.m_inputColumn = inputColumn;
+    }
+
+    /**
+     * @return the removeSourceColumn
+     */
+    protected JCheckBox getRemoveSourceColumn() {
+        return m_removeSourceColumn;
     }
 }

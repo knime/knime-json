@@ -9,8 +9,8 @@
     <fullDescription>
         <intro>Converts the String values to JSON values.</intro>
         
-        
-        <option name="Replace/String column">Column containing JSON as a String (to be replace or used as input in case Append is selected)</option>
+        <option name="Input column">Column containing JSON as a String</option>
+        <option name="Replace">Replace input column, keep its name</option>
         <option name="Append">Name of the new (JSON) column</option>
         <option name="Allow comments">Comments <tt>/*</tt>...<tt>*/</tt>, and line comments <tt>//</tt> and <tt>#</tt> are allowed within JSON (the specification do not allow comments)</option>
         <option name="Fail on error">If there are errors, it should fail or generate missing values</option>

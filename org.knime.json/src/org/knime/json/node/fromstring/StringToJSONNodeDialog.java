@@ -83,17 +83,15 @@ final class StringToJSONNodeDialog extends ReplaceColumnDialog<StringToJSONSetti
      * {@inheritDoc}
      */
     @Override
-    protected void afterNewColumnName(final JPanel panel, final int afterInput) {
+    protected void afterNewColumnName(final JPanel panel, final int afterNewColName) {
         GridBagConstraints gbc = createInitialConstraints();
-        gbc.gridy = afterInput;
+        gbc.gridy = afterNewColName;
         gbc.gridx = 1;
         m_allowComments = new JCheckBox("Allow comments", getSettings().isAllowComments());
         panel.add(m_allowComments, gbc);
         gbc.gridy++;
         m_failOnError = new JCheckBox("Fail on error", getSettings().isFailOnError());
         panel.add(m_failOnError, gbc);
-        gbc.gridy++;
-        //return gbc.gridy;
     }
 
     /**

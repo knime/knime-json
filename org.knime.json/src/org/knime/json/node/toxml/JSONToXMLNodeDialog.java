@@ -64,7 +64,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.json.node.util.GUIFactory;
-import org.knime.json.node.util.RemoveOrAddColumnDialog;
+import org.knime.json.node.util.ReplaceColumnDialog;
 import org.knime.json.util.Json2Xml;
 
 /**
@@ -72,7 +72,7 @@ import org.knime.json.util.Json2Xml;
  *
  * @author Gabor Bakos
  */
-public class JSONToXMLNodeDialog extends RemoveOrAddColumnDialog<JSONToXMLSettings> {
+public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> {
     private JTextField m_array, m_binary, m_boolean, m_decimal, m_integer, m_item, m_namespace, m_null, m_root, m_string;
     private JCheckBox m_omitTypeInfo, m_specifyNamespace;
     /**
@@ -158,8 +158,8 @@ public class JSONToXMLNodeDialog extends RemoveOrAddColumnDialog<JSONToXMLSettin
      * {@inheritDoc}
      */
     @Override
-    protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
-        int afterInputColumn = super.addAfterInputColumn(panel, afterInput);
+    protected void afterNewColumnName(final JPanel panel, final int afterNewColName) {
+        int afterInputColumn = super.addAfterInputColumn(panel, afterNewColName);
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = afterInputColumn;
         gbc.gridwidth = 2;
@@ -176,7 +176,6 @@ public class JSONToXMLNodeDialog extends RemoveOrAddColumnDialog<JSONToXMLSettin
         gbc.gridwidth = 2;
         panel.add(elementsPanel, gbc);
         gbc.gridy++;
-        return gbc.gridy;
     }
 
     /**
