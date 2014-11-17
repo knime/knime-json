@@ -59,11 +59,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
@@ -150,6 +150,30 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
     }
 
     /**
+     * An alternative implementation of {@link #addContentsToSettings(String, Class, JPanel)}, where the input and
+     * output are created close to each other at the top of the dialog.
+     *
+     * @param inputColumnLabel The input column label.
+     * @param inputValueClass The value class to filter the input table.
+     * @param panel The output {@link JPanel}.
+     */
+    protected void inputAndOutputTogether(final String inputColumnLabel,
+        final Class<? extends DataValue> inputValueClass, final JPanel panel) {
+        GridBagConstraints gbc = createInitialConstraints();
+        int gridY = addBeforeInputColumn(panel);
+        JPanel inputColumnPanel = new JPanel(new GridBagLayout());
+        gbc.gridwidth = 2;
+        addInputColumn(inputColumnLabel, inputValueClass, inputColumnPanel, gbc, 0);
+        gbc.gridy = gridY;
+        gbc.gridy = addAfterInputColumn(inputColumnPanel, 1);
+        addRemoveAndAddNewColumn(inputColumnPanel, gbc);
+        inputColumnPanel.setBorder(new TitledBorder("Input column"));
+        panel.add(inputColumnPanel, gbc);
+        gridY++;
+        afterNewColumnName(panel, gridY);
+    }
+
+    /**
      * Adds the input column control to {@code panel}. As a side effect it might change the {@code gbc}.
      *
      * @param inputColumnLabel The suggested input column label.
@@ -161,7 +185,7 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
     protected void addInputColumn(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass,
         final JPanel panel, final GridBagConstraints gbc, final int gridY) {
         gbc.gridy = gridY;
-        panel.add(new JLabel(inputColumnLabel), gbc);
+        panel.add(new JLabel("Input column"), gbc);
         gbc.gridx++;
         gbc.weightx = 1;
         {
@@ -216,7 +240,6 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
             }
         });
         JPanel newNamePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        newNamePanel.add(new JLabel(DataType.getUtilityFor(m_settings.getInputColumnType()).getIcon()));
         newNamePanel.add(getNewColumnName());
         panel.add(newNamePanel, gbc);
         gbc.gridy++;

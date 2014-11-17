@@ -72,6 +72,7 @@ import org.knime.core.node.port.PortObjectSpec;
  */
 public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> extends RemoveOrAddColumnDialog<S> {
     private DefaultComboBoxModel<OutputType> m_outputTypeModel;
+    private JComboBox<OutputType> m_outputTypes;
 
     /**
      * Constructs {@link PathOrPointerDialog}.
@@ -107,14 +108,14 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
         panel.add(new JLabel("Result type"), gbc);
         gbc.gridx = 1;
         m_outputTypeModel = new DefaultComboBoxModel<>(OutputType.values());
-        final JComboBox<OutputType> outputTypes = new JComboBox<>(m_outputTypeModel);
-        outputTypes.addActionListener(new ActionListener() {
+        m_outputTypes = new JComboBox<>(m_outputTypeModel);
+        m_outputTypes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 OutputType type = (OutputType)m_outputTypeModel.getSelectedItem();
                 outputTypeGotSelected(type);
             }});
-        panel.add(outputTypes, gbc);
+        panel.add(m_outputTypes, gbc);
         gbc.gridy++;
 
         return gbc.gridy;
@@ -155,5 +156,13 @@ public abstract class PathOrPointerDialog<S extends PathOrPointerSettings> exten
      */
     public DefaultComboBoxModel<OutputType> getOutputTypeModel() {
         return m_outputTypeModel;
+    }
+
+    /**
+     * Enable or disable the output types combobox.
+     * @param outputTypeEnabled The new value for output types enabledness.
+     */
+    protected void setOutputTypeEnabled(final boolean outputTypeEnabled) {
+        m_outputTypes.setEnabled(outputTypeEnabled);
     }
 }

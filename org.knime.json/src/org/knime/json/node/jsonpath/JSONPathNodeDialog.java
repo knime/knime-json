@@ -48,6 +48,7 @@
  */
 package org.knime.json.node.jsonpath;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.EnumSet;
@@ -101,11 +102,12 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
     protected void afterNewColumnName(final JPanel panel, final int afterInput) {
         m_nonDefiniteWarning = new JLabel("Path is non-definite");
         m_syntaxError = new JLabel();
+        m_syntaxError.setForeground(Color.RED);
         panel.setPreferredSize(new Dimension(800, 300));
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridy = afterInput;
         gbc.gridx = 0;
-        panel.add(new JLabel("JSONPath:"), gbc);
+        panel.add(new JLabel("JSONPath"), gbc);
         gbc.gridx = 1;
         m_path = GUIFactory.createTextField("", 22);
         m_path.getDocument().addDocumentListener(new DocumentListener() {
@@ -126,9 +128,14 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
             });
         panel.add(m_path, gbc);
         gbc.gridy++;
+
+        gbc.gridx = 1;
+        panel.add(m_nonDefiniteWarning, gbc);
+        m_nonDefiniteWarning.setForeground(Color.RED);//PINK?
+        m_nonDefiniteWarning.setVisible(false);
+        gbc.gridx = 1;
         panel.add(m_syntaxError, gbc);
         gbc.gridy++;
-        gbc.gridy = addOutputTypePanel(panel, gbc.gridy);
 
         m_returnPaths = new JCheckBox("Return the paths instead of values");
         m_returnPaths.addChangeListener(new ChangeListener() {
@@ -140,9 +147,7 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
         panel.add(m_returnPaths, gbc);
         gbc.gridy++;
 
-        gbc.gridx = 0;
-        panel.add(m_nonDefiniteWarning, gbc);
-        m_nonDefiniteWarning.setVisible(false);
+        gbc.gridy = addOutputTypePanel(panel, gbc.gridy);
         gbc.gridx = 1;
         m_resultIsList = new JCheckBox("Result is list");
         panel.add(m_resultIsList, gbc);
@@ -162,27 +167,22 @@ public class JSONPathNodeDialog extends PathOrPointerDialog<JSONPathSettings> {
             getOutputTypeModel().setSelectedItem(OutputType.String);
         }
         m_resultIsList.setEnabled(!m_returnPaths.isSelected());
+        setOutputTypeEnabled(!m_returnPaths.isSelected());
         m_resultIsList.setSelected(m_returnPaths.isSelected() || m_resultIsList.isSelected());
         OutputType selectedOutputType = (OutputType)getOutputTypeModel().getSelectedItem();
-        if (!m_resultIsList.isSelected()) {
-            EnumSet<OutputType> supportedOutputTypes =
-                EnumSet.allOf(OutputType.class);
-            if (m_returnPaths.isSelected()) {
-                supportedOutputTypes = EnumSet.of(OutputType.String);
-            }
-            getOutputTypeModel().removeAllElements();
-            for (OutputType outputType : supportedOutputTypes) {
-                getOutputTypeModel().addElement(outputType);
-            }
-            if (selectedOutputType != null) {
-                getOutputTypeModel().setSelectedItem(selectedOutputType);
-            }
-        } else if (!m_returnPaths.isSelected()) {
-            getOutputTypeModel().removeAllElements();
-            for (OutputType type : OutputType.values()) {
-                getOutputTypeModel().addElement(type);
-            }
+        EnumSet<OutputType> supportedOutputTypes =
+            EnumSet.allOf(OutputType.class);
+        if (m_returnPaths.isSelected()) {
+            supportedOutputTypes = EnumSet.of(OutputType.String);
+        }
+        getOutputTypeModel().removeAllElements();
+        for (OutputType outputType : supportedOutputTypes) {
+            getOutputTypeModel().addElement(outputType);
+        }
+        if (selectedOutputType != null && supportedOutputTypes.contains(selectedOutputType)) {
             getOutputTypeModel().setSelectedItem(selectedOutputType);
+        } else {
+            getOutputTypeModel().setSelectedItem(supportedOutputTypes.iterator().next());
         }
     }
 

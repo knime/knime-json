@@ -188,15 +188,18 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                 if (cell instanceof JSONValue) {
                     JSONValue jsonCell = (JSONValue)cell;
                     JsonValue jsonValue = jsonCell.getJsonValue();
-                    List<Object> values;
                     Object readObject;
-                    if (config.jsonProvider().getClass().getName().contains("JacksonTree")) {
-                        readObject = jsonPath.read(conv.toJackson(jsonValue), config);
-                    } else {
-                        readObject = jsonPath.read(jsonValue.toString(), config);
+                    try {
+                        if (config.jsonProvider().getClass().getName().contains("JacksonTree")) {
+                            readObject = jsonPath.read(conv.toJackson(jsonValue), config);
+                        } else {
+                            readObject = jsonPath.read(jsonValue.toString(), config);
+                        }
+                    } catch (RuntimeException e) {
+                        return new MissingCell(e.getMessage());
                     }
                     Iterable<?> read = config.jsonProvider().toIterable(readObject);
-                    values = new ArrayList<>();
+                    List<Object> values = new ArrayList<>();
                     for (Object object : read) {
                         values.add(object);
                     }
@@ -323,6 +326,7 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
     protected String shorten(final String string) {
         return shorten(string, 33);
     }
+
     /**
      * @param string A possibly long {@link String}.
      * @param atMost The longest possible returned {@link String}.

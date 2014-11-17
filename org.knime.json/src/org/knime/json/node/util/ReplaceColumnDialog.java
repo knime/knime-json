@@ -50,7 +50,6 @@ package org.knime.json.node.util;
 
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -58,10 +57,8 @@ import java.awt.event.ItemListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -118,18 +115,7 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
     @Override
     protected void addContentsToSettings(final String inputColumnLabel, final Class<? extends DataValue> inputValueClass,
         final JPanel panel) {
-        GridBagConstraints gbc = createInitialConstraints();
-        int gridY = addBeforeInputColumn(panel);
-        JPanel inputColumnPanel = new JPanel(new GridBagLayout());
-        inputColumnPanel.setBorder(new TitledBorder("Input column"));
-        gbc.gridwidth = 2;
-        addInputColumn(inputColumnLabel, inputValueClass, inputColumnPanel, gbc, 0);
-        gbc.gridy = gridY;
-        panel.add(inputColumnPanel, gbc);
-        gbc.gridy = addAfterInputColumn(inputColumnPanel, 1);
-        addRemoveAndAddNewColumn(inputColumnPanel, gbc);
-        gridY++;
-        afterNewColumnName(panel, gridY);
+        inputAndOutputTogether(inputColumnLabel, inputValueClass, panel);
     }
 
     /**
@@ -189,7 +175,6 @@ public class ReplaceColumnDialog<S extends ReplaceColumnSettings> extends Remove
             }
         });
         final JPanel newColumnPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        newColumnPanel.add(new JLabel(getOutputIcon()));
         newColumnPanel.add(getNewColumnName());
         panel.add(newColumnPanel, gbc);
         if (getSettings().isRemoveInputColumn() && (getSettings().getNewColumnName() == null || getSettings().getNewColumnName().isEmpty())) {
