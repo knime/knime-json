@@ -176,13 +176,13 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                         }
                         switch (returnType) {
                             case Bool:
-                                return BooleanCell.get(value.asBoolean());
+                                return BooleanCell.get(Boolean.parseBoolean(value.toString()));
                             case Int:
-                                return new IntCell(value.asInt());
+                                return new IntCell(Integer.parseInt(value.toString()));
                             case Json:
                                 return JSONCellFactory.create(conv.toJSR353(value));
                             case Real:
-                                return new DoubleCell(value.asDouble());
+                                return new DoubleCell(Double.parseDouble(value.toString()));
                             case String:
                                 return new StringCell(value.toString());
                             case Binary:

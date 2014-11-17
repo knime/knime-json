@@ -163,10 +163,12 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
         int gridY = addBeforeInputColumn(panel);
         JPanel inputColumnPanel = new JPanel(new GridBagLayout());
         gbc.gridwidth = 2;
-        addInputColumn(inputColumnLabel, inputValueClass, inputColumnPanel, gbc, 0);
+        GridBagConstraints gbcSub = createInitialConstraints();
+        gbcSub.gridwidth = 2;
+        addInputColumn(inputColumnLabel, inputValueClass, inputColumnPanel, gbcSub, 0);
         gbc.gridy = gridY;
-        gbc.gridy = addAfterInputColumn(inputColumnPanel, 1);
-        addRemoveAndAddNewColumn(inputColumnPanel, gbc);
+        gbcSub.gridy = addAfterInputColumn(inputColumnPanel, 1);
+        addRemoveAndAddNewColumn(inputColumnPanel, gbcSub);
         inputColumnPanel.setBorder(new TitledBorder("Input column"));
         panel.add(inputColumnPanel, gbc);
         gridY++;

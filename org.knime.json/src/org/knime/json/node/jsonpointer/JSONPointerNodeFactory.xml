@@ -9,12 +9,33 @@
     <fullDescription>
         <intro><p><a href="http://tools.ietf.org/html/rfc6901">JSONPointer</a> can be used to select certain parts from a JSON value.</p><p>
         When the specified part cannot be found, missing value will be added.</p><p>
+        Example input:
+<tt>
+{"book": [
+  {"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"},
+  {"year": 2000,
+   "title": "Plain Truth",
+   "author": "Jodi Picoult"}
+]}
+</tt>
+        </p><p>
+Example results:
+<tt>/book/0</tt> - <tt>{"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"}</tt> (JSON or String)<br/>
+<tt>/book/1/year</tt> - <tt>2000</tt> (JSON or Int or Real)<br/>
+<tt>/book/2/year</tt> - <tt>?</tt><br/>
+<tt>/book/0/title</tt> - <tt>Timeline</tt> (String) or <tt>"Timeline"</tt> (JSON)<br/>
+        </p><p>The result is always a single value (can be a missing value if pointing to a non-existing part of the JSON).
+        </p><p>
         This node uses the <a href="https://github.com/fge/jackson-coreutils">fge/jackson-coreutils</a> implementation.</p></intro>
         
         
         <option name="JSON column">The JSON column to select the contents from</option>
         <option name="Remove source column">When checked, the source column will be removed</option>
-        <option name="New column">Name of the new (JSON) column</option>
+        <option name="New column">Name of the new column</option>
         <option name="JSONPointer">The JSONPointer to select</option>
         <option name="Result type">The expected result type. (If something is found at that path we try to convert to the expected type and return that value. If not found, missing value will be returned. You can set the date details you want to keep.)</option>
         <!-- possibly more options that can also be grouped by tabs -->
@@ -32,10 +53,7 @@
     <ports>
         <inPort index="0" name="table with JSON">A table containing a JSON column</inPort>
         <!-- possibly more input ports here-->
-        <outPort index="0" name="table with selected JSON">Table containing the pointed parts of JSON column</outPort>
+        <outPort index="0" name="table with values">Table containing the pointed parts of JSON column</outPort>
         <!-- possibly more output ports here-->
     </ports>    
-    <!-- views>
-        <view index="0" name="name of first view">Description of first view...</view>
-    </views-->
 </knimeNode>

@@ -53,7 +53,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.json.JsonValue;
 
@@ -87,11 +90,9 @@ import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BigIntegerNode;
-import com.fasterxml.jackson.databind.node.BinaryNode;
-import com.fasterxml.jackson.databind.node.DecimalNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.github.fge.jackson.JacksonUtils;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -273,48 +274,115 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                         default:
                             throw new UnsupportedOperationException("Unsupported return type: " + returnType);
                     }
-                } catch (IOException | RuntimeException e) {
+                } catch (RuntimeException e) {
                     return new MissingCell(e.getMessage());
                 }
             }
 
             /**
              * @param object
-             * @return
-             * @throws IOException
+             * @return The {@code object} as a JSON {@link DataCell}.
              */
-            private DataCell asJson(final Object object) throws IOException {
+            private DataCell asJson(final Object object) {
                 if (object instanceof JsonNode) {
                     return JSONCellFactory.create(conv.toJSR353((JsonNode)object));
                 }
-                if (object instanceof String) {
-                    String str = (String)object;
-                    return JSONCellFactory.create(conv.toJSR353(new TextNode(str)));
+                try {
+                    return JSONCellFactory.create(conv.toJSR353(toJackson(JacksonUtils.nodeFactory(), object)));
+                } catch (RuntimeException e) {
+                    return new MissingCell(e.getMessage());
                 }
-                if (object instanceof Number) {
-                    Number num = (Number)object;
-                    if (num instanceof Short || num instanceof Integer || num instanceof Long
-                        || num instanceof BigInteger) {
-                        //integral
-                        return JSONCellFactory
-                            .create(conv.toJSR353(new BigIntegerNode(new BigInteger(num.toString()))));
+            }
+
+            private JsonNode toJackson(final JsonNodeFactory factory, final Object value) {
+                if (value instanceof Map<?, ?>) {
+                    Map<?, ?> map = (Map<?, ?>)value;
+                    Map<String, JsonNode> objectNodeContent = new LinkedHashMap<>(map.size());
+                    for (Entry<?, ?> entry : map.entrySet()) {
+                        if (entry.getKey() instanceof String) {
+                            String key = (String)entry.getKey();
+                            if (entry.getValue() instanceof JsonNode) {
+                                JsonNode v = (JsonNode)entry.getValue();
+                                objectNodeContent.put(key, v);
+                            } else {
+                                objectNodeContent.put(key, toJackson(factory, entry.getValue()));
+                            }
+                        } else {
+                            throw new IllegalStateException("The key for the JSON object is not a String: "
+                                + entry.getKey());
+                        }
                     }
-                    try {
-                        return JSONCellFactory.create(conv.toJSR353(new DecimalNode(new BigDecimal(num.toString()))));
-                    } catch (NumberFormatException e) {
-                        //Probably NaN or Infinity
-                        return JSONCellFactory.create(conv.toJSR353(new DoubleNode(num.doubleValue())));
+                    return factory.objectNode().setAll(objectNodeContent);
+                }
+                if (value instanceof Integer) {
+                    Integer i = (Integer)value;
+                    return factory.numberNode(i);
+                }
+                if (value instanceof Long) {
+                    Long l = (Long)value;
+                    return factory.numberNode(l);
+                }
+                if (value instanceof BigInteger) {
+                    BigInteger bi = (BigInteger)value;
+                    return factory.numberNode(bi);
+                }
+                if (value instanceof BigDecimal) {
+                    BigDecimal bd = (BigDecimal)value;
+                    return factory.numberNode(bd);
+                }
+                if (value instanceof Double) {
+                    Double d = (Double)value;
+                    return factory.numberNode(d);
+                }
+                if (value instanceof Float) {
+                    Float f = (Float)value;
+                    return factory.numberNode(f);
+                }
+                if (value instanceof Short) {
+                    Short s = (Short)value;
+                    return factory.numberNode(s);
+                }
+                if (value instanceof Byte) {
+                    Byte b = (Byte)value;
+                    return factory.numberNode(b);
+                }
+                if (value instanceof byte[]) {
+                    byte[] bs = (byte[])value;
+                    return factory.binaryNode(bs);
+                }
+                if (value instanceof Boolean) {
+                    Boolean b = (Boolean)value;
+                    return factory.booleanNode(b.booleanValue());
+                }
+                if (value instanceof String) {
+                    String s = (String)value;
+                    return factory.textNode(s);
+                }
+                if (value instanceof Object[]) {
+                    Object[] os = (Object[])value;
+                    ArrayNode array = factory.arrayNode();
+                    for (int i = 0; i < os.length; ++i) {
+                        array.add(toJackson(factory, os[i]));
                     }
+                    return array;
                 }
-                if (object instanceof byte[]) {
-                    byte[] bs = (byte[])object;
-                    return JSONCellFactory.create(conv.toJSR353(new BinaryNode(bs)));
+                if (value instanceof JsonNode) {
+                    JsonNode node = (JsonNode)value;
+                    return node;
                 }
-                if (object instanceof Boolean) {
-                    Boolean b = (Boolean)object;
-                    return JSONCellFactory.create(Boolean.toString(b), false);
+                if (value instanceof Iterable<?>) {
+                    Iterable<?> os = (Iterable<?>)value;
+                    ArrayNode array = factory.arrayNode();
+                    for (Object o : os) {
+                        array.add(toJackson(factory, o));
+                    }
+                    return array;
                 }
-                return object == null ? DataType.getMissingCell() : JSONCellFactory.create(object.toString(), false);
+                if (value == null) {
+                    return factory.nullNode();
+                }
+                throw new IllegalArgumentException("Not supported content: "
+                    + ErrorHandling.shorten(value.toString(), 77) + "\nType: " + value.getClass());
             }
         };
     }

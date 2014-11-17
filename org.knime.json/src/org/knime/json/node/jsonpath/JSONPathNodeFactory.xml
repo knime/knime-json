@@ -8,17 +8,46 @@
     
     <fullDescription>
         <intro><p><a href="http://goessner.net/articles/JsonPath/">JSONPath</a> is a similar to XPath alternative for JSON.</p><p>
-        It has two notations, dot-notation:<tt>$.repository[3].content</tt> and bracket-notation: <tt>$['repository'][3]['content']</tt></p><p>
+        The result can be a single value or a list of multiple values.</p><p>
+        There are two notations, dot-notation:<tt>$.book[1].title</tt> and bracket-notation: <tt>$['book'][1]['title']</tt> (indexing starts from <tt>0</tt>, negative indices are relative to the last element).</p><p>
+        Example input:
+<tt>
+{"book": [
+  {"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"},
+  {"year": 2000,
+   "title": "Plain Truth",
+   "author": "Jodi Picoult"}
+]}
+</tt>
+        </p><p>
+Example results:
+<tt>$.book[0]</tt> - <tt>{"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"}</tt> (JSON or String single value)<br/>
+<tt>$.book[*].year</tt> - <tt>[1999,2000]</tt> (JSON or Int or Real list)<br/>
+<tt>$.book[2].year</tt> - <tt>?</tt> (no such part)<br/>
+<tt>$..author</tt> - <tt>Timeline</tt> (String) or <tt>"Timeline"</tt> (JSON)
+</p><p>
+The default path (<tt>$..*</tt>) will select all possible subparts (excluding the whole JSON value).
+</p><p>When you request the paths instead of values for the <tt>$.book[0].*</tt> JSONPath, you will get the paths -in bracket notation- as a list of Strings:<ul>
+<li>$['book'][0]['year']</li>
+<li>$['book'][0]['title']</li>
+<li>$['book'][0]['author']</li>
+</ul> which are valid JSONPaths for the input JSON value.
+</p><p>The filters <tt>?(expr)</tt>can be used to select contents with specific properties, for example <tt>$..book[?(@.publisher)]</tt> selects the books that specify their publisher (<tt>@</tt> refers to the actual element).
+        </p><p>
         It uses the <a href="https://github.com/jayway/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
         </intro>
         
         <tab name="Settings">
-        <option name="JSON column">The JSON column to select the paths from</option>
-        <option name="Remove source column">When checked, the source column will be removed</option>
-        <option name="New column">Name of the new (JSON) column</option>
-        <option name="JSONPath">The JSONPath to select</option>
-        <option name="Result type">The expected result type. (If something is found at that path and cannot convert to the expected type missing value is returned. If not found, missing value will be returned. You can set the date details you want to keep.)</option>
-        <option name="Return the paths instead of values">When checked, the paths found for the JSONPath will be returned (as <i>String</i>s) as a list for each row, not the values referenced by the JSONPath.</option>
+        <option name="JSON column">The JSON column to select the paths from.</option>
+        <option name="Remove source column">When checked, the source column will be removed.</option>
+        <option name="New column">Name of the new column (its type is of result type, or a list of it).</option>
+        <option name="JSONPath">The JSONPath to select.</option>
+        <option name="Return the paths instead of values">When checked, the <u>paths</u> matching the JSONPath in the input JSON value will be returned (as a list of <i>String</i>s) for each row, not the values referenced by the JSONPath (for example see above, like <tt>$.['book'][0]</tt>).</option>
+        <option name="Result type">The expected result type. (If something is found at that path and cannot convert to the expected type missing value is returned. If not found, missing value will be returned.)</option>
         <option name="Result is list">When checked the result column will have a collection type.</option>
         </tab>
         <!-- possibly more options that can also be grouped by tabs -->
