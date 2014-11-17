@@ -63,14 +63,9 @@ final class JSONReaderSettings {
     static final String ALLOW_COMMENTS = "allow.comments", COLUMN_NAME = "column.name", DEFAULT_COLUMN_NAME = "json",
             LOCATION = "json.location";
 
-    static final String SELECT_PART = "select.part", JSON_POINTER = "json.pointer",
-            FAIL_IF_NOT_FOUND = "fail.if.not.found";
+    private boolean m_allowComments = false;
 
-    static final String DEFAULT_JSON_POINTER = "";
-
-    private boolean m_allowComments = false, m_selectPart = false, m_failIfNotFound;
-
-    private String m_columnName = DEFAULT_COLUMN_NAME, m_location = "", m_jsonPointer;
+    private String m_columnName = DEFAULT_COLUMN_NAME, m_location = "";
 
     /**
      * Constructs the object.
@@ -87,9 +82,6 @@ final class JSONReaderSettings {
     void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         m_allowComments = settings.getBoolean(ALLOW_COMMENTS, false);
         m_columnName = settings.getString(COLUMN_NAME, DEFAULT_COLUMN_NAME);
-        m_selectPart = settings.getBoolean(SELECT_PART, false);
-        m_jsonPointer = settings.getString(JSON_POINTER, DEFAULT_JSON_POINTER);
-        m_failIfNotFound = settings.getBoolean(FAIL_IF_NOT_FOUND, true);
         m_location = settings.getString(LOCATION, "");
     }
 
@@ -101,9 +93,6 @@ final class JSONReaderSettings {
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_allowComments = settings.getBoolean(ALLOW_COMMENTS);
         m_columnName = settings.getString(COLUMN_NAME);
-        m_selectPart = settings.getBoolean(SELECT_PART);
-        m_jsonPointer = settings.getString(JSON_POINTER);
-        m_failIfNotFound = settings.getBoolean(FAIL_IF_NOT_FOUND);
         m_location = settings.getString(LOCATION);
     }
 
@@ -115,9 +104,6 @@ final class JSONReaderSettings {
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(ALLOW_COMMENTS, m_allowComments);
         settings.addString(COLUMN_NAME, m_columnName);
-        settings.addBoolean(SELECT_PART, m_selectPart);
-        settings.addString(JSON_POINTER, m_jsonPointer);
-        settings.addBoolean(FAIL_IF_NOT_FOUND, m_failIfNotFound);
         settings.addString(LOCATION, m_location);
     }
 
@@ -191,47 +177,5 @@ final class JSONReaderSettings {
      */
     final void setLocation(final String location) {
         this.m_location = location;
-    }
-
-    /**
-     * @return the selectPart
-     */
-    final boolean isSelectPart() {
-        return m_selectPart;
-    }
-
-    /**
-     * @param selectPart the selectPart to set
-     */
-    final void setSelectPart(final boolean selectPart) {
-        this.m_selectPart = selectPart;
-    }
-
-    /**
-     * @return the failIfNotFound
-     */
-    final boolean isFailIfNotFound() {
-        return m_failIfNotFound;
-    }
-
-    /**
-     * @param failIfNotFound the failIfNotFound to set
-     */
-    final void setFailIfNotFound(final boolean failIfNotFound) {
-        this.m_failIfNotFound = failIfNotFound;
-    }
-
-    /**
-     * @return the jsonPointer
-     */
-    final String getJsonPointer() {
-        return m_jsonPointer;
-    }
-
-    /**
-     * @param jsonPointer the jsonPointer to set
-     */
-    final void setJsonPointer(final String jsonPointer) {
-        this.m_jsonPointer = jsonPointer;
     }
 }

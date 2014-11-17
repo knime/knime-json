@@ -61,13 +61,11 @@ import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.DataType;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
-import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.uri.URIContent;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
@@ -80,10 +78,6 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.util.FileUtil;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.jsonpointer.JsonPointer;
-import com.github.fge.jackson.jsonpointer.JsonPointerException;
 
 /**
  * This is the model implementation of JSONReader. Reads {@code .json} files to {@link JSONValue}s.
@@ -136,29 +130,10 @@ public final class JSONReaderNodeModel extends NodeModel {
      */
     private int readUriContent(final BufferedDataContainer container, int rowId, final URIContent content)
         throws IOException, MalformedURLException {
-        JsonPointer jsonPointer;
-        try {
-            jsonPointer = new JsonPointer(m_settings.isSelectPart() ? m_settings.getJsonPointer() : "");
-        } catch (JsonPointerException e) {
-            throw new IllegalStateException("The pointer has invalid syntax: " + m_settings.getJsonPointer());
-        }
-        JacksonConversions jacksonConversions = JacksonConversions.getInstance();
         try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL())) {
             //do {
             JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader, m_settings.isAllowComments());
             DataCell value = (DataCell)jsonValue;
-            if (m_settings.isSelectPart()) {
-                JsonNode found = jsonPointer.get(jacksonConversions.toJackson(jsonValue.getJsonValue()));
-                if (found == null) {
-                    if (m_settings.isFailIfNotFound()) {
-                        throw new NullPointerException("Not found " + m_settings.getJsonPointer() + " in\n" + jsonValue);
-                    } else {
-                        value = DataType.getMissingCell();
-                    }
-                } else {
-                    value = JSONCellFactory.create(jacksonConversions.toJSR353(found));
-                }
-            }//else we already set.
             container.addRowToTable(new DefaultRow(RowKey.createRowKey(rowId++), value));
             //} while (reader.hasMoreZipEntries());
         }
