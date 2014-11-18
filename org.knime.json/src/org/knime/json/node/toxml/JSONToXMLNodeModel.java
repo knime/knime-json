@@ -71,6 +71,7 @@ import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import org.knime.json.util.Json2Xml;
 
@@ -120,6 +121,21 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.validateSettings(settings);
+        JSONToXMLSettings s = getSettings();
+        if (!s.isOmitTypeInfo()) {
+            CheckUtils.checkSetting(!s.getArray().trim().isEmpty(), "The empty list prefix is missing.");
+            CheckUtils.checkSetting(!s.getBinary().trim().isEmpty(), "The binary content prefix is missing.");
+            CheckUtils.checkSetting(!s.getBoolean().trim().isEmpty(), "The boolean prefix is missing.");
+            CheckUtils.checkSetting(!s.getDecimal().trim().isEmpty(), "The decimal prefix is missing.");
+            CheckUtils.checkSetting(!s.getInteger().trim().isEmpty(), "The integer prefix is missing.");
+            CheckUtils.checkSetting(!s.getNull().trim().isEmpty(), "The null prefix is missing.");
+            CheckUtils.checkSetting(!s.getString().trim().isEmpty(), "The string prefix is missing.");
+        }
+        CheckUtils.checkSetting(!s.getItem().trim().isEmpty(), "The array item name is missing.");
+        CheckUtils.checkSetting(!s.getRoot().trim().isEmpty(), "The root item name is missing.");
+        CheckUtils.checkSetting(!s.isSpecifyNamespace() || !s.getNamespace().trim().isEmpty(),
+            "The namespace information is missing.");
+
     }
 
     /**

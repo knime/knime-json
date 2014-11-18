@@ -50,8 +50,11 @@ package org.knime.json.node.toxml;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -63,6 +66,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.util.GUIFactory;
 import org.knime.json.node.util.ReplaceColumnDialog;
 import org.knime.json.util.Json2Xml;
@@ -73,8 +77,11 @@ import org.knime.json.util.Json2Xml;
  * @author Gabor Bakos
  */
 public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> {
-    private JTextField m_array, m_binary, m_boolean, m_decimal, m_integer, m_item, m_namespace, m_null, m_root, m_string;
+    private JTextField m_array, m_binary, m_boolean, m_decimal, m_integer, m_item, m_namespace, m_null, m_root,
+            m_string;
+
     private JCheckBox m_omitTypeInfo, m_specifyNamespace;
+
     /**
      * New pane for configuring the JSONToXML node.
      */
@@ -151,7 +158,26 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         gbc.gridx = 2;
         ret.add(new JLabel(Json2Xml.STRING_NAMESPACE), gbc);
         gbc.gridy++;
+
+        updatePrefixEnabledness(false);
+
+        m_omitTypeInfo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                boolean enabled = !m_omitTypeInfo.isSelected();
+                updatePrefixEnabledness(enabled);
+            }
+        });
         return ret;
+    }
+
+    /**
+     * @param enabled
+     */
+    private void updatePrefixEnabledness(final boolean enabled) {
+        for (JComponent comp : new JComponent[]{m_array, m_binary, m_boolean, m_decimal, m_integer, m_null, m_string}) {
+            comp.setEnabled(enabled);
+        }
     }
 
     /**
@@ -164,7 +190,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         gbc.gridy = afterInputColumn;
         gbc.gridwidth = 2;
         JPanel namespacePanel = createNamespacePanel();
-        panel.add(namespacePanel,gbc);
+        panel.add(namespacePanel, gbc);
         gbc.gridy++;
 
         gbc.gridwidth = 1;
@@ -192,8 +218,15 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         ret.add(new JLabel("Namespace"), gbc);
         gbc.gridx = 1;
         m_namespace = GUIFactory.createTextField(null, 44);
+        m_namespace.setEnabled(false);
         ret.add(m_namespace, gbc);
         ret.setBorder(new TitledBorder("Namespace"));
+        m_specifyNamespace.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                m_namespace.setEnabled(m_specifyNamespace.isSelected());
+            }
+        });
         return ret;
     }
 
@@ -223,6 +256,19 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
+        if (!m_omitTypeInfo.isSelected()) {
+            CheckUtils.checkSetting(!m_array.getText().trim().isEmpty(), "The empty list prefix is missing.");
+            CheckUtils.checkSetting(!m_binary.getText().trim().isEmpty(), "The binary content prefix is missing.");
+            CheckUtils.checkSetting(!m_boolean.getText().trim().isEmpty(), "The boolean prefix is missing.");
+            CheckUtils.checkSetting(!m_decimal.getText().trim().isEmpty(), "The decimal prefix is missing.");
+            CheckUtils.checkSetting(!m_integer.getText().trim().isEmpty(), "The integer prefix is missing.");
+            CheckUtils.checkSetting(!m_null.getText().trim().isEmpty(), "The null prefix is missing.");
+            CheckUtils.checkSetting(!m_string.getText().trim().isEmpty(), "The string prefix is missing.");
+        }
+        CheckUtils.checkSetting(!m_item.getText().trim().isEmpty(), "The array item name is missing.");
+        CheckUtils.checkSetting(!m_root.getText().trim().isEmpty(), "The root item name is missing.");
+        CheckUtils.checkSetting(!m_specifyNamespace.isSelected() || !m_namespace.getText().trim().isEmpty(),
+            "The namespace information is missing.");
         getSettings().setArray(m_array.getText());
         getSettings().setBinary(m_binary.getText());
         getSettings().setBoolean(m_boolean.getText());

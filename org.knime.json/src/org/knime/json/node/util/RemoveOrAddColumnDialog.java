@@ -48,7 +48,6 @@
  */
 package org.knime.json.node.util;
 
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -241,9 +240,7 @@ public class RemoveOrAddColumnDialog<S extends RemoveOrAddColumnSettings> extend
                 onNewColumnTextChanged(getNewColumnName());
             }
         });
-        JPanel newNamePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        newNamePanel.add(getNewColumnName());
-        panel.add(newNamePanel, gbc);
+        panel.add(getNewColumnName(), gbc);
         gbc.gridy++;
     }
 
