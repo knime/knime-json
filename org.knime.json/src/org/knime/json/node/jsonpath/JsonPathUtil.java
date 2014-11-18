@@ -48,12 +48,21 @@
  */
 package org.knime.json.node.jsonpath;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.knime.json.internal.Activator;
+import org.knime.json.node.util.ErrorHandling;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.JsonPath;
 
 /**
@@ -105,4 +114,105 @@ public class JsonPathUtil {
             return Collections.singletonList(o.toString());
         }
     }
+
+    /**
+     * Converts a value to Jackson classes.
+     *
+     * @param factory The {@link JsonNodeFactory} for Jackson classes.
+     * @param value The value to convert.
+     * @return Converted object.
+     * @throws IllegalStateException When in a map the keys are not all {@link String}s.
+     * @throws IllegalArgumentException When unsupported type is in the {@code object}.
+     */
+    public static JsonNode toJackson(final JsonNodeFactory factory, final Object value) {
+        if (value instanceof Map<?, ?>) {
+            Map<?, ?> map = (Map<?, ?>)value;
+            Map<String, JsonNode> objectNodeContent = new LinkedHashMap<>(map.size());
+            for (Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() instanceof String) {
+                    String key = (String)entry.getKey();
+                    if (entry.getValue() instanceof JsonNode) {
+                        JsonNode v = (JsonNode)entry.getValue();
+                        objectNodeContent.put(key, v);
+                    } else {
+                        objectNodeContent.put(key, toJackson(factory, entry.getValue()));
+                    }
+                } else {
+                    throw new IllegalStateException("The key for the JSON object is not a String: "
+                        + entry.getKey());
+                }
+            }
+            return factory.objectNode().setAll(objectNodeContent);
+        }
+        if (value instanceof Integer) {
+            Integer i = (Integer)value;
+            return factory.numberNode(i);
+        }
+        if (value instanceof Long) {
+            Long l = (Long)value;
+            return factory.numberNode(l);
+        }
+        if (value instanceof BigInteger) {
+            BigInteger bi = (BigInteger)value;
+            return factory.numberNode(bi);
+        }
+        if (value instanceof BigDecimal) {
+            BigDecimal bd = (BigDecimal)value;
+            return factory.numberNode(bd);
+        }
+        if (value instanceof Double) {
+            Double d = (Double)value;
+            return factory.numberNode(d);
+        }
+        if (value instanceof Float) {
+            Float f = (Float)value;
+            return factory.numberNode(f);
+        }
+        if (value instanceof Short) {
+            Short s = (Short)value;
+            return factory.numberNode(s);
+        }
+        if (value instanceof Byte) {
+            Byte b = (Byte)value;
+            return factory.numberNode(b);
+        }
+        if (value instanceof byte[]) {
+            byte[] bs = (byte[])value;
+            return factory.binaryNode(bs);
+        }
+        if (value instanceof Boolean) {
+            Boolean b = (Boolean)value;
+            return factory.booleanNode(b.booleanValue());
+        }
+        if (value instanceof String) {
+            String s = (String)value;
+            return factory.textNode(s);
+        }
+        if (value instanceof Object[]) {
+            Object[] os = (Object[])value;
+            ArrayNode array = factory.arrayNode();
+            for (int i = 0; i < os.length; ++i) {
+                array.add(toJackson(factory, os[i]));
+            }
+            return array;
+        }
+        if (value instanceof JsonNode) {
+            JsonNode node = (JsonNode)value;
+            return node;
+        }
+        if (value instanceof Iterable<?>) {
+            Iterable<?> os = (Iterable<?>)value;
+            ArrayNode array = factory.arrayNode();
+            for (Object o : os) {
+                array.add(toJackson(factory, o));
+            }
+            return array;
+        }
+        if (value == null) {
+            return factory.nullNode();
+        }
+        throw new IllegalArgumentException("Not supported content: "
+            + ErrorHandling.shorten(value.toString(), 77) + "\nType: " + value.getClass());
+    }
+
 }

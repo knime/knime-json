@@ -61,11 +61,14 @@ import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
+import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
+import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.uri.URIContent;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
@@ -78,6 +81,13 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.util.FileUtil;
+import org.knime.json.internal.Activator;
+import org.knime.json.node.jsonpath.JsonPathUtil;
+
+import com.github.fge.jackson.JacksonUtils;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 
 /**
  * This is the model implementation of JSONReader. Reads {@code .json} files to {@link JSONValue}s.
@@ -130,14 +140,58 @@ public final class JSONReaderNodeModel extends NodeModel {
      */
     private int readUriContent(final BufferedDataContainer container, int rowId, final URIContent content)
         throws IOException, MalformedURLException {
+        JsonPath jsonPath;
+        try {
+            jsonPath = JsonPath.compile(m_settings.isSelectPart() ? m_settings.getJsonPath() : "$");
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("The path has invalid syntax: " + m_settings.getJsonPath());
+        }
+        JacksonConversions jacksonConversions = JacksonConversions.getInstance();
         try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL())) {
             //do {
             JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader, m_settings.isAllowComments());
-            DataCell value = (DataCell)jsonValue;
+            DataCell value;
+            if (m_settings.isSelectPart()) {
+                Configuration config = Activator.getInstance().getJsonPathConfiguration();
+                ReadContext context = JsonPath.parse(jsonValue.getJsonValue().toString(), config);
+                try {
+                    Object read = context.read(jsonPath);
+                    if (read == null) {
+                        value = handleNotFound(null, content.getURI());
+                    } else {
+                        value =
+                            JSONCellFactory.create(jacksonConversions.toJSR353(JsonPathUtil.toJackson(
+                                JacksonUtils.nodeFactory(), read)));
+                    }
+                } catch (RuntimeException e) {
+                    value = handleNotFound(e, content.getURI());
+                }
+            } else {
+                value = (DataCell)jsonValue;
+            }
             container.addRowToTable(new DefaultRow(RowKey.createRowKey(rowId++), value));
             //} while (reader.hasMoreZipEntries());
         }
         return rowId;
+    }
+
+    /**
+     * @param e A possible error (can be {@code null}).
+     * @param uri The location we read from.
+     * @return The missing cell if we should not fail on reading.
+     * @throws RuntimeException Fail on error.
+     */
+    protected DataCell handleNotFound(final RuntimeException e, final URI uri) {
+        if (e == null) {
+            if (m_settings.isFailIfNotFound()) {
+                throw new NullPointerException("Not found " + m_settings.getJsonPath() + "\n" + uri);
+            }
+            return DataType.getMissingCell();
+        }
+        if (m_settings.isFailIfNotFound()) {
+            throw new RuntimeException(e.getMessage() + "\n" + uri, e);
+        }
+        return new MissingCell(e.getMessage());
     }
 
     /**

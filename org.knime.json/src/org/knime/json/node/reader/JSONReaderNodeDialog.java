@@ -52,6 +52,8 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -72,6 +74,8 @@ import org.knime.core.node.util.FilesHistoryPanel.LocationValidation;
 import org.knime.core.node.workflow.FlowVariable.Type;
 import org.knime.json.node.util.GUIFactory;
 
+import com.jayway.jsonpath.JsonPath;
+
 /**
  * <code>NodeDialog</code> for the "JSONReader" node. Reads {@code .json} files to {@link JSONValue}s.
  *
@@ -88,6 +92,12 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
     private FilesHistoryPanel m_location;
 
     private JTextField m_columnName;
+
+    private final JCheckBox m_selectPart;
+
+    private final JTextField m_jsonPath;
+
+    private final JCheckBox m_failIfNotFound;
 
     private JCheckBox m_allowComments;
 
@@ -159,10 +169,78 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
 
         gbc.gridy++;
 
+        gbc.gridx = 1;
+        m_selectPart = new JCheckBox("Select with JSONPath");
+        panel.add(m_selectPart, gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        panel.add(new JLabel("JSONPath"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        m_jsonPath = GUIFactory.createTextField("", 22);
+        m_jsonPath.setToolTipText("Hint: Use the annotations to explain it.");
+        final JLabel warningLabel = new JLabel();
+        warningLabel.setForeground(Color.RED);
+        m_jsonPath.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void removeUpdate(final DocumentEvent e) {
+                reportError();
+            }
+
+            @Override
+            public void insertUpdate(final DocumentEvent e) {
+                reportError();
+            }
+
+            @Override
+            public void changedUpdate(final DocumentEvent e) {
+                reportError();
+            }
+            private void reportError() {
+                try {
+                    JsonPath.compile(m_jsonPath.getText());
+                    noError();
+                } catch (RuntimeException e) {
+                    error(e.getMessage());
+                }
+            }
+
+            private void error(final String message) {
+                warningLabel.setText(message);
+            }
+
+            private void noError() {
+                warningLabel.setText("");
+            }
+        });
+        panel.add(m_jsonPath, gbc);
+        gbc.gridy++;
+        panel.add(warningLabel, gbc);
+        gbc.gridy++;
+
+        m_failIfNotFound = new JCheckBox("Fail if pointer not found");
+        m_failIfNotFound.setToolTipText("When unchecked and pointer do not match input, "
+            + "missing value will be generated.");
+        gbc.weightx = 1;
+        panel.add(m_failIfNotFound, gbc);
+        gbc.gridy++;
+
         gbc.gridy++;
         m_allowComments = new JCheckBox("Allow comments in JSON files");
         m_allowComments.setToolTipText("/*...*/, // or #");
         panel.add(m_allowComments, gbc);
+
+        m_selectPart.getModel().addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(final ItemEvent e) {
+                boolean select = m_selectPart.isSelected();
+                m_jsonPath.setEnabled(select);
+                m_failIfNotFound.setEnabled(select);
+            }
+        });
+        m_selectPart.setSelected(true);
+        m_selectPart.setSelected(false);
 
         //Filling remaining space
         gbc.gridy++;
@@ -181,6 +259,9 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         m_location.addToHistory();
         m_settings.setLocation(m_location.getSelectedFile());
         m_settings.setColumnName(m_columnName.getText());
+        m_settings.setSelectPart(m_selectPart.isSelected());
+        m_settings.setJsonPath(m_jsonPath.getText());
+        m_settings.setFailIfNotFound(m_failIfNotFound.isSelected());
         m_settings.setAllowComments(m_allowComments.isSelected());
         m_settings.saveSettingsTo(settings);
     }
@@ -193,6 +274,9 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         throws NotConfigurableException {
         m_settings.loadSettingsForDialogs(settings, specs);
         m_location.setSelectedFile(m_settings.getLocation());
+        m_selectPart.setSelected(m_settings.isSelectPart());
+        m_jsonPath.setText(m_settings.getJsonPath());
+        m_failIfNotFound.setSelected(m_settings.isFailIfNotFound());
         m_columnName.setText(m_settings.getColumnName());
         m_allowComments.setSelected(m_settings.isAllowComments());
     }
