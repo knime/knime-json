@@ -87,7 +87,7 @@ public class ProposedJson2XmlTest {
     private Json2Xml m_converter;
     private Options[] m_options;
 
-    @Parameters(/*name="{index}: input:{1}"*/)
+    @Parameters(name="{index}: input:{1}")
     public static List<Object[]> parameters() {
         List<Object[]> ret = new ArrayList<>();
         ret.add(new Object[] {"<root/>", "{}", new Options[] {Options.CollapseToAttributes}});
@@ -102,12 +102,13 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[] {"<root><a x=\"4\"/></root>", "{\"a\":{\"x\":4}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a x=\"4\" y=\"&quot;44&quot;\"/></root>", "{\"a\":{\"x\":4,\"y\":\"\\\"44\\\"\"}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a x=\"4\"/><a x=\"4\"/></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
+        ret.add(new Object[] {"<root><a x=\"4\"><y v=\"2\"/></a><a x=\"0\"><y v=\"3\"/></a></root>", "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a><item x=\"4\"/><item x=\"4\"/></a></root>", "{\"a\":[[{\"x\":4},{\"x\":4}]]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a><item x=\"4\"/><item><item x=\"4\"/></item></a></root>", "{\"a\":[[{\"x\":4},[{\"x\":4}]]]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a><item><item x=\"4\"/><item><item x=\"4\"/></item></item></a></root>", "{\"a\":[[[{\"x\":4},[{\"x\":4}]]]]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a x=\"4\"><y z=\"t\"/></a></root>", "{\"a\":{\"y\":{\"z\":\"t\"},\"x\":4}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         ret.add(new Object[] {"<root><a><b><item>z</item><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        //ret.add(new Object[] {"<root><a><b>z</b><b><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
+        ret.add(new Object[] {"<root><a><b>z</b><b><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[] {"<root><item/></root>", "[{}]", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
         return ret;
     }
