@@ -87,7 +87,7 @@ public class ProposedJson2XmlTest {
     private Json2Xml m_converter;
     private Options[] m_options;
 
-    @Parameters(name="{index}: input:{1}")
+    @Parameters(/*name="{index}: input:{1}"*/)
     public static List<Object[]> parameters() {
         List<Object[]> ret = new ArrayList<>();
         ret.add(new Object[] {"<root/>", "{}", new Options[] {Options.CollapseToAttributes}});
