@@ -53,6 +53,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -68,6 +70,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.knime.json.util.Json2Xml.Json2XmlSettings;
 import org.knime.json.util.Json2Xml.Options;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -84,39 +87,61 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RunWith(Parameterized.class)
 public class ProposedJson2XmlTest {
     private final String m_expected, m_inputJson;
+
     private Json2Xml m_converter;
+
     private Options[] m_options;
 
-    @Parameters(/*name="{index}: input:{1}"*/)
+    /**
+     * @return The expected xml as a {@link String}, the input JSON also as a {@link String} and the {@link Options}
+     *         array.
+     */
+    @Parameters(/*name = "{index}: input:{1}"*/)
     public static List<Object[]> parameters() {
         List<Object[]> ret = new ArrayList<>();
-        ret.add(new Object[] {"<root/>", "{}", new Options[] {Options.CollapseToAttributes}});
-        ret.add(new Object[] {"<Array:root xmlns:Array=\"http://www.w3.org/2001/XMLSchema/list\"/>", "[]", new Options[] {Options.CollapseToAttributes}});
-        ret.add(new Object[] {"<root><item>3</item></root>", "[3]", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><item>3</item></root>", "[\"3\"]", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><item>3</item><item>4</item></root>", "[3, 4]", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root a=\"4\"/>", "{\"a\":4}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root a=\"4\"/>", "{\"a\":\"4\"}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root a=\"34\"/>", "{\"a\":\"4\", \"a\":34}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a/></root>", "{\"a\":{}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a x=\"4\"/></root>", "{\"a\":{\"x\":4}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a x=\"4\" y=\"&quot;44&quot;\"/></root>", "{\"a\":{\"x\":4,\"y\":\"\\\"44\\\"\"}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a x=\"4\"/><a x=\"4\"/></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a x=\"4\"><y v=\"2\"/></a><a x=\"0\"><y v=\"3\"/></a></root>", "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a><item x=\"4\"/><item x=\"4\"/></a></root>", "{\"a\":[[{\"x\":4},{\"x\":4}]]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a><item x=\"4\"/><item><item x=\"4\"/></item></a></root>", "{\"a\":[[{\"x\":4},[{\"x\":4}]]]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a><item><item x=\"4\"/><item><item x=\"4\"/></item></item></a></root>", "{\"a\":[[[{\"x\":4},[{\"x\":4}]]]]}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a x=\"4\"><y z=\"t\"/></a></root>", "{\"a\":{\"y\":{\"z\":\"t\"},\"x\":4}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a><b><item>z</item><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
-        ret.add(new Object[] {"<root><a><b>z</b><b><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
-        ret.add(new Object[] {"<root><item/></root>", "[{}]", new Options[] {Options.CollapseToAttributes, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root/>", "{}", new Options[]{}});
+        ret.add(new Object[]{"<Array:root xmlns:Array=\"http://www.w3.org/2001/XMLSchema/list\"/>", "[]",
+            new Options[]{}});
+        ret.add(new Object[]{"<root><item>3</item></root>", "[3]", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item>3</item></root>", "[\"3\"]", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item>3</item><item>4</item></root>", "[3, 4]",
+            new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root a=\"4\"/>", "{\"a\":4}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root a=\"4\"/>", "{\"a\":\"4\"}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root a=\"34\"/>", "{\"a\":\"4\", \"a\":34}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a/></root>", "{\"a\":{}}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a x=\"4\"/></root>", "{\"a\":{\"x\":4}}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a x=\"4\" y=\"&quot;44&quot;\"/></root>",
+            "{\"a\":{\"x\":4,\"y\":\"\\\"44\\\"\"}}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a x=\"4\"/><a x=\"4\"/></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}",
+            new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a x=\"4\"><y v=\"2\"/></a><a x=\"0\"><y v=\"3\"/></a></root>",
+            "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><item x=\"4\"/><item x=\"4\"/></a></root>", "{\"a\":[[{\"x\":4},{\"x\":4}]]}",
+            new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><item x=\"4\"/><item><item x=\"4\"/></item></a></root>",
+            "{\"a\":[[{\"x\":4},[{\"x\":4}]]]}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><item><item x=\"4\"/><item><item x=\"4\"/></item></item></a></root>",
+            "{\"a\":[[[{\"x\":4},[{\"x\":4}]]]]}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a x=\"4\"><y z=\"t\"/></a></root>", "{\"a\":{\"y\":{\"z\":\"t\"},\"x\":4}}",
+            new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><b><item>z</item><item><w/></item></b></a></root>",
+            "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><b>z</b><b><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><item/></root>", "[{}]", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><b c=\"2\"><d t=\"text\"/><e t=\"text2\"/></b></a></root>",
+            "{\"a\":{\"b\":[{\"c\":2,\"d\":{\"t\":\"text\"},\"e\":{\"t\":\"text2\"}}]}}",
+            new Options[]{Options.looseTypeInfo}});
         return ret;
     }
+
     /**
      * @param expected
      * @param inputJson
+     * @param os The options to be used.
      */
-    public ProposedJson2XmlTest(final String expected, final String inputJson, final Options...os) {
+    public ProposedJson2XmlTest(final String expected, final String inputJson, final Options... os) {
         super();
         this.m_expected = expected;
         this.m_inputJson = inputJson;
@@ -128,12 +153,20 @@ public class ProposedJson2XmlTest {
      */
     @Before
     public void setUp() throws Exception {
-        m_converter = new Json2Xml();
-        m_converter.setOptions(m_options);
+        EnumSet<Options> set = EnumSet.noneOf(Options.class);
+        set.addAll(Arrays.asList(m_options));
+        if (set.contains(Options.UseParentKeyWhenPossible)) {
+            m_converter = Json2Xml.createWithUseParentKeyWhenPossible(new Json2XmlSettings());
+            m_converter.setLooseTypeInfo(set.contains(Options.looseTypeInfo));
+        } else {
+            m_converter = new Json2Xml();
+            m_converter.setOptions(m_options);
+        }
     }
 
     /**
      * Test method for {@link org.knime.json.util.Json2Xml#toXml(com.fasterxml.jackson.databind.JsonNode)}.
+     *
      * @throws IOException
      * @throws ParserConfigurationException
      * @throws JsonProcessingException
@@ -141,7 +174,8 @@ public class ProposedJson2XmlTest {
      * @throws TransformerException
      */
     @Test
-    public void testToXml() throws DOMException, JsonProcessingException, ParserConfigurationException, IOException, TransformerException {
+    public void testToXml() throws DOMException, JsonProcessingException, ParserConfigurationException, IOException,
+        TransformerException {
         JsonNode json = new ObjectMapper().readTree(m_inputJson);
         //System.out.println(json);
         Document doc = m_converter.toXml(json);

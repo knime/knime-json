@@ -74,6 +74,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 import org.knime.json.util.Json2Xml;
+import org.knime.json.util.Json2Xml.Json2XmlSettings;
 
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -201,16 +202,17 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
      * @return
      */
     private Json2Xml createConverter() {
-        Json2Xml ret = new Json2Xml();
-        ret.setArrayPrefix(getSettings().getArray());
-        ret.setBinary(getSettings().getBinary());
-        ret.setBool(getSettings().getBoolean());
-        ret.setInt(getSettings().getInteger());
-        ret.setNamespace(getSettings().isSpecifyNamespace() ? getSettings().getNamespace() : null);
-        ret.setNull(getSettings().getNull());
-        ret.setReal(getSettings().getDecimal());
-        ret.setRootName(getSettings().getRoot());
-        ret.setText(getSettings().getString());
+        Json2XmlSettings settings = new Json2XmlSettings();
+        settings.setArrayPrefix(getSettings().getArray());
+        settings.setBinary(getSettings().getBinary());
+        settings.setBool(getSettings().getBoolean());
+        settings.setInt(getSettings().getInteger());
+        settings.setNamespace(getSettings().isSpecifyNamespace() ? getSettings().getNamespace() : null);
+        settings.setNull(getSettings().getNull());
+        settings.setReal(getSettings().getDecimal());
+        settings.setRootName(getSettings().getRoot());
+        settings.setText(getSettings().getString());
+        Json2Xml ret = Json2Xml.createWithUseParentKeyWhenPossible(settings);
         ret.setLooseTypeInfo(getSettings().isOmitTypeInfo());
         return ret;
     }
