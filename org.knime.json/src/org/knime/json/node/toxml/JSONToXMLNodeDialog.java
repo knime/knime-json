@@ -173,7 +173,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_keepTypeInfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                boolean enabled = !m_keepTypeInfo.isSelected();
+                boolean enabled = m_keepTypeInfo.isSelected();
                 updatePrefixEnabledness(enabled);
             }
         });
