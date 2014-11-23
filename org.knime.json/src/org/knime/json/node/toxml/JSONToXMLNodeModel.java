@@ -123,7 +123,7 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.validateSettings(settings);
         JSONToXMLSettings s = getSettings();
-        if (!s.isOmitTypeInfo()) {
+        if (!s.isKeepTypeInfo()) {
             CheckUtils.checkSetting(!s.getArray().trim().isEmpty(), "The empty list prefix is missing.");
             CheckUtils.checkSetting(!s.getBinary().trim().isEmpty(), "The binary content prefix is missing.");
             CheckUtils.checkSetting(!s.getBoolean().trim().isEmpty(), "The boolean prefix is missing.");
@@ -212,8 +212,9 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
         settings.setReal(getSettings().getDecimal());
         settings.setRootName(getSettings().getRoot());
         settings.setText(getSettings().getString());
-        Json2Xml ret = Json2Xml.createWithUseParentKeyWhenPossible(settings);
-        ret.setLooseTypeInfo(getSettings().isOmitTypeInfo());
+        settings.setTextKey(getSettings().isCreateTextForSpecificKeys() ? getSettings().getKeyForText() : null);
+        Json2Xml ret = getSettings().isParentKeyAsElementName() ? Json2Xml.createWithUseParentKeyWhenPossible(settings) : new Json2Xml(settings);
+        ret.setLooseTypeInfo(!getSettings().isKeepTypeInfo());
         return ret;
     }
 

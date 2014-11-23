@@ -66,34 +66,78 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     //write xml 1.1 header (currently: always false)
     //How to handle invalid keys (like @a, #text, ...), currently invalid characters are removed.
 
-    private String SPECIFY_NAMESPACE = "specify.namespace";
-    private boolean DEFAULT_SPECIFY_NAMESPACE = false;
-    private String NAMESPACE = "namespace";
-    private String DEFAULT_NAMESPACE = null;
-    private String ROOT_ELEMENT = "root.element";
-    private String DEFAULT_ROOT_ELEMENT = "root";
-    private String ITEM_ELEMENT = "array.item.element";
-    private String DEFAULT_ITEM_ELEMENT = "item";
-    private String ARRAY_PREFIX = "array.prefix";
-    private String DEFAULT_ARRAY_PREFIX = "Array";
-    private String BINARY_PREFIX = "binary.prefix";
-    private String DEFAULT_BINARY_PREFIX = "Binary";
-    private String BOOLEAN_PREFIX = "boolean.prefix";
-    private String DEFAULT_BOOLEAN_PREFIX = "Boolean";
-    private String INTEGER_PREFIX = "integer.prefix";
-    private String DEFAULT_INTEGER_PREFIX = "Integer";
-    private String NULL_PREFIX = "null.prefix";
-    private String DEFAULT_NULL_PREFIX = "null";
-    private String DECIMAL_PREFIX = "decimal.prefix";
-    private String DEFAULT_DECIMAL_PREFIX = "Decimal";
-    private String STRING_PREFIX = "string.prefix";
-    private String DEFAULT_STRING_PREFIX = "String";
+    private static final String SPECIFY_NAMESPACE = "specify.namespace";
 
-    private String OMIT_TYPE_INFORMATION = "omit.type.information";
-    private boolean DEFAULT_OMIT_TYPE_INFORMATION = true;
+    private static final boolean DEFAULT_SPECIFY_NAMESPACE = false;
 
-    private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT, m_array = DEFAULT_ARRAY_PREFIX, m_binary = DEFAULT_BINARY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX, m_integer = DEFAULT_INTEGER_PREFIX, m_null = DEFAULT_NULL_PREFIX, m_decimal = DEFAULT_DECIMAL_PREFIX, m_string = DEFAULT_STRING_PREFIX;
-    private boolean m_omitTypeInfo = DEFAULT_OMIT_TYPE_INFORMATION, m_specifyNamespace = DEFAULT_SPECIFY_NAMESPACE;
+    private static final String NAMESPACE = "namespace";
+
+    private static final String DEFAULT_NAMESPACE = null;
+
+    private static final String ROOT_ELEMENT = "root.element";
+
+    private static final String DEFAULT_ROOT_ELEMENT = "root";
+
+    private static final String ITEM_ELEMENT = "array.item.element";
+
+    private static final String DEFAULT_ITEM_ELEMENT = "item";
+
+    private static final String ARRAY_PREFIX = "array.prefix";
+
+    private static final String DEFAULT_ARRAY_PREFIX = "Array";
+
+    private static final String BINARY_PREFIX = "binary.prefix";
+
+    private static final String DEFAULT_BINARY_PREFIX = "Binary";
+
+    private static final String BOOLEAN_PREFIX = "boolean.prefix";
+
+    private static final String DEFAULT_BOOLEAN_PREFIX = "Boolean";
+
+    private static final String INTEGER_PREFIX = "integer.prefix";
+
+    private static final String DEFAULT_INTEGER_PREFIX = "Integer";
+
+    private static final String NULL_PREFIX = "null.prefix";
+
+    private static final String DEFAULT_NULL_PREFIX = "null";
+
+    private static final String DECIMAL_PREFIX = "decimal.prefix";
+
+    private static final String DEFAULT_DECIMAL_PREFIX = "Decimal";
+
+    private static final String STRING_PREFIX = "string.prefix";
+
+    private static final String DEFAULT_STRING_PREFIX = "String";
+
+    private static final String KEEP_TYPE_INFORMATION = "keep.type.information";
+
+    private static final boolean DEFAULT_KEEP_TYPE_INFORMATION = false;
+
+    private static final String CREATE_TEXT_FOR_SPECIFIC_KEYS = "create.text.for.specific.keys";
+
+    private static final boolean DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS = true;
+
+    private static final String KEY_FOR_TEXT = "key.for.text";
+
+    private static final String DEFAULT_KEY_FOR_TEXT = "#text";
+
+    private static final String PARENT_KEY_AS_ELEMENT_NAME = "parent.key.as.element.name";
+
+    private static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = true;
+
+    private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT,
+            m_array = DEFAULT_ARRAY_PREFIX, m_binary = DEFAULT_BINARY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,
+            m_integer = DEFAULT_INTEGER_PREFIX, m_null = DEFAULT_NULL_PREFIX, m_decimal = DEFAULT_DECIMAL_PREFIX,
+            m_string = DEFAULT_STRING_PREFIX;
+
+    private boolean m_keepTypeInfo = DEFAULT_KEEP_TYPE_INFORMATION, m_specifyNamespace = DEFAULT_SPECIFY_NAMESPACE;
+
+    private boolean m_createTextForSpecificKeys = DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS;
+
+    private String m_keyForText = DEFAULT_KEY_FOR_TEXT;
+
+    private boolean m_parentKeyAsElementName = DEFAULT_PARENT_KEY_AS_ELEMENT_NAME;
 
     /**
      * Constructs the object.
@@ -119,8 +163,12 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         m_null = settings.getString(NULL_PREFIX, DEFAULT_NULL_PREFIX);
         m_root = settings.getString(ROOT_ELEMENT, DEFAULT_ROOT_ELEMENT);
         m_string = settings.getString(STRING_PREFIX, DEFAULT_STRING_PREFIX);
-        m_omitTypeInfo = settings.getBoolean(OMIT_TYPE_INFORMATION, DEFAULT_OMIT_TYPE_INFORMATION);
+        m_keepTypeInfo = settings.getBoolean(KEEP_TYPE_INFORMATION, DEFAULT_KEEP_TYPE_INFORMATION);
         m_specifyNamespace = settings.getBoolean(SPECIFY_NAMESPACE, DEFAULT_SPECIFY_NAMESPACE);
+        m_createTextForSpecificKeys =
+            settings.getBoolean(CREATE_TEXT_FOR_SPECIFIC_KEYS, DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS);
+        m_keyForText = settings.getString(KEY_FOR_TEXT, DEFAULT_KEY_FOR_TEXT);
+        m_parentKeyAsElementName = settings.getBoolean(PARENT_KEY_AS_ELEMENT_NAME, DEFAULT_PARENT_KEY_AS_ELEMENT_NAME);
     }
 
     /**
@@ -139,8 +187,12 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         m_null = settings.getString(NULL_PREFIX);
         m_root = settings.getString(ROOT_ELEMENT);
         m_string = settings.getString(STRING_PREFIX);
-        m_omitTypeInfo = settings.getBoolean(OMIT_TYPE_INFORMATION);
+        m_keepTypeInfo = settings.getBoolean(KEEP_TYPE_INFORMATION);
         m_specifyNamespace = settings.getBoolean(SPECIFY_NAMESPACE);
+        m_createTextForSpecificKeys =
+            settings.getBoolean(CREATE_TEXT_FOR_SPECIFIC_KEYS, DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS);
+        m_keyForText = settings.getString(KEY_FOR_TEXT, DEFAULT_KEY_FOR_TEXT);
+        m_parentKeyAsElementName = settings.getBoolean(PARENT_KEY_AS_ELEMENT_NAME, DEFAULT_PARENT_KEY_AS_ELEMENT_NAME);
     }
 
     /**
@@ -159,8 +211,11 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         settings.addString(NULL_PREFIX, m_null);
         settings.addString(ROOT_ELEMENT, m_root);
         settings.addString(STRING_PREFIX, m_string);
-        settings.addBoolean(OMIT_TYPE_INFORMATION, m_omitTypeInfo);
+        settings.addBoolean(KEEP_TYPE_INFORMATION, m_keepTypeInfo);
         settings.addBoolean(SPECIFY_NAMESPACE, m_specifyNamespace);
+        settings.addBoolean(CREATE_TEXT_FOR_SPECIFIC_KEYS, m_createTextForSpecificKeys);
+        settings.addString(KEY_FOR_TEXT, m_keyForText);
+        settings.addBoolean(PARENT_KEY_AS_ELEMENT_NAME, m_parentKeyAsElementName);
     }
 
     /**
@@ -304,17 +359,17 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     }
 
     /**
-     * @return the omitTypeInfo
+     * @return the keepTypeInfo
      */
-    final boolean isOmitTypeInfo() {
-        return m_omitTypeInfo;
+    final boolean isKeepTypeInfo() {
+        return m_keepTypeInfo;
     }
 
     /**
-     * @param omitTypeInfo the omitTypeInfo to set
+     * @param keepTypeInfo the keepTypeInfo to set
      */
-    final void setOmitTypeInfo(final boolean omitTypeInfo) {
-        this.m_omitTypeInfo = omitTypeInfo;
+    final void setKeepTypeInfo(final boolean keepTypeInfo) {
+        this.m_keepTypeInfo = keepTypeInfo;
     }
 
     /**
@@ -329,5 +384,47 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
      */
     final void setSpecifyNamespace(final boolean specifyNamespace) {
         this.m_specifyNamespace = specifyNamespace;
+    }
+
+    /**
+     * @return the createTextForSpecificKeys
+     */
+    final boolean isCreateTextForSpecificKeys() {
+        return m_createTextForSpecificKeys;
+    }
+
+    /**
+     * @param createTextForSpecificKeys the createTextForSpecificKeys to set
+     */
+    final void setCreateTextForSpecificKeys(final boolean createTextForSpecificKeys) {
+        this.m_createTextForSpecificKeys = createTextForSpecificKeys;
+    }
+
+    /**
+     * @return the keyForText
+     */
+    final String getKeyForText() {
+        return m_keyForText;
+    }
+
+    /**
+     * @param keyForText the keyForText to set
+     */
+    final void setKeyForText(final String keyForText) {
+        this.m_keyForText = keyForText;
+    }
+
+    /**
+     * @return the parentKeyAsElementName
+     */
+    final boolean isParentKeyAsElementName() {
+        return m_parentKeyAsElementName;
+    }
+
+    /**
+     * @param parentKeyAsElementName the parentKeyAsElementName to set
+     */
+    final void setParentKeyAsElementName(final boolean parentKeyAsElementName) {
+        this.m_parentKeyAsElementName = parentKeyAsElementName;
     }
 }

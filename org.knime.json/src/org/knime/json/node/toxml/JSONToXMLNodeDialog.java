@@ -53,10 +53,12 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -78,16 +80,18 @@ import org.knime.json.util.Json2Xml;
  */
 public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> {
     private JTextField m_array, m_binary, m_boolean, m_decimal, m_integer, m_item, m_namespace, m_null, m_root,
-            m_string;
+            m_string, m_keyForText;
 
-    private JCheckBox m_omitTypeInfo, m_specifyNamespace;
+    private JCheckBox m_keepTypeInfo, m_specifyNamespace, m_createTextForSpecificKeys;
+    private ButtonGroup m_arrayBehaviour;
+    private JRadioButton m_wrapArrayElements, m_useParentKeyAsElementName;
 
     /**
      * New pane for configuring the JSONToXML node.
      */
     protected JSONToXMLNodeDialog() {
         super(JSONToXMLNodeModel.createJSONToXMLSettings(), "JSON column", JSONValue.class);
-        addTab("Namespace/Prefix", createPrefixComponent());
+        addTab("Type information", createPrefixComponent());
     }
 
     /**
@@ -96,6 +100,11 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
     private JPanel createPrefixComponent() {
         JPanel ret = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = createInitialConstraints();
+        gbc.gridwidth = 1;
+        m_keepTypeInfo = new JCheckBox("Keep type information by adding namespace");
+        ret.add(m_keepTypeInfo, gbc);
+        gbc.gridy++;
+
         gbc.gridx = 0;
         m_array = GUIFactory.createTextField(null, 11);
         m_array.setToolTipText("Set only if the input JSON is [], to distinguish from {}");
@@ -161,10 +170,10 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
 
         updatePrefixEnabledness(false);
 
-        m_omitTypeInfo.addActionListener(new ActionListener() {
+        m_keepTypeInfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                boolean enabled = !m_omitTypeInfo.isSelected();
+                boolean enabled = !m_keepTypeInfo.isSelected();
                 updatePrefixEnabledness(enabled);
             }
         });
@@ -193,15 +202,36 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         panel.add(namespacePanel, gbc);
         gbc.gridy++;
 
-        gbc.gridwidth = 1;
-        m_omitTypeInfo = new JCheckBox("Omit type information");
-        panel.add(m_omitTypeInfo, gbc);
-        gbc.gridy++;
-
         JPanel elementsPanel = createElementsPanel();
         gbc.gridwidth = 2;
         panel.add(elementsPanel, gbc);
         gbc.gridy++;
+
+        JPanel textPanel = createTextPanel();
+        panel.add(textPanel, gbc);
+    }
+
+    /**
+     * @return
+     */
+    private JPanel createTextPanel() {
+        JPanel ret = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = createInitialConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        m_createTextForSpecificKeys = new JCheckBox("Represent values as XML text if key is");
+        ret.add(m_createTextForSpecificKeys, gbc);
+        gbc.gridx = 1;
+        m_keyForText = GUIFactory.createTextField("#text", 11);
+        ret.add(m_keyForText, gbc);
+
+        m_createTextForSpecificKeys.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                m_keyForText.setEnabled(m_createTextForSpecificKeys.isSelected());
+            }
+        });
+        return ret;
     }
 
     /**
@@ -248,6 +278,19 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         gbc.gridx = 1;
         m_item = GUIFactory.createTextField("", 11);
         elements.add(m_item, gbc);
+        gbc.gridy++;
+
+        m_arrayBehaviour = new ButtonGroup();
+        m_wrapArrayElements = new JRadioButton("Wrap array items in XML elements");
+        m_useParentKeyAsElementName = new JRadioButton("Use parent keys as element name for arrays");
+        m_arrayBehaviour.add(m_wrapArrayElements);
+        m_arrayBehaviour.add(m_useParentKeyAsElementName);
+
+        m_arrayBehaviour.setSelected(m_useParentKeyAsElementName.getModel(), true);
+
+        elements.add(m_wrapArrayElements, gbc);
+        gbc.gridy++;
+        elements.add(m_useParentKeyAsElementName, gbc);
         return elements;
     }
 
@@ -256,7 +299,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        if (!m_omitTypeInfo.isSelected()) {
+        if (!m_keepTypeInfo.isSelected()) {
             CheckUtils.checkSetting(!m_array.getText().trim().isEmpty(), "The empty list prefix is missing.");
             CheckUtils.checkSetting(!m_binary.getText().trim().isEmpty(), "The binary content prefix is missing.");
             CheckUtils.checkSetting(!m_boolean.getText().trim().isEmpty(), "The boolean prefix is missing.");
@@ -277,10 +320,13 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         getSettings().setItem(m_item.getText());
         getSettings().setNamespace(m_namespace.getText());
         getSettings().setNull(m_null.getText());
-        getSettings().setOmitTypeInfo(m_omitTypeInfo.isSelected());
+        getSettings().setKeepTypeInfo(m_keepTypeInfo.isSelected());
         getSettings().setRoot(m_root.getText());
         getSettings().setSpecifyNamespace(m_specifyNamespace.isSelected());
         getSettings().setString(m_string.getText());
+        getSettings().setCreateTextForSpecificKeys(m_createTextForSpecificKeys.isSelected());
+        getSettings().setKeyForText(m_keyForText.getText());
+        getSettings().setParentKeyAsElementName(m_useParentKeyAsElementName.isSelected());
         super.saveSettingsTo(settings);
     }
 
@@ -301,7 +347,10 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_null.setText(getSettings().getNull());
         m_root.setText(getSettings().getRoot());
         m_string.setText(getSettings().getString());
-        m_omitTypeInfo.setSelected(getSettings().isOmitTypeInfo());
+        m_keepTypeInfo.setSelected(getSettings().isKeepTypeInfo());
         m_specifyNamespace.setSelected(getSettings().isSpecifyNamespace());
+        m_createTextForSpecificKeys.setSelected(getSettings().isCreateTextForSpecificKeys());
+        m_keyForText.setText(getSettings().getKeyForText());
+        m_useParentKeyAsElementName.setSelected(getSettings().isParentKeyAsElementName());
     }
 }

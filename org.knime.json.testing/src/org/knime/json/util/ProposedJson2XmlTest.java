@@ -133,6 +133,9 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><b c=\"2\"><d t=\"text\"/><e t=\"text2\"/></b></a></root>",
             "{\"a\":{\"b\":[{\"c\":2,\"d\":{\"t\":\"text\"},\"e\":{\"t\":\"text2\"}}]}}",
             new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><c>2</c>text</a></root>",
+            "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         return ret;
     }
 

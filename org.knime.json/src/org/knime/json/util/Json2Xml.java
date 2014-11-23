@@ -128,13 +128,16 @@ public class Json2Xml {
          */
         private String m_bool;
 
+        /**
+         * {@code null} means we do not convert any keys to text.
+         */
         private String m_textKey = "#text";
 
         /**
          *
          */
         public Json2XmlSettings() {
-            this("root", "item", null, "Array", "null", "Binary", "Text", "Int", "Real", "Bool");
+            this("root", "item", null, "Array", "null", "Binary", "Text", "Int", "Real", "Bool", "#text");
         }
 
         /**
@@ -148,11 +151,11 @@ public class Json2Xml {
          * @param real
          * @param intPrefix
          * @param bool
-         *
+         * @param textKey
          */
         public Json2XmlSettings(final String rootName, final String primitiveArrayItem, final String namespace,
             final String array, final String nullPrefix, final String binary, final String text, final String real,
-            final String intPrefix, final String bool) {
+            final String intPrefix, final String bool, final String textKey) {
             this.m_rootName = rootName;
             this.m_primitiveArrayItem = primitiveArrayItem;
             this.m_namespace = namespace;
@@ -163,6 +166,7 @@ public class Json2Xml {
             this.m_real = real;
             this.m_int = intPrefix;
             this.m_bool = bool;
+            this.m_textKey = textKey;
         }
 
         /**
@@ -295,7 +299,7 @@ public class Json2Xml {
     private boolean m_looseTypeInfo = false;
 
     private Json2XmlSettings m_settings = new Json2XmlSettings("root", "item", null, "Array", "null", "Binary", "Text",
-        "Real", "Int", "Bool");
+        "Real", "Int", "Bool", "#text");
 
     /**
      *
@@ -573,6 +577,19 @@ public class Json2Xml {
     }
 
     /**
+     * @param parent
+     * @return whether {@code parent} contains key with {@link #getTextKey()}.
+     */
+    protected boolean hasText(final ObjectNode parent) {
+        String textKey = getTextKey();
+        boolean ret = false;
+        for (Iterator<String> it = parent.fieldNames(); it.hasNext();) {
+            ret |= it.next().equals(textKey);
+        }
+        return ret;
+    }
+
+    /**
      * @param elem
      * @param fields
      * @param types
@@ -619,16 +636,25 @@ public class Json2Xml {
      */
     protected Element createObjectWithoutParent(final ObjectNode node, final Element element,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        boolean hasTextKey = hasText(node);
         for (Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
             Entry<String, JsonNode> entry = it.next();
-            if (entry.getValue().isValueNode()) {
+            JsonNode value = entry.getValue();
+            if (value.isValueNode() && !hasTextKey) {
                 addValueAsAttribute(element, entry, types);
-            } else if (entry.getValue().isObject()) {
-                create(entry.getKey(), node, entry.getValue(), element, types);
-            } else if (entry.getValue().isArray()) {
-                create(entry.getKey(), node, entry.getValue(), element, types);
+            } else if (hasTextKey && value.isValueNode()) {
+                if (entry.getKey().equals(getTextKey())) {
+                    setTextContent(element, entry, types);
+                } else {
+                    Document doc = element.getOwnerDocument();
+                    Element elem = doc.createElement(removeInvalidChars(entry.getKey()));
+                    element.appendChild(elem);
+                    create(entry.getKey(), node, value, elem, types);
+                }
+            } else if (value.isObject() || value.isArray()) {
+                create(entry.getKey(), node, value, element, types);
             } else {
-                assert false : entry.getValue();
+                assert false : value;
             }
         }
         return element;
@@ -637,6 +663,7 @@ public class Json2Xml {
     /**
      * @param element
      * @param entry
+     * @param types
      */
     protected void addValueAsAttribute(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
@@ -644,7 +671,11 @@ public class Json2Xml {
         if (v.isValueNode()) {
             String val = v.asText();
             String key = entry.getKey();
-            key = key.replaceAll("[^\\w]", "");
+            if (key.equals(getTextKey())) {
+                setTextContent(element, entry, types);
+                return;
+            }
+            key = removeInvalidChars(key);
             if (m_looseTypeInfo) {
                 element.setAttribute(key, val);
             } else if (v.isIntegralNumber()) {
@@ -675,8 +706,53 @@ public class Json2Xml {
     }
 
     /**
+     * @param element
+     * @param entry
+     * @param types
+     * @param val
+     */
+    protected void setTextContent(final Element element, final Entry<String, JsonNode> entry,
+        final Set<JsonPrimitiveTypes> types) {
+        JsonNode v = entry.getValue();
+        String val = v.asText();
+        element.appendChild(element.getOwnerDocument().createTextNode(val));
+        if (!m_looseTypeInfo) {
+            if (v.isIntegralNumber()) {
+                types.add(JsonPrimitiveTypes.INT);
+                element.setPrefix(m_settings.m_int);
+            } else if (v.isFloatingPointNumber()) {
+                types.add(JsonPrimitiveTypes.FLOAT);
+                element.setPrefix(m_settings.m_real);
+            } else if (v.isTextual()) {
+                types.add(JsonPrimitiveTypes.TEXT);
+                element.setPrefix(m_settings.m_text);
+            } else if (v.isNull()) {
+                types.add(JsonPrimitiveTypes.NULL);
+                element.setPrefix(m_settings.m_null);
+            } else if (v.isBinary()) {
+                types.add(JsonPrimitiveTypes.BINARY);
+                element.setPrefix(m_settings.m_binary);
+            } else if (v.isBoolean()) {
+                types.add(JsonPrimitiveTypes.BOOLEAN);
+                element.setPrefix(m_settings.m_bool);
+            } else {
+                assert false : entry;
+            }
+        }
+    }
+
+    /**
+     * @param key
+     * @return
+     */
+    private static String removeInvalidChars(final String key) {
+        return key.replaceAll("[^\\w]", "");
+    }
+
+    /**
      * @param node
      * @param element
+     * @param forceItemElement
      * @param types
      * @return
      * @throws IOException
@@ -937,7 +1013,7 @@ public class Json2Xml {
                     return parentElement;
                 }
                 if (node.isValueNode()) {
-                    parentElement.setTextContent(node.asText());
+                    parentElement.appendChild(doc.createTextNode(node.asText()));
                     return parentElement;
                 }
                 throw new IllegalStateException("Should not reach this! " + node);
@@ -954,11 +1030,29 @@ public class Json2Xml {
             @Override
             protected Element createSubObject(final Element elem, final ObjectNode objectNode,
                 final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+                boolean hasTextKey = false;
+                String textKey = getTextKey();
+                for (Iterator<String> nameIt = objectNode.fieldNames(); nameIt.hasNext();) {
+                    String name = nameIt.next();
+                    hasTextKey |= name.equals(textKey);
+                }
                 for (Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
                     Entry<String, JsonNode> entry = fields.next();
                     JsonNode node = entry.getValue();
                     if (node.isValueNode()) {
-                        addValueAsAttribute(elem, entry, types);
+                        if (!hasTextKey) {
+                            addValueAsAttribute(elem, entry, types);
+                        } else {
+                            if (entry.getKey().equals(textKey)) {
+                                elem.appendChild(elem.getOwnerDocument().createTextNode(node.asText()));
+                            } else {
+                                Element object = create(entry.getKey(), objectNode, node, elem, types);
+                                if (object == elem) {
+                                    continue;
+                                }
+                                elem.appendChild(object);
+                            }
+                        }
                     } else if (node.isObject()) {
                         Element object = create(entry.getKey(), objectNode, node, elem, types);
                         if (object == elem) {
@@ -986,5 +1080,12 @@ public class Json2Xml {
                 return elem;
             }
         };
+    }
+
+    /**
+     * @return The key values to be translated as text.
+     */
+    protected String getTextKey() {
+        return m_settings.getTextKey();
     }
 }
