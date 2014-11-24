@@ -52,7 +52,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -65,6 +68,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -493,12 +497,26 @@ public class Json2Xml {
         }
         //We have parent key, so we are within an object
         if (node.isArray()) {
-            boolean hasValue = hasValue(node);
+            boolean hasValue = true;//hasValue(node)/* || conflictInAttributes((ArrayNode)node)*/;
             for (JsonNode jsonNode : node) {
                 Element elem = doc.createElement(origKey);
                 if (jsonNode.isObject()) {
-                    parentElement.appendChild(hasValue ? createItem(jsonNode, elem, hasValue, types) : createNoKey(
-                        node, jsonNode, elem, types));
+                    if (hasValue) {
+                        Element child = createItem(jsonNode, elem, hasValue, types);
+                        if (!parentElement.hasChildNodes()) {
+                        parentElement.appendChild(elem);
+                        }
+//                        elem.appendChild(child);
+                        parentElement.getFirstChild().appendChild(child);
+                    } else {
+                        Element child = createNoKey(node, jsonNode, elem, types);
+                        if (!parentElement.hasChildNodes()) {
+                            parentElement.appendChild(elem);
+                        }
+                        if (child != parentElement.getFirstChild()) {
+                            parentElement.getFirstChild().appendChild(child);
+                        }
+                    }
                 } else {
                     parentElement.appendChild(createItem(jsonNode, elem, hasValue, types));
                 }
@@ -556,12 +574,72 @@ public class Json2Xml {
                 return createObjectWithoutParent((ObjectNode)node, parentElement, types);
             }
             boolean hasValue = hasValue(parent);
+            boolean conflictWithinAttributes = hasValue || conflictInAttributes((ArrayNode)parent);
             //object within array
-            return createItem(node, parentElement, hasValue, types);
+            return createItem(node, parentElement, conflictWithinAttributes, types);
         }
         //We already handled the missing case and object.
         assert false : node;
         throw new IllegalStateException("Should not reach this! " + node);
+    }
+
+    /**
+     * @param parent
+     * @return
+     */
+    private boolean conflictInAttributes(final ArrayNode parent) {
+        assert !hasValue(parent) : parent;
+        boolean ret = false;
+        if (parent.size() == 0) {
+            return false;
+        }
+        Map<String, JsonNode> values;
+        Iterator<JsonNode> it = parent.iterator();
+        JsonNode obj = it.next();
+        assert obj.isObject();
+        if (obj instanceof ObjectNode) {
+            ObjectNode on = (ObjectNode)obj;
+            values = possibleAttributeTypesAndValues(on);
+        } else {
+            return true;
+        }
+        for (; it.hasNext();) {
+            JsonNode next = it.next();
+            if (!(next instanceof ObjectNode)) {
+                return true;
+            }
+            Map<String, JsonNode> attributeTypes = possibleAttributeTypesAndValues((ObjectNode)next);
+            Iterator<Entry<String, JsonNode>> it1 = values.entrySet().iterator();
+            Iterator<Entry<String, JsonNode>> it2 = attributeTypes.entrySet().iterator();
+            for (; it1.hasNext() && it2.hasNext();) {
+                Entry<String, JsonNode> next1 = it1.next(), next2 = it2.next();
+                if (!Objects.equals(next1.getKey(), next2.getKey())) {
+                    return true;
+                }
+                if (!Objects.equals(next1.getValue(), next2.getValue())) {
+                    return true;
+                }
+            }
+            if (it1.hasNext() != it2.hasNext()) {
+                return true;
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * @param on
+     * @return
+     */
+    protected Map<String, JsonNode> possibleAttributeTypesAndValues(final ObjectNode on) {
+        Map<String, JsonNode> values = new LinkedHashMap<>();
+        for (Iterator<Entry<String, JsonNode>> objIt = on.fields(); objIt.hasNext();) {
+            Entry<String, JsonNode> keyValue = objIt.next();
+            if (keyValue.getValue().isValueNode()) {
+                values.put(keyValue.getKey(), keyValue.getValue());
+            }
+        }
+        return values;
     }
 
     /**
@@ -612,14 +690,16 @@ public class Json2Xml {
                 elem.appendChild(object);
             } else if (node.isArray()) {
                 Document document = elem.getOwnerDocument();
-                Element element = document.createElement(entry.getKey());
-                elem.appendChild(element);
+                Element elemBase = document.createElement(entry.getKey());
+                elem.appendChild(elemBase);
                 for (JsonNode jsonNode : node) {
-                    final Element created = create(null, node, jsonNode, element, types);
-                    if (created == element) {
+                    //                    Element element = document.createElement(m_settings.m_primitiveArrayItem);
+                    //                    elemBase.appendChild(element);
+                    final Element created = create(null, node, jsonNode, elemBase, types);
+                    if (created == elemBase) {
                         continue;
                     }
-                    element.appendChild(created);
+                    elemBase.appendChild(created);
                 }
             }
         }

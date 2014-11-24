@@ -113,9 +113,10 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a x=\"4\"/></root>", "{\"a\":{\"x\":4}}", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root><a x=\"4\" y=\"&quot;44&quot;\"/></root>",
             "{\"a\":{\"x\":4,\"y\":\"\\\"44\\\"\"}}", new Options[]{Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root><a x=\"4\"/><a x=\"4\"/></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}",
+        //This might be fishy.<a x="4"/><a x="4"/> might be a better option, but that breaks a few other tests.
+        ret.add(new Object[]{"<root><a><item x=\"4\"/><item x=\"4\"/></a></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}",
             new Options[]{Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root><a x=\"4\"><y v=\"2\"/></a><a x=\"0\"><y v=\"3\"/></a></root>",
+        ret.add(new Object[]{"<root><a><item x=\"4\"><y v=\"2\"/></item><item x=\"0\"><y v=\"3\"/></item></a></root>",
             "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root><a><item x=\"4\"/><item x=\"4\"/></a></root>", "{\"a\":[[{\"x\":4},{\"x\":4}]]}",
             new Options[]{Options.looseTypeInfo}});
@@ -136,6 +137,12 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><c>2</c>text</a></root>",
             "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a><b v=\"2\"><q>p</q><r>s</r></b></a></root>",
+            "{\"a\":{\"b\":[{\"v\":\"2\",\"q\":{\"#text\":\"p\"},\"r\":{\"#text\":\"s\"}}]}}",
+            new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><b><item v=\"1\"><q>p</q></item><item v=\"2\"><q>z</q></item></b></a></root>",
+            "{\"a\":{\"b\":[{\"v\":\"1\",\"q\":{\"#text\":\"p\"}},{\"v\":\"2\",\"q\":{\"#text\":\"z\"}}]}}",
+            new Options[]{Options.looseTypeInfo}});
         return ret;
     }
 
