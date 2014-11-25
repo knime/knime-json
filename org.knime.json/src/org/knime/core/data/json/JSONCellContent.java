@@ -235,7 +235,7 @@ public class JSONCellContent implements JSONValue {
     public boolean equals(final Object obj) {
         if (obj instanceof JSONCellContent) {
             JSONCellContent that = (JSONCellContent)obj;
-            return this.getStringValue().equals(that.getStringValue());
+            return this.getJsonValue().equals(that.getJsonValue());
         } else {
             return false;
         }
@@ -246,6 +246,6 @@ public class JSONCellContent implements JSONValue {
      */
     @Override
     public int hashCode() {
-        return getStringValue().hashCode();
+        return getJsonValue().hashCode();
     }
 }

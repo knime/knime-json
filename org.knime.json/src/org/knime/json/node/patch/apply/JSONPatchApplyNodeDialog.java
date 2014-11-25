@@ -92,10 +92,10 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
      * {@inheritDoc}
      */
     @Override
-    protected int addAfterInputColumn(final JPanel panel, final int afterInput) {
+    protected void afterNewColumnName(final JPanel panel, final int afterNewCol) {
         GridBagConstraints gbc = createInitialConstraints();
         gbc.gridx = 0;
-        gbc.gridy = afterInput;
+        gbc.gridy = afterNewCol;
         panel.add(new JLabel("Patch type:"), gbc);
         gbc.gridx = 1;
         m_patchType = new JComboBox<>(new Vector<>(JSONPatchApplySettings.PATCH_TYPES));
@@ -108,9 +108,6 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
         m_patch = new RSyntaxTextArea(22, 100);
         m_patch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
         panel.add(new RTextScrollPane(m_patch), gbc);
-        gbc.gridy++;
-
-        return gbc.gridy;
     }
 
     /**

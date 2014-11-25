@@ -8,16 +8,28 @@
     
     <fullDescription>
         <intro><p>Applies a <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge patch</a> on the input JSON column.</p><p>
-        When cannot apply the patch, missing values will be generated.</p><p>
+        When cannot apply the patch, missing values will be generated, node execution will not fail.</p><p>
         See also the node: <a href="http://www.knime.org/files/node-documentation/org.knime.json.node.patch.create.JSONPatchCreateNodeFactory.html">JSON Diff</a>.</p><p>
+        Given <tt>{"a":"b","c":{"d":"e","f": "g"} }</tt> let us assume the target is <tt>{"a":"z","c":{"d":"e"} }</tt> (changing <tt>a</tt>'s value to <tt>z</tt> and
+        removing <tt>f</tt>). To achieve this, either the following patch should be applied:
+        <tt>[{"op":"replace","path":"/a","value":"z"},{"op":"remove","path":"/c/f"}]</tt> or
+        this merge and patch: <tt>{"a":"z","c":{"f": null} }</tt></p><p>
+        The following operators (<tt>op</tt>) are supported: <ul>
+        <li><tt>add</tt> (<tt>path</tt>, <tt>value</tt>)</li>
+        <li><tt>remove</tt> (<tt>path</tt>)</li>
+        <li><tt>replace</tt> (<tt>path</tt>, <tt>value</tt>)</li>
+        <li><tt>move</tt> (<tt>from</tt>, <tt>path</tt>)</li>
+        <li><tt>copy</tt> (<tt>from</tt>, <tt>path</tt>)</li>
+        <li><tt>test</tt> (<tt>path</tt>, <tt>value</tt>)</li>
+        </ul> for the patch format.</p><p>
+        The merge and patch format reconstructs the parts that need to be changed (changes included), all else can be omitted.</p><p>
         It uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p></intro>
         
-        
         <option name="JSON column">The column containing JSON values</option>
-        <option name="Patch type">Either <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge and patch</a></option>
-        <option name="Patch">A JSON of the selected patch type compatible with the JSON values</option>
         <option name="Remove source column">When checked, the source column will be removed</option>
         <option name="New column">Name of the new (JSON) column</option>
+        <option name="Patch type">Either <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge and patch</a></option>
+        <option name="Patch">A JSON of the selected patch type compatible with the JSON values</option>
         <!-- possibly more options that can also be grouped by tabs -->
         <!--
         <tab name="Standard Options">
