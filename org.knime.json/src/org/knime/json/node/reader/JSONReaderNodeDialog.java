@@ -143,14 +143,17 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
                     noError();
                 }
             }
+
             private void noError() {
                 m_columnName.setBackground(Color.WHITE);
                 m_columnName.setToolTipText(null);
             }
+
             private void error() {
                 m_columnName.setBackground(Color.RED);
                 m_columnName.setToolTipText("Empty column names are not allowed");
             }
+
             @Override
             public void insertUpdate(final DocumentEvent e) {
                 reportError();
@@ -164,7 +167,8 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
             @Override
             public void changedUpdate(final DocumentEvent e) {
                 reportError();
-            }});
+            }
+        });
         panel.add(m_columnName, gbc);
 
         gbc.gridy++;
@@ -182,7 +186,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         m_jsonPath.setToolTipText("Hint: Use the annotations to explain it.");
         final JLabel warningLabel = new JLabel();
         warningLabel.setForeground(Color.RED);
-        m_jsonPath.getDocument().addDocumentListener(new DocumentListener() {
+        final DocumentListener docListener = new DocumentListener() {
             @Override
             public void removeUpdate(final DocumentEvent e) {
                 reportError();
@@ -197,12 +201,17 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
             public void changedUpdate(final DocumentEvent e) {
                 reportError();
             }
+
             private void reportError() {
-                try {
-                    JsonPath.compile(m_jsonPath.getText());
+                if (m_selectPart.isSelected()) {
+                    try {
+                        JsonPath.compile(m_jsonPath.getText());
+                        noError();
+                    } catch (RuntimeException e) {
+                        error(e.getMessage());
+                    }
+                } else {
                     noError();
-                } catch (RuntimeException e) {
-                    error(e.getMessage());
                 }
             }
 
@@ -213,7 +222,8 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
             private void noError() {
                 warningLabel.setText("");
             }
-        });
+        };
+        m_jsonPath.getDocument().addDocumentListener(docListener);
         panel.add(m_jsonPath, gbc);
         gbc.gridy++;
         panel.add(warningLabel, gbc);
@@ -237,6 +247,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
                 boolean select = m_selectPart.isSelected();
                 m_jsonPath.setEnabled(select);
                 m_failIfNotFound.setEnabled(select);
+                docListener.changedUpdate(null);
             }
         });
         m_selectPart.setSelected(true);
