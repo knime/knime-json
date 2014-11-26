@@ -84,6 +84,8 @@ import org.knime.core.util.FileUtil;
 import org.knime.json.internal.Activator;
 import org.knime.json.node.jsonpath.JsonPathUtil;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.fge.jackson.JacksonUtils;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -159,9 +161,16 @@ public final class JSONReaderNodeModel extends NodeModel {
                     if (read == null) {
                         value = handleNotFound(null, content.getURI());
                     } else {
+                        JsonNode jackson = JsonPathUtil.toJackson(
+                            JacksonUtils.nodeFactory(), read);
+                        if (jackson.isArray() && !jsonPath.isDefinite()) {
+                            for (final JsonNode node: (ArrayNode)jackson) {
+                                container.addRowToTable(new DefaultRow(RowKey.createRowKey(rowId++), JSONCellFactory.create(jacksonConversions.toJSR353(node))));
+                            }
+                            return rowId;
+                        }
                         value =
-                            JSONCellFactory.create(jacksonConversions.toJSR353(JsonPathUtil.toJackson(
-                                JacksonUtils.nodeFactory(), read)));
+                            JSONCellFactory.create(jacksonConversions.toJSR353(jackson));
                     }
                 } catch (RuntimeException e) {
                     value = handleNotFound(e, content.getURI());

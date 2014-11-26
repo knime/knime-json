@@ -12,7 +12,7 @@
         <option name="Location">The path/URL to the file to read (supports remote and .json.gz files too)</option>
         <option name="Output column name">Name of the output column</option>
         <option name="Select with JSONPath">Select a part of the read JSON if checked</option>
-        <option name="JSONPath">The part to select from the input JSON. Using <a href="http://goessner.net/articles/JsonPath/">JSONPath</a> preferably with a single result. (For multiple results a JSON array will be created around them.)</option>
+        <option name="JSONPath">The part to select from the input JSON. Using <a href="http://goessner.net/articles/JsonPath/">JSONPath</a> preferably with a single result. (For multiple results new rows will be created from them.)</option>
         <option name="Fail if path not found">If checked, execution will fail if no such part found. If unchecked and not found, the result will be a missing value.</option>
         <option name="Allow comments in json files">When selected, <tt>/*</tt>...<tt>*/</tt> and the line comments <tt>//</tt>, <tt>#</tt> are interpreted as comments and get ignored instead of causing errors</option>
         <!-- possibly more options that can also be grouped by tabs -->

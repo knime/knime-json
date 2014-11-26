@@ -219,8 +219,8 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         panel.add(warningLabel, gbc);
         gbc.gridy++;
 
-        m_failIfNotFound = new JCheckBox("Fail if pointer not found");
-        m_failIfNotFound.setToolTipText("When unchecked and pointer do not match input, "
+        m_failIfNotFound = new JCheckBox("Fail if path not found");
+        m_failIfNotFound.setToolTipText("When unchecked and path do not match input, "
             + "missing value will be generated.");
         gbc.weightx = 1;
         panel.add(m_failIfNotFound, gbc);
