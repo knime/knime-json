@@ -263,6 +263,20 @@ public class Json2Xml {
         public final void setTextKey(final String textKey) {
             this.m_textKey = textKey;
         }
+
+        /**
+         * @return the primitiveArrayItem
+         */
+        public String getPrimitiveArrayItem() {
+            return m_primitiveArrayItem;
+        }
+
+        /**
+         * @param primitiveArrayItem the primitiveArrayItem to set
+         */
+        public void setPrimitiveArrayItem(final String primitiveArrayItem) {
+            this.m_primitiveArrayItem = primitiveArrayItem;
+        }
     }
 
     /**
@@ -541,7 +555,6 @@ public class Json2Xml {
      * @param node
      * @param parentElement
      * @param types
-     * @param doc
      * @return
      * @throws IOException
      */
@@ -1159,6 +1172,43 @@ public class Json2Xml {
                 }
                 return elem;
             }
+            @Override
+            protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
+                final Set<JsonPrimitiveTypes> types) throws IOException {
+                Document doc = parentElement.getOwnerDocument();
+                //we are in the root, or in an array
+                assert parent == null || parent.isArray() : parent;
+                if (node.isValueNode()) {
+                    Element element = createItem(node, parentElement, false, types);
+                    parentElement.appendChild(element);
+                    return element;
+                }
+                if (node.isArray()) {
+                    boolean hasValue = hasValue(node);
+                    for (JsonNode child : node) {
+                        if (child.isObject() || child.isArray()) {
+                            parentElement.appendChild(createItem(child, doc.createElement(getPrimitiveArrayItem()),
+                                hasValue, types));
+                        } else {
+                            Element arrayItem = createItem(child, parentElement, hasValue, types);
+                            parentElement.appendChild(arrayItem);
+                        }
+                    }
+                    return parentElement;
+                }
+                if (node.isObject()) {
+                    if (parent == null) {
+                        //First object
+                        return createObjectWithoutParent((ObjectNode)node, parentElement, types);
+                    }
+                    boolean hasValue = hasValue(parent);
+                    //object within array
+                    return createItem(node, parentElement, hasValue, types);
+                }
+                //We already handled the missing case and object.
+                assert false : node;
+                throw new IllegalStateException("Should not reach this! " + node);
+            }
         };
     }
 
@@ -1167,5 +1217,11 @@ public class Json2Xml {
      */
     protected String getTextKey() {
         return m_settings.getTextKey();
+    }
+    /**
+     * @return The element name returned for array items.
+     */
+    protected String getPrimitiveArrayItem() {
+        return m_settings.getPrimitiveArrayItem();
     }
 }
