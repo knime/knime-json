@@ -134,8 +134,7 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><b c=\"2\"><d t=\"text\"/><e t=\"text2\"/></b></a></root>",
             "{\"a\":{\"b\":[{\"c\":2,\"d\":{\"t\":\"text\"},\"e\":{\"t\":\"text2\"}}]}}",
             new Options[]{Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root><a><c>2</c>text</a></root>",
-            "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
+        ret.add(new Object[]{"<root><a><c>2</c>text</a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root><a><b v=\"2\"><q>p</q><r>s</r></b></a></root>",
             "{\"a\":{\"b\":[{\"v\":\"2\",\"q\":{\"#text\":\"p\"},\"r\":{\"#text\":\"s\"}}]}}",
@@ -143,8 +142,13 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><b><item v=\"1\"><q>p</q></item><item v=\"2\"><q>z</q></item></b></a></root>",
             "{\"a\":{\"b\":[{\"v\":\"1\",\"q\":{\"#text\":\"p\"}},{\"v\":\"2\",\"q\":{\"#text\":\"z\"}}]}}",
             new Options[]{Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root><a x=\"4\"><y v=\"2\"/></a><a x=\"0\"><y v=\"3\"/></a></root>", "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}", new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
-        ret.add(new Object[]{"<root><a x=\"4\"/><a x=\"4\"/></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}", new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a x=\"4\"><y v=\"2\"/></a><a x=\"0\"><y v=\"3\"/></a></root>",
+            "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a x=\"4\"/><a x=\"4\"/></root>", "{\"a\":[{\"x\":4},{\"x\":4}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a c=\"attr\"><b/></a></root>", "{\"a\":[{\"b\":{},\"c\":\"attr\"}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         return ret;
     }
 
