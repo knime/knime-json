@@ -359,6 +359,7 @@ public class Json2Xml {
     public Document toXml(final JsonNode node) throws ParserConfigurationException, DOMException, IOException {
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = documentBuilder.newDocument();
+        doc.setStrictErrorChecking(false);
         Set<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
         if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
             doc.appendChild(doc.createElement(m_settings.m_array == null ? m_settings.m_rootName : m_settings.m_array
@@ -369,7 +370,7 @@ public class Json2Xml {
             //            }
             return doc;
         }
-        doc.appendChild(m_settings.m_namespace == null ? doc.createElement(m_settings.m_rootName) : doc
+        doc.appendChild(m_settings.m_namespace == null ? createElement(doc, m_settings.m_rootName) : doc
             .createElementNS(m_settings.m_namespace, m_settings.m_rootName));
         doc.setDocumentURI(m_settings.m_namespace);
         //        if (m_namespace != null) {
@@ -469,8 +470,13 @@ public class Json2Xml {
                     element.setPrefix(m_settings.m_null);
                     types.add(JsonPrimitiveTypes.NULL);
                 } else if (node.isTextual()) {
-                    element.setPrefix(m_settings.m_text);
-                    types.add(JsonPrimitiveTypes.TEXT);
+                    if (Base64.decode(element.getTextContent().getBytes(Charset.forName("UTF-8"))) == null) {
+                        element.setPrefix(m_settings.m_text);
+                        types.add(JsonPrimitiveTypes.TEXT);
+                    } else {
+                        element.setPrefix(m_settings.m_binary);
+                        types.add(JsonPrimitiveTypes.BINARY);
+                    }
                 }
             }
             return element;
@@ -513,7 +519,7 @@ public class Json2Xml {
         if (node.isArray()) {
             boolean hasValue = true;//hasValue(node)/* || conflictInAttributes((ArrayNode)node)*/;
             for (JsonNode jsonNode : node) {
-                Element elem = doc.createElement(origKey);
+                Element elem = createElement(doc, origKey);
                 if (jsonNode.isObject()) {
                     if (hasValue) {
                         Element child = createItem(jsonNode, elem, hasValue, types);
@@ -538,7 +544,7 @@ public class Json2Xml {
             return parentElement;
         }
         if (node.isObject()) {
-            Element elem = doc.createElement(origKey);
+            Element elem = createElement(doc, origKey);
             parentElement.appendChild(elem);
             createSubObject(elem, (ObjectNode)node, types);
             return parentElement;
@@ -572,7 +578,7 @@ public class Json2Xml {
             boolean hasValue = hasValue(node);
             for (JsonNode child : node) {
                 if (child.isObject() || child.isArray()) {
-                    parentElement.appendChild(createItem(child, doc.createElement(m_settings.m_primitiveArrayItem),
+                    parentElement.appendChild(createItem(child, createElement(doc, m_settings.m_primitiveArrayItem),
                         hasValue, types));
                 } else {
                     Element arrayItem = createItem(child, parentElement, hasValue, types);
@@ -740,7 +746,7 @@ public class Json2Xml {
                     setTextContent(element, entry, types);
                 } else {
                     Document doc = element.getOwnerDocument();
-                    Element elem = doc.createElement(removeInvalidChars(entry.getKey()));
+                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
                     element.appendChild(elem);
                     create(entry.getKey(), node, value, elem, types);
                 }
@@ -777,16 +783,20 @@ public class Json2Xml {
             } else if (v.isFloatingPointNumber()) {
                 types.add(JsonPrimitiveTypes.FLOAT);
                 element.setAttribute(m_settings.m_real + ":" + key, val);
+            } else if (v.isBinary()) {
+                types.add(JsonPrimitiveTypes.BINARY);
+                element.setAttribute(m_settings.m_binary + ":" + key, val);
             } else if (v.isTextual()) {
-                types.add(JsonPrimitiveTypes.TEXT);
-                element.setAttribute(m_settings.m_text + ":" + key, val);
+                if (Base64.decode(val.getBytes(Charset.forName("UTF-8"))) == null) {
+                    types.add(JsonPrimitiveTypes.TEXT);
+                    element.setAttribute(m_settings.m_text + ":" + key, val);
+                } else {
+                    types.add(JsonPrimitiveTypes.BINARY);
+                    element.setAttribute(m_settings.m_binary + ":" + key, val);
+                }
             } else if (v.isNull()) {
                 types.add(JsonPrimitiveTypes.NULL);
                 element.setAttribute(m_settings.m_null + ":" + key, "");
-            } else if (v.isBinary()) {
-                types.add(JsonPrimitiveTypes.BINARY);
-                //TODO should we encode?
-                element.setAttribute(m_settings.m_binary + ":" + key, val);
             } else if (v.isBoolean()) {
                 types.add(JsonPrimitiveTypes.BOOLEAN);
                 element.setAttribute(m_settings.m_bool + ":" + key, val);
@@ -879,14 +889,14 @@ public class Json2Xml {
             }
         } else if (node.isArray()) {
             for (JsonNode item : node) {
-                Element arrayItem = doc.createElement(m_settings.m_primitiveArrayItem);
+                Element arrayItem = createElement(doc, m_settings.m_primitiveArrayItem);
                 Element elem = create(null, node, item, arrayItem, types);
                 element.appendChild(elem);
             }
             return element;
         } else if (node.isObject()) {
             if (forceItemElement) {
-                Element elem = doc.createElement(m_settings.m_primitiveArrayItem);
+                Element elem = createElement(doc, m_settings.m_primitiveArrayItem);
                 return createObjectWithoutParent((ObjectNode)node, elem, types);
             }
             return createObjectWithoutParent((ObjectNode)node, element, types);
@@ -911,7 +921,7 @@ public class Json2Xml {
     private Element createElementWithContent(final String prefix, final JsonPrimitiveTypes type, final String content,
         final Document doc, final Set<JsonPrimitiveTypes> types) {
         String elementName = elementName(prefix, types, type);
-        Element elem = doc.createElement(elementName);
+        Element elem = createElement(doc, elementName);
         elem.setTextContent(content);
         return elem;
     }
@@ -1089,7 +1099,7 @@ public class Json2Xml {
                 if (node.isArray()) {
                     boolean hasValue = hasValue(node);
                     for (JsonNode jsonNode : node) {
-                        Element elem = doc.createElement(origKey);
+                        Element elem = createElement(doc, origKey);
                         if (jsonNode.isObject()) {
                             parentElement.appendChild(hasValue ? createItem(jsonNode, elem, hasValue, types)
                                 : createNoKey(node, jsonNode, elem, types));
@@ -1100,7 +1110,7 @@ public class Json2Xml {
                     return parentElement;
                 }
                 if (node.isObject()) {
-                    Element elem = doc.createElement(origKey);
+                    Element elem = createElement(doc, origKey);
                     parentElement.appendChild(elem);
                     createSubObject(elem, (ObjectNode)node, types);
                     return parentElement;
@@ -1155,7 +1165,7 @@ public class Json2Xml {
                     } else if (node.isArray()) {
                         Document document = elem.getOwnerDocument();
                         for (JsonNode jsonNode : node) {
-                            Element element = document.createElement(entry.getKey());
+                            Element element = createElement(document, entry.getKey());
                             elem.appendChild(element);
                             if (jsonNode.isObject()) {
                                 Element created = createObjectWithoutParent((ObjectNode)jsonNode, element, types);
@@ -1187,7 +1197,7 @@ public class Json2Xml {
                     boolean hasValue = hasValue(node);
                     for (JsonNode child : node) {
                         if (child.isObject() || child.isArray()) {
-                            parentElement.appendChild(createItem(child, doc.createElement(getPrimitiveArrayItem()),
+                            parentElement.appendChild(createItem(child, createElement(doc, getPrimitiveArrayItem()),
                                 hasValue, types));
                         } else {
                             Element arrayItem = createItem(child, parentElement, hasValue, types);
@@ -1223,5 +1233,14 @@ public class Json2Xml {
      */
     protected String getPrimitiveArrayItem() {
         return m_settings.getPrimitiveArrayItem();
+    }
+
+    /**
+     * @param doc The owner document.
+     * @param name The name of the {@link Element}.
+     * @return The {@link Element} with proper namespace.
+     */
+    protected Element createElement(final Document doc, final String name) {
+        return doc.createElementNS(m_settings.m_namespace, name);
     }
 }
