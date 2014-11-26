@@ -175,7 +175,7 @@ public final class ToJson extends AggregationOperator {
     public String getDescription() {
         return ("Converts the values to a JSON value. The possible options are:\n" + "<ul>"
             + "<li><tt>Use id as key</tt> when checked, the id (input column name or row key) will be used as a key "
-            + "for the values</li>" + "<li><tt>Date format</tt> format to specify dates</li>"
+            + "for the values</li>" + "<li><tt>Date format</tt> format to specify dates (in UTC time zone)</li>"
             + "<li><tt>Date locale</tt> - locale used to translate dates</li>"
             + "<li><tt>Output is single</tt> - when checked no array will be created, "
             + "but will fail if multiple values are present" + "are in the input</li>" + "</ul>\n"
@@ -235,7 +235,7 @@ public final class ToJson extends AggregationOperator {
         }
         if (cell instanceof ByteVectorValue) {
             ByteVectorValue bvv = (ByteVectorValue)cell;
-            return m_factory.binaryNode(toBytes(bvv));
+            return m_factory.textNode(m_factory.binaryNode(toBytes(bvv)).asText());
         }
         //TODO Should we support dates as text, or not support?
         if (cell instanceof DateAndTimeValue) {
@@ -272,7 +272,6 @@ public final class ToJson extends AggregationOperator {
         for (int i = ret.length; i-- > 0;) {
             int v = bvv.get(i);
             v &= 0xff;
-            v = v > 127 ? v - 128 : v;
             ret[i] = (byte)v;
         }
         return ret;
