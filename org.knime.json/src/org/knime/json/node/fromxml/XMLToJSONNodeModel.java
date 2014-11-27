@@ -64,7 +64,6 @@ import org.knime.core.data.MissingCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.json.JSONCellFactory;
-import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.xml.XMLValue;
 import org.knime.core.node.CanceledExecutionException;
@@ -164,9 +163,6 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
 
             @Override
             public DataCell getCell(final DataRow row) {
-                ClassLoader clInner = Thread.currentThread().getContextClassLoader();
-                try {
-                    Thread.currentThread().setContextClassLoader(JSONValue.class.getClassLoader());
                     DataCell cell = row.getCell(inputIndex);
                     if (cell instanceof XMLValue) {
                         XMLValue xmlValue = (XMLValue)cell;
@@ -177,33 +173,15 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
                             Element element = newRoot.createElement("fakeroot");
                             element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
                             newRoot.appendChild(element);
-                            JsonNode json = Xml2Json.proposedSettings().toJson(newRoot);
+                            Xml2Json proposedSettings = Xml2Json.proposedSettings().setTextKey(getSettings().getTextKey());
+                            JsonNode json = proposedSettings.toJson(newRoot);
                             return JSONCellFactory.create(conv.toJSR353(json));
-                            /*mapper.readValue(reader, JsonObject.class)*///treeNode.toString(), false);
                         } catch (FactoryConfigurationError
                                 | ParserConfigurationException e) {
                             return new MissingCell(e.getMessage());
                         }
-//                        try {
-//                            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-//                            Document newRoot = documentBuilder.newDocument();
-//                            Element element = newRoot.createElement("fakeroot");
-//                            element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
-//                            XMLStreamReader reader = fact.createXMLStreamReader(new DOMSource(element));
-//                            JsonNode treeNode = mapper.readValue(reader, JsonNode.class);
-//                            //TODO find a way to skip serialization to String and parsing to JsonValue.
-//                            //reader = fact.createXMLStreamReader(new DOMSource(doc.getDocumentElement()));
-//                            return JSONCellFactory.create(conv.toJSR353(treeNode));
-//                            /*mapper.readValue(reader, JsonObject.class)*///treeNode.toString(), false);
-//                        } catch (IOException | XMLStreamException | FactoryConfigurationError
-//                                | ParserConfigurationException e) {
-//                            return new MissingCell(e.getMessage());
-//                        }
                     }
                     return DataType.getMissingCell();
-                } finally {
-                    Thread.currentThread().setContextClassLoader(clInner);
-                }
             }
         };
     }

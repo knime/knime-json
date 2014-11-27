@@ -76,7 +76,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
  * @author Gabor Bakos
  * @since 2.11
  */
-public class Xml2Json {
+public class Xml2Json implements Cloneable {
     private enum Position {
         First, Last;
     }
@@ -126,20 +126,16 @@ public class Xml2Json {
      */
     private boolean m_treatNamespaceInfoAsAttribute = false;
 
-    //attributes are arrays within the array of the content
-    @Deprecated
+//    //attributes are arrays within the array of the content
+//    @Deprecated
     private String m_attribute = "__attribute__";
 
     private String m_processing = "__processing__";
 
     private String m_comment = "__comment__";
 
-    //CDATA is not distinguished from text
-    @Deprecated
     private String m_cdata = "__cdata__";
 
-    //Text is not distinguished from CDATA
-    @Deprecated
     private String m_text = "__text__";
 
     private String m_entity = "__entity__";
@@ -603,5 +599,20 @@ public class Xml2Json {
         ret.m_text = "#text";
         ret.m_treatNamespaceInfoAsAttribute = true;
         return ret;
+    }
+
+    /**
+     * @param textKey The key for text entries.
+     * @return The new {@link Xml2Json} node with {@code textKey} for text.
+     */
+    public Xml2Json setTextKey(final String textKey) {
+        Xml2Json clone;
+        try {
+            clone = (Xml2Json)clone();
+            clone.m_text = textKey;
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
+        return clone;
     }
 }
