@@ -134,7 +134,7 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><b c=\"2\"><d t=\"text\"/><e t=\"text2\"/></b></a></root>",
             "{\"a\":{\"b\":[{\"c\":2,\"d\":{\"t\":\"text\"},\"e\":{\"t\":\"text2\"}}]}}",
             new Options[]{Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root><a><c>2</c>text</a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
+        ret.add(new Object[]{"<root><a c=\"2\">text</a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root><a><b v=\"2\"><q>p</q><r>s</r></b></a></root>",
             "{\"a\":{\"b\":[{\"v\":\"2\",\"q\":{\"#text\":\"p\"},\"r\":{\"#text\":\"s\"}}]}}",
@@ -149,8 +149,24 @@ public class ProposedJson2XmlTest {
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root><a c=\"attr\"><b/></a></root>", "{\"a\":[{\"b\":{},\"c\":\"attr\"}]}",
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
-        ret.add(new Object[]{"<root xmlns:Text=\"http://www.w3.org/2001/XMLSchema/string\"><a><Text:b>z</Text:b><b><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}",
-            new Options[]{Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{
+            "<root xmlns:Text=\"http://www.w3.org/2001/XMLSchema/string\"><a><Text:b>z</Text:b><b><w/></b></a></root>",
+            "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}", new Options[]{Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a><item c=\"2\">text</item></a></root>",
+            "{\"a\":[[{\"c\":2,\"#text\":\"text\"}]]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a c=\"2\"><v>text</v></a></root>",
+            "{\"a\":[{\"c\":2,\"v\":[{\"#text\":\"text\"}]}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a c=\"2\"><v 3=\"3\">text</v></a></root>",
+            "{\"a\":[{\"c\":2,\"v\":[{\"3\":3,\"#text\":\"text\"}]}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a c=\"2\">334<v 3=\"3\">text</v></a></root>",
+            "{\"a\":[{\"c\":2,\"#text\":334,\"v\":[{\"3\":3,\"#text\":\"text\"}]}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><a c=\"2\"><v 3=\"3\">text</v>false</a></root>",
+            "{\"a\":[{\"c\":2,\"v\":[{\"3\":3,\"#text\":\"text\"}],\"#text\":false}]}",
+            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         return ret;
     }
 

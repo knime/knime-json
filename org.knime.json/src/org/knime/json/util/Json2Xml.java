@@ -765,10 +765,11 @@ public class Json2Xml {
                 if (entry.getKey().equals(getTextKey())) {
                     setTextContent(element, entry, types);
                 } else {
-                    Document doc = element.getOwnerDocument();
-                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
-                    element.appendChild(elem);
-                    create(entry.getKey(), node, value, elem, types);
+                    addValueAsAttribute(element, entry, types);
+//                    Document doc = element.getOwnerDocument();
+//                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
+//                    element.appendChild(elem);
+//                    create(entry.getKey(), node, value, elem, types);
                 }
             } else if (value.isObject() || value.isArray()) {
                 create(entry.getKey(), node, value, element, types);
