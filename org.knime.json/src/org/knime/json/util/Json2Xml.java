@@ -50,6 +50,7 @@ package org.knime.json.util;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -137,6 +138,8 @@ public class Json2Xml {
          */
         private String m_textKey = "#text";
 
+        private Map<JsonPrimitiveTypes, String> m_prefixes = new EnumMap<>(JsonPrimitiveTypes.class);
+
         /**
          *
          */
@@ -171,6 +174,12 @@ public class Json2Xml {
             this.m_int = intPrefix;
             this.m_bool = bool;
             this.m_textKey = textKey;
+            m_prefixes.put(JsonPrimitiveTypes.BINARY, m_binary);
+            m_prefixes.put(JsonPrimitiveTypes.BOOLEAN, m_bool);
+            m_prefixes.put(JsonPrimitiveTypes.FLOAT, m_real);
+            m_prefixes.put(JsonPrimitiveTypes.INT, m_int);
+            m_prefixes.put(JsonPrimitiveTypes.NULL, m_null);
+            m_prefixes.put(JsonPrimitiveTypes.TEXT, m_text);
         }
 
         /**
@@ -213,6 +222,7 @@ public class Json2Xml {
          */
         public final void setNull(final String nullName) {
             this.m_null = nullName;
+            m_prefixes.put(JsonPrimitiveTypes.NULL, m_null);
         }
 
         /**
@@ -220,6 +230,7 @@ public class Json2Xml {
          */
         public final void setBinary(final String binary) {
             this.m_binary = binary;
+            m_prefixes.put(JsonPrimitiveTypes.BINARY, m_binary);
         }
 
         /**
@@ -227,6 +238,7 @@ public class Json2Xml {
          */
         public final void setText(final String text) {
             this.m_text = text;
+            m_prefixes.put(JsonPrimitiveTypes.TEXT, m_text);
         }
 
         /**
@@ -234,6 +246,7 @@ public class Json2Xml {
          */
         public final void setReal(final String real) {
             this.m_real = real;
+            m_prefixes.put(JsonPrimitiveTypes.FLOAT, m_real);
         }
 
         /**
@@ -241,6 +254,7 @@ public class Json2Xml {
          */
         public final void setInt(final String integer) {
             this.m_int = integer;
+            m_prefixes.put(JsonPrimitiveTypes.INT, m_int);
         }
 
         /**
@@ -248,6 +262,7 @@ public class Json2Xml {
          */
         public final void setBool(final String bool) {
             this.m_bool = bool;
+            m_prefixes.put(JsonPrimitiveTypes.BOOLEAN, m_bool);
         }
 
         /**
@@ -276,6 +291,22 @@ public class Json2Xml {
          */
         public void setPrimitiveArrayItem(final String primitiveArrayItem) {
             this.m_primitiveArrayItem = primitiveArrayItem;
+        }
+
+        /**
+         * @param type The type for the prefix name.
+         * @return The set prefix name.
+         */
+        public String prefix(final JsonPrimitiveTypes type) {
+            return m_prefixes.get(type);
+        }
+
+        /**
+         * @param type The type for the namespace.
+         * @return The namespace (default).
+         */
+        public String namespace(final JsonPrimitiveTypes type) {
+            return type.getDefaultNamespace();
         }
     }
 
@@ -357,52 +388,39 @@ public class Json2Xml {
      */
     //TODO Exception normalization
     public Document toXml(final JsonNode node) throws ParserConfigurationException, DOMException, IOException {
-        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document doc = documentBuilder.newDocument();
         doc.setStrictErrorChecking(false);
-        Set<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
+        EnumSet<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
         if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
-            doc.appendChild(doc.createElement(m_settings.m_array == null ? m_settings.m_rootName : m_settings.m_array
-                + ":" + m_settings.m_rootName));
-            doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_array, LIST_NAMESPACE);
-            //            if (m_namespace != null) {
-            //                doc.getDocumentElement().setAttribute("xmlns", m_namespace);
-            //            }
+            doc.appendChild(m_settings.m_array == null ? doc.createElement(m_settings.m_rootName) : doc.createElementNS(LIST_NAMESPACE, m_settings.m_array + ":" + m_settings.m_rootName));
+            doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + m_settings.m_array, LIST_NAMESPACE);
+            setRootNamespace(doc.getDocumentElement());
             return doc;
         }
         doc.appendChild(m_settings.m_namespace == null ? createElement(doc, m_settings.m_rootName) : doc
             .createElementNS(m_settings.m_namespace, m_settings.m_rootName));
         doc.setDocumentURI(m_settings.m_namespace);
-        //        if (m_namespace != null) {
-        //            doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:", m_namespace);
-        //        }
+        Element root = doc.getDocumentElement();
+        setRootNamespace(root);
+        for (JsonPrimitiveTypes type : JsonPrimitiveTypes.values()) {
+            root.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:" + m_settings.prefix(type), m_settings.namespace(type));
+        }
         create(null, null, node, doc.getDocumentElement(), types);
-        for (JsonPrimitiveTypes jsonPrimitiveTypes : types) {
-            switch (jsonPrimitiveTypes) {
-                case BINARY:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_binary, BINARY_NAMESPACE);
-                    break;
-                case BOOLEAN:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_bool, BOOLEAN_NAMESPACE);
-                    break;
-                case FLOAT:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_real, DECIMAL_NAMESPACE);
-                    break;
-                case INT:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_int, INTEGER_NAMESPACE);
-                    break;
-                case NULL:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_null, NULL_NAMESPACE);
-                    break;
-                case TEXT:
-                    doc.getDocumentElement().setAttribute("xmlns:" + m_settings.m_text, STRING_NAMESPACE);
-                    break;
-
-                default:
-                    break;
-            }
+        for (JsonPrimitiveTypes type : EnumSet.complementOf(types)) {
+            root.removeAttribute("xmlns:" + m_settings.prefix(type));
         }
         return doc;
+    }
+
+    /**
+     * @param root
+     */
+    protected void setRootNamespace(final Element root) {
+        if (m_settings.m_namespace != null) {
+            root.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:", m_settings.m_namespace);
+        }
     }
 
     //    /**
@@ -470,13 +488,14 @@ public class Json2Xml {
                     element.setPrefix(m_settings.m_null);
                     types.add(JsonPrimitiveTypes.NULL);
                 } else if (node.isTextual()) {
-                    if (Base64.decode(element.getTextContent().getBytes(Charset.forName("UTF-8"))) == null) {
-                        element.setPrefix(m_settings.m_text);
-                        types.add(JsonPrimitiveTypes.TEXT);
-                    } else {
-                        element.setPrefix(m_settings.m_binary);
-                        types.add(JsonPrimitiveTypes.BINARY);
-                    }
+                    //Wrong heuristic
+                    //                    if (Base64.decode(element.getTextContent().getBytes(Charset.forName("UTF-8"))) == null) {
+                    element.setPrefix(m_settings.m_text);
+                    types.add(JsonPrimitiveTypes.TEXT);
+                    //                    } else {
+                    //                        element.setPrefix(m_settings.m_binary);
+                    //                        types.add(JsonPrimitiveTypes.BINARY);
+                    //                    }
                 }
             }
             return element;
@@ -502,6 +521,7 @@ public class Json2Xml {
      * @param parent The parent node.
      * @param node The current node to convert.
      * @param parentElement The current element to transform or append attributes/children.
+     * @param types The types used and should be declared as prefixes.
      * @return The created element.
      * @throws IOException
      * @throws DOMException
@@ -524,9 +544,9 @@ public class Json2Xml {
                     if (hasValue) {
                         Element child = createItem(jsonNode, elem, hasValue, types);
                         if (!parentElement.hasChildNodes()) {
-                        parentElement.appendChild(elem);
+                            parentElement.appendChild(elem);
                         }
-//                        elem.appendChild(child);
+                        //                        elem.appendChild(child);
                         parentElement.getFirstChild().appendChild(child);
                     } else {
                         Element child = createNoKey(node, jsonNode, elem, types);
@@ -787,13 +807,14 @@ public class Json2Xml {
                 types.add(JsonPrimitiveTypes.BINARY);
                 element.setAttribute(m_settings.m_binary + ":" + key, val);
             } else if (v.isTextual()) {
-                if (Base64.decode(val.getBytes(Charset.forName("UTF-8"))) == null) {
-                    types.add(JsonPrimitiveTypes.TEXT);
-                    element.setAttribute(m_settings.m_text + ":" + key, val);
-                } else {
-                    types.add(JsonPrimitiveTypes.BINARY);
-                    element.setAttribute(m_settings.m_binary + ":" + key, val);
-                }
+                //This is a wrong heuristic, for example "text" is recognized as binary
+                //                if (Base64.decode(val.getBytes(Charset.forName("UTF-8"))) == null) {
+                types.add(JsonPrimitiveTypes.TEXT);
+                element.setAttribute(m_settings.m_text + ":" + key, val);
+                //                } else {
+                //                types.add(JsonPrimitiveTypes.BINARY);
+                //                element.setAttribute(m_settings.m_binary + ":" + key, val);
+                //                }
             } else if (v.isNull()) {
                 types.add(JsonPrimitiveTypes.NULL);
                 element.setAttribute(m_settings.m_null + ":" + key, "");
@@ -876,12 +897,12 @@ public class Json2Xml {
             if (node.isFloatingPointNumber()) {
                 return createElementWithContent(m_settings.m_real, JsonPrimitiveTypes.FLOAT,
                     Double.toString(node.asDouble()), doc, types);
-            } else if (node.isTextual()) {
-                return createElementWithContent(m_settings.m_text, JsonPrimitiveTypes.TEXT, node.textValue(), doc,
-                    types);
             } else if (node.isBinary()) {
                 return createElementWithContent(m_settings.m_binary, JsonPrimitiveTypes.BINARY,
                     new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")), doc, types);
+            } else if (node.isTextual()) {
+                return createElementWithContent(m_settings.m_text, JsonPrimitiveTypes.TEXT, node.textValue(), doc,
+                    types);
             } else if (node.isNull()) {
                 return createElementWithContent(m_settings.m_null, JsonPrimitiveTypes.NULL, "", doc, types);
             } else {
@@ -921,7 +942,7 @@ public class Json2Xml {
     private Element createElementWithContent(final String prefix, final JsonPrimitiveTypes type, final String content,
         final Document doc, final Set<JsonPrimitiveTypes> types) {
         String elementName = elementName(prefix, types, type);
-        Element elem = createElement(doc, elementName);
+        Element elem = doc.createElementNS(m_looseTypeInfo ? getNamespace() : type.getDefaultNamespace(), elementName);
         elem.setTextContent(content);
         return elem;
     }
@@ -1182,6 +1203,7 @@ public class Json2Xml {
                 }
                 return elem;
             }
+
             @Override
             protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
                 final Set<JsonPrimitiveTypes> types) throws IOException {
@@ -1228,6 +1250,7 @@ public class Json2Xml {
     protected String getTextKey() {
         return m_settings.getTextKey();
     }
+
     /**
      * @return The element name returned for array items.
      */

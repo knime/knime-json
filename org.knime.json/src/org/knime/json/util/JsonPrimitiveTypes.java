@@ -75,4 +75,20 @@ public enum JsonPrimitiveTypes {
     BINARY,
     /** Boolean type. */
     BOOLEAN;
+
+    /**
+     * @return Default namespace URL.
+     */
+    public String getDefaultNamespace() {
+        switch (this) {
+            case BINARY:return Json2Xml.BINARY_NAMESPACE;
+            case BOOLEAN:return Json2Xml.BOOLEAN_NAMESPACE;
+            case FLOAT:return Json2Xml.DECIMAL_NAMESPACE;
+            case INT:return Json2Xml.INTEGER_NAMESPACE;
+            case NULL:return Json2Xml.NULL_NAMESPACE;
+            case TEXT:return Json2Xml.STRING_NAMESPACE;
+            default:
+                throw new UnsupportedOperationException("Unkown type: " + this);
+        }
+    }
 }

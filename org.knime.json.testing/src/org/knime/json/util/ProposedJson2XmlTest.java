@@ -149,6 +149,8 @@ public class ProposedJson2XmlTest {
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root><a c=\"attr\"><b/></a></root>", "{\"a\":[{\"b\":{},\"c\":\"attr\"}]}",
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root xmlns:Text=\"http://www.w3.org/2001/XMLSchema/string\"><a><Text:b>z</Text:b><b><w/></b></a></root>", "{\"a\":{\"b\":[\"z\",{\"w\":{}}]}}",
+            new Options[]{Options.UseParentKeyWhenPossible}});
         return ret;
     }
 
