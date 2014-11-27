@@ -84,7 +84,9 @@ import org.knime.json.node.util.ErrorHandling;
 import org.knime.json.node.util.OutputType;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
 
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.github.fge.jackson.JacksonUtils;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -258,7 +260,18 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                             if (object == null) {
                                 return DataType.getMissingCell();
                             }
-                            byte[] arr = (byte[])object;
+                            byte[] arr;
+                            if (object instanceof byte[]) {
+                                arr = (byte[])object;
+                            } else if (object instanceof String) {
+                                String str = (String)object;
+                                arr = Base64Variants.getDefaultVariant().decode(str);
+                            } else if (object instanceof BinaryNode) {
+                                BinaryNode node = (BinaryNode)object;
+                                arr = node.binaryValue();
+                            } else {
+                                throw new IllegalArgumentException("Unkown binary type: " + object.getClass());
+                            }
                             DenseByteVectorCellFactory factory = new DenseByteVectorCellFactory(arr.length);
                             for (int i = arr.length; i-- > 0;) {
                                 factory.setValue(i, arr[i] < 0 ? arr[i] + 256 : arr[i]);

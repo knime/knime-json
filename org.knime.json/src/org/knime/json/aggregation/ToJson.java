@@ -68,6 +68,7 @@ import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.StringValue;
+import org.knime.core.data.collection.CollectionDataValue;
 import org.knime.core.data.date.DateAndTimeValue;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
@@ -221,17 +222,21 @@ public final class ToJson extends AggregationOperator {
         if (cell.isMissing()) {
             return m_factory.nullNode();
         }
-        if (cell instanceof DoubleValue) {
-            DoubleValue dv = (DoubleValue)cell;
-            return m_factory.numberNode(dv.getDoubleValue());
+        if (cell instanceof BooleanValue) {
+            BooleanValue bv = (BooleanValue)cell;
+            return m_factory.booleanNode(bv.getBooleanValue());
+        }
+        if (cell instanceof IntValue) {
+            IntValue iv = (IntValue)cell;
+            return m_factory.numberNode(iv.getIntValue());
         }
         if (cell instanceof LongValue) {
             LongValue lv = (LongValue)cell;
             return m_factory.numberNode(lv.getLongValue());
         }
-        if (cell instanceof IntValue) {
-            IntValue iv = (IntValue)cell;
-            return m_factory.numberNode(iv.getIntValue());
+        if (cell instanceof DoubleValue) {
+            DoubleValue dv = (DoubleValue)cell;
+            return m_factory.numberNode(dv.getDoubleValue());
         }
         if (cell instanceof ByteVectorValue) {
             ByteVectorValue bvv = (ByteVectorValue)cell;
@@ -242,10 +247,6 @@ public final class ToJson extends AggregationOperator {
             DateAndTimeValue datv = (DateAndTimeValue)cell;
             return m_factory.textNode(m_dateFormat.format(new Date(datv.getUTCTimeInMillis())));
         }
-        if (cell instanceof BooleanValue) {
-            BooleanValue bv = (BooleanValue)cell;
-            return m_factory.booleanNode(bv.getBooleanValue());
-        }
         if (cell instanceof JSONValue) {
             JSONValue jsonValue = (JSONValue)cell;
             JsonNode jsonNode = JacksonConversions.getInstance().toJackson(jsonValue.getJsonValue());
@@ -254,6 +255,14 @@ public final class ToJson extends AggregationOperator {
         if (cell instanceof StringValue) {
             StringValue sv = (StringValue)cell;
             return m_factory.textNode(sv.getStringValue());
+        }
+        if (cell instanceof CollectionDataValue) {
+            CollectionDataValue cdv = (CollectionDataValue)cell;
+            ArrayNode ret = m_factory.arrayNode();
+            for (DataCell dataCell : cdv) {
+                ret.add(toJsonNode(dataCell));
+            }
+            return ret;
         }
         return m_factory.nullNode();
     }
