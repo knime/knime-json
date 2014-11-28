@@ -38,15 +38,6 @@
       </FileExtensionMapping>
    </extension>
    <extension
-         point="org.knime.base.AggregationOperator">
-      <AggregationOperator
-            AggregationOperator="org.knime.json.aggregation.ConcatenateAsJSON"
-            deprecated="false"/>
-      <AggregationOperator AggregationOperator="org.knime.json.aggregation.JSONPathCollection" deprecated="false"/>
-      <!--AggregationOperator AggregationOperator="org.knime.json.aggregation.JsonPointer" deprecated="false"/-->
-      <AggregationOperator AggregationOperator="org.knime.json.aggregation.ToJson" deprecated="false"/>
-   </extension>
-   <extension
          point="org.knime.core.DataValueRenderer">
       <dataValue
             valueClass="org.knime.core.data.json.JSONValue">
