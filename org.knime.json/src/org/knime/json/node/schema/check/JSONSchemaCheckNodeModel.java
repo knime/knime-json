@@ -61,7 +61,7 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
@@ -75,6 +75,9 @@ import org.knime.json.internal.Activator;
 import org.knime.json.node.util.RemoveOrAddColumnSettings;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.fge.jackson.JacksonUtils;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingMessage;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
@@ -124,7 +127,7 @@ public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNode
             ColumnRearranger ret = new ColumnRearranger(dataTableSpec);
             String col = m_settings.getErrorMessageColumn();
             String errorMessageColumn = DataTableSpec.getUniqueColumnName(dataTableSpec, col == null ? "null" : col);
-            ret.append(new SingleCellFactory(new DataColumnSpecCreator(errorMessageColumn, StringCell.TYPE)
+            ret.append(new SingleCellFactory(new DataColumnSpecCreator(errorMessageColumn, JSONCell.TYPE)
                 .createSpec()) {
                 @Override
                 public DataCell getCell(final DataRow row) {
@@ -133,8 +136,9 @@ public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNode
                         JSONValue jv = (JSONValue)cell;
                         JsonNode json = conv.toJackson(jv.getJsonValue());
                         RuntimeException e = null;
+                        ProcessingReport report = null;
                         try {
-                            ProcessingReport report = schema.validate(json);
+                            report = schema.validate(json);
                             if (!report.isSuccess()) {
                                 e = new RuntimeException(report.toString());
                                 for (ProcessingMessage message : report) {
@@ -149,7 +153,14 @@ public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNode
                                 throw new RuntimeException("Failed to validate row: " + row.getKey() + "\n"
                                     + e.getMessage(), e);
                             }
-                            return new StringCell(e.getMessage());
+                            if (report!= null && !report.isSuccess()) {
+                                ArrayNode array = new ArrayNode(JacksonUtils.nodeFactory());
+                                for (ProcessingMessage processingMessage : report) {
+                                    array.add(processingMessage.asJson());
+                                }
+                                return JSONCellFactory.create(JacksonConversions.getInstance().toJSR353(array));
+                            }
+                            return JSONCellFactory.create(JacksonConversions.getInstance().toJSR353(new TextNode(e.getMessage())));
                         }
                         return DataType.getMissingCell();
                     }
