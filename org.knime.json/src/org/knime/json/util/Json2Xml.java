@@ -64,6 +64,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xmlbeans.impl.util.Base64;
+import org.knime.json.node.util.ErrorHandling;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -83,82 +84,79 @@ public class Json2Xml {
      * Some settings for {@link Json2Xml}.
      */
     public static class Json2XmlSettings {
-        /**
-         *
-         */
+        /** The name for the root element. */
         private String m_rootName;
 
-        /**
-         *
-         */
+        /** Name for the array items. */
         private String m_primitiveArrayItem;
 
-        /**
-         *
-         */
+        /** Base namespace. */
         private String m_namespace;
 
-        /**
-         *
-         */
+        /** Prefix for arrays. */
         private String m_array;
 
-        /**
-         *
-         */
+        /** Prefix for null values. */
         private String m_null;
 
-        /**
-         *
-         */
+        /** Prefix for binary values. */
         private String m_binary;
 
-        /**
-         *
-         */
+        /** Prefix for text values. */
         private String m_text;
 
-        /**
-         *
-         */
+        /** Prefix for decimal values. */
         private String m_real;
 
-        /**
-         *
-         */
+        /** Prefix for integral values. */
         private String m_int;
 
-        /**
-         *
-         */
+        /** Prefix for boolean/logical values. */
         private String m_bool;
 
         /**
-         * {@code null} means we do not convert any keys to text.
+         * {@code null} means we do not convert any keys to text, otherwise these keys are converted to text when
+         * applicable.
          */
         private String m_textKey = "#text";
 
+        /** The prefixes for the types. */
         private Map<JsonPrimitiveTypes, String> m_prefixes = new EnumMap<>(JsonPrimitiveTypes.class);
 
         /**
-         *
+         * Default settings for the conversion:
+         * <ul>
+         * <li><tt>root</tt> - root element name</li>
+         * <li><tt>item</tt> - array item name</li>
+         * <li>no namespace - base namespace</li>
+         * <li><tt>Array</tt> - array prefix for empty list.</li>
+         * <li><tt>null</tt> - prefix for null values.</li>
+         * <li><tt>Binary</tt> - prefix for binary values.</li>
+         * <li><tt>Text</tt> - prefix for string/text values.</li>
+         * <li><tt>Int</tt> - prefix for integral values.</li>
+         * <li><tt>Real</tt> - prefix for decimal/real values.</li>
+         * <li><tt>Bool</tt> - prefix for boolean/logical values.</li>
+         * <li><tt>#text</tt> - key, which's value should be interpreted as text.</li>
+         * </ul>
          */
         public Json2XmlSettings() {
-            this("root", "item", null, "Array", "null", "Binary", "Text", "Int", "Real", "Bool", "#text");
+            this("root", "item", null, "Array", "null", "Binary", "Text", "Real", "Int", "Bool", "#text");
         }
 
         /**
-         * @param rootName
-         * @param primitiveArrayItem
-         * @param namespace
-         * @param array
-         * @param nullPrefix
-         * @param binary
-         * @param text
-         * @param real
-         * @param intPrefix
-         * @param bool
-         * @param textKey
+         * Constructs the settings with initial values.
+         *
+         * @param rootName root element name
+         * @param primitiveArrayItem array item name
+         * @param namespace base namespace
+         * @param array array prefix for empty list
+         * @param nullPrefix prefix for null values
+         * @param binary prefix for binary values
+         * @param text prefix for string/text values
+         * @param real prefix for decimal/real values
+         * @param intPrefix prefix for integral values
+         * @param bool prefix for boolean/logical values
+         * @param textKey key, which's value should be interpreted as text
          */
         public Json2XmlSettings(final String rootName, final String primitiveArrayItem, final String namespace,
             final String array, final String nullPrefix, final String binary, final String text, final String real,
@@ -218,7 +216,7 @@ public class Json2Xml {
         }
 
         /**
-         * @param nullName the null element name to set
+         * @param nullName the null-valued node prefix to set
          */
         public final void setNull(final String nullName) {
             this.m_null = nullName;
@@ -226,7 +224,7 @@ public class Json2Xml {
         }
 
         /**
-         * @param binary the binary element name to set
+         * @param binary the binary value node prefix to set
          */
         public final void setBinary(final String binary) {
             this.m_binary = binary;
@@ -234,7 +232,7 @@ public class Json2Xml {
         }
 
         /**
-         * @param text the text element name to set
+         * @param text the text/string node prefix to set
          */
         public final void setText(final String text) {
             this.m_text = text;
@@ -242,7 +240,7 @@ public class Json2Xml {
         }
 
         /**
-         * @param real the real element name to set
+         * @param real the real/decimal node prefix to set
          */
         public final void setReal(final String real) {
             this.m_real = real;
@@ -250,7 +248,7 @@ public class Json2Xml {
         }
 
         /**
-         * @param integer the integral element name to set
+         * @param integer the integral node prefix to set
          */
         public final void setInt(final String integer) {
             this.m_int = integer;
@@ -258,7 +256,7 @@ public class Json2Xml {
         }
 
         /**
-         * @param bool the bool element name to set
+         * @param bool the bool/logical node prefix to set
          */
         public final void setBool(final String bool) {
             this.m_bool = bool;
@@ -266,28 +264,28 @@ public class Json2Xml {
         }
 
         /**
-         * @return the textKey
+         * @return the textKey for values translated as XML text.
          */
         public final String getTextKey() {
             return m_textKey;
         }
 
         /**
-         * @param textKey the m_textKey to set
+         * @param textKey the textKey to set
          */
         public final void setTextKey(final String textKey) {
             this.m_textKey = textKey;
         }
 
         /**
-         * @return the primitiveArrayItem
+         * @return the element name for array items
          */
         public String getPrimitiveArrayItem() {
             return m_primitiveArrayItem;
         }
 
         /**
-         * @param primitiveArrayItem the primitiveArrayItem to set
+         * @param primitiveArrayItem the element name for array items to set
          */
         public void setPrimitiveArrayItem(final String primitiveArrayItem) {
             this.m_primitiveArrayItem = primitiveArrayItem;
@@ -311,54 +309,63 @@ public class Json2Xml {
     }
 
     /**
-     *
+     * Namespace for arrays. (Used only for empty root array.)
      */
     public static final String LIST_NAMESPACE = "http://www.w3.org/2001/XMLSchema/list";
 
     /**
-     *
+     * Namespace for textual content.
      */
     public static final String STRING_NAMESPACE = "http://www.w3.org/2001/XMLSchema/string";
 
     /**
-     *
+     * Namespace for null.
      */
     public static final String NULL_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
 
     /**
-     *
+     * Namespace for integral content.
      */
     public static final String INTEGER_NAMESPACE = "http://www.w3.org/2001/XMLSchema/integer";
 
     /**
-     *
+     * Namespace for decimal (floating point/real) content.
      */
     public static final String DECIMAL_NAMESPACE = "http://www.w3.org/2001/XMLSchema/decimal";
 
     /**
-     *
+     * Namespace for boolean/logical content.
      */
     public static final String BOOLEAN_NAMESPACE = "http://www.w3.org/2001/XMLSchema/boolean";
 
     /**
-     *
+     * Namespace for binary content.
      */
     public static final String BINARY_NAMESPACE = "http://www.w3.org/2001/XMLSchema/binary";
 
+    /** Loose/omit type information? */
     private boolean m_looseTypeInfo = false;
 
     private Json2XmlSettings m_settings = new Json2XmlSettings("root", "item", null, "Array", "null", "Binary", "Text",
         "Real", "Int", "Bool", "#text");
 
     /**
+     * Creates the {@link Json2Xml} converter with default settings. By default it keeps the type information.
      *
+     * @see Json2XmlSettings#Json2XmlSettings()
+     * @see #Json2Xml(Json2XmlSettings)
      */
     public Json2Xml() {
     }
 
     /**
-     * @param settings The settings to use.
+     * Creates the {@link Json2Xml} with the specified {@link Json2XmlSettings} and keeping the type information. The
+     * default implementation will not use the parent's key to create object when there is an array, instead it creates
+     * array items. For example: a content like <code>{"a":[{"b":2},{"c":3}]}</code> will be translated to
+     * {@code <a><item b="2"/><item c="3"/></a>}.
      *
+     * @param settings The settings to use.
+     * @see #createWithUseParentKeyWhenPossible(Json2XmlSettings)
      */
     public Json2Xml(final Json2XmlSettings settings) {
         this();
@@ -366,7 +373,7 @@ public class Json2Xml {
     }
 
     /**
-     * Attributes of
+     * Attributes of conversion.
      */
     public enum Options {
         /**
@@ -382,11 +389,10 @@ public class Json2Xml {
      *
      * @param node A Jackson {@link JsonNode}.
      * @return The converted XML {@link Document}.
-     * @throws ParserConfigurationException
-     * @throws DOMException
-     * @throws IOException
+     * @throws ParserConfigurationException Failed to create {@link DocumentBuilder}.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
      */
-    //TODO Exception normalization
     public Document toXml(final JsonNode node) throws ParserConfigurationException, DOMException, IOException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -394,8 +400,10 @@ public class Json2Xml {
         doc.setStrictErrorChecking(false);
         EnumSet<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
         if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
-            doc.appendChild(m_settings.m_array == null ? doc.createElement(m_settings.m_rootName) : doc.createElementNS(LIST_NAMESPACE, m_settings.m_array + ":" + m_settings.m_rootName));
-            doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + m_settings.m_array, LIST_NAMESPACE);
+            doc.appendChild(m_settings.m_array == null ? doc.createElement(m_settings.m_rootName) : doc
+                .createElementNS(LIST_NAMESPACE, m_settings.m_array + ":" + m_settings.m_rootName));
+            doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + m_settings.m_array,
+                LIST_NAMESPACE);
             setRootNamespace(doc.getDocumentElement());
             return doc;
         }
@@ -405,7 +413,8 @@ public class Json2Xml {
         Element root = doc.getDocumentElement();
         setRootNamespace(root);
         for (JsonPrimitiveTypes type : JsonPrimitiveTypes.values()) {
-            root.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:" + m_settings.prefix(type), m_settings.namespace(type));
+            root.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + m_settings.prefix(type),
+                m_settings.namespace(type));
         }
         create(null, null, node, doc.getDocumentElement(), types);
         for (JsonPrimitiveTypes type : EnumSet.complementOf(types)) {
@@ -415,7 +424,9 @@ public class Json2Xml {
     }
 
     /**
-     * @param root
+     * Sets the namespace attribute.
+     *
+     * @param root The root element.
      */
     protected void setRootNamespace(final Element root) {
         if (m_settings.m_namespace != null) {
@@ -423,50 +434,14 @@ public class Json2Xml {
         }
     }
 
-    //    /**
-    //     * @param origKey
-    //     * @param parent
-    //     * @param node
-    //     * @param parentElement
-    //     * @param types
-    //     */
-    //    private Element createWithParentKey(final String origKey, final JsonNode parent, final JsonNode node, final Element parentElement,
-    //        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-    //        if (node.isMissingNode()) {
-    //            return parentElement;
-    //        }
-    //        Document doc = parentElement.getOwnerDocument();
-    //        if (origKey == null) {
-    //            return createNoKey(parent, node, parentElement, types);
-    //        }
-    //        //We have parent key, so we are within an object
-    //        if (node.isArray()) {
-    //            for (JsonNode jsonNode : node) {
-    //                Element elem = doc.createElement(origKey);
-    //                if (jsonNode.isObject()) {
-    //                    parentElement.appendChild(createNoKey(node, jsonNode, elem, types));
-    //                } else {
-    //                    parentElement.appendChild(elem);
-    //                    fix(jsonNode, elem, types);
-    //                }
-    //            }
-    //            return parentElement;
-    //        }
-    //        if (node.isObject()) {
-    //            Element elem = doc.createElement(origKey);
-    //            parentElement.appendChild(elem);
-    //            createSubObject(elem, (ObjectNode)node, types);
-    //            return parentElement;
-    //        }
-    //        assert m_useParentKey : node;
-    //        return fixValueNode(node, parentElement, types);
-    //    }
-
     /**
-     * @param node
-     * @param element
-     * @param types
-     * @return
+     * The {@code element}'s prefix becomes the type of the {@code node}'s (unless type information can be omitted). The
+     * {@code types} will be updated.
+     *
+     * @param node A {@link JsonNode}.
+     * @param element The {@link Element} to update.
+     * @param types The used {@link JsonPrimitiveTypes}.
+     * @return The updated {@link Element} ({@code element}).
      */
     protected Element fixValueNode(final JsonNode node, final Element element, final Set<JsonPrimitiveTypes> types) {
         if (node.isValueNode()) {
@@ -504,10 +479,11 @@ public class Json2Xml {
     }
 
     /**
-     * @param node
-     * @param jsonNode
-     * @param elem
-     * @param types
+     * Fixes the value {@code elem}'s prefix information.
+     *
+     * @param child The {@link JsonNode} to convert.
+     * @param elem The result {@link Element}.
+     * @param types The types used.
      */
     protected void fix(final JsonNode child, final Element elem, final Set<JsonPrimitiveTypes> types) {
         if (child.isMissingNode()) {
@@ -517,14 +493,16 @@ public class Json2Xml {
     }
 
     /**
-     * @param origKey The parent's key that led to this call.
-     * @param parent The parent node.
+     * Creates the converted {@link Element}.
+     *
+     * @param origKey The parent's key that led to this call (can be {@code null}).
+     * @param parent The parent node (can be {@code null}).
      * @param node The current node to convert.
-     * @param parentElement The current element to transform or append attributes/children.
+     * @param parentElement The current element to transform or append attributes/children (can be {@code null}).
      * @param types The types used and should be declared as prefixes.
      * @return The created element.
-     * @throws IOException
-     * @throws DOMException
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
      */
     protected Element create(final String origKey, final JsonNode parent, final JsonNode node,
         final Element parentElement, final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
@@ -577,12 +555,14 @@ public class Json2Xml {
     }
 
     /**
-     * @param parent
-     * @param node
-     * @param parentElement
-     * @param types
-     * @return
-     * @throws IOException
+     * Creates an element without parent key.
+     *
+     * @param parent The parent {@link JsonNode}, can be {@code null}.
+     * @param node The {@link JsonNode} to convert.
+     * @param parentElement The parent {@link Element} (cannot be {@code null}).
+     * @param types The types used.
+     * @return The converted {@link Element}.
+     * @throws IOException Problem decoding binary values.
      */
     protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
         final Set<JsonPrimitiveTypes> types) throws IOException {
@@ -623,8 +603,11 @@ public class Json2Xml {
     }
 
     /**
-     * @param parent
-     * @return
+     * Checks whether there would be a conflict (not all the same) within attributes if the attributes were moved
+     * upwards.
+     *
+     * @param parent The paren {@link ArrayNode}.
+     * @return Conflict or not.
      */
     private boolean conflictInAttributes(final ArrayNode parent) {
         assert !hasValue(parent) : parent;
@@ -638,7 +621,7 @@ public class Json2Xml {
         assert obj.isObject();
         if (obj instanceof ObjectNode) {
             ObjectNode on = (ObjectNode)obj;
-            values = possibleAttributeTypesAndValues(on);
+            values = possibleAttributesAndValues(on);
         } else {
             return true;
         }
@@ -647,7 +630,7 @@ public class Json2Xml {
             if (!(next instanceof ObjectNode)) {
                 return true;
             }
-            Map<String, JsonNode> attributeTypes = possibleAttributeTypesAndValues((ObjectNode)next);
+            Map<String, JsonNode> attributeTypes = possibleAttributesAndValues((ObjectNode)next);
             Iterator<Entry<String, JsonNode>> it1 = values.entrySet().iterator();
             Iterator<Entry<String, JsonNode>> it2 = attributeTypes.entrySet().iterator();
             for (; it1.hasNext() && it2.hasNext();) {
@@ -667,10 +650,10 @@ public class Json2Xml {
     }
 
     /**
-     * @param on
-     * @return
+     * @param on An {@link ObjectNode}.
+     * @return The possible attributes with its values.
      */
-    protected Map<String, JsonNode> possibleAttributeTypesAndValues(final ObjectNode on) {
+    protected Map<String, JsonNode> possibleAttributesAndValues(final ObjectNode on) {
         Map<String, JsonNode> values = new LinkedHashMap<>();
         for (Iterator<Entry<String, JsonNode>> objIt = on.fields(); objIt.hasNext();) {
             Entry<String, JsonNode> keyValue = objIt.next();
@@ -682,11 +665,12 @@ public class Json2Xml {
     }
 
     /**
-     * @param parent
-     * @return
+     * @param parent A non-{@code null} {@link JsonNode}.
+     * @return <code>true</code> iff it has at least one {@link JsonNode#isValueNode() value}.
      */
     private static boolean hasValue(final JsonNode parent) {
         boolean ret = false;
+        assert parent.isArray() : parent;
         for (JsonNode child : parent) {
             ret |= child.isValueNode();
         }
@@ -694,7 +678,7 @@ public class Json2Xml {
     }
 
     /**
-     * @param parent
+     * @param parent An {@link ObjectNode}.
      * @return whether {@code parent} contains key with {@link #getTextKey()}.
      */
     protected boolean hasText(final ObjectNode parent) {
@@ -707,12 +691,14 @@ public class Json2Xml {
     }
 
     /**
-     * @param elem
-     * @param fields
-     * @param types
-     * @return
-     * @throws IOException
-     * @throws DOMException
+     * Creates a sub-object.
+     *
+     * @param elem An {@link Element} to adjust (ex. add children or attributes).
+     * @param objectNode The {@link ObjectNode} to transform.
+     * @param types The types used.
+     * @return {@code elem} adjusted.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
      */
     protected Element createSubObject(final Element elem, final ObjectNode objectNode,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
@@ -746,12 +732,14 @@ public class Json2Xml {
     }
 
     /**
-     * @param node
-     * @param element
-     * @param types
-     * @return
-     * @throws IOException
-     * @throws DOMException
+     * Creates the {@code node}'s {@link Element} when we have no parent.
+     *
+     * @param node An {@link ObjectNode} to transform.
+     * @param element The {@link Element} to adjust.
+     * @param types The used types.
+     * @return The transformed {@code element} {@link Element}.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
      */
     protected Element createObjectWithoutParent(final ObjectNode node, final Element element,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
@@ -766,10 +754,10 @@ public class Json2Xml {
                     setTextContent(element, entry, types);
                 } else {
                     addValueAsAttribute(element, entry, types);
-//                    Document doc = element.getOwnerDocument();
-//                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
-//                    element.appendChild(elem);
-//                    create(entry.getKey(), node, value, elem, types);
+                    //                    Document doc = element.getOwnerDocument();
+                    //                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
+                    //                    element.appendChild(elem);
+                    //                    create(entry.getKey(), node, value, elem, types);
                 }
             } else if (value.isObject() || value.isArray()) {
                 create(entry.getKey(), node, value, element, types);
@@ -781,9 +769,11 @@ public class Json2Xml {
     }
 
     /**
-     * @param element
-     * @param entry
-     * @param types
+     * Adds value ({@code entry}) as attribute to {@code element}.
+     *
+     * @param element An {@link Element}.
+     * @param entry The value to add.
+     * @param types The types used.
      */
     protected void addValueAsAttribute(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
@@ -831,10 +821,11 @@ public class Json2Xml {
     }
 
     /**
-     * @param element
-     * @param entry
-     * @param types
-     * @param val
+     * Sets value as text of the XML.
+     *
+     * @param element The {@link Element} to adjust.
+     * @param entry The value to add.
+     * @param types The types used.
      */
     protected void setTextContent(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
@@ -867,21 +858,24 @@ public class Json2Xml {
     }
 
     /**
-     * @param key
-     * @return
+     * @param key A possible key.
+     * @return The invalid (non-word) characters removed.
      */
     private static String removeInvalidChars(final String key) {
         return key.replaceAll("[^\\w]", "");
     }
 
     /**
-     * @param node
-     * @param element
-     * @param forceItemElement
-     * @param types
-     * @return
-     * @throws IOException
-     * @throws DOMException
+     * Creates an item for an array value/object ({@code node}).
+     *
+     * @param node The array item to transform.
+     * @param element The {@link Element} to adjust.
+     * @param forceItemElement If {@code true}, an {@link #getPrimitiveArrayItem()} element will be created, else
+     *            element with different key can be created.
+     * @param types The types used.
+     * @return The transformed {@link Element}.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
      */
     protected Element createItem(final JsonNode node, final Element element, final boolean forceItemElement,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
@@ -929,16 +923,18 @@ public class Json2Xml {
             //            }
         }
         assert false : node;
-        return null;
+        throw new IllegalStateException("Cannot reach this point: " + ErrorHandling.shorten(node.toString(), 45));
     }
 
     /**
-     * @param prefix
-     * @param type
-     * @param content
-     * @param doc
-     * @param types
-     * @return
+     * Creates element with text content.
+     *
+     * @param prefix The prefix to use.
+     * @param type The type of the element.
+     * @param content The text content.
+     * @param doc The owner document.
+     * @param types The types used.
+     * @return The transformed {@link Element}.
      */
     private Element createElementWithContent(final String prefix, final JsonPrimitiveTypes type, final String content,
         final Document doc, final Set<JsonPrimitiveTypes> types) {
@@ -949,16 +945,16 @@ public class Json2Xml {
     }
 
     /**
-     * @param prefix
-     * @param ret
-     * @param type
-     * @return
+     * @param prefix The prefix to use (if we do not omit).
+     * @param types The types used.
+     * @param type Type of the element.
+     * @return Name of the element with prefix if required.
      */
-    private String elementName(final String prefix, final Set<JsonPrimitiveTypes> ret, final JsonPrimitiveTypes type) {
+    private String elementName(final String prefix, final Set<JsonPrimitiveTypes> types, final JsonPrimitiveTypes type) {
         if (m_looseTypeInfo) {
             return m_settings.m_primitiveArrayItem;
         }
-        ret.add(type);
+        types.add(type);
         return prefix == null || prefix.isEmpty() ? m_settings.m_primitiveArrayItem : prefix + ":"
             + m_settings.m_primitiveArrayItem;
     }
@@ -1013,42 +1009,42 @@ public class Json2Xml {
     }
 
     /**
-     * @param nullName the null element name to set
+     * @param nullName the null-value node prefix to set
      */
     public final void setNull(final String nullName) {
         this.m_settings.m_null = nullName;
     }
 
     /**
-     * @param binary the binary element name to set
+     * @param binary the binary node prefix to set
      */
     public final void setBinary(final String binary) {
         this.m_settings.m_binary = binary;
     }
 
     /**
-     * @param text the text element name to set
+     * @param text the text/string node prefix to set
      */
     public final void setText(final String text) {
         this.m_settings.m_text = text;
     }
 
     /**
-     * @param real the real element name to set
+     * @param real the real (decimal/floating point) node prefix to set
      */
     public final void setReal(final String real) {
         this.m_settings.m_real = real;
     }
 
     /**
-     * @param integer the integral element name to set
+     * @param integer the integral node prefix to set
      */
     public final void setInt(final String integer) {
         this.m_settings.m_int = integer;
     }
 
     /**
-     * @param bool the bool element name to set
+     * @param bool the bool/logical node prefix to set
      */
     public final void setBool(final String bool) {
         this.m_settings.m_bool = bool;
@@ -1060,19 +1056,11 @@ public class Json2Xml {
      * @param os The {@link Options}.
      */
     public void setOptions(final Options... os) {
-        switch (os.length) {
-            case 0:
-                setOptions(EnumSet.noneOf(Options.class));
-                break;
-            case 1:
-                setOptions(EnumSet.of(os[0]));
-                break;
-            default:
-                Options[] rest = new Options[os.length - 1];
-                System.arraycopy(os, 1, rest, 0, os.length - 1);
-                setOptions(EnumSet.of(os[0], rest));
-                break;
+        EnumSet<Options> options = EnumSet.noneOf(Options.class);
+        for (Options option : os) {
+            options.add(option);
         }
+        setOptions(options);
     }
 
     /**
@@ -1096,16 +1084,17 @@ public class Json2Xml {
         }
     }
 
+    /**
+     * Creates a {@link Json2Xml} object that transforms the content like <code>{"a":[{"b":2},{"c":3}]}</code> to
+     * {@code <a b="2"/><a c="3"/>}. By default it keeps the type information.
+     *
+     * @param settings The settings to use.
+     * @return The {@link Json2Xml} object with using parent's key when possible.
+     */
     public static Json2Xml createWithUseParentKeyWhenPossible(final Json2XmlSettings settings) {
         return new Json2Xml(settings) {
             /**
-             * @param origKey The parent's key that led to this call.
-             * @param parent The parent node.
-             * @param node The current node to convert.
-             * @param parentElement The current element to transform or append attributes/children.
-             * @return The created element.
-             * @throws IOException
-             * @throws DOMException
+             * {@inheritDoc}
              */
             @Override
             protected Element create(final String origKey, final JsonNode parent, final JsonNode node,
@@ -1145,12 +1134,7 @@ public class Json2Xml {
             }
 
             /**
-             * @param elem
-             * @param objectNode
-             * @param types
-             * @return
-             * @throws IOException
-             * @throws DOMException
+             * {@inheritDoc}
              */
             @Override
             protected Element createSubObject(final Element elem, final ObjectNode objectNode,
@@ -1205,6 +1189,9 @@ public class Json2Xml {
                 return elem;
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
                 final Set<JsonPrimitiveTypes> types) throws IOException {
