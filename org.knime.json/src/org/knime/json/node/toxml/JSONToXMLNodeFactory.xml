@@ -9,22 +9,27 @@
     <fullDescription>
         <intro><p>Converts JSON values to XML documents.</p>
         <p>The json values might contain multiple objects/values which case those cannot be represented using XML without an artificial root node.
-        For handling this case, you can create arrays of XML documents.
+        For this reason we always create a root node. You can use the <tt>XPath</tt> node to remove it when possible (or to create a collection of XML values).
+        </p>
+        <p>In general object keys with simple values get translated to xml attributes, the only exception could be for the key of the text if specified (which case it will be XML text). Every non-letter or number or <tt>_</tt> character will be removed from the keys, which might cause ambiguity or create empty names, so it is recommended to stick to English letters in JSON object keys.
         </p>
         </intro>
         
         
-        <tab name="Standard Options">
+        <tab name="Settings">
         <option name="Input column">Column containing JSON values</option>
         <option name="Replace input column">Replace input column, keep its name</option>
         <option name="Append new column">Name of the new (XML) column</option>
         <option name="Specify namespace">If unchecked, no base namespace will be set.</option>
         <option name="Namespace">The base namespace</option>
-        <option name="Omit type information">When checked, the JSON type information will not be provided, numbers, booleans, ... will be represented as text. If checked, these will be prefixed with the prefixes specified on the <u>Namespace/prefix</u> tab.</option>
         <option name="Root element name">There is always a root element, you can specify its name.</option>
         <option name="Array item name">Array items not always can be represented as trees (for example arrays within arrays, or primitive types within arrays), in that case an element will be created with this name for each array item.</option>
+        <option name="Wrap array item in XML elements">JSON like <tt>{"a":[{"b":2},{"c":3}]}</tt> gets translated to <tt>&lt;a&gt;&lt;item b="2"/&gt;&lt;item c="3"/&gt;&lt;/a&gt;</tt></option>
+        <option name="Use parent keys as element name for arrays">JSON like <tt>{"a":[{"b":2},{"c":3}]}</tt> gets translated to <tt>&lt;a b="2"/&gt;&lt;a c="3"/&gt;</tt>.</option>
+        <option name="Represent values as XML text if key is">When checked, simple values with the specified key will not create attributes, but provide the single text of the surrounding element.</option>
         </tab>
-        <tab name="Namespace/prefix">
+        <tab name="Type information">
+        <option name="Keep type information by adding namespace">When checked, the JSON type information will be preserved, numbers, booleans, ... will be represented as text, but their node will have a prefix identifying its type. Otherwise all kind of values will be represented as text.</option>
         <option name="Empty list">Only used for the <tt>[]</tt> JSON array when the <u>Omit type information</u> is unchecked. Otherwise it is not possible to distinguish between <tt>[]</tt> and <tt>{}</tt>.</option>
         <option name="Binary content">Prefix for the binary contents.</option>
         <option name="Boolean">Prefix for the boolean values.</option>
