@@ -74,7 +74,6 @@ import com.fasterxml.jackson.databind.node.TextNode;
  * Helper class to convert XML {@link Document} to Jackson {@link JsonNode}.
  *
  * @author Gabor Bakos
- * @since 2.11
  */
 public class Xml2Json implements Cloneable {
     private enum Position {

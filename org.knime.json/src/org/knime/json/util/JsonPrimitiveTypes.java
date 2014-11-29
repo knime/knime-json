@@ -54,7 +54,6 @@ import com.fasterxml.jackson.databind.JsonNode;
  * JSON primitive type kinds.
  *
  * @author Gabor Bakos
- * @since 2.11
  * @see JsonNode#isIntegralNumber()
  * @see JsonNode#isFloatingPointNumber()
  * @see JsonNode#isNull()
