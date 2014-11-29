@@ -7,7 +7,14 @@
     </shortDescription>
     
     <fullDescription>
-        <intro>Converts XML values to JSON values.</intro>
+        <intro>Converts XML values to JSON values.
+        <p>Attributes are translated with prefix <tt>@</tt>, processing instructions with <tt>?</tt> prefix to their name as a key in a JSON object.
+        </p><p>
+        When there are multiple texts surrounding inner elements, those are translated as JSON array elements instead of an object with the specified key.
+        </p>
+        <p>Example:<tt>&lt;a b="2"&gt;&lt;v&gt;some text&lt;/v&gt;&lt;/a&gt;</tt> gets translated to:<tt>{"a": {"@b": "2", "v": {"#text": "some text"} } }</tt>
+        </p>
+        </intro>
         
         <option name="Input column">Column containing XML values</option>
         <option name="Replace input column">Replace input column, keep its name</option>
