@@ -69,8 +69,8 @@ public class JSONCellReaderFactoryImpl extends JSONCellReaderFactory {
      */
     public static final JSONCellReaderFactory INSTANCE = new JSONCellReaderFactoryImpl();
 
-    private JSONCellReaderFactoryImpl() {}
-
+    private JSONCellReaderFactoryImpl() {
+    }
 
     /**
      * Creates a {@link JSONCellReader} to read a single cell from given
@@ -107,8 +107,7 @@ public class JSONCellReaderFactoryImpl extends JSONCellReaderFactory {
      * It does not allow comments within the JSON documents.
      *
      * @param reader a reader for the JSON document
-     * @return @link{JSONCellReader} to read a single cell from given
-     * @link{InputStream .
+     * @return {@link JSONCellReader} to read a single cell from given {@linkInputStream}.
      */
     @Override
     public JSONCellReader createJSONCellReader(final Reader reader) {
@@ -120,8 +119,7 @@ public class JSONCellReaderFactoryImpl extends JSONCellReaderFactory {
      *
      * @param reader a reader for the JSON document
      * @param allowComments allow or not comments in the document
-     * @return @link{JSONCellReader} to read a single cell from given
-     * @link{InputStream .
+     * @return {@link JSONCellReader} to read a single cell from given {@linkInputStream}.
      */
     @Override
     public JSONCellReader createJSONCellReader(final Reader reader, final boolean allowComments) {
