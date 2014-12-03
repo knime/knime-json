@@ -56,6 +56,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.fife.rsyntaxarea.internal.RSyntaxAreaActivator;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -123,11 +125,21 @@ public final class JSONSchemaCheckNodeDialog extends NodeDialogPane {
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         panel.add(m_failOnError, gbc);
+        m_failOnError.setSelected(JSONSchemaCheckSettings.DEFAULT_FAIL_ON_INVALID_JSON);
         gbc.gridy++;
         gbc.gridwidth = 1;
         panel.add(new JLabel("Error message column:"), gbc);
         gbc.gridx = 1;
         panel.add(m_errorMessageColumnName, gbc);
+        ChangeListener failOnErrorListener = new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                m_errorMessageColumnName.setEnabled(!m_failOnError.isSelected());
+            }
+        };
+        m_failOnError.addChangeListener(failOnErrorListener);
+        failOnErrorListener.stateChanged(null);
         gbc.gridy++;
 
         gbc.weighty = 1;
