@@ -57,7 +57,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
@@ -149,8 +148,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         ZipContainer(final URL container) throws IOException, URISyntaxException {
             m_path = FileUtil.resolveToPath(container);
             m_zipOutputStream =
-                new ZipOutputStream(m_path == null ? openConnection(container)
-                    : Files.newOutputStream(m_path, StandardOpenOption.CREATE));
+                new ZipOutputStream(m_path == null ? openConnection(container) : Files.newOutputStream(m_path));
         }
 
         /**
@@ -225,7 +223,7 @@ public final class JSONWriterNodeModel extends NodeModel {
                 if (!m_overwrite && Files.exists(m_lastPath)) {
                     throw new IOException("File '" + m_lastPath + "' already exists");
                 }
-                return Files.newOutputStream(m_lastPath, StandardOpenOption.CREATE);
+                return Files.newOutputStream(m_lastPath);
             }
             return new BufferedOutputStream(openConnection(combine(m_folder, fileName)));
         }
