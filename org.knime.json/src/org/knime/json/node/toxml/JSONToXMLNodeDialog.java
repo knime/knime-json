@@ -79,7 +79,7 @@ import org.knime.json.util.Json2Xml;
  * @author Gabor Bakos
  */
 public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> {
-    private JTextField m_array, m_binary, m_boolean, m_decimal, m_integer, m_item, m_namespace, m_null, m_root,
+    private JTextField m_array, m_boolean, m_decimal, m_integer, m_item, m_namespace, m_null, m_root,
             m_string, m_keyForText;
 
     private JCheckBox m_keepTypeInfo, m_specifyNamespace, m_createTextForSpecificKeys;
@@ -113,14 +113,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         ret.add(m_array, gbc);
         gbc.gridx = 2;
         ret.add(new JLabel(Json2Xml.LIST_NAMESPACE), gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        m_binary = GUIFactory.createTextField(null, 11);
-        ret.add(new JLabel("Binary content"), gbc);
-        gbc.gridx = 1;
-        ret.add(m_binary, gbc);
-        gbc.gridx = 2;
-        ret.add(new JLabel(Json2Xml.BINARY_NAMESPACE), gbc);
         gbc.gridy++;
 
         gbc.gridx = 0;
@@ -184,7 +176,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
      * @param enabled
      */
     private void updatePrefixEnabledness(final boolean enabled) {
-        for (JComponent comp : new JComponent[]{m_array, m_binary, m_boolean, m_decimal, m_integer, m_null, m_string}) {
+        for (JComponent comp : new JComponent[]{m_array, m_boolean, m_decimal, m_integer, m_null, m_string}) {
             comp.setEnabled(enabled);
         }
     }
@@ -301,7 +293,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         if (!m_keepTypeInfo.isSelected()) {
             CheckUtils.checkSetting(!m_array.getText().trim().isEmpty(), "The empty list prefix is missing.");
-            CheckUtils.checkSetting(!m_binary.getText().trim().isEmpty(), "The binary content prefix is missing.");
             CheckUtils.checkSetting(!m_boolean.getText().trim().isEmpty(), "The boolean prefix is missing.");
             CheckUtils.checkSetting(!m_decimal.getText().trim().isEmpty(), "The decimal prefix is missing.");
             CheckUtils.checkSetting(!m_integer.getText().trim().isEmpty(), "The integer prefix is missing.");
@@ -313,7 +304,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         CheckUtils.checkSetting(!m_specifyNamespace.isSelected() || !m_namespace.getText().trim().isEmpty(),
             "The namespace information is missing.");
         getSettings().setArray(m_array.getText());
-        getSettings().setBinary(m_binary.getText());
         getSettings().setBoolean(m_boolean.getText());
         getSettings().setDecimal(m_decimal.getText());
         getSettings().setInteger(m_integer.getText());
@@ -338,7 +328,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         throws NotConfigurableException {
         super.loadSettingsFrom(settings, specs);
         m_array.setText(getSettings().getArray());
-        m_binary.setText(getSettings().getBinary());
         m_boolean.setText(getSettings().getBoolean());
         m_decimal.setText(getSettings().getDecimal());
         m_integer.setText(getSettings().getInteger());
