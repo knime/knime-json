@@ -47,6 +47,7 @@
  */
 package org.knime.core.data.json.internal;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -61,7 +62,10 @@ import org.knime.core.data.xml.io.XMLCellReader;
 import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonLocation;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
@@ -127,11 +131,23 @@ class JSONNodeCellReader implements JSONCellReader {
             final JsonFactory jsonFactory = m_builder.getFactory();
             JsonValue json;
             Reader characterStream = m_in.getCharacterStream();
+            JsonParser parser;
             //Class<?> cls = Activator.getJsonProviderClassLoader().loadClass("javax.json.JsonValue");
             if (characterStream != null) {
-                json = m_builder.readValue(jsonFactory.createParser(characterStream), JsonValue.class);
+                parser = jsonFactory.createParser(characterStream);
             } else {
-                json = m_builder.readValue(jsonFactory.createParser(m_in.getByteStream()), JsonValue.class);
+                parser = jsonFactory.createParser(m_in.getByteStream());
+            }
+            json = m_builder.readValue(parser, JsonValue.class);
+            final JsonLocation location = parser.getCurrentLocation();
+            try {
+                JsonToken nextToken = parser.nextToken();
+                if (nextToken != null) {
+                    throw new EOFException("Expected end of input, but there were content: " + nextToken);
+                }
+            } catch (RuntimeException | JsonParseException e) {
+                throw new IOException("Expected end of input, but there were content after line: "
+                    + location.getLineNr() + " column: " + location.getColumnNr(), e);
             }
             return (JSONValue)JSONCellFactory.create(json);
         } else {

@@ -65,12 +65,14 @@ import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.streamable.simple.SimpleStreamableFunctionNodeModel;
 import org.knime.json.internal.Activator;
 import org.knime.json.node.util.RemoveOrAddColumnSettings;
 
@@ -90,20 +92,53 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
  *
  * @author Gabor Bakos
  */
-public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNodeModel {
+public final class JSONSchemaCheckNodeModel extends NodeModel {
     private JSONSchemaCheckSettings m_settings = createJSONSchemaSettings();
 
     /**
      * Constructor for the node model.
      */
     protected JSONSchemaCheckNodeModel() {
-        super();
+        super(1, 1);
+    }
+
+
+    /** {@inheritDoc}
+     * @throws IOException
+     * @throws ProcessingException */
+    @Override
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
+        throws InvalidSettingsException, CanceledExecutionException, ProcessingException, IOException {
+        BufferedDataTable in = inData[0];
+        if (m_settings.isFailOnInvalidJson()) {
+            checkForErrors(in);
+            return new BufferedDataTable[] {in};
+        }
+        ColumnRearranger r = createColumnRearranger(in.getDataTableSpec());
+        BufferedDataTable out = exec.createColumnRearrangeTable(in, r, exec);
+        return new BufferedDataTable[]{out};
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        DataTableSpec in = inSpecs[0];
+        if (m_settings.isFailOnInvalidJson()) {
+            return new DataTableSpec[] {in};
+        }
+        ColumnRearranger r = createColumnRearranger(in);
+        DataTableSpec out = r.createSpec();
+        return new DataTableSpec[]{out};
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a column rearranger adding the error column.
+     *
+     * @param dataTableSpec The input {@link DataTableSpec}.
+     * @return The {@link ColumnRearranger}.
+     * @throws InvalidSettingsException Ambiguous input column name in the settings.
      */
-    @Override
     protected ColumnRearranger createColumnRearranger(final DataTableSpec dataTableSpec)
         throws InvalidSettingsException {
         if (m_settings.getInputColumn() == null || m_settings.getInputColumn().isEmpty()) {
@@ -111,18 +146,7 @@ public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNode
         }
         try {
             final JacksonConversions conv = JacksonConversions.getInstance();
-            final JsonSchema schema;
-            final ClassLoader jsonSchemaValidatorClassLoader = Activator.getInstance().getJsonSchemaValidatorClassLoader();
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(jsonSchemaValidatorClassLoader);
-                schema =
-                    JsonSchemaFactory.byDefault().getJsonSchema(
-                        conv.toJackson(((JSONValue)JSONCellFactory.create(m_settings.getInputSchema(), false))
-                            .getJsonValue()));
-            } finally {
-                Thread.currentThread().setContextClassLoader(cl);
-            }
+            final JsonSchema schema = createSchema(conv);
             final int index = dataTableSpec.findColumnIndex(m_settings.getInputColumn());
             ColumnRearranger ret = new ColumnRearranger(dataTableSpec);
             String col = m_settings.getErrorMessageColumn();
@@ -149,10 +173,6 @@ public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNode
                             e = new RuntimeException(ex.getMessage(), ex);
                         }
                         if (e != null) {
-                            if (m_settings.isFailOnInvalidJson()) {
-                                throw new RuntimeException("Failed to validate row: " + row.getKey() + "\n"
-                                    + e.getMessage(), e);
-                            }
                             if (report!= null && !report.isSuccess()) {
                                 ArrayNode array = new ArrayNode(JacksonUtils.nodeFactory());
                                 for (ProcessingMessage processingMessage : report) {
@@ -171,6 +191,67 @@ public final class JSONSchemaCheckNodeModel extends SimpleStreamableFunctionNode
         } catch (ProcessingException | IOException e) {
             throw new InvalidSettingsException(e.getMessage(), e);
         }
+    }
+
+
+    /**
+     * @param in
+     * @throws IOException
+     * @throws ProcessingException
+     */
+    private void checkForErrors(final BufferedDataTable in) throws ProcessingException, IOException {
+        final JacksonConversions conv = JacksonConversions.getInstance();
+        final JsonSchema schema = createSchema(conv);
+        final int index = in.getSpec().findColumnIndex(m_settings.getInputColumn());
+        for (DataRow row : in) {
+
+        final DataCell cell = row.getCell(index);
+        if (cell instanceof JSONValue) {
+            JSONValue jv = (JSONValue)cell;
+            JsonNode json = conv.toJackson(jv.getJsonValue());
+            RuntimeException e = null;
+            ProcessingReport report = null;
+            try {
+                report = schema.validate(json);
+                if (!report.isSuccess()) {
+                    e = new RuntimeException(report.toString());
+                    for (ProcessingMessage message : report) {
+                        e.addSuppressed(message.asException());
+                    }
+                }
+            } catch (ProcessingException ex) {
+                e = new RuntimeException(ex.getMessage(), ex);
+            }
+            if (e != null) {
+                if (m_settings.isFailOnInvalidJson()) {
+                    throw new RuntimeException("Failed to validate row: " + row.getKey() + "\n"
+                        + e.getMessage(), e);
+                }
+            }
+        }
+        }
+    }
+
+    /**
+     * @param conv A {@link JacksonConversions}.
+     * @return The {@link JsonSchema} to be used.
+     * @throws ProcessingException Problem creating the schema.
+     * @throws IOException Conversion to Jackson {@link JsonNode}. (Most probably should never happen.)
+     */
+    protected JsonSchema createSchema(final JacksonConversions conv) throws ProcessingException, IOException {
+        final JsonSchema schema;
+        final ClassLoader jsonSchemaValidatorClassLoader = Activator.getInstance().getJsonSchemaValidatorClassLoader();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(jsonSchemaValidatorClassLoader);
+            schema =
+                JsonSchemaFactory.byDefault().getJsonSchema(
+                    conv.toJackson(((JSONValue)JSONCellFactory.create(m_settings.getInputSchema(), false))
+                        .getJsonValue()));
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+        return schema;
     }
 
     /**

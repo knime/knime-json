@@ -31,7 +31,6 @@
         <tab name="Type information">
         <option name="Keep type information by adding namespace">When checked, the JSON type information will be preserved, numbers, booleans, ... will be represented as text, but their node will have a prefix identifying its type. Otherwise all kind of values will be represented as text.</option>
         <option name="Empty list">Only used for the <tt>[]</tt> JSON array when the <u>Omit type information</u> is unchecked. Otherwise it is not possible to distinguish between <tt>[]</tt> and <tt>{}</tt>.</option>
-        <option name="Binary content">Prefix for the binary contents.</option>
         <option name="Boolean">Prefix for the boolean values.</option>
         <option name="Decimal">Prefix for the floating point/decimal values.</option>
         <option name="Integer">Prefix for the integer values.</option>

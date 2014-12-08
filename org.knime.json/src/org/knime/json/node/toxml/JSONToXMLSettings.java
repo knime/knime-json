@@ -65,6 +65,7 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     //Write xml declaration (currently: always true)
     //write xml 1.1 header (currently: always false)
     //How to handle invalid keys (like @a, #text, ...), currently invalid characters are removed.
+    //binary values prefix
 
     private static final String SPECIFY_NAMESPACE = "specify.namespace";
 
@@ -85,10 +86,6 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     private static final String ARRAY_PREFIX = "array.prefix";
 
     private static final String DEFAULT_ARRAY_PREFIX = "Array";
-
-    private static final String BINARY_PREFIX = "binary.prefix";
-
-    private static final String DEFAULT_BINARY_PREFIX = "Binary";
 
     private static final String BOOLEAN_PREFIX = "boolean.prefix";
 
@@ -127,7 +124,7 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     private static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = true;
 
     private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT,
-            m_array = DEFAULT_ARRAY_PREFIX, m_binary = DEFAULT_BINARY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,
+            m_array = DEFAULT_ARRAY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,
             m_integer = DEFAULT_INTEGER_PREFIX, m_null = DEFAULT_NULL_PREFIX, m_decimal = DEFAULT_DECIMAL_PREFIX,
             m_string = DEFAULT_STRING_PREFIX;
 
@@ -154,7 +151,6 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         super.loadSettingsForDialogs(settings, specs);
         m_array = settings.getString(ARRAY_PREFIX, DEFAULT_ARRAY_PREFIX);
-        m_binary = settings.getString(BINARY_PREFIX, DEFAULT_BINARY_PREFIX);
         m_boolean = settings.getString(BOOLEAN_PREFIX, DEFAULT_BOOLEAN_PREFIX);
         m_decimal = settings.getString(DECIMAL_PREFIX, DEFAULT_DECIMAL_PREFIX);
         m_integer = settings.getString(INTEGER_PREFIX, DEFAULT_INTEGER_PREFIX);
@@ -178,7 +174,6 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.loadSettingsFrom(settings);
         m_array = settings.getString(ARRAY_PREFIX);
-        m_binary = settings.getString(BINARY_PREFIX);
         m_boolean = settings.getString(BOOLEAN_PREFIX);
         m_decimal = settings.getString(DECIMAL_PREFIX);
         m_integer = settings.getString(INTEGER_PREFIX);
@@ -202,7 +197,6 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         super.saveSettingsTo(settings);
         settings.addString(ARRAY_PREFIX, m_array);
-        settings.addString(BINARY_PREFIX, m_binary);
         settings.addString(BOOLEAN_PREFIX, m_boolean);
         settings.addString(DECIMAL_PREFIX, m_decimal);
         settings.addString(INTEGER_PREFIX, m_integer);
@@ -272,20 +266,6 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
      */
     final void setArray(final String array) {
         this.m_array = array;
-    }
-
-    /**
-     * @return the binary
-     */
-    final String getBinary() {
-        return m_binary;
-    }
-
-    /**
-     * @param binary the binary to set
-     */
-    final void setBinary(final String binary) {
-        this.m_binary = binary;
     }
 
     /**

@@ -125,7 +125,6 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
         JSONToXMLSettings s = getSettings();
         if (!s.isKeepTypeInfo()) {
             CheckUtils.checkSetting(!s.getArray().trim().isEmpty(), "The empty list prefix is missing.");
-            CheckUtils.checkSetting(!s.getBinary().trim().isEmpty(), "The binary content prefix is missing.");
             CheckUtils.checkSetting(!s.getBoolean().trim().isEmpty(), "The boolean prefix is missing.");
             CheckUtils.checkSetting(!s.getDecimal().trim().isEmpty(), "The decimal prefix is missing.");
             CheckUtils.checkSetting(!s.getInteger().trim().isEmpty(), "The integer prefix is missing.");
@@ -204,7 +203,6 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
     private Json2Xml createConverter() {
         Json2XmlSettings settings = new Json2XmlSettings();
         settings.setArrayPrefix(getSettings().getArray());
-        settings.setBinary(getSettings().getBinary());
         settings.setBool(getSettings().getBoolean());
         settings.setInt(getSettings().getInteger());
         settings.setNamespace(getSettings().isSpecifyNamespace() ? getSettings().getNamespace() : null);
