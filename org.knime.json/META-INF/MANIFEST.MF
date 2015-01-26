@@ -2,9 +2,12 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JSON related functionality for KNIME
 Bundle-SymbolicName: org.knime.json;singleton:=true
-Bundle-Version: 2.11.0.qualifier
+Bundle-Version: 2.11.1.qualifier
+Bundle-Activator: org.knime.json.internal.Activator
 Bundle-Vendor: KNIME Gmbh
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: org.knime.core.data.json,
+ org.knime.json.node.jsonpath;x-internal:=true,
+ org.knime.json.node.util;x-internal:=true
 Require-Bundle: com.jayway.jsonpath.json-path;bundle-version="[1.1.0,2.0.0)",
  com.github.fge.json-schema-core;bundle-version="[1.2.4,2.0.0)",
  com.github.fge.json-schema-validator;bundle-version="[2.2.5,3.0.0)",
@@ -22,8 +25,5 @@ Require-Bundle: com.jayway.jsonpath.json-path;bundle-version="[1.1.0,2.0.0)",
  com.github.fge.json-patch;bundle-version="[1.7.0,2.0.0)",
  org.fife.rsyntaxtextarea;bundle-version="[2.5.3,3.0.0)",
  org.glassfish.javax.json;bundle-version="[1.0.4,2.0.0)";visibility:=reexport
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.knime.json.internal.Activator
-Export-Package: org.knime.core.data.json,
- org.knime.json.node.jsonpath;x-internal:=true,
- org.knime.json.node.util;x-internal:=true
