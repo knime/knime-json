@@ -46,6 +46,16 @@
  */
 package org.knime.core.data.json;
 
+import java.io.StringWriter;
+import java.util.Collections;
+
+import javax.json.Json;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.json.JsonWriter;
+import javax.json.stream.JsonGenerator;
+
+import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.renderer.AbstractDataValueRendererFactory;
 import org.knime.core.data.renderer.DataValueRenderer;
@@ -92,5 +102,28 @@ public final class JSONValueRenderer extends MultiLineStringValueRenderer {
      */
     JSONValueRenderer(final String description) {
         super(description);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void setValue(final Object value) {
+        if (!(value instanceof JSONValue)) {
+            super.setValue(value);
+            return;
+        }
+        JsonValue v = ((JSONValue)value).getJsonValue();
+        String s;
+        if (v instanceof JsonStructure) {
+            StringWriter w = new StringWriter();
+            try (JsonWriter jsonW = Json.createWriterFactory(
+                Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, Boolean.TRUE)).createWriter(w)) {
+                jsonW.write((JsonStructure)v);
+            }
+            s = w.toString();
+        } else {
+            s = v.toString();
+        }
+        s = StringUtils.abbreviate(s, 10000);
+        super.setValue(s);
     }
 }
