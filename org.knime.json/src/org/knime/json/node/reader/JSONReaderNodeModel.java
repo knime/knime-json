@@ -80,6 +80,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.FileUtil;
 import org.knime.json.internal.Activator;
 import org.knime.json.node.jsonpath.JsonPathUtil;
@@ -117,9 +118,9 @@ public final class JSONReaderNodeModel extends NodeModel {
         URL url = FileUtil.toURL(m_settings.getLocation());
         try {
             File file = FileUtil.getFileFromURL(url);
-            rowId =
-                readUriContent(container, rowId,
-                    new URIContent(file.toURI(), FilenameUtils.getExtension(file.getName())));
+            CheckUtils.checkArgument(file != null, "Probably on server.");
+            rowId = readUriContent(container, rowId,
+                new URIContent(file.toURI(), FilenameUtils.getExtension(file.getName())));
         } catch (IllegalArgumentException e) {
             //No problems
             //We read as a file, this is not a folder.
@@ -225,6 +226,9 @@ public final class JSONReaderNodeModel extends NodeModel {
         }
         try {
             File file = FileUtil.getFileFromURL(url);
+            if (file == null) {
+                throw new IllegalArgumentException("Probably we are on the server.");
+            }
             if (!file.exists()) {
                 throw new InvalidSettingsException("File do not exists: " + m_settings.getLocation());
             }
