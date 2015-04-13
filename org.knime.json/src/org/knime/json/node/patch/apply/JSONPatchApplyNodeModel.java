@@ -56,7 +56,6 @@ import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
-import org.knime.core.data.RowKey;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.json.JSONCellFactory;
@@ -116,8 +115,8 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
             default:
                 throw new IllegalStateException("Not supported patch type: " + getSettings().getPatchType());
         }
-        final int[] patchFailed = new int[1];
         return new SingleCellFactory(output) {
+            private int m_patchFailedCount = 0;
             @Override
             public DataCell getCell(final DataRow row) {
                 DataCell cell = row.getCell(inputIndex);
@@ -137,20 +136,19 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
                         }
                         return JSONCellFactory.create(conv.toJSR353(applied));
                     } catch (JsonPatchException e) {
-                        patchFailed[0]++;
+                        m_patchFailedCount++;
                         return new MissingCell(e.getMessage());
                     }
                 }
                 return DataType.getMissingCell();
             }
-            /**
-             * {@inheritDoc}
-             */
+
+            /** {@inheritDoc} */
             @Override
-            public void setProgress(final int curRowNr, final int rowCount, final RowKey lastKey, final ExecutionMonitor exec) {
-                super.setProgress(curRowNr, rowCount, lastKey, exec);
-                if (curRowNr == rowCount && patchFailed[0] > 0) {
-                    setWarningMessage("There were " + patchFailed[0] + " rows where the transformation failed.");
+            public void afterProcessing() {
+                super.afterProcessing();
+                if (m_patchFailedCount > 0) {
+                    setWarningMessage("There were " + m_patchFailedCount + " rows where the transformation failed.");
                 }
             }
         };
