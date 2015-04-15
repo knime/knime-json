@@ -59,6 +59,7 @@ import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
+import org.knime.core.data.blob.BinaryObjectCellFactory;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.def.BooleanCell;
@@ -68,7 +69,6 @@ import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
-import org.knime.core.data.vector.bytevector.DenseByteVectorCellFactory;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
@@ -189,17 +189,13 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                                 if (value instanceof BinaryNode) {
                                     final BinaryNode bn = (BinaryNode)value;
                                     final byte[] bs = bn.binaryValue();
-                                    final DenseByteVectorCellFactory factory = new DenseByteVectorCellFactory(bs.length);
-                                    for (int i = bs.length; i-->0;) {
-                                        factory.setValue(i, bs[i] < 0 ? bs[i] + 256: bs[i]);
-                                    }
-                                    return factory.createDataCell();
+                                    return new BinaryObjectCellFactory().create(bs);
                                 }
                                 return DataType.getMissingCell();
                             default:
                                 throw new UnsupportedOperationException("Not supported return type: " + returnType);
                         }
-                    } catch (RuntimeException e) {
+                    } catch (RuntimeException | IOException e) {
                         return new MissingCell(e.getMessage());
                     }
                 }
