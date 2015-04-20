@@ -55,14 +55,14 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.StringValue;
-import org.knime.core.data.blob.BinaryObjectDataCell;
-import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONValue;
+import org.knime.core.data.vector.bytevector.ByteVectorValue;
+import org.knime.core.data.vector.bytevector.DenseByteVectorCell;
 
 /**
  * Possible output types for JSONPath and JSONPointer. (JSONPath can return multiple values, so there should be an
@@ -100,7 +100,7 @@ public enum OutputType implements StringValue {
             case Json:
                 return "JSON (JSON cell type)";
             case Binary:
-                return "Binary (Binary object cell type)";
+                return "Binary (Byte array cell type)";
             default:
                 throw new IllegalStateException("Unknown enum value: " + this);
         }
@@ -110,8 +110,6 @@ public enum OutputType implements StringValue {
      */
     public DataType getDataType() {
         switch (this) {
-            case Binary:
-                return BinaryObjectDataCell.TYPE;
             case Bool:
                 return BooleanCell.TYPE;
             case Int:
@@ -122,6 +120,8 @@ public enum OutputType implements StringValue {
                 return StringCell.TYPE;
             case Json:
                 return JSONCell.TYPE;
+            case Binary:
+                return DenseByteVectorCell.TYPE;
             default:
                 throw new IllegalStateException("Unknown enum value: " + this);
         }
@@ -132,7 +132,7 @@ public enum OutputType implements StringValue {
     public Icon getIcon() {
         switch (this) {
             case Binary:
-                return BinaryObjectDataValue.UTILITY.getIcon();
+                return ByteVectorValue.UTILITY.getIcon();
             case Bool:
                 return BooleanValue.UTILITY.getIcon();
             case Int:
