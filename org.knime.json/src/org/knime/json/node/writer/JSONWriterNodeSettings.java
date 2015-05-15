@@ -119,7 +119,7 @@ class JSONWriterNodeSettings {
     private static final String INPUT_COLUMN = "inputColumn";
 
     /** Config key for the output file (can be overrided with the URI port object). */
-    private static final String OUTPUT_LOCATION = "outputLocation";
+    static final String OUTPUT_LOCATION = "outputLocation";
 
     /** Config key for: Overwrite existing files? */
     private static final String OVERWRITE_EXISTING = "overwriteExistingFiles";
