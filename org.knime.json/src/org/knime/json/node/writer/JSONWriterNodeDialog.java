@@ -231,7 +231,7 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         c.gridx++;
         c.weightx = 1;
         m_container =
-            new FilesHistoryPanel(createFlowVariableModel("jsonOutputContainer", Type.STRING),
+            new FilesHistoryPanel(createFlowVariableModel(JSONWriterNodeSettings.OUTPUT_LOCATION, Type.STRING),
                 "org.knime.json.node.writer", LocationValidation.DirectoryOutput, DOT_JSON, DOT_JSON_GZ, ".zip"/*, ".smile", ".smile.gz"*/);
         m_container.requestFocus();
         m_container.setBorder(null);
