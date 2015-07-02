@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./columnstojson.png" type="Manipulator"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>Columns to JSON</name>
+
+	<shortDescription>
+        Converts contents of columns to JSON values row-wise.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+			<p>The columns values are transformed to JSON objects for each row.
+				When there are conflicting keys, the result is undefined, might vary between different versions of KNIME.</p>
+			<p>
+				An example transformation:
+				<br />
+				From table:</p>
+				<table><tr><th>Main</th><th>Num</th><th>text</th></tr>
+				<tr><td>main1</td><td>2</td><td>Hello</td></tr>
+				<tr><td>main2</td><td>1</td><td>World</td></tr>
+				</table>
+				<p>
+				with custom key/values:
+				<tt>const</tt>
+				and
+				<tt>val</tt>,
+				<tt>Main</tt>
+				as data bound key,
+				<tt>Num</tt>
+				with manual
+				<tt>num</tt>
+				key and
+				<tt>text</tt>
+				as automatic:
+				</p>
+				<table>
+				<tr><td>{"main1":{"text": "Hello", "num": 2, "const":"val"}}</td></tr>
+				<tr><td>{"main2":{"text": "World", "num": 1, "const":"val"}}</td></tr>
+				</table>
+		</intro>
+
+
+		<option name="New column name">Name of the new JSON column</option>
+		<option name="Unnamed root element">Generated JSON value will be returned without
+			further wrapping</option>
+		<option name="Custom key">Constant key for the main object</option>
+		<option name="Data bound key">For each row this column provides the key for the
+			main object</option>
+		<option name="Manual selection">The predefined key and the actual value in the
+			selected columns will provide the keys and values in the object
+			defined by this setting and the row</option>
+		<option name="Automatic selection">The keys are the column names and the actual value
+			in the selected columns will provide the keys and values in the
+			object defined by this setting and the row</option>
+		<option name="Custom key/value pairs">Additional key/value pairs within the object
+		</option>
+		<option name="Remove source columns">The source columns include the Data bound key
+			column too (when that is selected).</option>
+	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Table">Table with values.</inPort>
+		<outPort index="0" name="Table with JSON">Table with the row-wise generated JSON
+			column.</outPort>
+	</ports>
+</knimeNode>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./jsonpath.png" type="Manipulator" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>JSON Path</name>
+    
+    <shortDescription>
+        Selects the defined paths from the selected JSON column.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro><p><a href="http://goessner.net/articles/JsonPath/">JSONPath</a> is a similar to XPath alternative for JSON.</p><p>
+        The result can be a single value or a list of multiple values (when the path is indefinite). In case there are multiple results and the selected output type cannot handle it (not a list of the selected type, or a JSON) the execution will fail. If the result cannot be represented in the selected type, missing value will be returned.</p><p>
+        There are two notations, dot-notation:<tt>$.book[1].title</tt> and bracket-notation: <tt>$['book'][1]['title']</tt> (indexing starts from <tt>0</tt>, negative indices are relative to the last element).</p>
+        Example input:
+<pre>
+{"book": [
+  {"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"},
+  {"year": 2000,
+   "title": "Plain Truth",
+   "author": "Jodi Picoult"}
+]}
+</pre>
+        <p>
+Example results:<br/>
+<b>$.book[0]</b><br/><tt>{"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"}</tt> (<i>JSON</i> or <i>String</i> single value)<br/>
+<b>$.book[*].year</b><br/><tt>[1999,2000]</tt> (<i>JSON</i>, <i>Int</i> or <i>Real</i> list)<br/>
+<b>$.book[2].year</b><br/><tt>?</tt> (no such part)<br/>
+<b>$.book[?(@.year==1999)].title</b><br/><tt>Timeline</tt> (<i>String</i>) or <tt>"Timeline"</tt> (<i>JSON</i>)
+</p><p>
+The default path (<tt>$..*</tt>) will select all possible subparts (excluding the whole JSON value).
+</p><p>When you request the paths instead of values for the <tt>$.book[0].*</tt> JSONPath, you will get the paths -in bracket notation- as a list of Strings:<ul>
+<li>$['book'][0]['year']</li>
+<li>$['book'][0]['title']</li>
+<li>$['book'][0]['author']</li>
+</ul> which are valid JSONPaths for the input JSON value.
+</p><p>The filters <tt>?(expr)</tt>can be used to select contents with specific properties, for example <tt>$..book[?(@.publisher)]</tt> selects the books that specify their publisher (<tt>@</tt> refers to the actual element).
+        </p><p>
+        It uses the <a href="https://github.com/jayway/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
+        </intro>
+        
+        <tab name="Settings">
+            <option name="Input">The JSON column to select the paths from.</option>
+            <option name="Remove source column">When checked, the source column will be removed.</option>
+            <option name="Outputs">A summary of the paths to select from the input column. The selected row can be customized with the <b>Edit JSONPath</b> button below or by editing the cells within the table, double-clicking on a row.</option>
+            <option name="Add single query">Adds the (specific: only the selected) path for the cursor in <i>Preview</i> to the output columns table.</option>
+            <option name="Add collection query">Adds the (generic: the selected and the siblings within arrays) path for the cursor in <i>Preview</i> to the output columns table.</option>
+            <option name="Add JSONPath">Adds a new row to the <i>Outputs</i> table.</option>
+            <option name="Edit JSONPath">Allows to edit the selected row using a popup dialog.</option>
+            <option name="Remove JSONPath">Removes the selected row from the <i>Outputs</i> table.</option>
+            <option name="Preview">The content of the first JSON value if available (helps in writing the JSONPath expressions, you can add new rows based on the location of the cursor, move it to the <u>value</u> you want to select and click <b>Add single query</b> or <b>Add collection query</b>). When a row is selected in <b>Outputs</b>, the expected results are highlighted.</option>
+        </tab>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Table with JSON">A table with JSON column</inPort>
+        <!-- possibly more input ports here-->
+        <outPort index="0" name="Table">Table with the found parts</outPort>
+        <!-- possibly more output ports here-->
+    </ports>    
+</knimeNode>

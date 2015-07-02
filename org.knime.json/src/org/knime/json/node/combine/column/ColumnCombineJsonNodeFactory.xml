@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./columncombine.png" type="Manipulator" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>JSON Column Combiner</name>
+    
+    <shortDescription>
+        Combines multiple JSON columns to a single.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Combines JSON values to a single JSON value (an array optionally wrapped in an object) for each row.<br/>
+        Example configuration:<br/>
+        input table:<br/>
+<table>
+<tr><th>S</th><th>R</th><th>V</th></tr>
+<tr><td>2</td><td>[1]</td><td>"S"</td></tr>
+<tr><td>3</td><td>{"a":2}</td><td>{"T": null}</td></tr>
+</table>
+<i>Selected JSON columns</i>: <b>R</b> and <b>V</b><br/>
+<i>Data bound key</i>: <b>S</b> (String)<br/>
+Results:
+<table>
+<tr><td>{"2": [[1], "S"]}</td></tr>
+<tr><td>{"3": [{"a": 2}, {"T": null}]}</td></tr>
+</table>
+        </intro>
+        <tab name="Settings">
+            <option name="New column name">Name of the new JSON column</option>
+            <option name="Omit root key">The array of JSON values selected (<i>Selected JSON columns</i>) will be returned without any other tags.</option>
+            <option name="Custom key">The constant key for the array of JSON values selected (<i>Selected JSON columns</i>).</option>
+            <option name="Data bound key">The column name, whose values become the key for the array of JSON values selected (<i>Selected JSON columns</i>).</option>
+            <option name="Selected JSON columns">The included columns will be combined to a new JSON value for each row.</option>
+            <option name="Remove source columns">When checked, the included columns and the data bound key/value columns will be removed from the resulting table.</option>
+        </tab>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Table with JSON">Table with JSON column(s)</inPort>
+        <outPort index="0" name="Table with JSON">Table with the combined JSON column</outPort>
+    </ports>    
+</knimeNode>

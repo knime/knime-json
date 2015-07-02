@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./jsonpathdict.png" type="Manipulator" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>JSONPath (Dictionary)</name>
+    
+    <shortDescription>
+        Collect parts of JSON documents based on JSONPath queries specified in the second input port.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro><p>Collects the parts specified by <a href="http://goessner.net/articles/JsonPath/">JSONPath</a>s from a JSON column. For those parts that cannot be found or have incompatible types, missing values will be returned.</p>
+        Example input table:<br/>
+<table><tr><th>column name</th><th>path</th><th>type</th></tr>
+<tr><td>bookyear</td><td>$.book[*].year</td><td>List(Double)</td></tr>
+<tr><td>invalidyear</td><td>$.book[2].year</td><td>Double</td></tr>
+<tr><td>timeline</td><td>$.book[?(@.year==1999)].title</td><td>String</td></tr>
+<tr><td>paths</td><td>$..*</td><td>List(Path)</td></tr>
+</table>
+Example input:
+<pre>
+{"book": [
+  {"year": 1999,
+   "title": "Timeline",
+   "author": "Michael Crichton"},
+  {"year": 2000,
+   "title": "Plain Truth",
+   "author": "Jodi Picoult"}
+]}</pre>
+The results look like this:
+<table><tr><th>bookyear</th><th>invalidyear</th><th>timeline</th></tr>
+<tr><td>{1999, 2000}</td><td>?</td><td>Timeline</td></tr>
+</table>
+The <b>paths</b> column contains the following values (String list):
+<tt>$['book']</tt>, <tt>$['book'][0]</tt>, <tt>$['book'][1]</tt>, <tt>$['book'][0]['year']</tt>, <tt>$['book'][0]['title']</tt>, <tt>$['book'][0]['author']</tt>, <tt>$['book'][1]['year']</tt>, <tt>$['book'][1]['title']</tt>, <tt>$['book'][1]['author']</tt>
+        </intro>
+        <option name="JSON column">The name of the JSON column to extract content from the first input table.</option>
+        <option name="Remove source column">When checked, the source column will be removed.</option>
+        <option name="JSONPath">The name of the JSONPath column from the second input table.</option>
+        <option name="Type of column">The name of the type column from the second input table. The content should be one of these values in each row:<ul>
+        <li><tt>Boolean</tt> - logical values (<tt>true</tt>/<tt>false</tt>)</li>
+        <li><tt>Integer</tt> - integer values</li>
+        <li><tt>Double</tt> - real (double precision floating point) numbers</li>
+        <li><tt>String</tt> - string of characters/textual content</li>
+        <li><tt>Json</tt> - another JSON values</li>
+        <li><tt>Path</tt> - generate JSON paths</li>
+        <li><tt>Base64</tt> - binary objects (encoded as Base64 strings)</li>
+        <li><tt>List(Boolean)</tt> - list of logical values (<tt>true</tt>/<tt>false</tt>)</li>
+        <li><tt>List(Integer)</tt> - list of integer values</li>
+        <li><tt>List(Double)</tt> - list of real (double precision floating point) numbers</li>
+        <li><tt>List(String)</tt> - list of string of characters/textual content</li>
+        <li><tt>List(Json)</tt> - list of another JSON values</li>
+        <li><tt>List(Path)</tt> - generate list of JSON paths</li>
+        <li><tt>List(Base64)</tt> - list of binary objects (encoded as Base64 strings)</li>
+        <li><tt>Set(Boolean)</tt> - set of logical values (<tt>true</tt>/<tt>false</tt>)</li>
+        <li><tt>Set(Integer)</tt> - set of integer values</li>
+        <li><tt>Set(Double)</tt> - set of real (double precision floating point) numbers</li>
+        <li><tt>Set(String)</tt> - set of string of characters/textual content</li>
+        <li><tt>Set(Json)</tt> - set of another JSON values</li>
+        <li><tt>Set(Path)</tt> - generate set of JSON paths</li>
+        <li><tt>Set(Base64)</tt> - list of binary objects (encoded as Base64 strings)</li>
+        </ul></option>
+        <option name="Output name">The name of the new output column from the second input table. (In case of conflict, a new column name will be generated.)</option>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Data with JSON">Table containing JSON column</inPort>
+        <inPort index="1" name="JSONPaths">Table containing JSONPath, type and output column name definitions.</inPort>
+        <outPort index="0" name="Extracted columns">Table with extracted columns appended</outPort>
+    </ports>    
+</knimeNode>

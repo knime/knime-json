@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./jsontotable.png" type="Manipulator" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>JSON to Table</name>
+    
+    <shortDescription>
+        Converts JSON values to new columns.
+    </shortDescription>
+    
+    <fullDescription>
+    <intro>
+        Converts a JSON column to multiple columns, whereby the column list is heuristically extracted from the 
+        JSON structure. It can either extract the primitive leaf elements (like strings and numbers), omitting the 
+        JSON tree path, or the full JSON structure. The latter, however, may yield some confusing output as the types
+        of the columns are again JSON or collections of JSON.  
+        <br />
+        Note that this node is meant to be used for "well-structured", relatively flat JSON objects which adhere the 
+        same schema in all rows. In case the JSON objects are more complex it's better to use nodes like 
+        <i>JSON Path</i> or <i>JSON Path (Dictionary)</i>.   
+        <br />
+        Some examples on the following JSON column input may help to clarify the generated output.
+<table><tr><th>JSON</th></tr>
+<tr><td>{"a": {"b": [1, 2], "c":"c"}}</td></tr>
+<tr><td>{"a": {"b": [3], "d":null}  }</td></tr>
+</table>
+        Some options with their results:
+<b>Only leaves</b>, <b>Use leaf name (uniquify with (#1)/(#2)/...)</b><br/>
+Types: <ul>
+<li><b>b</b> - JSON when <b>Keep as JSON array</b>, list of integers when <b>Keep as collection elements</b></li>
+<li><b>c</b> - String</li>
+<li><b>d</b> - String</li>
+</ul>
+(The actual order of the columns might be different.)
+<table>
+<tr><th>b</th><th>c</th><th>d</th></tr>
+<tr><td>[1,2]</td><td>c</td><td>?</td></tr>
+<tr><td>[3]</td><td>?</td><td>?</td></tr>
+</table>
+<b>Only up to level</b> <tt>1</tt>, <b>Use leaf name (uniquify with (#1)/(#2)/...)</b><br/>
+Type: <b>a</b> - JSON
+<table>
+<tr><th>a</th></tr>
+<tr><td>{"b": [1, 2], "c":"c"}</td></tr>
+<tr><td>{"b": [3], "d":null}</td></tr>
+</table>
+<b>Only leaves</b>, <b>Use path with separator</b> <tt>.</tt>, <b>Expand to columns</b><br/>
+Type: <ul>
+<li><b>a.b.0</b>, <b>a.b.1</b> - integer</li>
+<li><b>a.c</b>, <b>a.d</b> - string</li>
+</ul>
+<table>
+<tr><th>a.b.0</th><th>a.b.1</th><th>a.c</th><th>a.d</th></tr>
+<tr><td>1</td><td>2</td><td>c</td><td>?</td></tr>
+<tr><td>3</td><td>?</td><td>?</td><td>?</td></tr>
+</table>
+For nested objects, see the following example:
+<table>
+<tr><th>JSON</th></tr>
+<tr><td>{"a":[{"b": 3}, 4]}</td></tr>
+<tr><td>{"a":[1]}</td></tr>
+</table>
+<b>Only up to level</b> <tt>1</tt>, <b>Use leaf name (uniquify with (#1)/(#2)/...)</b>, <b>Omit nested objects</b>, <b>Expand to columns</b>:<br/>
+Type: <ul>
+<li><b>a</b> - list of integers</li>
+</ul>
+<table>
+<tr><th>a</th></tr>
+<tr><td>[4]</td></tr>
+<tr><td>[1]</td></tr>
+</table>
+<b>Only up to level</b> <tt>1</tt> or <tt>2</tt>, <b>Use leaf name (uniquify with (#1)/(#2)/...)</b>, do not <b>Omit nested objects</b>, <b>Expand to columns</b>:<br/>
+Type: <ul>
+<li><b>a</b> - list of JSON values</li>
+</ul>
+<table>
+<tr><th>a</th></tr>
+<tr><td>[{"b": 3}, 4]</td></tr>
+<tr><td>[1]</td></tr>
+</table>
+Please note that in the first row the value is a KNIME list of the two JSON values: <tt>{"b": 3}</tt> and <tt>4</tt>, not a single JSON value, similarly in the second row, you get a KNIME list of a single JSON value: <tt>1</tt>.
+<br/>
+Though with <b>Keep as JSON array</b> (regardless of <b>Omit nested objects</b>):<br/>
+Type: <ul>
+<li><b>a</b> - JSON values</li>
+</ul>
+<table>
+<tr><th>a</th></tr>
+<tr><td>[{"b": 3}, 4]</td></tr>
+<tr><td>[1]</td></tr>
+</table>
+        </intro>
+        
+        <option name="Input JSON column">Name of the JSON column to expand.</option>
+        <option name="Remove source column">When checked, the input JSON column is removed.</option>
+        <option name="Use path with separator">The output column name will be created from the JSONPaths found, separating the parts of the path with this value.</option>
+        <option name="Use leaf name (uniquify with (#1)/(#2)/...)">The output column's name is the leaf's key, disambiguated by the numbers with <tt> (#nn)</tt>.</option>
+        <option name="Arrays|Keep as JSON array">The JSON arrays are not expanded, they kept as JSON arrays.</option>
+        <option name="Arrays|Keep as collection elements">The JSON arrays are not expanded, but returned as KNIME collections.</option>
+        <option name="Arrays|Expand to columns">The JSON arrays are expanded to columns, one for each value. (This might create a lot of columns.)</option>
+        <option name="Only leaves">Only the leaves are returned, no intermediate values are extracted (as JSON columns).</option>
+        <option name="Only up to level">The columns are generated only for paths with length up to this value (inclusive, starting from 1).</option>
+        <option name="Omit nested objects">The nested objects are not included in the output when checked (except when the output column is a JSON column). This is sometimes desirable as sub-objects are extracted into separate levels. See also examples above.</option>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="JSON">Table containing JSON column.</inPort>
+        <outPort index="0" name="Extracted values">Table with values extracted from the selected JSON column.</outPort>
+    </ports>    
+</knimeNode>
