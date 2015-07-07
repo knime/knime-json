@@ -373,10 +373,15 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
     /**
      * @param columnSpec
      * @return A pair of {@link OutputType} and depth of nested collections.
-     * @throws UnsupportedOperationException when not supported type was selected.
+     * @throws InvalidSettingsException when not supported type was selected.
      */
-    protected Pair<OutputType, Integer> outputType(final DataColumnSpec columnSpec) {
-        return outputType(columnSpec.getType(), 0);
+    protected Pair<OutputType, Integer> outputType(final DataColumnSpec columnSpec) throws InvalidSettingsException {
+        try {
+            return outputType(columnSpec.getType(), 0);
+        } catch (UnsupportedOperationException e) {
+            throw new InvalidSettingsException(
+                columnSpec.getName() + " column has not supported type: " + columnSpec.getType(), e);
+        }
     }
 
     /**
@@ -385,6 +390,7 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
      * @param type A possibly {@link CollectionDataValue}'s {@link DataType}.
      * @param depth The previous depth of nesting.
      * @return The {@link Pair} of {@link OutputType} and the depth of nesting.
+     * @throws UnsupportedOperationException Not supported column type.
      */
     private Pair<OutputType, Integer> outputType(final DataType type, final int depth) {
         if (type.isCollectionType()) {
