@@ -62,13 +62,9 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
  *
  * @author Gabor Bakos
  */
-@SuppressWarnings("restriction")
 public class JSONToTableNodeModel extends NodeModel {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONToTableNodeModel.class);
 
-    //    private final SettingsModelString m_inputColumn = createInputColumn();
-    //
-    //    private final SettingsModelBoolean m_onlyLeaves = createOnlyLeaves();
     private final JSONToTableSettings m_settings = new JSONToTableSettings();
 
     /**
@@ -78,26 +74,12 @@ public class JSONToTableNodeModel extends NodeModel {
         super(1, 1);
     }
 
-    //    /**
-    //     * @return
-    //     */
-    //    static SettingsModelBoolean createOnlyLeaves() {
-    //        return new SettingsModelBoolean("only.leaves", true);
-    //    }
-    //
-    //    /**
-    //     * @return
-    //     */
-    //    static SettingsModelString createInputColumn() {
-    //        return new SettingsModelString("input.column", "");
-    //    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
-        throws Exception {
+        throws CanceledExecutionException {
         ExecutionContext columnSelectionContext = exec.createSubExecutionContext(.5);
         final DataTableSpec spec = inData[0].getSpec();
         ColumnRearranger rearranger = new ColumnRearranger(spec);
@@ -113,11 +95,10 @@ public class JSONToTableNodeModel extends NodeModel {
         kinds.put("$", rootKind);
         for (DataRow row : inData[0]) {
             columnSelectionContext.checkCanceled();
-            columnSelectionContext.setProgress(r / (double)all);
+            columnSelectionContext.setProgress(r++ / (double)all, "Analysing: " + row.getKey());
             DataCell cell = row.getCell(jsonIndex);
             if (cell instanceof JSONValue) {
                 JSONValue jv = (JSONValue)cell;
-                //ENH create structured path, this way 1] > 11], but it should not be!
                 List<Path> paths;
                 try {
                     List<String> rawPaths = jsonPath.read(jv.getJsonValue().toString(), conf);
@@ -167,6 +148,7 @@ public class JSONToTableNodeModel extends NodeModel {
                 final String proposedName = proposedName(kindEntry.getKey());
                 //ENH rearranger createSpec in a loop might be really slow when there are many columns.
                 final String realName = DataTableSpec.getUniqueColumnName(dummyRearranger.createSpec(), proposedName);
+                columnSelectionContext.checkCanceled();
                 dummyRearranger.append(new SingleCellFactory(new DataColumnSpecCreator(realName, IntCell.TYPE).createSpec()) {
                     @Override
                     public DataCell getCell(final DataRow row) {
@@ -271,12 +253,6 @@ public class JSONToTableNodeModel extends NodeModel {
             case GenerateCollectionCells: {
                 final LinkedHashSet<Path> result = new LinkedHashSet<>();
                 for (Path path : paths) {
-//                    if (path.length() > 1 && Character.isDigit(path.charAt(path.length() - 2))) {
-//                        String newPath = arrayIndicesAtTheEndToStar(path);
-//                        result.add(newPath);
-//                    } else {
-//                        result.add(path);
-//                    }
                     result.add(path.endsWithIndex() ? path.replaceLastWithStar() : path);
                 }
                 paths.clear();
@@ -290,30 +266,6 @@ public class JSONToTableNodeModel extends NodeModel {
                 break;
         }
     }
-
-//    /**
-//     * @param path
-//     * @return
-//     */
-//    private static String lastArrayIndicesToStar(final String path) {
-//        //change last [\d+] to [*].
-//        String newPath =
-//            new StringBuilder(new StringBuilder(path).reverse().toString()
-//                .replaceFirst("\\]\\d+\\[", "]*[")).reverse().toString();
-//        return newPath;
-//    }
-//
-//    /**
-//     * @param path
-//     * @return
-//     */
-//    private static String arrayIndicesAtTheEndToStar(final String path) {
-//        //change [\d+] when at the end to [*].
-//        String newPath =
-//                new StringBuilder(new StringBuilder(path).reverse().toString()
-//                    .replaceFirst("^\\]\\d+\\[", "]*[")).reverse().toString();
-//        return newPath;
-//    }
 
     /**
      * @param path A JSONPath path.
@@ -418,9 +370,6 @@ public class JSONToTableNodeModel extends NodeModel {
                     if (countOf("][", path) < m_settings.getUpToNLevel()) {
                         set.add(path);
                     }
-//                    if (!paths.contains("][")) {
-//                        set.add(path);
-//                    }
                 }
                 paths.retainAll(set);
             }
@@ -485,8 +434,6 @@ public class JSONToTableNodeModel extends NodeModel {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
-        //        m_inputColumn.saveSettingsTo(settings);
-        //        m_onlyLeaves.saveSettingsTo(settings);
         m_settings.saveSettings(settings);
     }
 
@@ -495,8 +442,6 @@ public class JSONToTableNodeModel extends NodeModel {
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        //        m_inputColumn.loadSettingsFrom(settings);
-        //        m_onlyLeaves.loadSettingsFrom(settings);
         m_settings.loadSettingsModel(settings);
     }
 
@@ -505,8 +450,6 @@ public class JSONToTableNodeModel extends NodeModel {
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        //        m_inputColumn.validateSettings(settings);
-        //        m_onlyLeaves.validateSettings(settings);
         new JSONToTableSettings().loadSettingsModel(settings);
     }
 
