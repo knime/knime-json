@@ -221,6 +221,8 @@ public class Jsr353WithCanonicalPaths {
                     if (stack.peek().getSecond() != GUARD) {
                         Pair<String, Integer> pop2 = stack.pop();
                         stack.push(Pair.create(pop2.getFirst(), pop2.getSecond() + 1));
+                    } else {
+                    	stack.pop();
                     }
                 }
                     break;

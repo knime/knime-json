@@ -142,7 +142,6 @@ import com.jayway.jsonpath.ReadContext;
  *
  * @author Gabor Bakos
  */
-@SuppressWarnings("restriction")
 class JSONPathNodeDialog extends DataAwareNodeDialogPane {
     /**
      *
@@ -151,7 +150,7 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
 
     /**
      *
-     * @author Gábor
+     * @author Gabor
      */
     private final class AddRow extends AbstractAction {
         private static final long serialVersionUID = 3462402745035997468L;
@@ -892,6 +891,7 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
         }
         int idx = m_inputTable.getDataTableSpec().findColumnIndex(m_inputColumn.getSelectedColumn());
         if (idx >= 0) {
+            m_paths = new Jsr353WithCanonicalPaths("{}"/*new JsonNodeFactory(true).nullNode()*/);
             try (CloseableRowIterator it = m_inputTable.iteratorFailProve()) {
                 JSONValue value = null;
                 while (it.hasNext() && value == null) {
