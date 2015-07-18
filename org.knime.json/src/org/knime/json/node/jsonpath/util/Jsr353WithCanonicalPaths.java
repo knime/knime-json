@@ -64,6 +64,7 @@ import org.knime.core.util.Pair;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 /**
@@ -205,6 +206,7 @@ public class Jsr353WithCanonicalPaths {
                     break;
                 case END_ARRAY: {
                     stack.pop();
+                    lastLocation = json.getLocation();
                     m_pathToEndPosition.put(toPath(stack.peek()), json.getLocation());
                     //after a value, we have to increase the index when we are in an array
                     Pair<String, Integer> pop2 = stack.pop();
@@ -285,7 +287,8 @@ public class Jsr353WithCanonicalPaths {
             mapper.createArrayNode().add(mapper.createArrayNode().add("bb")), mapper.createArrayNode().add(3).add("v"),
             mapper.createArrayNode().add(mapper.createObjectNode().put("y", 4).set("v", mapper.createArrayNode())),
             mapper.createArrayNode().add(mapper.createObjectNode()), mapper.createObjectNode(),
-            mapper.createObjectNode().put("test", "tt").put("set", "s"),}) {
+            mapper.createObjectNode().put("test", "tt").put("set", "s"),
+            mapper.createObjectNode().set("a0", ((ObjectNode)mapper.createObjectNode().set("b", mapper.createObjectNode())).set("a1", mapper.createObjectNode()))}) {
             System.out.println(json);
             Jsr353WithCanonicalPaths paths = new Jsr353WithCanonicalPaths(json.toString());
             System.out.println(paths.m_pathToStartPosition);
