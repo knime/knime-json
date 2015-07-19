@@ -94,7 +94,8 @@ public class JSONToTableNodeModel extends NodeModel {
         kinds.put("$", rootKind);
         for (DataRow row : inData[0]) {
             columnSelectionContext.checkCanceled();
-            columnSelectionContext.setProgress(r++ / (double)all, "Analysing: " + row.getKey());
+            columnSelectionContext.setProgress(r++ / (double)all,
+                "Analysing: " + r + "/" + all + " (\"" + row.getKey() + "\")");
             DataCell cell = row.getCell(jsonIndex);
             if (cell instanceof JSONValue) {
                 JSONValue jv = (JSONValue)cell;
