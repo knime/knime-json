@@ -101,7 +101,6 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
  *
  * @author Gabor Bakos
  */
-@SuppressWarnings("restriction")
 public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONPathNodeModel.class);
 
@@ -227,30 +226,6 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
         return ret;
     }
 
-    //    /**
-    //     * Removes the input column if that settings is valid.
-    //     *
-    //     * @param inSpecs The input {@link DataTableSpec}.
-    //     * @param input The input column's name.
-    //     * @return The update {@link DataTableSpec}.
-    //     */
-    //    private DataTableSpec removeInputIfRequired(final DataTableSpec inSpecs, final String input) {
-    //        DataTableSpec specs = inSpecs;
-    //        if (m_settings.isRemoveInputColumn() && inSpecs.containsName(input)) {
-    //            int numColumns = specs.getNumColumns();
-    //            DataColumnSpec[] newSpecs = new DataColumnSpec[numColumns - 1];
-    //            int j = 0;
-    //            for (int i = 0; i < numColumns; ++i) {
-    //                DataColumnSpec spec = specs.getColumnSpec(i);
-    //                if (!spec.getName().equals(input)) {
-    //                    newSpecs[j++] = spec;
-    //                }
-    //            }
-    //            specs = new DataTableSpecCreator().addColumns(newSpecs).createSpec();
-    //        }
-    //        return specs;
-    //    }
-
     /**
      * @param setting The settings to generate a single column.
      * @param output The output column's {@link DataColumnSpec}.
@@ -273,7 +248,7 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
         final JsonPath jsonPath = JsonPath.compile(setting.getJsonPath());
         final OutputType returnType = setting.getReturnType();
         final boolean resultIsList = setting.isResultIsList();
-        return new SingleCellFactory(output) {
+        return new SingleCellFactory(true, output) {
             @Override
             public DataCell getCell(final DataRow row) {
                 DataCell cell = row.getCell(inputIndex);

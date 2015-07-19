@@ -19,7 +19,6 @@ import org.knime.json.node.util.OutputType;
  *
  * @author KNIME
  */
-@SuppressWarnings("restriction")
 public class JSONPathDictNodeDialog extends DefaultNodeSettingsPane {
 
     /**

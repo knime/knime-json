@@ -113,15 +113,17 @@ public final class JSONReaderNodeModel extends NodeModel {
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
         throws Exception {
-        BufferedDataContainer container = exec.createDataContainer(configure((PortObjectSpec[])null)[0]);
+        final BufferedDataContainer container = exec.createDataContainer(configure((PortObjectSpec[])null)[0]);
         int rowId = 0;
-        URL url = FileUtil.toURL(m_settings.getLocation());
+        final URL url = FileUtil.toURL(m_settings.getLocation());
         try {
-            File file = FileUtil.getFileFromURL(url);
+            final File file = FileUtil.getFileFromURL(url);
             CheckUtils.checkArgument(file != null, "Probably on server.");
+            @SuppressWarnings("null")
+            final URI uri = file.toURI();
             rowId = readUriContent(container, rowId,
-                new URIContent(file.toURI(), FilenameUtils.getExtension(file.getName())));
-        } catch (IllegalArgumentException e) {
+                new URIContent(uri, FilenameUtils.getExtension(file.getName())));
+        } catch (final IllegalArgumentException e) {
             //No problems
             //We read as a file, this is not a folder.
             rowId =

@@ -52,7 +52,6 @@ import com.jayway.jsonpath.Option;
  *
  * @author Gabor Bakos
  */
-@SuppressWarnings("restriction")
 public class JSONPathDictNodeModel extends NodeModel {
     /**
      * The key for the remove or not the source/input column boolean value ({@code true} means remove).

@@ -34,7 +34,6 @@ import org.knime.json.node.util.GUIFactory;
  *
  * @author Gabor Bakos
  */
-@SuppressWarnings("restriction")
 class TableToJsonNodeDialog extends NodeDialogPane {
     private final TableToJsonSettings m_settings = new TableToJsonSettings();
 

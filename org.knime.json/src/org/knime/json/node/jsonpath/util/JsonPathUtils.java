@@ -94,7 +94,6 @@ import com.jayway.jsonpath.JsonPath;
  *
  * @author Gabor Bakos
  */
-@SuppressWarnings("restriction")
 public class JsonPathUtils {
 
     /**

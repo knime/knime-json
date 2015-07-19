@@ -151,7 +151,7 @@ public class JSONToTableNodeModel extends NodeModel {
                 jsonPaths.put(kindEntry.getKey(), JsonPath.compile(kindEntry.getKey()));
             }
         }
-        rearranger.append(new AbstractCellFactory(specs) {
+        rearranger.append(new AbstractCellFactory(true, specs) {
             private final DataCell[] m_missingCells = new DataCell[kinds.size()];
             {
                 Arrays.fill(m_missingCells, DataType.getMissingCell());
