@@ -25,8 +25,6 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.container.AbstractCellFactory;
 import org.knime.core.data.container.ColumnRearranger;
-import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.def.IntCell;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.node.BufferedDataTable;
@@ -38,6 +36,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.util.UniqueNameGenerator;
 import org.knime.json.node.jsonpath.JsonPathUtil;
 import org.knime.json.node.jsonpath.util.JsonPathUtils;
 import org.knime.json.node.jsonpath.util.OutputKind;
@@ -139,23 +138,15 @@ public class JSONToTableNodeModel extends NodeModel {
             kinds.remove("$");
         }
         removeRedundant(kinds);
-        ColumnRearranger dummyRearranger = new ColumnRearranger(spec);
         DataColumnSpec[] specs = new DataColumnSpec[kinds.size()];
         final Map<String, JsonPath> jsonPaths = new LinkedHashMap<>();
         {
+            final UniqueNameGenerator nameGenerator = new UniqueNameGenerator(spec);
             int i = 0;
             for (Entry<String, OutputKind> kindEntry : kinds.entrySet()) {
-                final String proposedName = proposedName(kindEntry.getKey());
-                //ENH rearranger createSpec in a loop might be really slow when there are many columns.
-                final String realName = DataTableSpec.getUniqueColumnName(dummyRearranger.createSpec(), proposedName);
                 columnSelectionContext.checkCanceled();
-                dummyRearranger.append(new SingleCellFactory(new DataColumnSpecCreator(realName, IntCell.TYPE).createSpec()) {
-                    @Override
-                    public DataCell getCell(final DataRow row) {
-                        assert false;
-                        throw new IllegalStateException();
-                    }
-                });
+                final String proposedName = proposedName(kindEntry.getKey());
+                final String realName = nameGenerator.newName(proposedName);
                 specs[i++] = new DataColumnSpecCreator(realName, kindEntry.getValue().getDataType()).createSpec();
                 jsonPaths.put(kindEntry.getKey(), JsonPath.compile(kindEntry.getKey()));
             }
