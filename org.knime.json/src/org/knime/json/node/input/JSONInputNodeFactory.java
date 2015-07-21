@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME GmbH, Konstanz, Germany
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
@@ -42,78 +43,59 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * Created on 24.05.2013 by thor
+ * History
+ *   Created on Feb 15, 2015 by wiswedel
  */
-package org.knime.core.data.json;
+package org.knime.json.node.input;
 
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
-
-import org.apache.commons.lang3.StringUtils;
-import org.knime.core.data.DataColumnSpec;
-import org.knime.core.data.renderer.AbstractDataValueRendererFactory;
-import org.knime.core.data.renderer.DataValueRenderer;
-import org.knime.core.data.renderer.MultiLineStringValueRenderer;
-import org.knime.core.data.xml.XMLValueRenderer;
-import org.knime.json.util.JSONUtil;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
 
 /**
- * Default (multi-line String) renderer for JSON values. <br/>
- * Based on {@link XMLValueRenderer}.
+ * <code>NodeFactory</code> for the "JSONInput" Node. Allows to read a text and return it as a JSON value.
  *
- * @author Thorsten Meinl, KNIME.com, Zurich, Switzerland
  * @author Gabor Bakos
- * @since 2.11
+ * @author Bernd Wiswedel, KNIME.com, Zurich, Switzerland
  */
-@SuppressWarnings("serial")
-public final class JSONValueRenderer extends MultiLineStringValueRenderer {
+public class JSONInputNodeFactory extends NodeFactory<JSONInputNodeModel> {
     /**
-     * Factory for {@link JSONValueRenderer}.
+     * {@inheritDoc}
      */
-    public static final class Factory extends AbstractDataValueRendererFactory {
-        private static final String DESCRIPTION = "JSON value";
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getDescription() {
-            return DESCRIPTION;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public DataValueRenderer createRenderer(final DataColumnSpec colSpec) {
-            return new JSONValueRenderer(DESCRIPTION);
-        }
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param description a description for the renderer
-     */
-    JSONValueRenderer(final String description) {
-        super(description);
-    }
-
-    /** {@inheritDoc} */
     @Override
-    protected void setValue(final Object value) {
-        if (!(value instanceof JSONValue)) {
-            super.setValue(value);
-            return;
-        }
-        JsonValue v = ((JSONValue)value).getJsonValue();
-        String s;
-        if (v instanceof JsonStructure) {
-            s = JSONUtil.toPrettyJSONString((JsonStructure)v);
-        } else {
-            s = v.toString();
-        }
-        s = StringUtils.abbreviate(s, 10000);
-        super.setValue(s);
+    public JSONInputNodeModel createNodeModel() {
+        return new JSONInputNodeModel();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getNrNodeViews() {
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeView<JSONInputNodeModel> createNodeView(final int viewIndex, final JSONInputNodeModel nodeModel) {
+        throw new UnsupportedOperationException("No views! " + viewIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasDialog() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return new JSONInputNodeDialog();
     }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-out.png" type="QuickForm" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>JSON Output</name>
+    
+    <shortDescription>
+        Reads the content of a JSON column and makes it available to an external caller.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Reads the content of a JSON column and makes it available to an external caller. This node is used
+        in KNIME server web services, where the result of the web service is represented by the input of this node. By
+        default a JSON array is returned, where each row of the input table is an element in the array. Table with
+        no or only one row result in an array with zero or one element. This behaviour can be changed in the dialog, see
+        the settings below.
+        </intro>
+        
+        <option name="Parameter Name">A name, which serves as key in the resulting JSON object. This is used to
+        assert uniqueness in case multiple output results (nodes) are present in workflow.</option>
+        <option name="JSON Column">The column containing the JSON result. All other columns are ignored.</option>
+        <option name="Keep single-row tables simple">
+          For the special case that the input table contains one row with a non-missing JSON object (<i>{...}</i>)
+          this object is taken as result. Otherwise the result is wrapped into a JSON array, which is wrapped into an
+          object with key "array" containing the enumeration of all elements. This happens if the table has no rows 
+          or more than one, or in presence of missing values or other-typed JSON values such as arrays or primitives. 
+        </option>
+    </fullDescription>
+    <ports>
+        <inPort index="0" name="JSON Input">A table containing a JSON column whose content is made available to the caller.</inPort>
+    </ports>    
+    <views>
+    <view name="JSON Snapshot" index="0">Shows the JSON structure as read from the 
+        input (possibly converted into JSON array)</view>
+    </views>
+</knimeNode>

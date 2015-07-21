@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME GmbH, Konstanz, Germany
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
@@ -42,78 +43,64 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * Created on 24.05.2013 by thor
+ * History
+ *   21.07.2015 (thor): created
  */
-package org.knime.core.data.json;
+package org.knime.json.util;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Collections;
+
+import javax.json.Json;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
-
-import org.apache.commons.lang3.StringUtils;
-import org.knime.core.data.DataColumnSpec;
-import org.knime.core.data.renderer.AbstractDataValueRendererFactory;
-import org.knime.core.data.renderer.DataValueRenderer;
-import org.knime.core.data.renderer.MultiLineStringValueRenderer;
-import org.knime.core.data.xml.XMLValueRenderer;
-import org.knime.json.util.JSONUtil;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 /**
- * Default (multi-line String) renderer for JSON values. <br/>
- * Based on {@link XMLValueRenderer}.
+ * Various utility function for processing JSON.
  *
  * @author Thorsten Meinl, KNIME.com, Zurich, Switzerland
- * @author Gabor Bakos
- * @since 2.11
+ * @since 2.12
  */
-@SuppressWarnings("serial")
-public final class JSONValueRenderer extends MultiLineStringValueRenderer {
+public final class JSONUtil {
     /**
-     * Factory for {@link JSONValueRenderer}.
-     */
-    public static final class Factory extends AbstractDataValueRendererFactory {
-        private static final String DESCRIPTION = "JSON value";
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getDescription() {
-            return DESCRIPTION;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public DataValueRenderer createRenderer(final DataColumnSpec colSpec) {
-            return new JSONValueRenderer(DESCRIPTION);
-        }
-    }
-
-    /**
-     * Constructor.
+     * Returns a pretty-printed string representation of the given JSON object.
      *
-     * @param description a description for the renderer
+     * @param json a JSON structure
+     * @return a JSON string
      */
-    JSONValueRenderer(final String description) {
-        super(description);
+    public static String toPrettyJSONString(final JsonStructure json) {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriterFactory writerFactory =
+            Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+        try (JsonWriter jsonWriter = writerFactory.createWriter(stringWriter)) {
+            jsonWriter.write(json);
+        }
+        return stringWriter.toString();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected void setValue(final Object value) {
-        if (!(value instanceof JSONValue)) {
-            super.setValue(value);
-            return;
+
+    /**
+     * Parses the given string into a JSON object.
+     *
+     * @param s a JSON string
+     * @return a new JSON object
+     * @throws JsonException if parsing the object fails
+     */
+    public static JsonObject parseJSONValue(final String s) throws JsonException {
+        final Thread currentThread = Thread.currentThread();
+        ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+        currentThread.setContextClassLoader(JsonValue.class.getClassLoader());
+        try (JsonReader jsonReader = Json.createReader(new StringReader(s))) {
+            return jsonReader.readObject();
+        } finally {
+            currentThread.setContextClassLoader(contextClassLoader);
         }
-        JsonValue v = ((JSONValue)value).getJsonValue();
-        String s;
-        if (v instanceof JsonStructure) {
-            s = JSONUtil.toPrettyJSONString((JsonStructure)v);
-        } else {
-            s = v.toString();
-        }
-        s = StringUtils.abbreviate(s, 10000);
-        super.setValue(s);
     }
 }

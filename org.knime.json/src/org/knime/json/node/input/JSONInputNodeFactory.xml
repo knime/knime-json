@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-in.png" type="QuickForm"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>JSON Input</name>
+
+	<shortDescription>
+        Specify a text in the dialog and return it as a JSON value.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+			This nodes allows injecting a JSON value from outside, e.g. via the	advanced batch executor or server-exposed
+			workflow, into the workflow. The JSON value is returned as a single JSON cell in the column	<tt>json</tt>.
+		</intro>
+
+		<option name="JSON">
+			The text representing a default JSON value. It might contain comments
+			between	<pre>/* */</pre> or after <tt>#</tt> or	<tt>//</tt>	until the end of line.
+		</option>
+	</fullDescription>
+
+	<ports>
+		<outPort index="0" name="JSON">
+			Table containing a single JSON value in the column <tt>json</tt>.
+		</outPort>
+	</ports>
+</knimeNode>
