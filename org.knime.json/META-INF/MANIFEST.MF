@@ -7,7 +7,8 @@ Bundle-Activator: org.knime.json.internal.Activator
 Bundle-Vendor: KNIME Gmbh
 Export-Package: org.knime.core.data.json,
  org.knime.json.node.jsonpath;x-internal:=true,
- org.knime.json.node.util;x-internal:=true
+ org.knime.json.node.util;x-internal:=true,
+ org.knime.json.util
 Require-Bundle: com.jayway.jsonpath.json-path;bundle-version="[2.0.0,3.0.0)",
  com.github.fge.json-schema-core;bundle-version="[1.2.4,2.0.0)",
  com.github.fge.json-schema-validator;bundle-version="[2.2.5,3.0.0)",
