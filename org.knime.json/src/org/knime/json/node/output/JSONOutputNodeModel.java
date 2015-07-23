@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -45,6 +46,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
+import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.node.util.CheckUtils;
 
@@ -85,14 +87,13 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
     }
 
     private JsonObject readIntoJSONObject(final boolean allowStaleState) {
-        BufferedDataTable table = m_table;
-        CheckUtils.checkState(allowStaleState || table != null, "No table set, JSON output node must be executed");
-        if ((table == null) || (m_configuration.isKeepOneRowTablesSimple() && (table.getRowCount() == 0))) {
+        CheckUtils.checkState(allowStaleState || m_table != null, "No table set, JSON output node must be executed");
+        if ((m_table == null) || (m_configuration.isKeepOneRowTablesSimple() && (m_table.getRowCount() == 0))) {
             return Json.createObjectBuilder().build();
         }
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        final int rowCount = table.getRowCount();
-        try (CloseableRowIterator it = allowStaleState ? table.iteratorFailProve() : table.iterator()) {
+        final int rowCount = m_table.getRowCount();
+        try (CloseableRowIterator it = allowStaleState ? m_table.iteratorFailProve() : m_table.iterator()) {
             while (it.hasNext()) {
                 DataRow r = it.next();
                 DataCell cell = r.getCell(0);
@@ -100,10 +101,17 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
                     arrayBuilder.addNull();
                 } else {
                     JsonValue jsonValue = ((JSONValue)cell).getJsonValue();
-                    if (rowCount == 1 && m_configuration.isKeepOneRowTablesSimple() && jsonValue instanceof JsonObject) {
-                        return (JsonObject)jsonValue;
+                    if ((rowCount == 1) && m_configuration.isKeepOneRowTablesSimple()) {
+                        if (jsonValue instanceof JsonObject) {
+                            return (JsonObject)jsonValue;
+                        } else if (jsonValue instanceof JsonArray) {
+                            return Json.createObjectBuilder().add("array", jsonValue).build();
+                        } else {
+                            return Json.createObjectBuilder().add("value", jsonValue).build();
+                        }
+                    } else {
+                        arrayBuilder.add(jsonValue);
                     }
-                    arrayBuilder.add(jsonValue);
                 }
             }
         }
@@ -172,7 +180,13 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
     @Override
     public ExternalNodeData getExternalOutput() {
         String id = (m_configuration == null) ? "" : m_configuration.getParameterName();
+        ExternalNodeDataBuilder builder = ExternalNodeData.builder(id);
+        if (m_table != null) {
+            builder.jsonObject(readIntoJSONObject(false));
+        } else {
+            builder.jsonObject(ExternalNodeData.NO_JSON_VALUE_YET);
+        }
 
-        return ExternalNodeData.builder(id).jsonObject(readIntoJSONObject(false)).build();
+        return builder.build();
     }
 }
