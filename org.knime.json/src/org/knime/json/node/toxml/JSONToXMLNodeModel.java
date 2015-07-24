@@ -175,8 +175,12 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
                     JSONValue jsonValue = (JSONValue)input;
                     JsonValue json = jsonValue.getJsonValue();
                     TreeNode node = conv.toJackson(json);
-                    DataCell xml = createXmlCell(node);
-                    return xml;
+                    try {
+                        DataCell xml = createXmlCell(node);
+                        return xml;
+                    } catch (RuntimeException e) {
+                        throw new IllegalStateException("In row: " + row.getKey() + "; " + e.getMessage(), e);
+                    }
                 }
                 return DataType.getMissingCell();
             }

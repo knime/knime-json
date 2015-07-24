@@ -64,6 +64,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xmlbeans.impl.util.Base64;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.util.ErrorHandling;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -79,6 +80,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @author Gabor Bakos
  */
 public class Json2Xml {
+    /**
+     *
+     */
+    private static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
+
     /**
      * Some settings for {@link Json2Xml}.
      */
@@ -398,12 +404,58 @@ public class Json2Xml {
         Document doc = documentBuilder.newDocument();
         doc.setStrictErrorChecking(false);
         EnumSet<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
-        if (node.isArray() && node.size() == 0 && !m_looseTypeInfo) {
+        if (node.isArray() && node.size() == 0 && !isLooseTypeInfo()) {
             doc.appendChild(m_settings.m_array == null ? doc.createElement(m_settings.m_rootName) : doc
                 .createElementNS(LIST_NAMESPACE, m_settings.m_array + ":" + m_settings.m_rootName));
-            doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + m_settings.m_array,
+            doc.getDocumentElement().setAttributeNS(XMLNS_URI, "xmlns:" + m_settings.m_array,
                 LIST_NAMESPACE);
             setRootNamespace(doc.getDocumentElement());
+            return doc;
+        }
+        if (node.isValueNode()) {//Special casing value nodes.
+            CheckUtils.checkState(m_settings.getNamespace() == null || isLooseTypeInfo(),
+                "Type information selected to be kept, but also a default namespace was specified."
+                    + " Primitive values does not support this combination. Value: " + node);
+            final JsonPrimitiveTypes type;
+            if (node.isBoolean()) {
+                type = JsonPrimitiveTypes.BOOLEAN;
+            } else if (node.isIntegralNumber()) {
+                type = JsonPrimitiveTypes.INT;
+            } else if (node.isFloatingPointNumber()) {
+                type = JsonPrimitiveTypes.FLOAT;
+            } else if (node.isTextual()) {
+                type = JsonPrimitiveTypes.TEXT;
+            } else if (node.isBinary()) {//Not preserved information
+                type = JsonPrimitiveTypes.BINARY;
+            } else if (node.isNull()) {//Not supported currently
+                type = JsonPrimitiveTypes.NULL;
+            } else {
+                throw new IllegalStateException("Unknown primitive type: " + node + " [" + node.getNodeType() + "]");
+            }
+            final String namespace, prefix;
+            if (m_settings.getNamespace() == null) {
+                if (m_looseTypeInfo) {
+                    namespace = null;
+                    prefix = "";
+                } else {
+                    namespace = m_settings.namespace(type);
+                    prefix = m_settings.prefix(type) + ":";
+                }
+            } else {
+                namespace = m_settings.getNamespace();
+                prefix = "";
+            }
+
+            Element element;
+            if (namespace == null) {
+                element = doc.createElement(m_settings.m_rootName);
+            } else {
+                element = doc.createElementNS(namespace, prefix + m_settings.m_rootName);
+            }
+            if (!node.isNull()) {
+                element.setTextContent(node.asText());
+            }
+            doc.appendChild(element);
             return doc;
         }
         doc.appendChild(m_settings.m_namespace == null ? createElement(doc, m_settings.m_rootName) : doc
@@ -412,7 +464,7 @@ public class Json2Xml {
         Element root = doc.getDocumentElement();
         setRootNamespace(root);
         for (JsonPrimitiveTypes type : JsonPrimitiveTypes.values()) {
-            root.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + m_settings.prefix(type),
+            root.setAttributeNS(XMLNS_URI, "xmlns:" + m_settings.prefix(type),
                 m_settings.namespace(type));
         }
         create(null, null, node, doc.getDocumentElement(), types);
@@ -429,7 +481,7 @@ public class Json2Xml {
      */
     protected void setRootNamespace(final Element root) {
         if (m_settings.m_namespace != null) {
-            root.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:", m_settings.m_namespace);
+            root.setAttributeNS(XMLNS_URI, "xmlns:", m_settings.m_namespace);
         }
     }
 

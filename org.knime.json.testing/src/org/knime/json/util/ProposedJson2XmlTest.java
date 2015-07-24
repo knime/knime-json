@@ -102,6 +102,20 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root/>", "{}", new Options[]{}});
         ret.add(new Object[]{"<Array:root xmlns:Array=\"http://www.w3.org/2001/XMLSchema/list\"/>", "[]",
             new Options[]{}});
+        ret.add(new Object[]{"<root>3</root>", "3", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root>0.3</root>", "0.3", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root>true</root>", "true", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root>3</root>", "\"3\"", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root/>", "null", new Options[]{Options.looseTypeInfo}});
+        ret.add(new Object[]{"<Int:root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\">3</Int:root>", "3",
+            new Options[]{}});
+        ret.add(new Object[]{"<Real:root xmlns:Real=\"http://www.w3.org/2001/XMLSchema/decimal\">-0.3</Real:root>",
+            "-0.3", new Options[]{}});
+        ret.add(new Object[]{"<Bool:root xmlns:Bool=\"http://www.w3.org/2001/XMLSchema/boolean\">false</Bool:root>",
+            "false", new Options[]{}});
+        ret.add(new Object[]{"<Text:root xmlns:Text=\"http://www.w3.org/2001/XMLSchema/string\">ab</Text:root>",
+            "\"ab\"", new Options[]{Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<null:root xmlns:null=\"http://www.w3.org/2001/XMLSchema\"/>", "null", new Options[]{}});
         ret.add(new Object[]{"<root><item>3</item></root>", "[3]", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root><item>3</item></root>", "[\"3\"]", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root><item>3</item><item>4</item></root>", "[3, 4]",
