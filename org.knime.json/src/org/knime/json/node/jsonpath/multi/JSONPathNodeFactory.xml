@@ -50,7 +50,7 @@ The default path (<tt>$..*</tt>) will select all possible subparts (excluding th
             <option name="Add JSONPath">Adds a new row to the <i>Outputs</i> table.</option>
             <option name="Edit JSONPath">Allows to edit the selected row using a popup dialog.</option>
             <option name="Remove JSONPath">Removes the selected row from the <i>Outputs</i> table.</option>
-            <option name="Preview">The content of the first JSON value if available (helps in writing the JSONPath expressions, you can add new rows based on the location of the cursor, move it to the <u>value</u> you want to select and click <b>Add single query</b> or <b>Add collection query</b>). When a row is selected in <b>Outputs</b>, the expected results are highlighted.</option>
+            <option name="JSON-Cell Preview">The content of the first JSON value if available (helps in writing the JSONPath expressions, you can add new rows based on the location of the cursor, move it to the <u>value</u> you want to select and click <b>Add single query</b> or <b>Add collection query</b>). When a row is selected in <b>Outputs</b>, the expected results are highlighted.</option>
         </tab>
     </fullDescription>
     

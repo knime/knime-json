@@ -318,7 +318,10 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
             }
         });
         popup.add(menuItem);
-        panel.add(m_previewContainer, gbc);
+        JPanel preview = new JPanel(new BorderLayout());
+        preview.setBorder(new TitledBorder("JSON-Cell Preview"));
+        preview.add(m_previewContainer, BorderLayout.CENTER);
+        panel.add(preview, gbc);
         addTab("Settings", panel, true);
         //updateEnabled();
     }
