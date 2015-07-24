@@ -24,9 +24,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.knime.core.data.DataCell;
@@ -86,11 +84,12 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
         return new BufferedDataTable[0];
     }
 
-    private JsonObject readIntoJSONObject(final boolean allowStaleState) {
+    private JsonValue readIntoJsonValue(final boolean allowStaleState) {
         CheckUtils.checkState(allowStaleState || m_table != null, "No table set, JSON output node must be executed");
-        if ((m_table == null) || (m_configuration.isKeepOneRowTablesSimple() && (m_table.getRowCount() == 0))) {
-            return Json.createObjectBuilder().build();
+        if (m_table == null) {
+            return Json.createArrayBuilder().build();
         }
+
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         final int rowCount = m_table.getRowCount();
         try (CloseableRowIterator it = allowStaleState ? m_table.iteratorFailProve() : m_table.iterator()) {
@@ -102,24 +101,18 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
                 } else {
                     JsonValue jsonValue = ((JSONValue)cell).getJsonValue();
                     if ((rowCount == 1) && m_configuration.isKeepOneRowTablesSimple()) {
-                        if (jsonValue instanceof JsonObject) {
-                            return (JsonObject)jsonValue;
-                        } else if (jsonValue instanceof JsonArray) {
-                            return Json.createObjectBuilder().add("array", jsonValue).build();
-                        } else {
-                            return Json.createObjectBuilder().add("value", jsonValue).build();
-                        }
+                        return jsonValue;
                     } else {
                         arrayBuilder.add(jsonValue);
                     }
                 }
             }
         }
-        return Json.createObjectBuilder().add("array", arrayBuilder).build();
+        return arrayBuilder.build();
     }
 
-    JsonObject getViewJSONObject() {
-        return readIntoJSONObject(true);
+    JsonValue getViewJSONObject() {
+        return readIntoJsonValue(true);
     }
 
     /** {@inheritDoc} */
@@ -182,9 +175,9 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
         String id = (m_configuration == null) ? "" : m_configuration.getParameterName();
         ExternalNodeDataBuilder builder = ExternalNodeData.builder(id);
         if (m_table != null) {
-            builder.jsonObject(readIntoJSONObject(false));
+            builder.jsonValue(readIntoJsonValue(false));
         } else {
-            builder.jsonObject(ExternalNodeData.NO_JSON_VALUE_YET);
+            builder.jsonValue(JsonValue.NULL);
         }
 
         return builder.build();

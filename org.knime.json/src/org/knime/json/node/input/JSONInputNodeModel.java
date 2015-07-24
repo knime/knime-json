@@ -51,7 +51,7 @@ package org.knime.json.node.input;
 import java.io.File;
 import java.io.IOException;
 
-import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
@@ -85,7 +85,7 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
 
     private JSONInputNodeConfiguration m_configuration = new JSONInputNodeConfiguration();
 
-    private JsonObject m_externalValue;
+    private JsonValue m_externalValue;
 
     /**
      * Constructor for the node model.
@@ -171,7 +171,7 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     public ExternalNodeData getInputData() {
-        return ExternalNodeData.builder(m_configuration.getParameterName()).jsonObject(m_configuration.getValue())
+        return ExternalNodeData.builder(m_configuration.getParameterName()).jsonValue(m_configuration.getValue())
             .build();
     }
 
@@ -180,7 +180,7 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        if (inputData.getJSONObject() == null) {
+        if (inputData.getJSONValue() == null) {
             throw new InvalidSettingsException("No JSON input provided (is null)");
         }
     }
@@ -190,6 +190,6 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        m_externalValue = inputData.getJSONObject();
+        m_externalValue = inputData.getJSONValue();
     }
 }

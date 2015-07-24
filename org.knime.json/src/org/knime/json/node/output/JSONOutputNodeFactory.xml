@@ -9,8 +9,8 @@
     <fullDescription>
         <intro>Reads the content of a JSON column and makes it available to an external caller. This node is used
         in KNIME server web services, where the result of the web service is represented by the input of this node. By
-        default a JSON array is returned, where each row of the input table is an element in the array. Table with
-        no or only one row result in an array with zero or one element. This behaviour can be changed in the dialog, see
+        default a JSON array is returned, where each row of the input table is an element in the array. Tables with
+        no or only one row result in an array with zero or one element. This behavior can be changed in the dialog, see
         the settings below.
         </intro>
         
@@ -18,10 +18,8 @@
         assert uniqueness in case multiple output results (nodes) are present in workflow.</option>
         <option name="JSON Column">The column containing the JSON result. All other columns are ignored.</option>
         <option name="Keep single-row tables simple">
-          For the special case that the input table contains one row with a non-missing JSON object (<i>{...}</i>)
-          this object is taken as result. Otherwise the result is wrapped into a JSON array, which is wrapped into an
-          object with key "array" containing the enumeration of all elements. This happens if the table has no rows 
-          or more than one, or in presence of missing values or other-typed JSON values such as arrays or primitives. 
+          For the special case that the input table contains one row with a non-missing JSON value this value is taken
+          as result and not wrapped into a JSON array. 
         </option>
     </fullDescription>
     <ports>

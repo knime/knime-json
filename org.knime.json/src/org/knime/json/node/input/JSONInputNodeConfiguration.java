@@ -48,8 +48,9 @@
  */
 package org.knime.json.node.input;
 
-import javax.json.JsonException;
-import javax.json.JsonObject;
+import java.io.IOException;
+
+import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +68,7 @@ import org.knime.json.util.JSONUtil;
  * @author Bernd Wiswedel, KNIME.com, Zurich, Switzerland
  */
 final class JSONInputNodeConfiguration {
-    private JsonObject m_value = JsonProvider.provider().createObjectBuilder().build();
+    private JsonValue m_value = JsonProvider.provider().createObjectBuilder().build();
     private String m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONInputNodeModel.class);
 
     /**
@@ -75,7 +76,7 @@ final class JSONInputNodeConfiguration {
      *
      * @return a JSON value, never <code>null</code>
      */
-    JsonObject getValue() {
+    JsonValue getValue() {
         return m_value;
     }
 
@@ -97,7 +98,7 @@ final class JSONInputNodeConfiguration {
     JSONInputNodeConfiguration setValue(final String json) throws InvalidSettingsException {
         try {
             m_value = JSONUtil.parseJSONValue(json);
-        } catch (JsonException e) {
+        } catch (IOException e) {
             throw new InvalidSettingsException("Unable to parse JSON: " + e.getMessage(), e);
         }
         return this;

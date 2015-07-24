@@ -22,7 +22,7 @@ package org.knime.json.node.output;
 
 import java.awt.Dimension;
 
-import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
@@ -65,7 +65,7 @@ final class JSONOutputNodeView extends NodeView<JSONOutputNodeModel> {
     /** {@inheritDoc} */
     @Override
     protected void modelChanged() {
-        JsonObject viewJSONObject = getNodeModel().getViewJSONObject();
-        m_rSyntaxTextArea.setText(JSONUtil.toPrettyJSONString(viewJSONObject));
+        JsonValue viewJSONValue = getNodeModel().getViewJSONObject();
+        m_rSyntaxTextArea.setText(JSONUtil.toPrettyJSONString(viewJSONValue));
     }
 }

@@ -48,19 +48,24 @@
  */
 package org.knime.json.util;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 
 import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
+
+import org.knime.core.data.json.JacksonConversions;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 
 /**
  * Various utility function for processing JSON.
@@ -69,36 +74,46 @@ import javax.json.stream.JsonGenerator;
  * @since 2.12
  */
 public final class JSONUtil {
+    private static final ObjectMapper MAPPER = JacksonConversions.getInstance().newMapper()
+        .registerModule(new JSR353Module());
+
     /**
      * Returns a pretty-printed string representation of the given JSON object.
      *
      * @param json a JSON structure
      * @return a JSON string
      */
-    public static String toPrettyJSONString(final JsonStructure json) {
-        StringWriter stringWriter = new StringWriter();
-        JsonWriterFactory writerFactory =
-            Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
-        try (JsonWriter jsonWriter = writerFactory.createWriter(stringWriter)) {
-            jsonWriter.write(json);
+    public static String toPrettyJSONString(final JsonValue json) {
+        if (json instanceof JsonStructure) {
+            StringWriter stringWriter = new StringWriter();
+            JsonWriterFactory writerFactory =
+                Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+            try (JsonWriter jsonWriter = writerFactory.createWriter(stringWriter)) {
+                jsonWriter.write((JsonStructure) json);
+            }
+            return stringWriter.toString();
+        } else {
+            return json.toString();
         }
-        return stringWriter.toString();
     }
 
 
     /**
-     * Parses the given string into a JSON object.
+     * Parses the given string into a JSON value.
      *
      * @param s a JSON string
-     * @return a new JSON object
-     * @throws JsonException if parsing the object fails
+     * @return a new JSON value
+     * @throws IOException if parsing the presumed JSON string fails (usually no I/O error but an invalid string)
      */
-    public static JsonObject parseJSONValue(final String s) throws JsonException {
+    public static JsonValue parseJSONValue(final String s) throws IOException {
         final Thread currentThread = Thread.currentThread();
         ClassLoader contextClassLoader = currentThread.getContextClassLoader();
         currentThread.setContextClassLoader(JsonValue.class.getClassLoader());
-        try (JsonReader jsonReader = Json.createReader(new StringReader(s))) {
-            return jsonReader.readObject();
+
+        try {
+            final JsonFactory jsonFactory = MAPPER.getFactory();
+            JsonParser parser = jsonFactory.createParser(new StringReader(s));
+            return MAPPER.readValue(parser, JsonValue.class);
         } finally {
             currentThread.setContextClassLoader(contextClassLoader);
         }
