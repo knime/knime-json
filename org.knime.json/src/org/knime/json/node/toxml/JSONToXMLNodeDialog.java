@@ -338,8 +338,11 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_string.setText(getSettings().getString());
         m_keepTypeInfo.setSelected(getSettings().isKeepTypeInfo());
         m_specifyNamespace.setSelected(getSettings().isSpecifyNamespace());
+        m_namespace.setEnabled(m_specifyNamespace.isSelected());
         m_createTextForSpecificKeys.setSelected(getSettings().isCreateTextForSpecificKeys());
         m_keyForText.setText(getSettings().getKeyForText());
+        m_keyForText.setEnabled(m_createTextForSpecificKeys.isSelected());
+        m_wrapArrayElements.setSelected(!getSettings().isParentKeyAsElementName());
         m_useParentKeyAsElementName.setSelected(getSettings().isParentKeyAsElementName());
     }
 }
