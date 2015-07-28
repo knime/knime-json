@@ -84,6 +84,7 @@ public class Json2Xml {
      *
      */
     private static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
+    private static final String ORIGINALKEY_URI = "http://www.knime.org/json2xml/originalKey/";
 
     /**
      * Some settings for {@link Json2Xml}.
@@ -683,7 +684,7 @@ public class Json2Xml {
             return parentElement;
         }
         if (node.isObject()) {
-            final Element elem = createElement(doc, removeInvalidChars(origKey));
+            final Element elem = createElement(doc, origKey);
             parentElement.appendChild(elem);
             createSubObject(elem, (ObjectNode)node, types);
 //            createSubObject(parentElement, (ObjectNode)node, types);
@@ -862,14 +863,14 @@ public class Json2Xml {
                     addValueAsAttribute(elem, entry, types);
                     continue;
                 }
-                final Element object = create(removeInvalidChars(entry.getKey()), objectNode, node, elem, types);
+                final Element object = create(entry.getKey(), objectNode, node, elem, types);
                 if (object == elem) {
                     continue;
                 }
                 safeAdd(elem, object);
             } else if (node.isArray()) {
                 Document document = elem.getOwnerDocument();
-                Element elemBase = document.createElement(removeInvalidChars(entry.getKey()));
+                Element elemBase = document.createElement(entry.getKey());
                 safeAdd(elem, elemBase);
 //                elem.appendChild(elemBase);
                 for (JsonNode jsonNode : node) {
@@ -923,13 +924,13 @@ public class Json2Xml {
                         addValueAsAttribute(element, entry, types);
                     }
                     //                    Document doc = element.getOwnerDocument();
-                    //                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
+                    //                    Element elem = createElement(doc, entry.getKey());
                     //                    element.appendChild(elem);
                     //                    create(entry.getKey(), node, value, elem, types);
                 }
             } else if (value.isObject() || value.isArray()) {
                 if (value.isArray()) {
-                    Element elem = createElement(element.getOwnerDocument(), removeInvalidChars(entry.getKey()));
+                    Element elem = createElement(element.getOwnerDocument(), entry.getKey());
                     create(entry.getKey(), node, value, elem, types);
                     safeAdd(element, elem);
                 } else {
@@ -1168,8 +1169,12 @@ public class Json2Xml {
      */
     protected Element createElementWithContent(final String prefix, final String rawElementName, final JsonPrimitiveTypes type, final String content,
         final Document doc, final Set<JsonPrimitiveTypes> types) {
-        String elementName = elementName(prefix, removeInvalidChars(rawElementName), types, type);
+        String cleanName = removeInvalidChars(rawElementName);
+        String elementName = elementName(prefix, cleanName, types, type);
         Element elem = doc.createElementNS(m_looseTypeInfo ? getNamespace() : type.getDefaultNamespace(), elementName);
+        if (!cleanName.equals(rawElementName)) {
+            elem.setAttributeNS(ORIGINALKEY_URI, "ns:originalKey", rawElementName);
+        }
         elem.setTextContent(content);
         return elem;
     }
@@ -1340,7 +1345,7 @@ public class Json2Xml {
                 if (node.isArray()) {
                     boolean hasValue = hasValue(node);
                     for (JsonNode jsonNode : node) {
-                        Element elem = createElement(doc, removeInvalidChars(origKey));
+                        Element elem = createElement(doc, origKey);
                         if (jsonNode.isObject()) {
                             parentElement.appendChild(hasValue ? createItem(jsonNode, elem, hasValue, types)
                                 : createNoKey(node, jsonNode, elem, types));
@@ -1351,7 +1356,7 @@ public class Json2Xml {
                     return parentElement;
                 }
                 if (node.isObject()) {
-                    Element elem = createElement(doc, removeInvalidChars(origKey));
+                    Element elem = createElement(doc, origKey);
                     parentElement.appendChild(elem);
                     createSubObject(elem, (ObjectNode)node, types);
                     return parentElement;
@@ -1385,7 +1390,7 @@ public class Json2Xml {
                             if (entry.getKey().equals(textKey)) {
                                 elem.appendChild(elem.getOwnerDocument().createTextNode(node.asText()));
                             } else {
-                                Element obj = createElement(elem.getOwnerDocument(), removeInvalidChars(entry.getKey()));
+                                Element obj = createElement(elem.getOwnerDocument(), entry.getKey());
                                 safeAdd(elem, obj);
                                 elem.appendChild(obj);
                                 Element object = create(entry.getKey(), /*elem*/objectNode, node, obj, types);
@@ -1405,7 +1410,7 @@ public class Json2Xml {
                     } else if (node.isArray()) {
                         Document document = elem.getOwnerDocument();
                         for (JsonNode jsonNode : node) {
-                            Element element = createElement(document, removeInvalidChars(entry.getKey()));
+                            Element element = createElement(document, entry.getKey());
                             elem.appendChild(element);
                             if (jsonNode.isObject()) {
                                 Element created = createObjectWithoutParent((ObjectNode)jsonNode, element, types);
@@ -1492,7 +1497,7 @@ public class Json2Xml {
                                 addValueAsAttribute(element, entry, types);
                             }
                             //                    Document doc = element.getOwnerDocument();
-                            //                    Element elem = createElement(doc, removeInvalidChars(entry.getKey()));
+                            //                    Element elem = createElement(doc, entry.getKey());
                             //                    element.appendChild(elem);
                             //                    create(entry.getKey(), node, value, elem, types);
                         }
@@ -1528,6 +1533,12 @@ public class Json2Xml {
      * @return The {@link Element} with proper namespace.
      */
     protected Element createElement(final Document doc, final String name) {
-        return doc.createElementNS(m_settings.m_namespace, name);
+        String cleanName = removeInvalidChars(name);
+        if (cleanName.equals(name)) {
+            return doc.createElementNS(m_settings.m_namespace, name);
+        }
+        Element ret = doc.createElementNS(m_settings.m_namespace, cleanName);
+        ret.setAttributeNS(ORIGINALKEY_URI, "ns:originalKey", name);
+        return ret;
     }
 }
