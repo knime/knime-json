@@ -121,7 +121,7 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
 
     private static final String PARENT_KEY_AS_ELEMENT_NAME = "parent.key.as.element.name";
 
-    private static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = true;
+    private static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = false;
 
     private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT,
             m_array = DEFAULT_ARRAY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,

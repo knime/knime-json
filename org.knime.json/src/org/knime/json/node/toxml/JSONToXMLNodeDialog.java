@@ -58,7 +58,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -84,7 +83,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
 
     private JCheckBox m_keepTypeInfo, m_specifyNamespace, m_createTextForSpecificKeys;
     private ButtonGroup m_arrayBehaviour;
-    private JRadioButton m_wrapArrayElements, m_useParentKeyAsElementName;
+    private JCheckBox m_useParentKeyAsElementName;
 
     /**
      * New pane for configuring the JSONToXML node.
@@ -272,16 +271,10 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         elements.add(m_item, gbc);
         gbc.gridy++;
 
-        m_arrayBehaviour = new ButtonGroup();
-        m_wrapArrayElements = new JRadioButton("Wrap array items in XML elements");
-        m_useParentKeyAsElementName = new JRadioButton("Use parent keys as element name for arrays");
-        m_arrayBehaviour.add(m_wrapArrayElements);
-        m_arrayBehaviour.add(m_useParentKeyAsElementName);
+        m_useParentKeyAsElementName = new JCheckBox("Use parent keys as element name for arrays", false);
 
-        m_arrayBehaviour.setSelected(m_useParentKeyAsElementName.getModel(), true);
+        m_useParentKeyAsElementName.setSelected(false);
 
-        elements.add(m_wrapArrayElements, gbc);
-        gbc.gridy++;
         elements.add(m_useParentKeyAsElementName, gbc);
         return elements;
     }
@@ -342,7 +335,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_createTextForSpecificKeys.setSelected(getSettings().isCreateTextForSpecificKeys());
         m_keyForText.setText(getSettings().getKeyForText());
         m_keyForText.setEnabled(m_createTextForSpecificKeys.isSelected());
-        m_wrapArrayElements.setSelected(!getSettings().isParentKeyAsElementName());
         m_useParentKeyAsElementName.setSelected(getSettings().isParentKeyAsElementName());
     }
 }
