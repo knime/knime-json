@@ -100,11 +100,6 @@ public class ProposedJson2XmlTest {
     @Parameters(/*name = "{index}: input:{1}"*/)
     public static List<Object[]> parameters() {
         List<Object[]> ret = new ArrayList<>();
-        ret.add(new Object[]{"<root><a x=\"4\"><y><v>2</v></y></a><a><x>0</x><y><v>3</v></y></a></root>",
-            "{\"a\":[{\"@x\":4, \"y\":{\"v\":2}},{\"x\":0, \"y\":{\"v\":3}}]}",
-            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
-//        ret.add(new Object[]{"<root><a><c>2</c>text</a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
-//            new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root/>", "{}", new Options[]{}});
         ret.add(new Object[]{"<Array:root xmlns:Array=\"http://www.w3.org/2001/XMLSchema/list\"/>", "[]",
             new Options[]{}});
@@ -155,7 +150,7 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><b><item><c>2</c><d><t>text</t></d><e><t>text2</t></e></item></b></a></root>",
             "{\"a\":{\"b\":[{\"c\":2,\"d\":{\"t\":\"text\"},\"e\":{\"t\":\"text2\"}}]}}",
             new Options[]{Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root xmlns:Text=\"http://www.w3.org/2001/XMLSchema/string\" xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\"><a><Text:item><Int:c>2</Int:c>text</Text:item></a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}", new Options[]{}});
+        ret.add(new Object[]{"<root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\" xmlns:Text=\"http://www.w3.org/2001/XMLSchema/string\"><a><Text:item><Int:c>2</Int:c>text</Text:item></a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}", new Options[]{}});
         ret.add(new Object[]{"<root><a><c>2</c>text</a></root>", "{\"a\":[{\"c\":2,\"#text\":\"text\"}]}",
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root><a><item><q>p</q></item></a></root>",
