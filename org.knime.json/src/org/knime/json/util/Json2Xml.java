@@ -1366,7 +1366,7 @@ public class Json2Xml {
                     for (JsonNode jsonNode : node) {
                         Element elem = createElement(doc, origKey);
                         if (jsonNode.isObject()) {
-                            parentElement.appendChild(//hasValue ? createItem(jsonNode, elem, hasValue, types):
+                            parentElement.appendChild(hasValue(node) ? createItem(jsonNode, elem, hasValue, types):
                                 createNoKey(node, jsonNode, elem, types));
                         } else if (jsonNode.isArray()){
                             parentElement.appendChild(hasValue || node.isArray() ? createItem(jsonNode, elem, hasValue || node.isArray(), types):
@@ -1384,7 +1384,7 @@ public class Json2Xml {
                     return parentElement;
                 }
                 if (node.isValueNode()) {
-                    parentElement.appendChild(doc.createTextNode(node.asText()));
+                    parentElement.appendChild(doc.createTextNode(toString(node)));
                     return parentElement;
                 }
                 throw new IllegalStateException("Should not reach this! " + node);
@@ -1478,11 +1478,11 @@ public class Json2Xml {
                 if (node.isArray()) {
                     boolean hasValue = hasValueOrObject(node);
                     for (JsonNode child : node) {
-                        if (/*child.isObject() || */child.isArray() || (child.isObject() && !child.fields().hasNext())) {
-                            parentElement.appendChild(createItem(child, createElement(doc, getPrimitiveArrayItem()),
+                        if (child.isObject() || child.isArray()) {
+                            safeAdd(parentElement, createItem(child, createElement(doc, getPrimitiveArrayItem()),
                                 hasValue, types));
-                        } if (child.isObject()) {
-                            safeAdd(parentElement, createSubObject(parentElement, (ObjectNode)child, types));
+//                        } if (child.isObject()) {
+//                            safeAdd(parentElement, createSubObject(parentElement, (ObjectNode)child, types));
                         } else {
                             Element arrayItem = createItem(child, parentElement, hasValue, types);
                             parentElement.appendChild(arrayItem);
