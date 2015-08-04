@@ -53,7 +53,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -82,7 +81,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
             m_string, m_keyForText;
 
     private JCheckBox m_keepTypeInfo, m_specifyNamespace, m_createTextForSpecificKeys;
-    private ButtonGroup m_arrayBehaviour;
     private JCheckBox m_useParentKeyAsElementName;
 
     /**
@@ -330,6 +328,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_root.setText(getSettings().getRoot());
         m_string.setText(getSettings().getString());
         m_keepTypeInfo.setSelected(getSettings().isKeepTypeInfo());
+        updatePrefixEnabledness(getSettings().isKeepTypeInfo());
         m_specifyNamespace.setSelected(getSettings().isSpecifyNamespace());
         m_namespace.setEnabled(m_specifyNamespace.isSelected());
         m_createTextForSpecificKeys.setSelected(getSettings().isCreateTextForSpecificKeys());
