@@ -815,7 +815,7 @@ public class Json2Xml {
     }
 
     /**
-     * @param parent A non-{@code null} {@link JsonNode}.
+     * @param parent A non-{@code null} {@link JsonNode} an array.
      * @return <code>true</code> iff it has at least one {@link JsonNode#isValueNode() value}.
      */
     private static boolean hasValue(final JsonNode parent) {
@@ -823,6 +823,20 @@ public class Json2Xml {
         assert parent.isArray() : parent;
         for (JsonNode child : parent) {
             ret |= child.isValueNode();
+        }
+        return ret;
+    }
+
+    /**
+     * @param parent A non-{@code null} {@link JsonNode} (an array).
+     * @return <code>true</code> iff it has at least one {@link JsonNode#isValueNode() value} or
+     *         {@link JsonNode#isObject() object} child.
+     */
+    private static boolean hasValueOrObject(final JsonNode parent) {
+        boolean ret = false;
+        assert parent.isArray() : parent;
+        for (JsonNode child : parent) {
+            ret |= child.isValueNode() || child.isObject();
         }
         return ret;
     }
@@ -1120,7 +1134,12 @@ public class Json2Xml {
             if (forceItemElement) {
             Element arrayItem = createElement(doc, m_settings.m_primitiveArrayItem);
             for (JsonNode item : node) {
-                Element elem = create(null, node, item, arrayItem, types);
+                Element elem;
+                if (item.isArray()) {
+                    elem = createItem(item, arrayItem, true, types);
+                } else {
+                    elem = create(null, node, item, arrayItem, types);
+                }
                 safeAdd(arrayItem, elem);
             }
             safeAdd(element, arrayItem);
@@ -1343,13 +1362,16 @@ public class Json2Xml {
                 }
                 //We have parent key, so we are within an object
                 if (node.isArray()) {
-                    boolean hasValue = hasValue(node);
+                    boolean hasValue = hasValueOrObject(node);
                     for (JsonNode jsonNode : node) {
                         Element elem = createElement(doc, origKey);
                         if (jsonNode.isObject()) {
-                            parentElement.appendChild(hasValue ? createItem(jsonNode, elem, hasValue, types)
-                                : createNoKey(node, jsonNode, elem, types));
-                        } else {
+                            parentElement.appendChild(//hasValue ? createItem(jsonNode, elem, hasValue, types):
+                                createNoKey(node, jsonNode, elem, types));
+                        } else if (jsonNode.isArray()){
+                            parentElement.appendChild(hasValue || node.isArray() ? createItem(jsonNode, elem, hasValue || node.isArray(), types):
+                                createNoKey(node, jsonNode, elem, types));
+                        }else {
                             parentElement.appendChild(createNoKey(node, jsonNode, elem, types));
                         }
                     }
@@ -1418,7 +1440,8 @@ public class Json2Xml {
                                     continue;
                                 }
                             } else if (jsonNode.isArray()) {
-                                create(null, node, jsonNode, element, types);
+                                //create(null, node, jsonNode, element, types);
+                                createItem(jsonNode, element, true, types);
                             } else {
                                 fix(jsonNode, element, types);
                             }
@@ -1438,16 +1461,20 @@ public class Json2Xml {
                 //we are in the root, or in an array
                 assert parent == null || parent.isArray() : parent;
                 if (node.isValueNode()) {
-                    Element element = createItem(node, parentElement, false, types);
-                    parentElement.appendChild(element);
-                    return element;
+                    parentElement.setTextContent(toString(node));
+//                    Element element = createItem(node, parentElement, false, types);
+//                    parentElement.appendChild(element);
+//                    return element;
+                    return parentElement;
                 }
                 if (node.isArray()) {
-                    boolean hasValue = hasValue(node);
+                    boolean hasValue = hasValueOrObject(node);
                     for (JsonNode child : node) {
-                        if (child.isObject() || child.isArray()) {
+                        if (/*child.isObject() || */child.isArray()) {
                             parentElement.appendChild(createItem(child, createElement(doc, getPrimitiveArrayItem()),
                                 hasValue, types));
+                        } if (child.isObject()) {
+                            safeAdd(parentElement, createSubObject(parentElement, (ObjectNode)child, types));
                         } else {
                             Element arrayItem = createItem(child, parentElement, hasValue, types);
                             parentElement.appendChild(arrayItem);
@@ -1460,9 +1487,9 @@ public class Json2Xml {
                         //First object
                         return createObjectWithoutParent((ObjectNode)node, parentElement, types);
                     }
-                    boolean hasValue = hasValue(parent);
+                    boolean hasValue = hasValueOrObject(parent);
                     //object within array
-                    return createItem(node, parentElement, hasValue, types);
+                    return createSubObject(parentElement, (ObjectNode)node, types);//createItem(node, parentElement, hasValue, types);
                 }
                 //We already handled the missing case and object.
                 assert false : node;
