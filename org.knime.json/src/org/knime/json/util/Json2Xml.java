@@ -884,7 +884,7 @@ public class Json2Xml {
                 safeAdd(elem, object);
             } else if (node.isArray()) {
                 Document document = elem.getOwnerDocument();
-                Element elemBase = document.createElement(entry.getKey());
+                Element elemBase = createElement(document, entry.getKey());
                 safeAdd(elem, elemBase);
 //                elem.appendChild(elemBase);
                 for (JsonNode jsonNode : node) {
@@ -1412,11 +1412,19 @@ public class Json2Xml {
                             if (entry.getKey().equals(textKey)) {
                                 elem.appendChild(elem.getOwnerDocument().createTextNode(node.asText()));
                             } else {
-                                Element obj = createElement(elem.getOwnerDocument(), entry.getKey());
-                                safeAdd(elem, obj);
-                                elem.appendChild(obj);
-                                Element object = create(entry.getKey(), /*elem*/objectNode, node, obj, types);
-                                safeAdd(obj, object);
+                                if (node.isValueNode()) {
+                                    JsonPrimitiveTypes type = valueTypeToPrimitiveType(node);
+                                    safeAdd(elem,
+                                        createElementWithContent(settings.prefix(type), entry.getKey(), type,
+                                            toString(node), elem.getOwnerDocument(), types));
+                                } else {
+                                    Element obj = createElement(elem.getOwnerDocument(), entry.getKey());
+                                    safeAdd(elem, obj);
+                                    //elem.appendChild(obj);
+                                    Element object;
+                                    object = create(entry.getKey(), /*elem*/objectNode, node, obj, types);
+                                    safeAdd(obj, object);
+                                }
 //                                if (object == elem) {
 //                                    continue;
 //                                }
@@ -1470,7 +1478,7 @@ public class Json2Xml {
                 if (node.isArray()) {
                     boolean hasValue = hasValueOrObject(node);
                     for (JsonNode child : node) {
-                        if (/*child.isObject() || */child.isArray()) {
+                        if (/*child.isObject() || */child.isArray() || (child.isObject() && !child.fields().hasNext())) {
                             parentElement.appendChild(createItem(child, createElement(doc, getPrimitiveArrayItem()),
                                 hasValue, types));
                         } if (child.isObject()) {
