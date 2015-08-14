@@ -34,13 +34,11 @@
       <node category-path="/labs/json" factory-class="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory" id="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory" after="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" />
       <node
             category-path="/labs/json"
-            expert-flag="false"
             factory-class="org.knime.json.node.input.JSONInputNodeFactory"
             id="org.knime.json.node.input.JSONInputNodeFactory">
       </node>
       <node
             category-path="/labs/json"
-            expert-flag="false"
             factory-class="org.knime.json.node.output.JSONOutputNodeFactory"
             id="org.knime.json.node.output.JSONOutputNodeFactory">
       </node>
