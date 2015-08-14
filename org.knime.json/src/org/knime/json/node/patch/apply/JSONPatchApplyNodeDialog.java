@@ -55,7 +55,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.fife.rsyntaxarea.internal.RSyntaxAreaActivator;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -73,10 +72,6 @@ import org.knime.json.node.util.RemoveOrAddColumnDialog;
  * @author Gabor Bakos
  */
 public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSONPatchApplySettings> {
-    static {
-        RSyntaxAreaActivator.ensureWorkaroundBug3692Applied();
-    }
-
     private JComboBox<String> m_patchType;
 
     private RSyntaxTextArea m_patch;

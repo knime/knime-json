@@ -59,7 +59,6 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.fife.rsyntaxarea.internal.RSyntaxAreaActivator;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -81,10 +80,6 @@ import org.knime.json.node.util.GUIFactory;
  * @author Gabor Bakos
  */
 public final class JSONSchemaCheckNodeDialog extends NodeDialogPane {
-    static {
-        RSyntaxAreaActivator.ensureWorkaroundBug3692Applied();
-    }
-
     @SuppressWarnings("unchecked")
     private ColumnSelectionComboxBox m_input = new ColumnSelectionComboxBox(JSONValue.class);
 
