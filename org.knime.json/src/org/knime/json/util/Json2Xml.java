@@ -56,7 +56,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -71,7 +70,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -709,7 +707,6 @@ public class Json2Xml {
      * @return The converted {@link Element}.
      * @throws IOException Problem decoding binary values.
      */
-    @Deprecated
     protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
         final Set<JsonPrimitiveTypes> types) throws IOException {
         Document doc = parentElement.getOwnerDocument();
@@ -740,7 +737,7 @@ public class Json2Xml {
                 //First object
                 return createObjectWithoutParent((ObjectNode)node, parentElement, types);
             }
-            boolean hasValue = hasValue(parent);
+            //boolean hasValue = hasValue(parent);
             boolean conflictWithinAttributes =true; //hasValue;//parent.isArray() && !node.isArray(); //TODO hasValue || conflictInAttributes((ArrayNode)parent);
             //object within array
             return createItem(node, parentElement, conflictWithinAttributes, types);
@@ -748,55 +745,6 @@ public class Json2Xml {
         //We already handled the missing case and object.
         assert false : node;
         throw new IllegalStateException("Should not reach this! " + node);
-    }
-
-    /**
-     * Checks whether there would be a conflict (not all the same) within attributes if the attributes were moved
-     * upwards.
-     *
-     * @param parent The paren {@link ArrayNode}.
-     * @return Conflict or not.
-     * @deprecated we are now explicit about the attributes.
-     */
-    @Deprecated
-    private boolean conflictInAttributes(final ArrayNode parent) {
-        assert !hasValue(parent) : parent;
-        boolean ret = false;
-        if (parent.size() == 0) {
-            return false;
-        }
-        Map<String, JsonNode> values;
-        Iterator<JsonNode> it = parent.iterator();
-        JsonNode obj = it.next();
-        assert obj.isObject();
-        if (obj instanceof ObjectNode) {
-            ObjectNode on = (ObjectNode)obj;
-            values = possibleAttributesAndValues(on);
-        } else {
-            return true;
-        }
-        for (; it.hasNext();) {
-            JsonNode next = it.next();
-            if (!(next instanceof ObjectNode)) {
-                return true;
-            }
-            Map<String, JsonNode> attributeTypes = possibleAttributesAndValues((ObjectNode)next);
-            Iterator<Entry<String, JsonNode>> it1 = values.entrySet().iterator();
-            Iterator<Entry<String, JsonNode>> it2 = attributeTypes.entrySet().iterator();
-            for (; it1.hasNext() && it2.hasNext();) {
-                Entry<String, JsonNode> next1 = it1.next(), next2 = it2.next();
-                if (!Objects.equals(next1.getKey(), next2.getKey())) {
-                    return true;
-                }
-                if (!Objects.equals(next1.getValue(), next2.getValue())) {
-                    return true;
-                }
-            }
-            if (it1.hasNext() != it2.hasNext()) {
-                return true;
-            }
-        }
-        return ret;
     }
 
     /**
@@ -878,9 +826,9 @@ public class Json2Xml {
                     continue;
                 }
                 final Element object = create(entry.getKey(), objectNode, node, elem, types);
-                if (object == elem) {
-                    continue;
-                }
+//                if (object == elem) {
+//                    continue;
+//                }
                 safeAdd(elem, object);
             } else if (node.isArray()) {
                 Document document = elem.getOwnerDocument();
@@ -1133,9 +1081,10 @@ public class Json2Xml {
         } else if (node.isArray()) {
             if (forceItemElement) {
             Element arrayItem = createElement(doc, m_settings.m_primitiveArrayItem);
+            boolean hasValue = hasValue(node);
             for (JsonNode item : node) {
                 Element elem;
-                if (item.isArray()) {
+                if (item.isArray() || hasValue || hasAttribute(item)) {
                     elem = createItem(item, arrayItem, true, types);
                 } else {
                     elem = create(null, node, item, arrayItem, types);
@@ -1180,6 +1129,7 @@ public class Json2Xml {
      * Creates element with text content.
      *
      * @param prefix The prefix to use.
+     * @param rawElementName The raw {@link Element} name for the to be created element.
      * @param type The type of the element.
      * @param content The text content.
      * @param doc The owner document.
@@ -1338,6 +1288,17 @@ public class Json2Xml {
         }
     }
 
+    private boolean hasAttribute(final JsonNode jsonNode) {
+        assert jsonNode.isObject(): jsonNode + " " + jsonNode.getNodeType();
+        ObjectNode obj = (ObjectNode)jsonNode;
+        for (Iterator<String> it = obj.fieldNames(); it.hasNext();) {
+            if (it.next().startsWith("@")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Creates a {@link Json2Xml} object that transforms the content like <code>{"a":[{"b":2},{"c":3}]}</code> to
      * {@code <a b="2"/><a c="3"/>}. By default it keeps the type information.
@@ -1362,14 +1323,15 @@ public class Json2Xml {
                 }
                 //We have parent key, so we are within an object
                 if (node.isArray()) {
-                    boolean hasValue = hasValueOrObject(node);
+                    boolean hasValueOrObject = hasValueOrObject(node);
+                    boolean hasValue = hasValue(node);
                     for (JsonNode jsonNode : node) {
                         Element elem = createElement(doc, origKey);
                         if (jsonNode.isObject()) {
-                            parentElement.appendChild(hasValue(node) ? createItem(jsonNode, elem, hasValue, types):
+                            parentElement.appendChild(hasValue/* || hasAttribute(jsonNode)*/ ? createItem(jsonNode, elem, hasValueOrObject, types):
                                 createNoKey(node, jsonNode, elem, types));
                         } else if (jsonNode.isArray()){
-                            parentElement.appendChild(hasValue || node.isArray() ? createItem(jsonNode, elem, hasValue || node.isArray(), types):
+                            parentElement.appendChild(hasValueOrObject || node.isArray() ? createItem(jsonNode, elem, hasValueOrObject || node.isArray(), types):
                                 createNoKey(node, jsonNode, elem, types));
                         }else {
                             parentElement.appendChild(createNoKey(node, jsonNode, elem, types));
@@ -1396,12 +1358,12 @@ public class Json2Xml {
             @Override
             protected Element createSubObject(final Element elem, final ObjectNode objectNode,
                 final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-                boolean hasTextKey = false;
+//                boolean hasTextKey = false;
                 String textKey = getTextKey();
-                for (Iterator<String> nameIt = objectNode.fieldNames(); nameIt.hasNext();) {
-                    String name = nameIt.next();
-                    hasTextKey |= name.equals(textKey);
-                }
+//                for (Iterator<String> nameIt = objectNode.fieldNames(); nameIt.hasNext();) {
+//                    String name = nameIt.next();
+//                    hasTextKey |= name.equals(textKey);
+//                }
                 for (Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
                     Entry<String, JsonNode> entry = fields.next();
                     JsonNode node = entry.getValue();
@@ -1443,10 +1405,10 @@ public class Json2Xml {
                             Element element = createElement(document, entry.getKey());
                             elem.appendChild(element);
                             if (jsonNode.isObject()) {
-                                Element created = createObjectWithoutParent((ObjectNode)jsonNode, element, types);
-                                if (created == element) {
-                                    continue;
-                                }
+                                /*Element created =*/ createObjectWithoutParent((ObjectNode)jsonNode, element, types);
+//                                if (created == element) {
+//                                    continue;
+//                                }
                             } else if (jsonNode.isArray()) {
                                 //create(null, node, jsonNode, element, types);
                                 createItem(jsonNode, element, true, types);
@@ -1495,7 +1457,7 @@ public class Json2Xml {
                         //First object
                         return createObjectWithoutParent((ObjectNode)node, parentElement, types);
                     }
-                    boolean hasValue = hasValueOrObject(parent);
+                    //boolean hasValue = hasValueOrObject(parent);
                     //object within array
                     return createSubObject(parentElement, (ObjectNode)node, types);//createItem(node, parentElement, hasValue, types);
                 }
