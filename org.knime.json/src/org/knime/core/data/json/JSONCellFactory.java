@@ -50,10 +50,15 @@ package org.knime.core.data.json;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.text.ParseException;
 
 import javax.json.JsonValue;
 
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataCellFactory.FromComplexString;
+import org.knime.core.data.DataCellFactory.FromInputStream;
+import org.knime.core.data.DataCellFactory.FromReader;
+import org.knime.core.data.DataCellFactory.FromSimpleString;
 import org.knime.core.data.DataType;
 import org.knime.core.data.container.BlobDataCell;
 import org.knime.core.data.xml.XMLCellFactory;
@@ -69,7 +74,7 @@ import org.knime.core.node.NodeLogger;
  * @author Heiko Hofer
  * @author Gabor Bakos
  */
-public final class JSONCellFactory {
+public final class JSONCellFactory implements FromSimpleString, FromComplexString, FromInputStream, FromReader {
     /**
      * Minimum size for blobs in bytes. That is, if a given string is at least as large as this value, it will be
      * represented by a blob cell
@@ -239,5 +244,45 @@ public final class JSONCellFactory {
                 return new JSONCell(content);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.0
+     */
+    @Override
+    public DataCell createCell(final String input) {
+        try {
+            return create(input, false);
+        } catch (IOException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.0
+     */
+    @Override
+    public DataType getDataType() {
+        return TYPE;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.0
+     */
+    @Override
+    public DataCell createCell(final Reader input) throws ParseException, IOException {
+        return create(input, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 3.0
+     */
+    @Override
+    public DataCell createCell(final InputStream input) throws IOException {
+        return create(input, false);
     }
 }

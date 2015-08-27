@@ -56,7 +56,6 @@ import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
 import org.knime.core.data.DataCellSerializer;
 import org.knime.core.data.DataType;
-import org.knime.core.data.DataValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.xml.XMLCell;
 
@@ -78,9 +77,12 @@ public final class JSONCell extends DataCell implements JSONValue, StringValue {
      */
     public static final DataType TYPE = DataType.getType(JSONCell.class);
 
-    private final static JSONSerializer SERIALIZER = new JSONSerializer();
-
-    private static final class JSONSerializer implements DataCellSerializer<JSONCell> {
+    /**
+     * Serializer for {@link JSONCell}s.
+     *
+     * @noreference This class is not intended to be referenced by clients.
+     */
+    public static final class JSONSerializer implements DataCellSerializer<JSONCell> {
         /**
          * {@inheritDoc}
          */
@@ -103,29 +105,11 @@ public final class JSONCell extends DataCell implements JSONValue, StringValue {
         }
     }
 
-    /**
-     * Returns the serializer for JSON cells.
-     *
-     * @return a serializer
-     */
-    public static DataCellSerializer<JSONCell> getCellSerializer() {
-        return SERIALIZER;
-    }
-
-    /**
-     * Returns the preferred value class for JSON cells which is {@link JSONValue}.
-     *
-     * @return the preferred value class
-     */
-    public static Class<? extends DataValue> getPreferredValueClass() {
-        return JSONValue.class;
-    }
-
     private final JSONCellContent m_content;
 
     /**
      * Create a new instance.
-     * 
+     *
      * @param content the content of this cell
      */
     JSONCell(final JSONCellContent content) {

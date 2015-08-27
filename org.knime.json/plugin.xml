@@ -61,4 +61,19 @@
          </renderer>
       </dataValue>
    </extension>
+   <extension
+         point="org.knime.core.DataType">
+      <DataType
+            cellClass="org.knime.core.data.json.JSONCell"
+            factoryClass="org.knime.core.data.json.JSONCellFactory">
+         <serializer
+               cellClass="org.knime.core.data.json.JSONCell"
+               serializerClass="org.knime.core.data.json.JSONCell$JSONSerializer">
+         </serializer>
+         <serializer
+               cellClass="org.knime.core.data.json.JSONBlobCell"
+               serializerClass="org.knime.core.data.json.JSONBlobCell$JSONSerializer">
+         </serializer>
+      </DataType>
+   </extension>
 </plugin>

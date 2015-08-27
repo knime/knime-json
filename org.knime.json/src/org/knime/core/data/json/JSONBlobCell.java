@@ -56,7 +56,6 @@ import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
 import org.knime.core.data.DataCellSerializer;
 import org.knime.core.data.DataType;
-import org.knime.core.data.DataValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.BlobDataCell;
 import org.knime.core.data.xml.XMLBlobCell;
@@ -74,9 +73,12 @@ import org.knime.core.data.xml.XMLBlobCell;
  */
 @SuppressWarnings("serial")
 public final class JSONBlobCell extends BlobDataCell implements JSONValue, StringValue {
-    private final static JSONSerializer SERIALIZER = new JSONSerializer();
-
-    private static final class JSONSerializer implements DataCellSerializer<JSONBlobCell> {
+    /**
+     * Serializer for {@link JSONBlobCell}s.
+     *
+     * @noreference This class is not intended to be referenced by clients.
+     */
+    public static final class JSONSerializer implements DataCellSerializer<JSONBlobCell> {
         /**
          * {@inheritDoc}
          */
@@ -99,32 +101,14 @@ public final class JSONBlobCell extends BlobDataCell implements JSONValue, Strin
         }
     }
 
-    /**
-     * Returns the serializer for JSON cells.
-     *
-     * @return a serializer
-     */
-    public static DataCellSerializer<JSONBlobCell> getCellSerializer() {
-        return SERIALIZER;
-    }
-
-    /**
-     * Returns the preferred value class for JSON cells which is {@link JSONValue}.
-     *
-     * @return the preferred value class
-     */
-    public static Class<? extends DataValue> getPreferredValueClass() {
-        return JSONValue.class;
-    }
-
     private final JSONCellContent m_content;
 
     /**
      * Create a new instance.
-     * 
+     *
      * @param content the content of this cell
      */
-    public JSONBlobCell(final JSONCellContent content) {
+    JSONBlobCell(final JSONCellContent content) {
         m_content = content;
     }
 
