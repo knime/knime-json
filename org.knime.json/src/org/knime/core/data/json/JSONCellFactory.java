@@ -116,11 +116,6 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
     /** Type for JSON cells. */
     public static final DataType TYPE = DataType.getType(JSONCell.class);
 
-    /** Don't instantiate this class. */
-    private JSONCellFactory() {
-        //// private constructor prevents that an instance is created
-    }
-
     /**
      * Factory method to create {@link DataCell} representing {@link JsonValue}. The returned cell is either of type
      * {@link JSONCell} (for small documents) or {@link JSONBlobCell} (otherwise, default threshold is
