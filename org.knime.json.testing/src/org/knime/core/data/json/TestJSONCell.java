@@ -73,13 +73,13 @@ public class TestJSONCell {
      */
     @Test
     public void testGetCellSerializer() throws IOException {
-        DataCellSerializer<JSONCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
+        DataCellSerializer<DataCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
                 .orElseThrow(() -> new IllegalStateException("No serializer for JSONCell found"));
         for (final String input : new String[]{"[ ]", "[{\"foo\": \"bar\"},{\"foo\": \"biz\"}]", "42", /*"null",*/
         "\"\"", "true", "{}", "{\"foo\": {\"key\": 32}}", "{\"\": []}"}) {
             DataCellDataOutput output = new DataCellDataOutputImplementation(input);
-            serializer.serialize((JSONCell)JSONCellFactory.create(input, false), output);
-            JSONCell jsonCell = serializer.deserialize(new DataCellDataInputImplementation(input));
+            serializer.serialize(JSONCellFactory.create(input, false), output);
+            DataCell jsonCell = serializer.deserialize(new DataCellDataInputImplementation(input));
             assertEquals(input, norm(JSONCellFactory.create(input, false).toString()), norm(jsonCell.toString()));
             assertEquals(input, JSONCellFactory.create(input, false), jsonCell);
         }
@@ -92,7 +92,7 @@ public class TestJSONCell {
      */
     @Test(expected = NullPointerException.class)
     public void testNull() throws IOException {
-        DataCellSerializer<JSONCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
+        DataCellSerializer<DataCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
                 .orElseThrow(() -> new IllegalStateException("No serializer for JSONCell found"));
         serializer.deserialize(new DataCellDataInputImplementation("null"));
     }
