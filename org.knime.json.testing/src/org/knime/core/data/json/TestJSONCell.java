@@ -57,6 +57,7 @@ import org.knime.core.data.DataCell;
 import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
 import org.knime.core.data.DataCellSerializer;
+import org.knime.core.data.DataTypeRegistry;
 
 /**
  * Tests the {@link JSONCell} class.
@@ -72,7 +73,8 @@ public class TestJSONCell {
      */
     @Test
     public void testGetCellSerializer() throws IOException {
-        DataCellSerializer<JSONCell> serializer = JSONCell.getCellSerializer();
+        DataCellSerializer<JSONCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
+                .orElseThrow(() -> new IllegalStateException("No serializer for JSONCell found"));
         for (final String input : new String[]{"[ ]", "[{\"foo\": \"bar\"},{\"foo\": \"biz\"}]", "42", /*"null",*/
         "\"\"", "true", "{}", "{\"foo\": {\"key\": 32}}", "{\"\": []}"}) {
             DataCellDataOutput output = new DataCellDataOutputImplementation(input);
@@ -90,7 +92,8 @@ public class TestJSONCell {
      */
     @Test(expected = NullPointerException.class)
     public void testNull() throws IOException {
-        DataCellSerializer<JSONCell> serializer = JSONCell.getCellSerializer();
+        DataCellSerializer<JSONCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
+                .orElseThrow(() -> new IllegalStateException("No serializer for JSONCell found"));
         serializer.deserialize(new DataCellDataInputImplementation("null"));
     }
 
@@ -107,7 +110,7 @@ public class TestJSONCell {
      */
     @Test
     public void testGetPreferredValueClass() {
-        assertEquals(JSONValue.class, JSONCell.getPreferredValueClass());
+        assertEquals(JSONValue.class, JSONCellFactory.TYPE.getPreferredValueClass());
     }
 
     /**
