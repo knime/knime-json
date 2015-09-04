@@ -306,6 +306,43 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><y>4</y></a><a x=\"true\"/></root>",
             "{\"a\" : [ {\"y\" : 4}, {\"@x\" : true}]}",
             new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\"><Int:blahblah xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\" ns:originalKey=\"blah blah\">3</Int:blahblah></root>", "{\"blah blah\" : [ 3]}",
+            new Options[]{Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\"><Int:a>3</Int:a></root>", "{\"a\" : [ 3]}",
+            new Options[]{Options.UseParentKeyWhenPossible}});
+        ret.add(new Object[]{"<root><item/><item/></root>",
+            "[ [], []]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><item/></a><a><item/></a></root>",
+            "{\"a\": [ [], []]}",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item><item>4</item></item><item><item>2</item></item></root>",
+            "[ [4], [2]]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item>4</item><item>2</item></root>",
+            "[ 4, 2]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item>4</item><item><item><item>3</item><item>2</item></item></item></root>",
+            "[ 4, [[3, 2]]]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item>4</item><item><item>3</item><item>2</item></item></root>",
+            "[ 4, [3, 2]]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item><b>4</b></item><item>3</item><item>2</item></root>",
+            "[ {\"b\":4}, 3, 2]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><item><b>4</b></item><item><item>3</item><item>2</item></item></root>",
+            "[ {\"b\":4}, [3, 2]]",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><b>4</b></a><a>3</a><a>2</a></root>",
+            "{\"a\" : [ {\"b\":4}, 3, 2]}",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><item><item>4</item></item></a><a>3</a></root>",
+            "{\"a\" : [ [4], 3]}",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
+        ret.add(new Object[]{"<root><a><b>4</b></a><a><item><item>3</item></item></a></root>",
+            "{\"a\" : [ {\"b\":4}, [3]]}",
+            new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
         return ret;
     }
 

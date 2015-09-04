@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component id="org.knime.json" version="2">
+    <resource path="META-INF/MANIFEST.MF">
+        <filter id="924844039">
+            <message_arguments>
+                <message_argument value="2.12.1"/>
+                <message_argument value="2.12.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/util/Json2Xml.java" type="org.knime.json.util.Json2Xml">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.Json2Xml"/>
+                <message_argument value="createWrong(String, JsonNode, JsonNode, Element, Set&lt;JsonPrimitiveTypes&gt;)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.Json2Xml"/>
+                <message_argument value="possibleAttributesAndValues(ObjectNode)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+</component>

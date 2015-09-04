@@ -53,7 +53,6 @@ import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -70,6 +69,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -81,7 +81,13 @@ public class Json2Xml {
     /**
      *
      */
+    private static final String NS_ORIGINAL_KEY = "ns:originalKey";
+
+    /**
+     *
+     */
     private static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
+
     private static final String ORIGINALKEY_URI = "http://www.knime.org/json2xml/originalKey/";
 
     /**
@@ -401,76 +407,95 @@ public class Json2Xml {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document doc = documentBuilder.newDocument();
+        //Necessary because of {"a":[{"c":2,"#text":"text"}]} with type prefixes for item.
+        //Though unfortunately it also makes tags like <4> possible.
         doc.setStrictErrorChecking(false);
+        //The used types
         EnumSet<JsonPrimitiveTypes> types = EnumSet.noneOf(JsonPrimitiveTypes.class);
         if (node.isArray() && node.size() == 0 && !isLooseTypeInfo()) {
-            doc.appendChild(m_settings.m_array == null ? doc.createElement(m_settings.m_rootName) : doc
-                .createElementNS(LIST_NAMESPACE, m_settings.m_array + ":" + m_settings.m_rootName));
-            doc.getDocumentElement().setAttributeNS(XMLNS_URI, "xmlns:" + m_settings.m_array,
-                LIST_NAMESPACE);
-            setRootNamespace(doc.getDocumentElement());
+            specialCaseEmptyArrayWithTypes(doc);
             return doc;
         }
         if (node.isValueNode()) {//Special casing value nodes.
-            CheckUtils.checkState(m_settings.getNamespace() == null || isLooseTypeInfo(),
-                "Type information selected to be kept, but also a default namespace was specified."
-                    + " Primitive values does not support this combination. Value: " + node);
-            final JsonPrimitiveTypes type;
-            if (node.isBoolean()) {
-                type = JsonPrimitiveTypes.BOOLEAN;
-            } else if (node.isIntegralNumber()) {
-                type = JsonPrimitiveTypes.INT;
-            } else if (node.isFloatingPointNumber()) {
-                type = JsonPrimitiveTypes.FLOAT;
-            } else if (node.isTextual()) {
-                type = JsonPrimitiveTypes.TEXT;
-            } else if (node.isBinary()) {//Not preserved information
-                type = JsonPrimitiveTypes.BINARY;
-            } else if (node.isNull()) {//Not supported currently
-                type = JsonPrimitiveTypes.NULL;
-            } else {
-                throw new IllegalStateException("Unknown primitive type: " + node + " [" + node.getNodeType() + "]");
-            }
-            final String namespace, prefix;
-            if (m_settings.getNamespace() == null) {
-                if (m_looseTypeInfo) {
-                    namespace = null;
-                    prefix = "";
-                } else {
-                    namespace = m_settings.namespace(type);
-                    prefix = m_settings.prefix(type) + ":";
-                }
-            } else {
-                namespace = m_settings.getNamespace();
-                prefix = "";
-            }
-
-            Element element;
-            if (namespace == null) {
-                element = doc.createElement(m_settings.m_rootName);
-            } else {
-                element = doc.createElementNS(namespace, prefix + m_settings.m_rootName);
-            }
-            if (!node.isNull()) {
-                element.setTextContent(node.asText());
-            }
-            doc.appendChild(element);
+            specialCaseRootValueNode(node, doc);
             return doc;
         }
+        //Add root element.
         doc.appendChild(m_settings.m_namespace == null ? createElement(doc, m_settings.m_rootName) : doc
             .createElementNS(m_settings.m_namespace, m_settings.m_rootName));
         doc.setDocumentURI(m_settings.m_namespace);
         Element root = doc.getDocumentElement();
         setRootNamespace(root);
+        //With all possible primitive type prefices
         for (JsonPrimitiveTypes type : JsonPrimitiveTypes.values()) {
-            root.setAttributeNS(XMLNS_URI, "xmlns:" + m_settings.prefix(type),
-                m_settings.namespace(type));
+            root.setAttributeNS(XMLNS_URI, "xmlns:" + m_settings.prefix(type), m_settings.namespace(type));
         }
         create(null, null, node, doc.getDocumentElement(), types);
+        //Remove unused primitive type prefices
         for (JsonPrimitiveTypes type : EnumSet.complementOf(types)) {
             root.removeAttribute("xmlns:" + m_settings.prefix(type));
         }
         return doc;
+    }
+
+    /**
+     * @param node A value {@link JsonNode}.
+     * @param doc The resultin {@link Document}.
+     */
+    private void specialCaseRootValueNode(final JsonNode node, final Document doc) {
+        CheckUtils.checkState(m_settings.getNamespace() == null || isLooseTypeInfo(),
+            "Type information selected to be kept, but also a default namespace was specified."
+                + " Primitive values does not support this combination. Value: " + node);
+        final JsonPrimitiveTypes type;
+        if (node.isBoolean()) {
+            type = JsonPrimitiveTypes.BOOLEAN;
+        } else if (node.isIntegralNumber()) {
+            type = JsonPrimitiveTypes.INT;
+        } else if (node.isFloatingPointNumber()) {
+            type = JsonPrimitiveTypes.FLOAT;
+        } else if (node.isTextual()) {
+            type = JsonPrimitiveTypes.TEXT;
+        } else if (node.isBinary()) {//Not preserved information
+            type = JsonPrimitiveTypes.BINARY;
+        } else if (node.isNull()) {//Not supported currently at root
+            type = JsonPrimitiveTypes.NULL;
+        } else {
+            throw new IllegalStateException("Unknown primitive type: " + node + " [" + node.getNodeType() + "]");
+        }
+        final String namespace, prefix;
+        if (m_settings.getNamespace() == null) {
+            if (m_looseTypeInfo) {
+                namespace = null;
+                prefix = "";
+            } else {
+                namespace = m_settings.namespace(type);
+                prefix = m_settings.prefix(type) + ":";
+            }
+        } else {
+            namespace = m_settings.getNamespace();
+            prefix = "";
+        }
+
+        Element element;
+        if (namespace == null) {
+            element = doc.createElement(m_settings.m_rootName);
+        } else {
+            element = doc.createElementNS(namespace, prefix + m_settings.m_rootName);
+        }
+        if (!node.isNull()) {
+            element.setTextContent(node.asText());
+        }
+        doc.appendChild(element);
+    }
+
+    /**
+     * @param doc The {@link Document} to fill with the empty array with the special namespace for empty arrays.
+     */
+    private void specialCaseEmptyArrayWithTypes(final Document doc) {
+        doc.appendChild(m_settings.m_array == null ? doc.createElement(m_settings.m_rootName) : doc.createElementNS(
+            LIST_NAMESPACE, m_settings.m_array + ":" + m_settings.m_rootName));
+        doc.getDocumentElement().setAttributeNS(XMLNS_URI, "xmlns:" + m_settings.m_array, LIST_NAMESPACE);
+        setRootNamespace(doc.getDocumentElement());
     }
 
     /**
@@ -545,91 +570,12 @@ public class Json2Xml {
     /**
      * Creates the converted {@link Element}.
      *
-     * @param origKey The parent's key that led to this call (can be {@code null}).
+     * @param origKey The parent's key that led to this call (can be {@code null} when we are in an array).
      * @param parent The parent node (can be {@code null}).
      * @param node The current node to convert.
      * @param parentElement The current element to transform or append attributes/children (can be {@code null}).
      * @param types The types used and should be declared as prefixes.
-     * @return The created element.
-     * @throws DOMException Problem with XML DOM creation.
-     * @throws IOException Problem decoding binary values.
-     */
-    @Deprecated
-    protected Element createWrong(final String origKey, final JsonNode parent, final JsonNode node,
-        final Element parentElement, final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-        if (node.isMissingNode()) {
-            return parentElement;
-        }
-        Document doc = parentElement.getOwnerDocument();
-        if (origKey == null) {
-//            if (parent != null && parent.isArray() && !node.isArray()) {
-//            Element item = createItem(node, parentElement, true, types);
-//            parentElement.appendChild(item);
-//            return parentElement;
-//            }
-            return createNoKey(parent, node, parentElement, types);
-        }
-        //We have parent key, so we are within an object
-        if (node.isArray()) {
-            final boolean hasValue = true;//hasValue(node)/* || conflictInAttributes((ArrayNode)node)*/;
-            final Element elem = createElement(doc, origKey);
-            safeAdd(parentElement, elem);
-            for (JsonNode jsonNode : node) {
-                if (jsonNode.isObject()) {
-                    if (hasValue) {
-                        final Element child = createItem(jsonNode, elem, hasValue, types);
-//                        if (!parentElement.hasChildNodes()) {
-//                            parentElement.appendChild(elem);
-//                        }
-                        safeAdd(elem, child);
-                        //parentElement.getFirstChild().appendChild(child);
-                    } else {
-                        final Element child = createNoKey(node, jsonNode, elem, types);
-                        safeAdd(parentElement, elem);
-//                        if (!parentElement.hasChildNodes()) {
-//                            parentElement.appendChild(elem);
-//                        }
-//                        if (child != parentElement.getFirstChild()) {
-//                            parentElement.getFirstChild().appendChild(child);
-//                        }
-                        safeAdd(elem, child);
-                    }
-                } else {
-                    //Element outerItem = createElement(doc, m_settings.m_primitiveArrayItem);
-                    Element item = createItem(jsonNode, /*outerItem*/elem, hasValue, types);
-//                    outerItem.appendChild(item);
-//                    elem.appendChild(outerItem);
-                    safeAdd(elem, item);
-//                    elem.appendChild(item);
-                }
-            }
-            return parentElement;
-        }
-        if (node.isObject()) {
-            final Element elem = createElement(doc, origKey);
-            safeAdd(parentElement, elem);
-//            parentElement.appendChild(elem);
-            createSubObject(elem, (ObjectNode)node, types);
-            return parentElement;
-        }
-        if (node.isValueNode()) {
-            final JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(node);
-            safeAdd(parentElement, createElementWithContent(m_settings.prefix(primitiveType), origKey, primitiveType, toString(node), doc, types));
-//            parentElement.setTextContent(node.asText());
-            return parentElement;
-        }
-        throw new IllegalStateException("Should not reach this! " + node);
-    }
-
-    /**
-     * Creates the converted {@link Element}.
-     *
-     * @param origKey The parent's key that led to this call (can be {@code null}).
-     * @param parent The parent node (can be {@code null}).
-     * @param node The current node to convert.
-     * @param parentElement The current element to transform or append attributes/children (can be {@code null}).
-     * @param types The types used and should be declared as prefixes.
-     * @return The created element.
+     * @return The created element (always {@code parentElement}).
      * @throws DOMException Problem with XML DOM creation.
      * @throws IOException Problem decoding binary values.
      */
@@ -639,127 +585,436 @@ public class Json2Xml {
             return parentElement;
         }
         Document doc = parentElement.getOwnerDocument();
-        if (origKey == null) {
-//            if (parent != null && parent.isArray() && !node.isArray()) {
-            Element item = createItem(node, parentElement, parent != null, types);
-            safeAdd(parentElement, item);
-            return parentElement;
-//            }
-//            return createNoKey(parent, node, parentElement, types);
+        if (origKey == null) {//we are in an array
+            return createNoKey(parent, node, parentElement, types);
         }
         //We have parent key, so we are within an object
         if (node.isArray()) {
-            final boolean hasValue = true;//hasValue(node)/* || conflictInAttributes((ArrayNode)node)*/;
-//            final Element elem = createElement(doc, origKey);
-//            parentElement.appendChild(elem);
-            for (JsonNode jsonNode : node) {
-                if (jsonNode.isObject()) {
-                    if (hasValue) {
-                        final Element child = createItem(jsonNode, parentElement, hasValue, types);
-//                        if (!parentElement.hasChildNodes()) {
-//                            parentElement.appendChild(elem);
-//                        }
-                        safeAdd(parentElement, child);
-                        //parentElement.getFirstChild().appendChild(child);
-                    } else {
-                        final Element child = createNoKey(node, jsonNode, parentElement, types);
-//                        if (!parentElement.hasChildNodes()) {
-//                            parentElement.appendChild(child);
-//                        }
-//                        if (child != parentElement.getFirstChild()) {
-//                            parentElement.getFirstChild().appendChild(child);
-//                        }
-                        safeAdd(parentElement, child);
-                    }
-                } else {
-                    //Element outerItem = createElement(doc, m_settings.m_primitiveArrayItem);
-                    Element item = createItem(jsonNode, /*outerItem*/parentElement, hasValue, types);
-//                    outerItem.appendChild(item);
-//                    elem.appendChild(outerItem);
-                    safeAdd(parentElement, item);
-                }
-            }
-            return parentElement;
+            return arrayWithinObject(origKey, node, parentElement, types);
         }
         if (node.isObject()) {
             final Element elem = createElement(doc, origKey);
             parentElement.appendChild(elem);
             createSubObject(elem, (ObjectNode)node, types);
-//            createSubObject(parentElement, (ObjectNode)node, types);
             return parentElement;
         }
         if (node.isValueNode()) {
             final JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(node);
-            safeAdd(parentElement, createElementWithContent(m_settings.prefix(primitiveType), origKey, primitiveType, toString(node), doc, types));
-//            parentElement.setTextContent(node.asText());
+            safeAdd(
+                parentElement,
+                createElementWithContent(m_settings.prefix(primitiveType), origKey, primitiveType, valueToString(node),
+                    doc, types));
             return parentElement;
         }
         throw new IllegalStateException("Should not reach this! " + node);
     }
 
     /**
-     * Creates an element without parent key.
+     * Creates the item when no key is present from the parent node.
      *
-     * @param parent The parent {@link JsonNode}, can be {@code null}.
-     * @param node The {@link JsonNode} to convert.
-     * @param parentElement The parent {@link Element} (cannot be {@code null}).
-     * @param types The types used.
-     * @return The converted {@link Element}.
-     * @throws IOException Problem decoding binary values.
+     * @param parent The parent {@link JsonNode}.
+     * @param node The current {@link JsonNode}.
+     * @param parentElement The parent result {@link Element}.
+     * @param types The used types.
+     * @return Usually {@code parentElement} with filled content, though in case of
+     *         {@link Options#UseParentKeyWhenPossible}, when the {@code node} is a value, it should be recreated.
+     * @throws IOException Problem decoding binary from Base64 encoded {@link String}.
      */
     protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
         final Set<JsonPrimitiveTypes> types) throws IOException {
-        Document doc = parentElement.getOwnerDocument();
-        //we are in the root, or in an array
-        assert parent == null || parent.isArray() : parent;
-        if (node.isValueNode()) {
-            Element element = createItem(node, parentElement, false, types);
-            safeAdd(parentElement, element);
-            return element;
-        }
-        if (node.isArray()) {
-            Element elem = createElement(doc, m_settings.m_primitiveArrayItem);
-            safeAdd(parentElement, elem);
-            boolean hasValue = hasValue(node);
-            for (JsonNode child : node) {
-//                if (child.isObject() || child.isArray()) {
-//                    parentElement.appendChild(createItem(child, createElement(doc, m_settings.m_primitiveArrayItem),
-//                        hasValue, types));
-//                } else {
-                    Element arrayItem = createItem(child, elem, hasValue, types);
-                    safeAdd(elem, arrayItem);
-//                }
-            }
-            return parentElement;
-        }
-        if (node.isObject()) {
-            if (parent == null) {
-                //First object
-                return createObjectWithoutParent((ObjectNode)node, parentElement, types);
-            }
-            //boolean hasValue = hasValue(parent);
-            boolean conflictWithinAttributes =true; //hasValue;//parent.isArray() && !node.isArray(); //TODO hasValue || conflictInAttributes((ArrayNode)parent);
-            //object within array
-            return createItem(node, parentElement, conflictWithinAttributes, types);
-        }
-        //We already handled the missing case and object.
-        assert false : node;
-        throw new IllegalStateException("Should not reach this! " + node);
+        Element item = createItem(node, parentElement, parent != null, types);
+        safeAdd(parentElement, item);
+        return parentElement;
     }
 
     /**
-     * @param on An {@link ObjectNode}.
-     * @return The possible attributes with its values.
+     * Convert the {@code node} to an {@link Element} when {@code node} is an array within an object. For example for
+     * the <code>{"a":[2]}</code>, we would get {@code origKey} as {@code a} and the {@code node} as {@code [2]}.
+     *
+     * @param origKey The original key, though it is not used unless {@link Options#UseParentKeyWhenPossible using
+     *            parent key}.
+     * @param node An array {@link JsonNode}.
+     * @param parentElement The parent {@link Element} (for the object).
+     * @param types The used types.
+     * @return {@code parentElement}.
+     * @throws IOException Problem decoding Base64 encoded value.
+     * @since 2.12
      */
-    protected Map<String, JsonNode> possibleAttributesAndValues(final ObjectNode on) {
-        Map<String, JsonNode> values = new LinkedHashMap<>();
-        for (Iterator<Entry<String, JsonNode>> objIt = on.fields(); objIt.hasNext();) {
-            Entry<String, JsonNode> keyValue = objIt.next();
-            if (keyValue.getValue().isValueNode()) {
-                values.put(keyValue.getKey(), keyValue.getValue());
+    protected Element arrayWithinObject(final String origKey, final JsonNode node, final Element parentElement,
+        final Set<JsonPrimitiveTypes> types) throws IOException {
+        for (final JsonNode jsonNode : node) {
+            final Element child = createItem(jsonNode, parentElement, true, types);
+            safeAdd(parentElement, child);
+        }
+        return parentElement;
+    }
+
+    /**
+     * Creates a sub-object.
+     *
+     * @param elem An {@link Element} to adjust (ex. add children or attributes).
+     * @param objectNode The {@link ObjectNode} to transform.
+     * @param types The types used.
+     * @return {@code elem} adjusted.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
+     */
+    protected Element createSubObject(final Element elem, final ObjectNode objectNode,
+        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        for (final Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
+            final Entry<String, JsonNode> entry = fields.next();
+            final JsonNode node = entry.getValue();
+            //primitive text or attribute
+            if (node.isValueNode() && (getTextKey().equals(entry.getKey()) || entry.getKey().startsWith("@"))) {
+                addValueAsAttribute(elem, entry, types);
+            } else if (node.isValueNode() || node.isObject()) {
+                //In case node is not a value, but the key is still the text key, it is handled like other keys:
+                //it might get originalKey attribute for the new Element or just becomes an simple Element.
+                final Element object = create(entry.getKey(), objectNode, node, elem, types);
+                safeAdd(elem, object);
+            } else if (node.isArray()) {
+                handeArraysInSubObjects(elem, entry, types);
             }
         }
-        return values;
+        return elem;
+    }
+
+    /**
+     * Fills the content of the {@code parent} with an array with the specified key. For example see the following
+     * input: <code>{"a":{"b":["z"]}}</code>, in this case we have {@code b} as the key for {@code entry} and
+     * {@code ["z"]} for the value. The {@code parent} is the {@link Element} created for {@code a}.
+     *
+     * @param parent The parent {@link Element}.
+     * @param entry The key-value for the parent object within {@link #createSubObject(Element, ObjectNode, Set)}. Its
+     *            {@link Entry#getValue() value} is an {@link ArrayNode}.
+     * @param types The used types.
+     * @throws IOException Problem with Base64 encoding.
+     * @since 2.12
+     */
+    protected void handeArraysInSubObjects(final Element parent, final Entry<String, JsonNode> entry,
+        final Set<JsonPrimitiveTypes> types) throws IOException {
+        final Element elemBase = createElement(parent.getOwnerDocument(), entry.getKey());
+        safeAdd(parent, elemBase);
+        for (final JsonNode jsonNode : entry.getValue()) {
+            safeAdd(elemBase, create(null, entry.getValue(), jsonNode, elemBase, types));
+        }
+    }
+
+    /**
+     * Creates the {@code node}'s {@link Element} when we have no parent.
+     *
+     * @param node An {@link ObjectNode} to transform.
+     * @param element The {@link Element} to adjust.
+     * @param types The used types.
+     * @return The transformed {@code element} {@link Element}.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
+     */
+    protected Element createObjectWithoutParent(final ObjectNode node, final Element element,
+        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        final boolean hasTextKey = hasText(node);
+        final Document doc = element.getOwnerDocument();
+        for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+            final Entry<String, JsonNode> entry = it.next();
+            final JsonNode value = entry.getValue();
+            if (value.isValueNode() && !hasTextKey) {
+                if (entry.getKey().startsWith("@")) {
+                    addValueAsAttribute(element, entry, types);
+                } else {
+                    final JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
+                    safeAdd(
+                        element,
+                        createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType,
+                            valueToString(value), doc, types));
+                }
+            } else if (hasTextKey && value.isValueNode()) {
+                if (entry.getKey().equals(getTextKey())) {
+                    setTextContent(element, entry, types);
+                } else {
+                    if (entry.getKey().startsWith("@")) {
+                        addValueAsAttribute(element, entry, types);
+                    } else {
+                        JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
+                        Element elem =
+                            createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType,
+                                valueToString(value), doc, types);
+                        safeAdd(element, elem);
+                    }
+                }
+            } else if (value.isArray()) {
+                arrayWithoutParentKey(entry, node, element, types);
+            } else if (value.isObject()) {
+                create(entry.getKey(), node, value, element, types);
+            } else {
+                assert false : value;
+            }
+        }
+        return element;
+    }
+
+    /**
+     * Handles the case within {@link #createObjectWithoutParent(ObjectNode, Element, Set)} when the value within the
+     * object is an array.
+     *
+     * @param entry The entry for the array (value) node and its key.
+     * @param node The parent node.
+     * @param element The parent element.
+     * @param types The used types.
+     * @throws IOException Base64 decoding was unsuccessful.
+     * @since 2.12
+     */
+    protected void arrayWithoutParentKey(final Entry<String, JsonNode> entry, final ObjectNode node,
+        final Element element, final Set<JsonPrimitiveTypes> types) throws IOException {
+        final Element elem = createElement(element.getOwnerDocument(), entry.getKey());
+        create(entry.getKey(), node, entry.getValue(), elem, types);
+        safeAdd(element, elem);
+    }
+
+    /**
+     * Creates an item for an array value/object ({@code node}).
+     *
+     * @param node The array item to transform.
+     * @param element The {@link Element} to adjust.
+     * @param forceItemElement If {@code true}, an {@link #getPrimitiveArrayItem()} element will be created, else
+     *            element with different key can be created.
+     * @param types The types used.
+     * @return The transformed {@link Element}.
+     * @throws DOMException Problem with XML DOM creation.
+     * @throws IOException Problem decoding binary values.
+     */
+    protected Element createItem(final JsonNode node, final Element element, final boolean forceItemElement,
+        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        final Document doc = element.getOwnerDocument();
+        if (node.isValueNode()) {//We are inside an array, origKey should be null
+            final String elementName = m_settings.m_primitiveArrayItem;
+            if (node.isBoolean()) {
+                return createElementWithContent(m_settings.m_bool, elementName, JsonPrimitiveTypes.BOOLEAN,
+                    Boolean.toString(node.asBoolean()), doc, types);
+            }
+            if (node.isIntegralNumber()) {
+                return createElementWithContent(m_settings.m_int, elementName, JsonPrimitiveTypes.INT, node
+                    .bigIntegerValue().toString(), doc, types);
+            }
+            if (node.isFloatingPointNumber()) {
+                return createElementWithContent(m_settings.m_real, elementName, JsonPrimitiveTypes.FLOAT,
+                    Double.toString(node.asDouble()), doc, types);
+            } else if (node.isBinary()) {
+                return createElementWithContent(m_settings.m_binary, elementName, JsonPrimitiveTypes.BINARY,
+                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")), doc, types);
+            } else if (node.isTextual()) {
+                return createElementWithContent(m_settings.m_text, elementName, JsonPrimitiveTypes.TEXT,
+                    node.textValue(), doc, types);
+            } else if (node.isNull()) {
+                return createElementWithContent(m_settings.m_null, elementName, JsonPrimitiveTypes.NULL, "", doc, types);
+            } else {
+                assert false : node;
+            }
+        } else if (node.isArray()) {
+            if (forceItemElement) {
+                final Element arrayItem = createElement(doc, m_settings.m_primitiveArrayItem);
+                final boolean hasValue = hasValue(node);
+                for (final JsonNode item : node) {
+                    final Element elem;
+                    if (item.isArray() || hasValue || hasAttribute(item)) {
+                        elem = createItem(item, arrayItem, true, types);
+                    } else {
+                        elem = create(null, node, item, arrayItem, types);
+                    }
+                    safeAdd(arrayItem, elem);
+                }
+                safeAdd(element, arrayItem);
+            } else {
+                for (final JsonNode item : node) {
+                    final Element elem = create(null, node, item, element, types);
+                    safeAdd(element, elem);
+                }
+            }
+            return element;
+        } else if (node.isObject()) {
+            if (forceItemElement) {
+                final Element elem = createElement(doc, m_settings.m_primitiveArrayItem);
+                //safeAdd(element, elem);
+                return createObjectWithoutParent((ObjectNode)node, elem, types);
+            }
+            return createObjectWithoutParent((ObjectNode)node, element, types);
+        }
+        assert false : node;
+        throw new IllegalStateException("Cannot reach this point: " + ErrorHandling.shorten(node.toString(), 45));
+    }
+
+    /**
+     * Creates a {@link Json2Xml} object that transforms the content like <code>{"a":[{"b":2},{"c":3}]}</code> to
+     * {@code <a b="2"/><a c="3"/>}. By default it keeps the type information.
+     *
+     * @param settings The settings to use.
+     * @return The {@link Json2Xml} object with using parent's key when possible.
+     */
+    public static Json2Xml createWithUseParentKeyWhenPossible(final Json2XmlSettings settings) {
+        return new Json2Xml(settings) {
+
+            /**
+             * {@inheritDoc} This one is simpler than the overridden, as we do not have to create an additional element
+             * in this case.
+             */
+            @Override
+            protected void arrayWithoutParentKey(final Entry<String, JsonNode> entry, final ObjectNode node,
+                final Element element, final Set<JsonPrimitiveTypes> types) throws IOException {
+                create(entry.getKey(), node, entry.getValue(), element, types);
+            }
+
+            /**
+             * {@inheritDoc} This is more complex than the overridden method as we do not always generate the "item"
+             * element (not: for values and objects).
+             */
+            @Override
+            protected Element arrayWithinObject(final String origKey, final JsonNode node, final Element parentElement,
+                final Set<JsonPrimitiveTypes> types) throws IOException {
+                assert node.isArray();
+                final Document doc = parentElement.getOwnerDocument();
+                for (final JsonNode jsonNode : node) {
+                    final Element elem = createElement(doc, origKey);
+                    if (jsonNode.isArray()) {
+                        parentElement.appendChild(createItem(jsonNode, elem, true, types));
+                    } else {
+                        parentElement.appendChild(createNoKey(node, jsonNode, elem, types));
+                    }
+                }
+                return parentElement;
+            }
+
+            /**
+             * {@inheritDoc} The difference to the overridden method that this tries to create new elements with the
+             * parent key when possible.
+             */
+            @Override
+            protected void handeArraysInSubObjects(final Element parent, final Entry<String, JsonNode> entry,
+                final Set<JsonPrimitiveTypes> types) throws IOException {
+                final Document doc = parent.getOwnerDocument();
+                //create elements with the key
+                for (final JsonNode jsonNode : entry.getValue()) {
+                    final Element element = createElement(doc, entry.getKey());
+                    parent.appendChild(element);
+                    if (jsonNode.isObject()) {
+                        createObjectWithoutParent((ObjectNode)jsonNode, element, types);
+                    } else if (jsonNode.isArray()) {
+                        createItem(jsonNode, element, true, types);
+                    } else {
+                        //Fix values.
+                        fix(jsonNode, element, types);
+                    }
+                }
+            }
+
+            /**
+             * Creates an element without parent key. This is more complex than the overridden method, as we do not want
+             * to always create "item" elements.
+             *
+             * @param parent The parent {@link JsonNode}, can be {@code null}.
+             * @param node The {@link JsonNode} to convert.
+             * @param parentElement The parent {@link Element} (cannot be {@code null}).
+             * @param types The types used.
+             * @return The converted {@link Element}.
+             * @throws IOException Problem decoding binary values.
+             */
+            @Override
+            protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
+                final Set<JsonPrimitiveTypes> types) throws IOException {
+                final Document doc = parentElement.getOwnerDocument();
+                //we are in the root, or in an array
+                assert parent == null || parent.isArray() : parent;
+                if (node.isValueNode()) {//parent object was already created, we have to recreate it.
+                    final JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(node);
+                    final String origName = parentElement.getAttribute(NS_ORIGINAL_KEY);
+                    return createElementWithContent(settings.prefix(primitiveType),
+                        parentElement.hasAttribute(NS_ORIGINAL_KEY) ? origName : parentElement.getNodeName(),
+                        primitiveType, valueToString(node), doc, types);
+                }
+                if (node.isArray()) {
+                    for (final JsonNode child : node) {
+                        if (child.isObject() || child.isArray()) {
+                            //This is a bit tricky, as it might create unexpected results:
+                            //[[],[]] becomes <item/><item/>, though
+                            //[[2],[3]] becomes <item><item>2</item></item><item><item>3</item></item>
+                            safeAdd(
+                                parentElement,
+                                createItem(child, /*createElement(doc, getPrimitiveArrayItem())*/parentElement, true,
+                                    types));
+                        } else {
+                            final Element arrayItem = createItem(child, parentElement, true, types);
+                            parentElement.appendChild(arrayItem);
+                        }
+                    }
+                    return parentElement;
+                }
+                if (node.isObject()) {
+                    if (parent == null) {
+                        //First object
+                        return createObjectWithoutParent((ObjectNode)node, parentElement, types);
+                    }
+                    //object within array
+                    return createSubObject(parentElement, (ObjectNode)node, types);//createItem(node, parentElement, hasValue, types);
+                }
+                //We already handled the missing case and object.
+                assert false : node;
+                throw new IllegalStateException("Should not reach this! " + node);
+            }
+        };
+    }
+
+    /**
+     * Adds {@code child} as a child to {@code parent}, unless those refer to the same {@link Element}.
+     *
+     * @param parent An {@link Element}.
+     * @param child An {@link Element}.
+     */
+    private static void safeAdd(final Element parent, final Element child) {
+        if (parent != child) {
+            parent.appendChild(child);
+        }
+    }
+
+    /**
+     * @param key A possible key.
+     * @return The invalid (non-word) characters removed.
+     */
+    private static String removeInvalidChars(final String key) {
+        return key.replaceAll("[^\\w]", "");
+    }
+
+    /**
+     * @param value A value {@link JsonNode}.
+     * @return The {@link String} representation of {@code value}.
+     */
+    private static String valueToString(final JsonNode value) {
+        assert value.isValueNode() : value + " ! " + value.getNodeType();
+        return value.isNull() ? "" : value.asText();
+    }
+
+    /**
+     * @param value A {@link JsonNode}, expected to be a {@link JsonNode#isValueNode() value node}.
+     * @return The {@link JsonPrimitiveTypes} that belongs to {@code value}.
+     * @throws IllegalStateException When it is not a value node.
+     */
+    private static JsonPrimitiveTypes valueTypeToPrimitiveType(final JsonNode value) {
+        switch (value.getNodeType()) {
+            case ARRAY: //intentional fall-through
+            case OBJECT: //intentional fall-through
+            case POJO: //intentional fall-through
+            case MISSING:
+                throw new IllegalStateException("Not a primitive value type: " + value.getNodeType() + " of " + value);
+            case NULL:
+                return JsonPrimitiveTypes.NULL;
+            case NUMBER:
+                return value.isIntegralNumber() ? JsonPrimitiveTypes.INT : JsonPrimitiveTypes.FLOAT;
+            case BINARY:
+                return JsonPrimitiveTypes.BINARY;
+            case BOOLEAN:
+                return JsonPrimitiveTypes.BOOLEAN;
+            case STRING:
+                return JsonPrimitiveTypes.TEXT;
+            default:
+                throw new UnsupportedOperationException("Not supported type: " + value.getNodeType() + " of " + value);
+        }
     }
 
     /**
@@ -771,20 +1026,6 @@ public class Json2Xml {
         assert parent.isArray() : parent;
         for (JsonNode child : parent) {
             ret |= child.isValueNode();
-        }
-        return ret;
-    }
-
-    /**
-     * @param parent A non-{@code null} {@link JsonNode} (an array).
-     * @return <code>true</code> iff it has at least one {@link JsonNode#isValueNode() value} or
-     *         {@link JsonNode#isObject() object} child.
-     */
-    private static boolean hasValueOrObject(final JsonNode parent) {
-        boolean ret = false;
-        assert parent.isArray() : parent;
-        for (JsonNode child : parent) {
-            ret |= child.isValueNode() || child.isObject();
         }
         return ret;
     }
@@ -803,144 +1044,6 @@ public class Json2Xml {
     }
 
     /**
-     * Creates a sub-object.
-     *
-     * @param elem An {@link Element} to adjust (ex. add children or attributes).
-     * @param objectNode The {@link ObjectNode} to transform.
-     * @param types The types used.
-     * @return {@code elem} adjusted.
-     * @throws DOMException Problem with XML DOM creation.
-     * @throws IOException Problem decoding binary values.
-     */
-    protected Element createSubObject(final Element elem, final ObjectNode objectNode,
-        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-        for (Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
-            Entry<String, JsonNode> entry = fields.next();
-            JsonNode node = entry.getValue();
-//            if (node.isValueNode()) {
-//                addValueAsAttribute(elem, entry, types);
-//            } else if (node.isObject()) {
-            if (node.isValueNode() || node.isObject()) {
-                if (node.isValueNode() && (getTextKey().equals(entry.getKey()) || entry.getKey().startsWith("@"))) {
-                    addValueAsAttribute(elem, entry, types);
-                    continue;
-                }
-                final Element object = create(entry.getKey(), objectNode, node, elem, types);
-//                if (object == elem) {
-//                    continue;
-//                }
-                safeAdd(elem, object);
-            } else if (node.isArray()) {
-                Document document = elem.getOwnerDocument();
-                Element elemBase = createElement(document, entry.getKey());
-                safeAdd(elem, elemBase);
-//                elem.appendChild(elemBase);
-                for (JsonNode jsonNode : node) {
-                    //                    Element element = document.createElement(m_settings.m_primitiveArrayItem);
-                    //                    elemBase.appendChild(element);
-                    final Element created = create(null, node, jsonNode, elemBase, types);
-                    if (created == elemBase) {
-                        continue;
-                    }
-                    safeAdd(elemBase, created);
-                }
-            }
-        }
-        return elem;
-    }
-
-    /**
-     * Creates the {@code node}'s {@link Element} when we have no parent.
-     *
-     * @param node An {@link ObjectNode} to transform.
-     * @param element The {@link Element} to adjust.
-     * @param types The used types.
-     * @return The transformed {@code element} {@link Element}.
-     * @throws DOMException Problem with XML DOM creation.
-     * @throws IOException Problem decoding binary values.
-     */
-    protected Element createObjectWithoutParent(final ObjectNode node, final Element element,
-        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-        boolean hasTextKey = hasText(node);
-        for (Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-            Entry<String, JsonNode> entry = it.next();
-            JsonNode value = entry.getValue();
-            if (value.isValueNode() && !hasTextKey) {
-                if (entry.getKey().startsWith("@")) {
-                    addValueAsAttribute(element, entry, types);
-                } else {
-                    JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
-                    safeAdd(element, createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType, toString(value), element.getOwnerDocument(), types));
-                }
-                //create(entry.getKey(), node, value, element, types);
-            } else if (hasTextKey && value.isValueNode()) {
-                if (entry.getKey().equals(getTextKey())) {
-                    setTextContent(element, entry, types);
-                } else {
-                    if (!entry.getKey().startsWith("@")) {
-                        Document doc = element.getOwnerDocument();
-                        JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
-                        Element elem = createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType, toString(value), doc, types);
-                        safeAdd(element, elem);
-                    } else {
-                        addValueAsAttribute(element, entry, types);
-                    }
-                    //                    Document doc = element.getOwnerDocument();
-                    //                    Element elem = createElement(doc, entry.getKey());
-                    //                    element.appendChild(elem);
-                    //                    create(entry.getKey(), node, value, elem, types);
-                }
-            } else if (value.isObject() || value.isArray()) {
-                if (value.isArray()) {
-                    Element elem = createElement(element.getOwnerDocument(), entry.getKey());
-                    create(entry.getKey(), node, value, elem, types);
-                    safeAdd(element, elem);
-                } else {
-                    create(entry.getKey(), node, value, element, types);
-                }
-            } else {
-                assert false : value;
-            }
-        }
-        return element;
-    }
-
-    /**
-     * @param value
-     * @return
-     */
-    private static JsonPrimitiveTypes valueTypeToPrimitiveType(final JsonNode value) {
-        switch(value.getNodeType()) {
-            case ARRAY: //intentional fall-through
-            case OBJECT: //intentional fall-through
-            case POJO: //intentional fall-through
-            case MISSING:
-                throw new IllegalStateException("Not a primitive value type: " + value.getNodeType() + " of "+ value);
-            case NULL:
-                return JsonPrimitiveTypes.NULL;
-            case NUMBER:
-                return value.isIntegralNumber() ? JsonPrimitiveTypes.INT : JsonPrimitiveTypes.FLOAT;
-            case BINARY:
-                return JsonPrimitiveTypes.BINARY;
-            case BOOLEAN:
-                return JsonPrimitiveTypes.BOOLEAN;
-            case STRING:
-                return JsonPrimitiveTypes.TEXT;
-                default:
-                    throw new UnsupportedOperationException("Not supported type: " + value.getNodeType() + " of " + value);
-        }
-    }
-
-    /**
-     * @param value
-     * @return
-     */
-    private static String toString(final JsonNode value) {
-        assert value.isValueNode(): value + " ! " + value.getNodeType();
-        return value.isNull() ? "" : value.asText();
-    }
-
-    /**
      * Adds value ({@code entry}) as attribute to {@code element}.
      *
      * @param element An {@link Element}.
@@ -950,7 +1053,6 @@ public class Json2Xml {
     protected void addValueAsAttribute(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
         assert entry.getKey().startsWith("@") || getTextKey().equals(entry.getKey());
-        //final String attributeName = entry.getKey().substring(1);
         final JsonNode v = entry.getValue();
         if (v.isValueNode()) {
             String val = v.asText();
@@ -972,14 +1074,9 @@ public class Json2Xml {
                 types.add(JsonPrimitiveTypes.BINARY);
                 element.setAttribute(m_settings.m_binary + ":" + key, val);
             } else if (v.isTextual()) {
-                //This is a wrong heuristic, for example "text" is recognized as binary
-                //                if (Base64.decode(val.getBytes(Charset.forName("UTF-8"))) == null) {
+                //We cannot recognize as binary, as for example "text" is recognized as binary
                 types.add(JsonPrimitiveTypes.TEXT);
                 element.setAttribute(m_settings.m_text + ":" + key, val);
-                //                } else {
-                //                types.add(JsonPrimitiveTypes.BINARY);
-                //                element.setAttribute(m_settings.m_binary + ":" + key, val);
-                //                }
             } else if (v.isNull()) {
                 types.add(JsonPrimitiveTypes.NULL);
                 element.setAttribute(m_settings.m_null + ":" + key, "");
@@ -1003,8 +1100,8 @@ public class Json2Xml {
      */
     protected void setTextContent(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
-        JsonNode v = entry.getValue();
-        String val = v.asText();
+        final JsonNode v = entry.getValue();
+        final String val = v.asText();
         element.appendChild(element.getOwnerDocument().createTextNode(val));
         if (!m_looseTypeInfo) {
             if (v.isIntegralNumber()) {
@@ -1032,101 +1129,7 @@ public class Json2Xml {
     }
 
     /**
-     * @param key A possible key.
-     * @return The invalid (non-word) characters removed.
-     */
-    private static String removeInvalidChars(final String key) {
-        return key.replaceAll("[^\\w]", "");
-    }
-
-    /**
-     * Creates an item for an array value/object ({@code node}).
-     *
-     * @param node The array item to transform.
-     * @param element The {@link Element} to adjust.
-     * @param forceItemElement If {@code true}, an {@link #getPrimitiveArrayItem()} element will be created, else
-     *            element with different key can be created.
-     * @param types The types used.
-     * @return The transformed {@link Element}.
-     * @throws DOMException Problem with XML DOM creation.
-     * @throws IOException Problem decoding binary values.
-     */
-    protected Element createItem(final JsonNode node, final Element element, final boolean forceItemElement,
-        final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-        Document doc = element.getOwnerDocument();
-        if (node.isValueNode()) {//We are inside an array, origKey should be null
-            String elementName = m_settings.m_primitiveArrayItem;
-            if (node.isBoolean()) {
-                return createElementWithContent(m_settings.m_bool, elementName, JsonPrimitiveTypes.BOOLEAN,
-                    Boolean.toString(node.asBoolean()), doc, types);
-            }
-            if (node.isIntegralNumber()) {
-                return createElementWithContent(m_settings.m_int, elementName, JsonPrimitiveTypes.INT, node.bigIntegerValue()
-                    .toString(), doc, types);
-            }
-            if (node.isFloatingPointNumber()) {
-                return createElementWithContent(m_settings.m_real, elementName, JsonPrimitiveTypes.FLOAT,
-                    Double.toString(node.asDouble()), doc, types);
-            } else if (node.isBinary()) {
-                return createElementWithContent(m_settings.m_binary, elementName, JsonPrimitiveTypes.BINARY,
-                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")), doc, types);
-            } else if (node.isTextual()) {
-                return createElementWithContent(m_settings.m_text, elementName, JsonPrimitiveTypes.TEXT, node.textValue(), doc,
-                    types);
-            } else if (node.isNull()) {
-                return createElementWithContent(m_settings.m_null, elementName, JsonPrimitiveTypes.NULL, "", doc, types);
-            } else {
-                assert false : node;
-            }
-        } else if (node.isArray()) {
-            if (forceItemElement) {
-            Element arrayItem = createElement(doc, m_settings.m_primitiveArrayItem);
-            boolean hasValue = hasValue(node);
-            for (JsonNode item : node) {
-                Element elem;
-                if (item.isArray() || hasValue || hasAttribute(item)) {
-                    elem = createItem(item, arrayItem, true, types);
-                } else {
-                    elem = create(null, node, item, arrayItem, types);
-                }
-                safeAdd(arrayItem, elem);
-            }
-            safeAdd(element, arrayItem);
-            } else {
-                for (JsonNode item : node) {
-                    Element elem = create(null, node, item, element, types);
-                    safeAdd(element, elem);
-                }
-            }
-            return element;
-        } else if (node.isObject()) {
-            if (forceItemElement) {
-                Element elem = createElement(doc, m_settings.m_primitiveArrayItem);
-                return createObjectWithoutParent((ObjectNode)node, elem, types);
-            }
-            return createObjectWithoutParent((ObjectNode)node, element, types);
-            //            Element arrayItem = doc.createElement(m_primitiveArrayItem);
-            //            for (final Iterator<Entry<String, JsonNode>>it = node.fields(); it.hasNext();) {
-            //                Entry<String, JsonNode> entry = it.next();
-            //                arrayItem.appendChild(create(entry.getKey(), node, entry.getValue(), arrayItem, types));
-            //            }
-        }
-        assert false : node;
-        throw new IllegalStateException("Cannot reach this point: " + ErrorHandling.shorten(node.toString(), 45));
-    }
-
-    /**
-     * @param parent
-     * @param child
-     */
-    private static void safeAdd(final Element parent, final Element child) {
-        if (parent!= child) {
-            parent.appendChild(child);
-        }
-    }
-
-    /**
-     * Creates element with text content.
+     * Creates element with text content (namespace is adjusted according to {@code type}).
      *
      * @param prefix The prefix to use.
      * @param rawElementName The raw {@link Element} name for the to be created element.
@@ -1136,16 +1139,61 @@ public class Json2Xml {
      * @param types The types used.
      * @return The transformed {@link Element}.
      */
-    protected Element createElementWithContent(final String prefix, final String rawElementName, final JsonPrimitiveTypes type, final String content,
-        final Document doc, final Set<JsonPrimitiveTypes> types) {
-        String cleanName = removeInvalidChars(rawElementName);
-        String elementName = elementName(prefix, cleanName, types, type);
-        Element elem = doc.createElementNS(m_looseTypeInfo ? getNamespace() : type.getDefaultNamespace(), elementName);
+    protected Element createElementWithContent(final String prefix, final String rawElementName,
+        final JsonPrimitiveTypes type, final String content, final Document doc, final Set<JsonPrimitiveTypes> types) {
+        final String cleanName = removeInvalidChars(rawElementName);
+        final String elementName = elementName(prefix, cleanName, types, type);
+        final Element elem =
+            doc.createElementNS(m_looseTypeInfo ? getNamespace() : type.getDefaultNamespace(), elementName);
         if (!cleanName.equals(rawElementName)) {
-            elem.setAttributeNS(ORIGINALKEY_URI, "ns:originalKey", rawElementName);
+            elem.setAttributeNS(ORIGINALKEY_URI, NS_ORIGINAL_KEY, rawElementName);
         }
         elem.setTextContent(content);
         return elem;
+    }
+
+    /**
+     * @param jsonNode An object {@link JsonNode}, {@link ObjectNode}.
+     * @return Checks whether the attributes contain key starting with {@code @}, or not.
+     */
+    private boolean hasAttribute(final JsonNode jsonNode) {
+        assert jsonNode.isObject() : jsonNode + " " + jsonNode.getNodeType();
+        final ObjectNode obj = (ObjectNode)jsonNode;
+        for (final Iterator<String> it = obj.fieldNames(); it.hasNext();) {
+            if (it.next().startsWith("@")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return The key values to be translated as text.
+     */
+    protected String getTextKey() {
+        return m_settings.getTextKey();
+    }
+
+    /**
+     * @return The element name returned for array items.
+     */
+    protected String getPrimitiveArrayItem() {
+        return m_settings.getPrimitiveArrayItem();
+    }
+
+    /**
+     * @param doc The owner document.
+     * @param name The name of the {@link Element}.
+     * @return The {@link Element} with proper namespace.
+     */
+    protected Element createElement(final Document doc, final String name) {
+        final String cleanName = removeInvalidChars(name);
+        if (cleanName.equals(name)) {
+            return doc.createElementNS(m_settings.m_namespace, name);
+        }
+        final Element ret = doc.createElementNS(m_settings.m_namespace, cleanName);
+        ret.setAttributeNS(ORIGINALKEY_URI, NS_ORIGINAL_KEY, name);
+        return ret;
     }
 
     /**
@@ -1154,13 +1202,13 @@ public class Json2Xml {
      * @param type Type of the element.
      * @return Name of the element with prefix if required.
      */
-    private String elementName(final String prefix, final String rawElementName, final Set<JsonPrimitiveTypes> types, final JsonPrimitiveTypes type) {
+    private String elementName(final String prefix, final String rawElementName, final Set<JsonPrimitiveTypes> types,
+        final JsonPrimitiveTypes type) {
         if (m_looseTypeInfo) {
             return rawElementName;
         }
         types.add(type);
-        return prefix == null || prefix.isEmpty() ? rawElementName : prefix + ":"
-            + rawElementName;
+        return prefix == null || prefix.isEmpty() ? rawElementName : prefix + ":" + rawElementName;
     }
 
     /**
@@ -1286,256 +1334,5 @@ public class Json2Xml {
                     break;
             }
         }
-    }
-
-    private boolean hasAttribute(final JsonNode jsonNode) {
-        assert jsonNode.isObject(): jsonNode + " " + jsonNode.getNodeType();
-        ObjectNode obj = (ObjectNode)jsonNode;
-        for (Iterator<String> it = obj.fieldNames(); it.hasNext();) {
-            if (it.next().startsWith("@")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Creates a {@link Json2Xml} object that transforms the content like <code>{"a":[{"b":2},{"c":3}]}</code> to
-     * {@code <a b="2"/><a c="3"/>}. By default it keeps the type information.
-     *
-     * @param settings The settings to use.
-     * @return The {@link Json2Xml} object with using parent's key when possible.
-     */
-    public static Json2Xml createWithUseParentKeyWhenPossible(final Json2XmlSettings settings) {
-        return new Json2Xml(settings) {
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            protected Element create(final String origKey, final JsonNode parent, final JsonNode node,
-                final Element parentElement, final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-                if (node.isMissingNode()) {
-                    return parentElement;
-                }
-                Document doc = parentElement.getOwnerDocument();
-                if (origKey == null) {
-                    return createNoKey(parent, node, parentElement, types);
-                }
-                //We have parent key, so we are within an object
-                if (node.isArray()) {
-                    boolean hasValueOrObject = hasValueOrObject(node);
-                    boolean hasValue = hasValue(node);
-                    for (JsonNode jsonNode : node) {
-                        Element elem = createElement(doc, origKey);
-                        if (jsonNode.isObject()) {
-                            parentElement.appendChild(hasValue/* || hasAttribute(jsonNode)*/ ? createItem(jsonNode, elem, hasValueOrObject, types):
-                                createNoKey(node, jsonNode, elem, types));
-                        } else if (jsonNode.isArray()){
-                            parentElement.appendChild(hasValueOrObject || node.isArray() ? createItem(jsonNode, elem, hasValueOrObject || node.isArray(), types):
-                                createNoKey(node, jsonNode, elem, types));
-                        }else {
-                            parentElement.appendChild(createNoKey(node, jsonNode, elem, types));
-                        }
-                    }
-                    return parentElement;
-                }
-                if (node.isObject()) {
-                    Element elem = createElement(doc, origKey);
-                    parentElement.appendChild(elem);
-                    createSubObject(elem, (ObjectNode)node, types);
-                    return parentElement;
-                }
-                if (node.isValueNode()) {
-                    parentElement.appendChild(doc.createTextNode(toString(node)));
-                    return parentElement;
-                }
-                throw new IllegalStateException("Should not reach this! " + node);
-            }
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            protected Element createSubObject(final Element elem, final ObjectNode objectNode,
-                final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-//                boolean hasTextKey = false;
-                String textKey = getTextKey();
-//                for (Iterator<String> nameIt = objectNode.fieldNames(); nameIt.hasNext();) {
-//                    String name = nameIt.next();
-//                    hasTextKey |= name.equals(textKey);
-//                }
-                for (Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
-                    Entry<String, JsonNode> entry = fields.next();
-                    JsonNode node = entry.getValue();
-                    if (node.isValueNode()) {
-                        if (node.isValueNode() && (getTextKey().equals(entry.getKey()) || entry.getKey().startsWith("@"))) {
-                            addValueAsAttribute(elem, entry, types);
-                        } else {
-                            if (entry.getKey().equals(textKey)) {
-                                elem.appendChild(elem.getOwnerDocument().createTextNode(node.asText()));
-                            } else {
-                                if (node.isValueNode()) {
-                                    JsonPrimitiveTypes type = valueTypeToPrimitiveType(node);
-                                    safeAdd(elem,
-                                        createElementWithContent(settings.prefix(type), entry.getKey(), type,
-                                            toString(node), elem.getOwnerDocument(), types));
-                                } else {
-                                    Element obj = createElement(elem.getOwnerDocument(), entry.getKey());
-                                    safeAdd(elem, obj);
-                                    //elem.appendChild(obj);
-                                    Element object;
-                                    object = create(entry.getKey(), /*elem*/objectNode, node, obj, types);
-                                    safeAdd(obj, object);
-                                }
-//                                if (object == elem) {
-//                                    continue;
-//                                }
-//                                elem.appendChild(object);
-                            }
-                        }
-                    } else if (node.isObject()) {
-                        Element object = create(entry.getKey(), objectNode, node, elem, types);
-                        if (object == elem) {
-                            continue;
-                        }
-                        elem.appendChild(object);
-                    } else if (node.isArray()) {
-                        Document document = elem.getOwnerDocument();
-                        for (JsonNode jsonNode : node) {
-                            Element element = createElement(document, entry.getKey());
-                            elem.appendChild(element);
-                            if (jsonNode.isObject()) {
-                                /*Element created =*/ createObjectWithoutParent((ObjectNode)jsonNode, element, types);
-//                                if (created == element) {
-//                                    continue;
-//                                }
-                            } else if (jsonNode.isArray()) {
-                                //create(null, node, jsonNode, element, types);
-                                createItem(jsonNode, element, true, types);
-                            } else {
-                                fix(jsonNode, element, types);
-                            }
-                        }
-                    }
-                }
-                return elem;
-            }
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            protected Element createNoKey(final JsonNode parent, final JsonNode node, final Element parentElement,
-                final Set<JsonPrimitiveTypes> types) throws IOException {
-                Document doc = parentElement.getOwnerDocument();
-                //we are in the root, or in an array
-                assert parent == null || parent.isArray() : parent;
-                if (node.isValueNode()) {
-                    parentElement.setTextContent(toString(node));
-//                    Element element = createItem(node, parentElement, false, types);
-//                    parentElement.appendChild(element);
-//                    return element;
-                    return parentElement;
-                }
-                if (node.isArray()) {
-                    boolean hasValue = hasValueOrObject(node);
-                    for (JsonNode child : node) {
-                        if (child.isObject() || child.isArray()) {
-                            safeAdd(parentElement, createItem(child, createElement(doc, getPrimitiveArrayItem()),
-                                hasValue, types));
-//                        } if (child.isObject()) {
-//                            safeAdd(parentElement, createSubObject(parentElement, (ObjectNode)child, types));
-                        } else {
-                            Element arrayItem = createItem(child, parentElement, hasValue, types);
-                            parentElement.appendChild(arrayItem);
-                        }
-                    }
-                    return parentElement;
-                }
-                if (node.isObject()) {
-                    if (parent == null) {
-                        //First object
-                        return createObjectWithoutParent((ObjectNode)node, parentElement, types);
-                    }
-                    //boolean hasValue = hasValueOrObject(parent);
-                    //object within array
-                    return createSubObject(parentElement, (ObjectNode)node, types);//createItem(node, parentElement, hasValue, types);
-                }
-                //We already handled the missing case and object.
-                assert false : node;
-                throw new IllegalStateException("Should not reach this! " + node);
-            }
-
-            @Override
-            protected Element createObjectWithoutParent(final ObjectNode node, final Element element,
-                final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
-                boolean hasTextKey = hasText(node);
-                for (Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
-                    Entry<String, JsonNode> entry = it.next();
-                    JsonNode value = entry.getValue();
-                    if (value.isValueNode() && !hasTextKey) {
-                        if (entry.getKey().startsWith("@")) {
-                            addValueAsAttribute(element, entry, types);
-                        } else {
-                            JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
-                            safeAdd(element, createElementWithContent(settings.prefix(primitiveType), entry.getKey(), primitiveType, toString(value), element.getOwnerDocument(), types));
-                        }
-                        //create(entry.getKey(), node, value, element, types);
-                    } else if (hasTextKey && value.isValueNode()) {
-                        if (entry.getKey().equals(getTextKey())) {
-                            setTextContent(element, entry, types);
-                        } else {
-                            if (!entry.getKey().startsWith("@")) {
-                                Document doc = element.getOwnerDocument();
-                                JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
-                                Element elem = createElementWithContent(settings.prefix(primitiveType), entry.getKey(), primitiveType, toString(value), doc, types);
-                                safeAdd(element, elem);
-                            } else {
-                                addValueAsAttribute(element, entry, types);
-                            }
-                            //                    Document doc = element.getOwnerDocument();
-                            //                    Element elem = createElement(doc, entry.getKey());
-                            //                    element.appendChild(elem);
-                            //                    create(entry.getKey(), node, value, elem, types);
-                        }
-                    } else if (value.isObject() || value.isArray()) {
-                        create(entry.getKey(), node, value, element, types);
-                    } else {
-                        assert false : value;
-                    }
-                }
-                return element;
-            }
-
-        };
-    }
-
-    /**
-     * @return The key values to be translated as text.
-     */
-    protected String getTextKey() {
-        return m_settings.getTextKey();
-    }
-
-    /**
-     * @return The element name returned for array items.
-     */
-    protected String getPrimitiveArrayItem() {
-        return m_settings.getPrimitiveArrayItem();
-    }
-
-    /**
-     * @param doc The owner document.
-     * @param name The name of the {@link Element}.
-     * @return The {@link Element} with proper namespace.
-     */
-    protected Element createElement(final Document doc, final String name) {
-        String cleanName = removeInvalidChars(name);
-        if (cleanName.equals(name)) {
-            return doc.createElementNS(m_settings.m_namespace, name);
-        }
-        Element ret = doc.createElementNS(m_settings.m_namespace, cleanName);
-        ret.setAttributeNS(ORIGINALKEY_URI, "ns:originalKey", name);
-        return ret;
     }
 }
