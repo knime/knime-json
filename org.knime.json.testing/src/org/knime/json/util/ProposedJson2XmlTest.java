@@ -98,7 +98,7 @@ public class ProposedJson2XmlTest {
      * @return The expected xml as a {@link String}, the input JSON also as a {@link String} and the {@link Options}
      *         array.
      */
-    @Parameters(/*name = "{index}: input:{1}"*/)
+    @Parameters(name = "{index}: input:{1}")
     public static List<Object[]> parameters() {
         List<Object[]> ret = new ArrayList<>();
         ret.add(new Object[]{"<root/>", "{}", new Options[]{}});
