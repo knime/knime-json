@@ -689,7 +689,7 @@ public class Json2Xml {
      *            {@link Entry#getValue() value} is an {@link ArrayNode}.
      * @param types The used types.
      * @throws IOException Problem with Base64 encoding.
-     * @since 2.12
+     * @since 3.0
      */
     protected void handeArraysInSubObjects(final Element parent, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) throws IOException {
@@ -709,6 +709,7 @@ public class Json2Xml {
      * @return The transformed {@code element} {@link Element}.
      * @throws DOMException Problem with XML DOM creation.
      * @throws IOException Problem decoding binary values.
+     * @since 3.0
      */
     protected Element createObjectWithoutParent(final ObjectNode node, final Element element,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
@@ -761,7 +762,7 @@ public class Json2Xml {
      * @param element The parent element.
      * @param types The used types.
      * @throws IOException Base64 decoding was unsuccessful.
-     * @since 2.12
+     * @since 3.0
      */
     protected void arrayWithoutParentKey(final Entry<String, JsonNode> entry, final ObjectNode node,
         final Element element, final Set<JsonPrimitiveTypes> types) throws IOException {
