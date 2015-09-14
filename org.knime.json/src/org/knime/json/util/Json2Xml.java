@@ -638,7 +638,7 @@ public class Json2Xml {
      * @param types The used types.
      * @return {@code parentElement}.
      * @throws IOException Problem decoding Base64 encoded value.
-     * @since 2.12
+     * @since 3.0
      */
     protected Element arrayWithinObject(final String origKey, final JsonNode node, final Element parentElement,
         final Set<JsonPrimitiveTypes> types) throws IOException {
