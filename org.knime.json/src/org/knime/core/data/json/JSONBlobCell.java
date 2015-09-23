@@ -56,6 +56,7 @@ import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
 import org.knime.core.data.DataCellSerializer;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DataValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.BlobDataCell;
 import org.knime.core.data.xml.XMLBlobCell;
@@ -143,6 +144,14 @@ public final class JSONBlobCell extends BlobDataCell implements JSONValue, Strin
     protected boolean equalsDataCell(final DataCell dc) {
         JSONBlobCell that = (JSONBlobCell)dc;
         return m_content.equals(that.m_content);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean equalContent(final DataValue otherValue) {
+        return JSONValue.equalContent(this, (JSONValue)otherValue);
     }
 
     /**

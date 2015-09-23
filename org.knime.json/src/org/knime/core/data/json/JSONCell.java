@@ -56,6 +56,7 @@ import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
 import org.knime.core.data.DataCellSerializer;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DataValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.xml.XMLCell;
 
@@ -139,6 +140,14 @@ public final class JSONCell extends DataCell implements JSONValue, StringValue {
     protected boolean equalsDataCell(final DataCell dc) {
         JSONCell that = (JSONCell)dc;
         return this.m_content.equals(that.m_content);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean equalContent(final DataValue otherValue) {
+        return JSONValue.equalContent(this, (JSONValue)otherValue);
     }
 
     /**

@@ -48,15 +48,18 @@
  */
 package org.knime.core.data.json;
 
+import java.util.Objects;
+
 import javax.json.JsonValue;
 import javax.swing.Icon;
 
 import org.knime.core.data.DataValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
+import org.knime.core.data.image.png.PNGImageValue;
 
 /**
  * This value encapsulates JSR353 {@link JsonValue}.
- * 
+ *
  * @see JSONCellFactory
  * @since 2.11
  *
@@ -75,6 +78,18 @@ public interface JSONValue extends DataValue {
      * @see DataValue#UTILITY
      */
     public static final UtilityFactory UTILITY = new JacksonUtilityFactory();
+
+    /**
+     * Returns whether the two data values have the same content.
+     *
+     * @param v1 the first data value
+     * @param v2 the second data value
+     * @return <code>true</code> if both values are equal, <code>false</code> otherwise
+     * @since 3.0
+     */
+    static boolean equalContent(final JSONValue v1, final JSONValue v2) {
+        return Objects.equals(v1.getJsonValue(), v2.getJsonValue());
+    }
 
     /** Implementations of the meta information of this value class. */
     class JacksonUtilityFactory extends ExtensibleUtilityFactory {
