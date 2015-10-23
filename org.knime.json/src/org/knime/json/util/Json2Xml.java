@@ -1066,23 +1066,23 @@ public class Json2Xml {
                 element.setAttribute(key, val);
             } else if (v.isIntegralNumber()) {
                 types.add(JsonPrimitiveTypes.INT);
-                element.setAttribute(m_settings.m_int + ":" + key, val);
+                element.setAttributeNS(INTEGER_NAMESPACE, m_settings.m_int + ":" + key, val);
             } else if (v.isFloatingPointNumber()) {
                 types.add(JsonPrimitiveTypes.FLOAT);
-                element.setAttribute(m_settings.m_real + ":" + key, val);
+                element.setAttributeNS(DECIMAL_NAMESPACE, m_settings.m_real + ":" + key, val);
             } else if (v.isBinary()) {
                 types.add(JsonPrimitiveTypes.BINARY);
-                element.setAttribute(m_settings.m_binary + ":" + key, val);
+                element.setAttributeNS(BINARY_NAMESPACE, m_settings.m_binary + ":" + key, val);
             } else if (v.isTextual()) {
                 //We cannot recognize as binary, as for example "text" is recognized as binary
                 types.add(JsonPrimitiveTypes.TEXT);
-                element.setAttribute(m_settings.m_text + ":" + key, val);
+                element.setAttributeNS(STRING_NAMESPACE, m_settings.m_text + ":" + key, val);
             } else if (v.isNull()) {
                 types.add(JsonPrimitiveTypes.NULL);
-                element.setAttribute(m_settings.m_null + ":" + key, "");
+                element.setAttributeNS(NULL_NAMESPACE, m_settings.m_null + ":" + key, "");
             } else if (v.isBoolean()) {
                 types.add(JsonPrimitiveTypes.BOOLEAN);
-                element.setAttribute(m_settings.m_bool + ":" + key, val);
+                element.setAttributeNS(BOOLEAN_NAMESPACE, m_settings.m_bool + ":" + key, val);
             } else {
                 assert false : entry;
             }
