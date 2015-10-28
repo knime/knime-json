@@ -12,6 +12,12 @@
         <filter id="338792546">
             <message_arguments>
                 <message_argument value="org.knime.json.util.Json2Xml"/>
+                <message_argument value="addValueAsAttribute(Element, Map.Entry&lt;String,JsonNode&gt;, Set&lt;JsonPrimitiveTypes&gt;)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.Json2Xml"/>
                 <message_argument value="createWrong(String, JsonNode, JsonNode, Element, Set&lt;JsonPrimitiveTypes&gt;)"/>
             </message_arguments>
         </filter>
@@ -19,6 +25,12 @@
             <message_arguments>
                 <message_argument value="org.knime.json.util.Json2Xml"/>
                 <message_argument value="possibleAttributesAndValues(ObjectNode)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.Json2Xml"/>
+                <message_argument value="setTextContent(Element, Map.Entry&lt;String,JsonNode&gt;, Set&lt;JsonPrimitiveTypes&gt;)"/>
             </message_arguments>
         </filter>
     </resource>

@@ -50,9 +50,11 @@ package org.knime.json.util;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -67,6 +69,9 @@ import org.knime.json.node.util.ErrorHandling;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -523,28 +528,28 @@ public class Json2Xml {
             element.setTextContent(node.asText());
             if (!m_looseTypeInfo) {
                 if (node.isBinary()) {
-                    element.setPrefix(m_settings.m_binary);
                     types.add(JsonPrimitiveTypes.BINARY);
+                    return copyElementWithPrefix(element, m_settings.m_binary, BINARY_NAMESPACE);
                 } else if (node.isIntegralNumber()) {
-                    element.setPrefix(m_settings.m_int);
                     types.add(JsonPrimitiveTypes.INT);
+                    return copyElementWithPrefix(element, m_settings.m_int, INTEGER_NAMESPACE);
                 } else if (node.isFloatingPointNumber()) {
-                    element.setPrefix(m_settings.m_real);
                     types.add(JsonPrimitiveTypes.FLOAT);
+                    return copyElementWithPrefix(element, m_settings.m_real, DECIMAL_NAMESPACE);
                 } else if (node.isBoolean()) {
-                    element.setPrefix(m_settings.m_bool);
                     types.add(JsonPrimitiveTypes.BOOLEAN);
+                    return copyElementWithPrefix(element, m_settings.m_bool, BOOLEAN_NAMESPACE);
                 } else if (node.isNull()) {
-                    element.setPrefix(m_settings.m_null);
                     types.add(JsonPrimitiveTypes.NULL);
+                    return copyElementWithPrefix(element, m_settings.m_null, NULL_NAMESPACE);
                 } else if (node.isTextual()) {
                     //Wrong heuristic
                     //                    if (Base64.decode(element.getTextContent().getBytes(Charset.forName("UTF-8"))) == null) {
-                    element.setPrefix(m_settings.m_text);
                     types.add(JsonPrimitiveTypes.TEXT);
+                    return copyElementWithPrefix(element, m_settings.m_text, STRING_NAMESPACE);
                     //                    } else {
-                    //                        element.setPrefix(m_settings.m_binary);
                     //                        types.add(JsonPrimitiveTypes.BINARY);
+                    //                        return copyElementWithPrefix(element, m_settings.m_binary, BINARY_NAMESPACE);
                     //                    }
                 }
             }
@@ -661,22 +666,23 @@ public class Json2Xml {
      */
     protected Element createSubObject(final Element elem, final ObjectNode objectNode,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
+        Element currentElement = elem;
         for (final Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
             final Entry<String, JsonNode> entry = fields.next();
             final JsonNode node = entry.getValue();
             //primitive text or attribute
             if (node.isValueNode() && (getTextKey().equals(entry.getKey()) || entry.getKey().startsWith("@"))) {
-                addValueAsAttribute(elem, entry, types);
+                currentElement = addValueAsAttribute(currentElement, entry, types);
             } else if (node.isValueNode() || node.isObject()) {
                 //In case node is not a value, but the key is still the text key, it is handled like other keys:
                 //it might get originalKey attribute for the new Element or just becomes an simple Element.
-                final Element object = create(entry.getKey(), objectNode, node, elem, types);
-                safeAdd(elem, object);
+                final Element object = create(entry.getKey(), objectNode, node, currentElement, types);
+                safeAdd(currentElement, object);
             } else if (node.isArray()) {
-                handeArraysInSubObjects(elem, entry, types);
+                handeArraysInSubObjects(currentElement, entry, types);
             }
         }
-        return elem;
+        return currentElement;
     }
 
     /**
@@ -714,42 +720,43 @@ public class Json2Xml {
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
         final boolean hasTextKey = hasText(node);
         final Document doc = element.getOwnerDocument();
+        Element currentElement = element;
         for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
             final Entry<String, JsonNode> entry = it.next();
             final JsonNode value = entry.getValue();
             if (value.isValueNode() && !hasTextKey) {
                 if (entry.getKey().startsWith("@")) {
-                    addValueAsAttribute(element, entry, types);
+                    currentElement = addValueAsAttribute(currentElement, entry, types);
                 } else {
                     final JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
                     safeAdd(
-                        element,
+                        currentElement,
                         createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType,
                             valueToString(value), doc, types));
                 }
             } else if (hasTextKey && value.isValueNode()) {
                 if (entry.getKey().equals(getTextKey())) {
-                    setTextContent(element, entry, types);
+                    currentElement = setTextContent(currentElement, entry, types);
                 } else {
                     if (entry.getKey().startsWith("@")) {
-                        addValueAsAttribute(element, entry, types);
+                        currentElement = addValueAsAttribute(currentElement, entry, types);
                     } else {
                         JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
                         Element elem =
                             createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType,
                                 valueToString(value), doc, types);
-                        safeAdd(element, elem);
+                        safeAdd(currentElement, elem);
                     }
                 }
             } else if (value.isArray()) {
-                arrayWithoutParentKey(entry, node, element, types);
+                arrayWithoutParentKey(entry, node, currentElement, types);
             } else if (value.isObject()) {
-                create(entry.getKey(), node, value, element, types);
+                create(entry.getKey(), node, value, currentElement, types);
             } else {
                 assert false : value;
             }
         }
-        return element;
+        return currentElement;
     }
 
     /**
@@ -1049,8 +1056,9 @@ public class Json2Xml {
      * @param element An {@link Element}.
      * @param entry The value to add.
      * @param types The types used.
+     * @return The updated {@code element}.
      */
-    protected void addValueAsAttribute(final Element element, final Entry<String, JsonNode> entry,
+    private Element addValueAsAttribute(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
         assert entry.getKey().startsWith("@") || getTextKey().equals(entry.getKey());
         final JsonNode v = entry.getValue();
@@ -1058,8 +1066,7 @@ public class Json2Xml {
             String val = v.asText();
             String key = entry.getKey();
             if (key.equals(getTextKey())) {
-                setTextContent(element, entry, types);
-                return;
+                return setTextContent(element, entry, types);
             }
             key = removeInvalidChars(key);
             if (m_looseTypeInfo) {
@@ -1086,9 +1093,10 @@ public class Json2Xml {
             } else {
                 assert false : entry;
             }
-        } else {
-            assert false : v;
+            return element;
         }
+        assert false : v;
+        throw new IllegalStateException(v.toString());
     }
 
     /**
@@ -1097,8 +1105,9 @@ public class Json2Xml {
      * @param element The {@link Element} to adjust.
      * @param entry The value to add.
      * @param types The types used.
+     * @return The updated {@code element}.
      */
-    protected void setTextContent(final Element element, final Entry<String, JsonNode> entry,
+    private Element setTextContent(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
         final JsonNode v = entry.getValue();
         final String val = v.asText();
@@ -1106,26 +1115,65 @@ public class Json2Xml {
         if (!m_looseTypeInfo) {
             if (v.isIntegralNumber()) {
                 types.add(JsonPrimitiveTypes.INT);
-                element.setPrefix(m_settings.m_int);
+                return copyElementWithPrefix(element, m_settings.m_int, INTEGER_NAMESPACE);
             } else if (v.isFloatingPointNumber()) {
                 types.add(JsonPrimitiveTypes.FLOAT);
-                element.setPrefix(m_settings.m_real);
+                return copyElementWithPrefix(element, m_settings.m_real, DECIMAL_NAMESPACE);
             } else if (v.isTextual()) {
                 types.add(JsonPrimitiveTypes.TEXT);
-                element.setPrefix(m_settings.m_text);
+                return copyElementWithPrefix(element, m_settings.m_text, STRING_NAMESPACE);
             } else if (v.isNull()) {
                 types.add(JsonPrimitiveTypes.NULL);
-                element.setPrefix(m_settings.m_null);
+                return copyElementWithPrefix(element, m_settings.m_null, NULL_NAMESPACE);
             } else if (v.isBinary()) {
                 types.add(JsonPrimitiveTypes.BINARY);
-                element.setPrefix(m_settings.m_binary);
+                return copyElementWithPrefix(element, m_settings.m_binary, BINARY_NAMESPACE);
             } else if (v.isBoolean()) {
                 types.add(JsonPrimitiveTypes.BOOLEAN);
-                element.setPrefix(m_settings.m_bool);
+                return copyElementWithPrefix(element, m_settings.m_bool, BOOLEAN_NAMESPACE);
             } else {
                 assert false : entry;
+                throw new IllegalStateException(v.toString());
             }
         }
+        return element;
+    }
+
+    /**
+     * @param element
+     * @param i
+     * @param integerNamespace
+     * @return
+     */
+    private Element copyElementWithPrefix(final Element element, final String prefix, final String namespace) {
+        final Document document = element.getOwnerDocument();
+        final Element newElement = document.createElementNS(namespace, prefix + ":" + element.getNodeName());
+        final Node parentNode = element.getParentNode();
+        if (parentNode != null) {
+            final Node nextSibling = element.getNextSibling();
+            parentNode.removeChild(element);
+            if (nextSibling != null) {
+                parentNode.insertBefore(newElement, nextSibling);
+            }else {
+                parentNode.appendChild(newElement);
+            }
+        }
+        final NamedNodeMap attributes = element.getAttributes();
+        for (int i = 0; i < attributes.getLength(); ++i) {
+            final Node attrib = attributes.item(i);
+            newElement.setAttributeNS(attrib.getNamespaceURI(), attrib.getLocalName(), attrib.getNodeValue());
+        }
+        final NodeList childNodes = element.getChildNodes();
+        //Important to keep a copy as the appendChild call would change the childNodes.
+        List<Node> children = new ArrayList<>(childNodes.getLength());
+        for (int i = 0; i < childNodes.getLength(); ++i) {
+            children.add(childNodes.item(i));
+        }
+        for (Node node : children) {
+            newElement.appendChild(node);
+        }
+        //newElement.setTextContent(element.getTextContent());
+        return newElement;
     }
 
     /**
