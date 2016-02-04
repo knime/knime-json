@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   28 Sept 2014 (Gábor): created
+ *   28 Sept 2014 (Gï¿½bor): created
  */
 package org.knime.json.node.fromxml;
 
@@ -73,6 +73,16 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
 
     private String m_textKey = DEFAULT_TEXT;
 
+    private static final String TRANSLATE_COMMENTS = "translate.comments";
+    private static final String TRANSLATE_PROCESSING_INSTRUCTIONS = "translate.processing.instructions";
+
+    private static final boolean DEFAULT_TRANSLATE_COMMENTS = false;
+
+    private static final boolean DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS = false;
+
+    private boolean m_translateComments = DEFAULT_TRANSLATE_COMMENTS;
+    private boolean m_translateProcessingInstructions = DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS;
+
     /**
      * Constructs the {@link XMLToJSONSettings} object.
      */
@@ -96,11 +106,45 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
     }
 
     /**
+     * @param translateComments the translateComments to set
+     * @since 3.1
+     */
+    void setTranslateComments(final boolean translateComments) {
+        m_translateComments = translateComments;
+    }
+
+    /**
+     * @return the translateComments
+     * @since 3.1
+     */
+    boolean isTranslateComments() {
+        return m_translateComments;
+    }
+
+    /**
+     * @param translateProcessingInstructions the translateProcessingInstructions to set
+     * @since 3.1
+     */
+    void setTranslateProcessingInstructions(final boolean translateProcessingInstructions) {
+        m_translateProcessingInstructions = translateProcessingInstructions;
+    }
+
+    /**
+     * @return the translateProcessingInstructions
+     * @since 3.1
+     */
+    boolean isTranslateProcessingInstructions() {
+        return m_translateProcessingInstructions;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
         m_textKey = settings.getString(TEXT, DEFAULT_TEXT);
+        m_translateComments = settings.getBoolean(TRANSLATE_COMMENTS, DEFAULT_TRANSLATE_COMMENTS);
+        m_translateProcessingInstructions = settings.getBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS, DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS);
         super.loadSettingsForDialogs(settings, specs);
     }
 
@@ -110,6 +154,18 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_textKey = settings.getString(TEXT);
+        try {
+            m_translateComments = settings.getBoolean(TRANSLATE_COMMENTS);
+        } catch (InvalidSettingsException e) {
+            //For compatibility
+            m_translateComments = true;
+        }
+        try {
+            m_translateProcessingInstructions = settings.getBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS);
+        } catch (InvalidSettingsException e) {
+            //For compatibility
+            m_translateProcessingInstructions = true;
+        }
         super.loadSettingsFrom(settings);
     }
 
@@ -119,6 +175,8 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addString(TEXT, m_textKey);
+        settings.addBoolean(TRANSLATE_COMMENTS, m_translateComments);
+        settings.addBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS, m_translateProcessingInstructions);
         super.saveSettingsTo(settings);
     }
 

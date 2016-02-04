@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JSON related functionality for KNIME
 Bundle-SymbolicName: org.knime.json;singleton:=true
-Bundle-Version: 3.1.0.qualifier
+Bundle-Version: 3.2.0.qualifier
 Bundle-Activator: org.knime.json.internal.Activator
-Bundle-Vendor: KNIME Gmbh
+Bundle-Vendor: KNIME GmbH, Konstanz, Germany
 Export-Package: org.knime.core.data.json,
  org.knime.json.node.jsonpath;x-internal:=true,
  org.knime.json.node.util;x-internal:=true,

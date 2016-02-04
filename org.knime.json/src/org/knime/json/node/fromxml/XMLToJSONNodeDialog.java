@@ -50,6 +50,7 @@ package org.knime.json.node.fromxml;
 
 import java.awt.GridBagConstraints;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -72,6 +73,10 @@ public class XMLToJSONNodeDialog extends ReplaceColumnDialog<XMLToJSONSettings> 
 
     private JTextField m_textKey;
 
+    private JCheckBox m_translateComments;
+
+    private JCheckBox m_translateProcessingInstructions;
+
     /**
      * New pane for configuring the XMLToJSON node.
      */
@@ -92,6 +97,13 @@ public class XMLToJSONNodeDialog extends ReplaceColumnDialog<XMLToJSONSettings> 
         m_textKey = GUIFactory.createTextField("", 22);
         panel.add(m_textKey, gbc);
         gbc.gridy++;
+        m_translateComments = new JCheckBox("Translate comments");
+        gbc.gridx = 0;
+        panel.add(m_translateComments, gbc);
+        gbc.gridy++;
+        m_translateProcessingInstructions = new JCheckBox("Translate processing instructions");
+        panel.add(m_translateProcessingInstructions, gbc);
+        gbc.gridy++;
     }
 
     /**
@@ -100,6 +112,8 @@ public class XMLToJSONNodeDialog extends ReplaceColumnDialog<XMLToJSONSettings> 
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         getSettings().setTextKey(m_textKey.getText());
+        getSettings().setTranslateComments(m_translateComments.isSelected());
+        getSettings().setTranslateProcessingInstructions(m_translateProcessingInstructions.isSelected());
         super.saveSettingsTo(settings);
     }
 
@@ -111,5 +125,7 @@ public class XMLToJSONNodeDialog extends ReplaceColumnDialog<XMLToJSONSettings> 
         throws NotConfigurableException {
         super.loadSettingsFrom(settings, specs);
         m_textKey.setText(getSettings().getTextKey());
+        m_translateComments.setSelected(getSettings().isTranslateComments());
+        m_translateProcessingInstructions.setSelected(getSettings().isTranslateProcessingInstructions());
     }
 }

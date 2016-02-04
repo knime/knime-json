@@ -160,6 +160,9 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
 //        mapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
         final JacksonConversions conv = JacksonConversions.getInstance();
         return new SingleCellFactory(output) {
+            private final Xml2Json xml2Json = Xml2Json.proposedSettings().setTextKey(getSettings().getTextKey())
+                .setTranslateComments(getSettings().isTranslateComments())
+                .setTranslateProcessingInstructions(getSettings().isTranslateProcessingInstructions());
 
             @Override
             public DataCell getCell(final DataRow row) {
@@ -173,8 +176,7 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
                             Element element = newRoot.createElement("fakeroot");
                             element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
                             newRoot.appendChild(element);
-                            Xml2Json proposedSettings = Xml2Json.proposedSettings().setTextKey(getSettings().getTextKey());
-                            JsonNode json = proposedSettings.toJson(newRoot);
+                            JsonNode json = xml2Json.toJson(newRoot);
                             return JSONCellFactory.create(conv.toJSR353(json));
                         } catch (FactoryConfigurationError
                                 | ParserConfigurationException e) {

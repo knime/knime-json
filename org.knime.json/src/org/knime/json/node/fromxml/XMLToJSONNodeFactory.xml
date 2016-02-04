@@ -20,16 +20,8 @@
         <option name="Replace input column">Replace input column, keep its name</option>
         <option name="Append new column">Name of the new (JSON) column</option>
         <option name="Text body translated to JSON with key">This key will be used for XML text content to be represented in JSON</option>
-        <!-- possibly more options that can also be grouped by tabs -->
-        <!--
-        <tab name="Standard Options">
-            <option name="short name of first option (like in the dialog)">description of first option</option>
-            <option name="short name of second option (like in the dialog)">description of second option</option>
-        </tab>
-        <tab name="Advanced Options">
-            <option name="short name of first advanced option (like in the dialog)">description of first advanced option</option>
-        </tab>
-        -->
+        <option name="Translate comments">When checked, comments (such as <tt>&lt;-- comment --&gt;</tt>) will be translated with key: <tt>#comment</tt>, otherwise they are omitted in the JSON output</option>
+        <option name="Translate processing instructions">When checked, processing instructions (such as <tt>&lt;?do?&gt;</tt>) will be translated with prefix <tt>?</tt>, otherwise they are omitted in the JSON output</option>
     </fullDescription>
     
     <ports>

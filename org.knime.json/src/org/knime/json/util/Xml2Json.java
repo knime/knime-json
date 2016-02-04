@@ -55,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -124,6 +125,12 @@ public class Xml2Json implements Cloneable {
      * the namespace info is added to the attributes.
      */
     private boolean m_treatNamespaceInfoAsAttribute = false;
+
+    /** Comments should be translated or omitted. */
+    private boolean m_translateComments = false;
+
+    /** Processing instructions to be translated or omitted. */
+    private boolean m_translateProcessingInstructions = false;
 
 //    //attributes are arrays within the array of the content
 //    @Deprecated
@@ -248,7 +255,9 @@ public class Xml2Json implements Cloneable {
                     put(group, m_cdata, node.getNodeValue(), o);
                     break;
                 case Node.COMMENT_NODE:
-                    put(group, m_comment, node.getNodeValue(), o);
+                    if (m_translateComments) {
+                        put(group, m_comment, node.getNodeValue(), o);
+                    }
                     break;
                 case Node.ENTITY_NODE:
                     put(group, m_entity, node.getNodeName(), o);
@@ -257,12 +266,14 @@ public class Xml2Json implements Cloneable {
                     put(group, m_entityRef, node.getNodeName(), o);
                     break;
                 case Node.PROCESSING_INSTRUCTION_NODE:
-                    if (m_processingPrefix != null) {
-                        put(group, m_processingPrefix + node.getNodeName(), node.getNodeValue(), o);
-                    } else {
-                        ObjectNode proc = o.objectNode();
-                        proc.put(node.getNodeName(), node.getNodeValue());
-                        put(group, m_processing, proc, o);
+                    if (m_translateProcessingInstructions) {
+                        if (m_processingPrefix != null) {
+                            put(group, m_processingPrefix + node.getNodeName(), node.getNodeValue(), o);
+                        } else {
+                            ObjectNode proc = o.objectNode();
+                            proc.put(node.getNodeName(), node.getNodeValue());
+                            put(group, m_processing, proc, o);
+                        }
                     }
                     break;
                 case Node.TEXT_NODE:
@@ -369,13 +380,21 @@ public class Xml2Json implements Cloneable {
                             key = m_text;
                             break;
                         case Node.COMMENT_NODE:
-                            key = m_comment;
+                            if (m_translateComments) {
+                                key = m_comment;
+                            } else {
+                                continue;
+                            }
                             break;
                         case Node.NOTATION_NODE:
                             key = m_notation;
                             break;
                         case Node.PROCESSING_INSTRUCTION_NODE:
-                            key = m_processingPrefix == null ? m_processing : m_processingPrefix + node.getNodeName();
+                            if (m_translateProcessingInstructions) {
+                                key = m_processingPrefix == null ? m_processing : m_processingPrefix + node.getNodeName();
+                            } else {
+                                continue;
+                            }
                             break;
                         case Node.ENTITY_NODE:
                             key = m_entity;
@@ -474,7 +493,9 @@ public class Xml2Json implements Cloneable {
                     case Node.CDATA_SECTION_NODE:
                         throw new IllegalStateException("Should be handled in the if case!");
                     case Node.COMMENT_NODE:
-                        o.put(m_comment, node.getNodeValue());
+                        if (m_translateComments) {
+                            o.put(m_comment, node.getNodeValue());
+                        }
                         break;
                     case Node.ENTITY_NODE:
                         o.put(m_entity, node.getNodeName());
@@ -483,12 +504,14 @@ public class Xml2Json implements Cloneable {
                         o.put(m_entityRef, node.getNodeName());
                         break;
                     case Node.PROCESSING_INSTRUCTION_NODE:
-                        if (m_processingPrefix != null) {
-                            o.put(m_processingPrefix + node.getNodeName(), node.getNodeValue());
-                        } else {
-                            ObjectNode proc = o.objectNode();
-                            proc.put(node.getNodeName(), node.getNodeValue());
-                            o.set(m_processing, proc);
+                        if (m_translateProcessingInstructions) {
+                            if (m_processingPrefix != null) {
+                                o.put(m_processingPrefix + node.getNodeName(), node.getNodeValue());
+                            } else {
+                                ObjectNode proc = o.objectNode();
+                                proc.put(node.getNodeName(), node.getNodeValue());
+                                o.set(m_processing, proc);
+                            }
                         }
                         break;
                     case Node.TEXT_NODE:
@@ -578,6 +601,26 @@ public class Xml2Json implements Cloneable {
     public void setSimpleAttributes(final boolean simpleAttributes) {
         this.m_simpleAttributes = simpleAttributes;
     }
+
+    /**
+     * @param translateComments the translateComments to set
+     * @return The new {@link Xml2Json} node with {@code translateComments} for the option translate comments.
+     * @since 3.2
+     */
+    public Xml2Json setTranslateComments(final boolean translateComments) {
+        return setInClone(clone -> clone.m_translateComments = translateComments);
+    }
+
+    /**
+     * @param translateProcessingInstructions the translateProcessingInstructions to set
+     * @return The new {@link Xml2Json} node with {@code translateProcessingInstructions} for the option translate
+     *         processing instructions.
+     * @since 3.2
+     */
+    public Xml2Json setTranslateProcessingInstructions(final boolean translateProcessingInstructions) {
+        return setInClone(clone -> clone.m_translateProcessingInstructions = translateProcessingInstructions);
+    }
+
     /**
      * @return The preconfigured {@link Xml2Json} object with proposed settings.
      */
@@ -592,6 +635,8 @@ public class Xml2Json implements Cloneable {
         ret.m_groupingStrategy = GroupingStrategy.OnlyIfSafe;
         //ret.m_namespace =
         //ret.m_namespaceRef =
+        ret.m_translateComments = false;
+        ret.m_translateProcessingInstructions = false;
         ret.m_noNamespaces = true;
         ret.m_processingPrefix = "?";
         ret.m_simpleAttributes = true;
@@ -605,10 +650,18 @@ public class Xml2Json implements Cloneable {
      * @return The new {@link Xml2Json} node with {@code textKey} for text.
      */
     public Xml2Json setTextKey(final String textKey) {
+        return setInClone((clone) -> clone.m_text = textKey);
+    }
+
+    /**
+     * @param change The lambda changing the clone.
+     * @return The cloned and updated {@link Xml2Json} object.
+     */
+    private Xml2Json setInClone(final Consumer<Xml2Json> change) {
         Xml2Json clone;
         try {
             clone = (Xml2Json)clone();
-            clone.m_text = textKey;
+            change.accept(clone);
         } catch (CloneNotSupportedException e) {
             throw new IllegalStateException(e);
         }
