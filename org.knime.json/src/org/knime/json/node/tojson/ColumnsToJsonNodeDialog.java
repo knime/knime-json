@@ -125,7 +125,7 @@ public class ColumnsToJsonNodeDialog extends NodeDialogPane {
         m_dataBoundKeys.setValueColumnLabel("Value");
         m_dataBoundKeys.setPreferredSize(new Dimension(300, 200));
 //        m_dataBoundSelection.addTab("Manual", m_dataBoundKeys);
-        m_dataBoundAutomatic = new DataColumnSpecFilterPanel(true);
+        m_dataBoundAutomatic = new DataColumnSpecFilterPanel(false);
 //        m_dataBoundAutomatic.setPreferredSize(new Dimension(300, 250));
 //        m_dataBoundSelection.addTab("Automatic", m_dataBoundAutomatic);
 //        p.add(m_dataBoundSelection, c);
