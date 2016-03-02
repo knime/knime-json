@@ -209,7 +209,7 @@ public class ProposedXml2JsonTest {
      */
     @Before
     public void setUp() throws Exception {
-        m_converter = Xml2Json.proposedSettings();
+        m_converter = Xml2Json.proposedSettings().setTranslateComments(true);
     }
 
     /**

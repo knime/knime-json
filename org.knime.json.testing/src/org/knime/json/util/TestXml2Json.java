@@ -142,7 +142,7 @@ public class TestXml2Json {
      */
     @Before
     public void setUp() throws Exception {
-        m_converter = new Xml2Json();
+        m_converter = new Xml2Json().setTranslateComments(true);
         m_converter.setSimpleAttributes(false);
     }
 
