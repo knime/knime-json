@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -66,16 +67,19 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xmlbeans.impl.util.Base64;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.util.ErrorHandling;
+import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 /**
  * Helper class to convert Jackson {@link JsonNode} to XML {@link Document}s.
@@ -128,6 +132,15 @@ public class Json2Xml {
 
         /** Prefix for boolean/logical values. */
         private String m_bool;
+
+        /** Whether {@code #comment} should be translated to comment ({@code true}) or element {@code false}. */
+        private boolean m_translateHashCommentToComment = false;
+
+        /**
+         * Whether {@code <?something?>} should be translated to a processing instruction ({@code true}) or element
+         * {@code false}.
+         */
+        private boolean m_translateQuestionPrefixToProcessingInstruction = false;
 
         /**
          * {@code null} means we do not convert any keys to text, otherwise these keys are converted to text when
@@ -321,6 +334,40 @@ public class Json2Xml {
         public String namespace(final JsonPrimitiveTypes type) {
             return type.getDefaultNamespace();
         }
+
+        /**
+         * @param translateHashCommentToComment the translateHashCommentToComment to set
+         * @since 3.2
+         */
+        public void setTranslateHashCommentToComment(final boolean translateHashCommentToComment) {
+            m_translateHashCommentToComment = translateHashCommentToComment;
+        }
+
+        /**
+         * @return the translateHashCommentToComment
+         * @since 3.2
+         */
+        public boolean isTranslateHashCommentToComment() {
+            return m_translateHashCommentToComment;
+        }
+
+        /**
+         * @param translateQuestionPrefixToProcessingInstruction the translateQuestionPrefixToProcessingInstruction to
+         *            set
+         * @since 3.2
+         */
+        public void setTranslateQuestionPrefixToProcessingInstruction(
+            final boolean translateQuestionPrefixToProcessingInstruction) {
+            m_translateQuestionPrefixToProcessingInstruction = translateQuestionPrefixToProcessingInstruction;
+        }
+
+        /**
+         * @return the translateQuestionPrefixToProcessingInstruction
+         * @since 3.2
+         */
+        public boolean isTranslateQuestionPrefixToProcessingInstruction() {
+            return m_translateQuestionPrefixToProcessingInstruction;
+        }
     }
 
     /**
@@ -357,6 +404,11 @@ public class Json2Xml {
      * Namespace for binary content.
      */
     public static final String BINARY_NAMESPACE = "http://www.w3.org/2001/XMLSchema/binary";
+
+    private static final String HASH_COMMENT = "#comment";
+    private static final String QUESTIONMARK_PREFIX = "?";
+
+    private static final Pattern REPLACE_START_WITH_NON_LETTER_OR_UNDERSCORE = Pattern.compile("^[^a-zA-Z_]+");
 
     /** Loose/omit type information? */
     private boolean m_looseTypeInfo = false;
@@ -467,7 +519,8 @@ public class Json2Xml {
         } else {
             throw new IllegalStateException("Unknown primitive type: " + node + " [" + node.getNodeType() + "]");
         }
-        final String namespace, prefix;
+        final String namespace;
+        final String prefix;
         if (m_settings.getNamespace() == null) {
             if (m_looseTypeInfo) {
                 namespace = null;
@@ -667,11 +720,18 @@ public class Json2Xml {
     protected Element createSubObject(final Element elem, final ObjectNode objectNode,
         final Set<JsonPrimitiveTypes> types) throws DOMException, IOException {
         Element currentElement = elem;
+        final Document doc = elem.getOwnerDocument();
         for (final Iterator<Entry<String, JsonNode>> fields = objectNode.fields(); fields.hasNext();) {
             final Entry<String, JsonNode> entry = fields.next();
             final JsonNode node = entry.getValue();
-            //primitive text or attribute
-            if (node.isValueNode() && (getTextKey().equals(entry.getKey()) || entry.getKey().startsWith("@"))) {
+            final JsonNode value = entry.getValue();
+            if (m_settings.m_translateHashCommentToComment && HASH_COMMENT.equals(entry.getKey())) {
+                handleComment(currentElement, doc, value);
+            } else if (m_settings.m_translateQuestionPrefixToProcessingInstruction
+                && entry.getKey().startsWith(QUESTIONMARK_PREFIX)) {
+                handleProcessingInstruction(currentElement, doc, entry);
+            } else if (node.isValueNode() && (getTextKey().equals(entry.getKey()) || entry.getKey().startsWith("@"))) {
+                //primitive text or attribute
                 currentElement = addValueAsAttribute(currentElement, entry, types);
             } else if (node.isValueNode() || node.isObject()) {
                 //In case node is not a value, but the key is still the text key, it is handled like other keys:
@@ -683,6 +743,51 @@ public class Json2Xml {
             }
         }
         return currentElement;
+    }
+
+    /**
+     * @param currentElement An {@link Element}.
+     * @param doc The {@link Document} of the resulting XML.
+     * @param entry An entry for the processing instruction (key should start with {@value #QUESTIONMARK_PREFIX}).
+     */
+    private void handleProcessingInstruction(final Element currentElement, final Document doc,
+        final Entry<String, JsonNode> entry) {
+        final String target = entry.getKey().substring(1);
+        if (target.matches("[a-zA-Z][\\w\\-]*") && !"xml".equalsIgnoreCase(target)) {
+            final String string = string(entry.getValue());
+            int firstQuestionMarkGreater = string.indexOf("?>");
+            if (firstQuestionMarkGreater >= 0) {
+                final String value = string.substring(0, firstQuestionMarkGreater);
+                final String rest = string.substring(firstQuestionMarkGreater);
+                safeAdd(currentElement, doc.createProcessingInstruction(entry.getKey().substring(1), value));
+                safeAdd(currentElement, doc.createTextNode(rest));
+            } else {
+                safeAdd(currentElement, doc.createProcessingInstruction(entry.getKey().substring(1), string));
+            }
+        } else {
+            throw new IllegalStateException("Invalid processing instruction target: " + target);
+        }
+    }
+
+    /**
+     * @param currentElement An {@link Element}.
+     * @param doc The {@link Document} of the resulting XML.
+     * @param value The value to be used as comment.
+     */
+    private void handleComment(final Element currentElement, final Document doc, final JsonNode value) {
+        final String v = string(value);
+        if (v.contains("--")) {
+            throw new IllegalStateException("-- cannot be in XML comments.");
+        }
+        safeAdd(currentElement, doc.createComment(string(value)));
+    }
+
+    /**
+     * @param value A {@link JsonNode} (might be non-value)
+     * @return The {@link String} representation of it.
+     */
+    private String string(final JsonNode value) {
+        return value instanceof TextNode ? value.asText() : value.toString();
     }
 
     /**
@@ -725,7 +830,11 @@ public class Json2Xml {
         for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
             final Entry<String, JsonNode> entry = it.next();
             final JsonNode value = entry.getValue();
-            if (value.isValueNode() && !hasTextKey) {
+            if (m_settings.m_translateHashCommentToComment && HASH_COMMENT.equals(entry.getKey())) {
+                handleComment(currentElement, doc, value);
+            } else if (m_settings.m_translateQuestionPrefixToProcessingInstruction && entry.getKey().startsWith(QUESTIONMARK_PREFIX)) {
+                handleProcessingInstruction(currentElement, doc, entry);
+            } else if (value.isValueNode() && !hasTextKey) {
                 if (entry.getKey().startsWith("@")) {
                     currentElement = addValueAsAttribute(currentElement, entry, types);
                 } else {
@@ -973,9 +1082,9 @@ public class Json2Xml {
      * Adds {@code child} as a child to {@code parent}, unless those refer to the same {@link Element}.
      *
      * @param parent An {@link Element}.
-     * @param child An {@link Element}.
+     * @param child An {@link Element}, {@link Comment} or {@link ProcessingInstruction}.
      */
-    private static void safeAdd(final Element parent, final Element child) {
+    private static void safeAdd(final Element parent, final Node child) {
         if (parent != child) {
             parent.appendChild(child);
         }
@@ -986,7 +1095,8 @@ public class Json2Xml {
      * @return The invalid (non-word) characters removed.
      */
     private static String removeInvalidChars(final String key) {
-        return key.replaceAll("[^\\w]", "");
+        final String validChars = key.replaceAll("[^\\w\\-.]", "");
+        return REPLACE_START_WITH_NON_LETTER_OR_UNDERSCORE.matcher(validChars).replaceFirst("");
     }
 
     /**
@@ -1237,10 +1347,10 @@ public class Json2Xml {
      */
     protected Element createElement(final Document doc, final String name) {
         final String cleanName = removeInvalidChars(name);
-        if (cleanName.equals(name)) {
+        if (cleanName.equals(name) && !name.isEmpty()) {
             return doc.createElementNS(m_settings.m_namespace, name);
         }
-        final Element ret = doc.createElementNS(m_settings.m_namespace, cleanName);
+        final Element ret = doc.createElementNS(m_settings.m_namespace, cleanName.isEmpty() ? "_" : cleanName);
         ret.setAttributeNS(ORIGINALKEY_URI, NS_ORIGINAL_KEY, name);
         return ret;
     }

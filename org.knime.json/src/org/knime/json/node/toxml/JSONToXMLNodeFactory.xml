@@ -26,6 +26,11 @@
         <option name="Array item name">Array items not always can be represented as trees (for example arrays within arrays, or primitive types within arrays). In this case an XML element with the specified name will be created for each array entry.</option>
         <option name="Use parent keys as element name for arrays">When checked, JSON such as <tt>{"a":[{"b":2},{"c":3}]}</tt> gets translated to <tt>&lt;a&gt;&lt;b&gt;2&lt;/b&gt;&lt;/a&gt;&lt;a&gt;&lt;c&gt;3&lt;/c&gt;&lt;/a&gt;</tt> otherwise, it is translated to: <tt>&lt;a&gt;&lt;item&gt;&lt;b&gt;2&lt;/b&gt;&lt;/item&gt;&lt;item&gt;&lt;c&gt;3&lt;/c&gt;&lt;/item&gt;&lt;/a&gt;</tt>.</option>
         <option name="Represent values as XML text if key is">When checked, simple values with the specified key will not create attributes, but provide the single text of the surrounding element.</option>
+        <option name="Translate JSON key #comment to">JSON objects with keys starting with a hash sign such as <tt>{ "#comment": "content" }</tt> can either be translated to
+          XML elements (<tt>&lt;comment ns:originalKey="#comment"&gt;content&lt;/comment&gt;</tt>) or to XML comments (&lt;--content--&gt;).</option>
+        <option name="Translate JSON key ?pi to">JSON objects with keys starting with a question mark such as <tt>{"?pi": "content"}</tt>
+          can either be translated to XML elements (<tt>&lt;pi ns:originalKey="?pi"&gt;content&lt;/do&gt;</tt>) or to XML processing instructions
+          (<tt>&lt;?pi content?&gt;</tt>)</option>
         </tab>
         <tab name="Type information">
         <option name="Keep type information by adding namespace">When checked, the JSON type information will be preserved, numbers, booleans, ... will be represented as text, but their node will have a prefix identifying its type. Otherwise all kind of values will be represented as text.</option>

@@ -123,6 +123,14 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
 
     private static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = false;
 
+    private static final String TRANSLATE_HASHCOMMENT_AS_ELEMENT = "translate.#comment.as.element";
+
+    private static final boolean DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT = true;
+
+    private static final String TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = "translate.?prefix.as.element";
+
+    private static final boolean DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = true;
+
     private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT,
             m_array = DEFAULT_ARRAY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,
             m_integer = DEFAULT_INTEGER_PREFIX, m_null = DEFAULT_NULL_PREFIX, m_decimal = DEFAULT_DECIMAL_PREFIX,
@@ -135,6 +143,10 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     private String m_keyForText = DEFAULT_KEY_FOR_TEXT;
 
     private boolean m_parentKeyAsElementName = DEFAULT_PARENT_KEY_AS_ELEMENT_NAME;
+
+    private boolean m_translateHashCommentToComment = !DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT;
+
+    private boolean m_translateQuestionPrefixToProcessingInstruction = !DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT;
 
     /**
      * Constructs the object.
@@ -165,6 +177,8 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
             settings.getBoolean(CREATE_TEXT_FOR_SPECIFIC_KEYS, DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS);
         m_keyForText = settings.getString(KEY_FOR_TEXT, DEFAULT_KEY_FOR_TEXT);
         m_parentKeyAsElementName = settings.getBoolean(PARENT_KEY_AS_ELEMENT_NAME, DEFAULT_PARENT_KEY_AS_ELEMENT_NAME);
+        m_translateHashCommentToComment = !settings.getBoolean(TRANSLATE_HASHCOMMENT_AS_ELEMENT, DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT);
+        m_translateQuestionPrefixToProcessingInstruction = !settings.getBoolean(TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT);
     }
 
     /**
@@ -188,6 +202,8 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
             settings.getBoolean(CREATE_TEXT_FOR_SPECIFIC_KEYS, DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS);
         m_keyForText = settings.getString(KEY_FOR_TEXT, DEFAULT_KEY_FOR_TEXT);
         m_parentKeyAsElementName = settings.getBoolean(PARENT_KEY_AS_ELEMENT_NAME, DEFAULT_PARENT_KEY_AS_ELEMENT_NAME);
+        m_translateHashCommentToComment = !settings.getBoolean(TRANSLATE_HASHCOMMENT_AS_ELEMENT, DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT);
+        m_translateQuestionPrefixToProcessingInstruction = !settings.getBoolean(TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT);
     }
 
     /**
@@ -210,6 +226,8 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         settings.addBoolean(CREATE_TEXT_FOR_SPECIFIC_KEYS, m_createTextForSpecificKeys);
         settings.addString(KEY_FOR_TEXT, m_keyForText);
         settings.addBoolean(PARENT_KEY_AS_ELEMENT_NAME, m_parentKeyAsElementName);
+        settings.addBoolean(TRANSLATE_HASHCOMMENT_AS_ELEMENT, !m_translateHashCommentToComment);
+        settings.addBoolean(TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, !m_translateQuestionPrefixToProcessingInstruction);
     }
 
     /**
@@ -406,5 +424,38 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
      */
     final void setParentKeyAsElementName(final boolean parentKeyAsElementName) {
         this.m_parentKeyAsElementName = parentKeyAsElementName;
+    }
+
+    /**
+     * @return the translateHashCommentToComment
+     * @since 3.2
+     */
+    boolean isTranslateHashCommentToComment() {
+        return m_translateHashCommentToComment;
+    }
+
+    /**
+     * @param translateHashCommentToComment the translateHashCommentToComment to set
+     * @since 3.2
+     */
+    void setTranslateHashCommentToComment(final boolean translateHashCommentToComment) {
+        m_translateHashCommentToComment = translateHashCommentToComment;
+    }
+
+    /**
+     * @return the translateQuestionPrefixToProcessingInstruction
+     * @since 3.2
+     */
+    boolean isTranslateQuestionPrefixToProcessingInstruction() {
+        return m_translateQuestionPrefixToProcessingInstruction;
+    }
+
+    /**
+     * @param translateQuestionPrefixToProcessingInstruction the translateQuestionPrefixToProcessingInstruction to set
+     * @since 3.2
+     */
+    void setTranslateQuestionPrefixToProcessingInstruction(
+        final boolean translateQuestionPrefixToProcessingInstruction) {
+        m_translateQuestionPrefixToProcessingInstruction = translateQuestionPrefixToProcessingInstruction;
     }
 }

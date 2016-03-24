@@ -165,38 +165,22 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
         final JacksonConversions conv = JacksonConversions.getInstance();
         final Json2Xml converter = createConverter();
 
-        //final XMLInputFactory fact = new InputFactoryProviderImpl().createInputFactory();
-        //mapper.setSerializerProvider(new OutputFactoryProviderImpl().createOutputFactory());
         return new SingleCellFactory(output) {
             @Override
             public DataCell getCell(final DataRow row) {
-                DataCell input = row.getCell(inputIndex);
+                final DataCell input = row.getCell(inputIndex);
                 if (input instanceof JSONValue) {
-                    JSONValue jsonValue = (JSONValue)input;
-                    JsonValue json = jsonValue.getJsonValue();
-                    TreeNode node = conv.toJackson(json);
+                    final JSONValue jsonValue = (JSONValue)input;
+                    final JsonValue json = jsonValue.getJsonValue();
+                    final TreeNode node = conv.toJackson(json);
                     try {
-                        DataCell xml = createXmlCell(node);
-                        return xml;
-                    } catch (RuntimeException e) {
-                        throw new IllegalStateException("In row: " + row.getKey() + "; " + e.getMessage(), e);
+                        return XMLCellFactory.create(converter.toXml((JsonNode)node));
+                    } catch (RuntimeException | ParserConfigurationException | IOException e) {
+                        setWarningMessage("There were problems translating to XML, check the missing values.");
+                        return new MissingCell(e.getMessage());
                     }
                 }
                 return DataType.getMissingCell();
-            }
-
-            /**
-             * @param node
-             * @return
-             */
-            private DataCell createXmlCell(final TreeNode node) {
-                try {
-                    DataCell ret = XMLCellFactory.create(converter.toXml((JsonNode)node));
-                    return ret;
-                } catch (IllegalArgumentException | /*JsonProcessingException |*/ParserConfigurationException
-                        | IOException e) {
-                    return new MissingCell(e.getMessage());
-                }
             }
         };
     }
@@ -215,6 +199,8 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
         settings.setRootName(getSettings().getRoot());
         settings.setText(getSettings().getString());
         settings.setTextKey(getSettings().isCreateTextForSpecificKeys() ? getSettings().getKeyForText() : null);
+        settings.setTranslateHashCommentToComment(getSettings().isTranslateHashCommentToComment());
+        settings.setTranslateQuestionPrefixToProcessingInstruction(getSettings().isTranslateQuestionPrefixToProcessingInstruction());
         Json2Xml ret = getSettings().isParentKeyAsElementName() ? Json2Xml.createWithUseParentKeyWhenPossible(settings) : new Json2Xml(settings);
         ret.setLooseTypeInfo(!getSettings().isKeepTypeInfo());
         return ret;

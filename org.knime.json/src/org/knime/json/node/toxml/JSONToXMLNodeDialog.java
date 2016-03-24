@@ -53,10 +53,12 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -82,6 +84,8 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
 
     private JCheckBox m_keepTypeInfo, m_specifyNamespace, m_createTextForSpecificKeys;
     private JCheckBox m_useParentKeyAsElementName;
+    private JRadioButton m_translateHashCommentAsElement, m_translateHashCommentAsComment;
+    private JRadioButton m_translateQuestionPrefixAsElement, m_translateQuestionPrefixAsPI;
 
     /**
      * New pane for configuring the JSONToXML node.
@@ -198,6 +202,36 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
 
         JPanel textPanel = createTextPanel();
         panel.add(textPanel, gbc);
+        gbc.gridy++;
+
+        JLabel hashComment = new JLabel("Translate JSON keys starting with # to   ");
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        panel.add(hashComment, gbc);
+        m_translateHashCommentAsElement = new JRadioButton("an element (<comment>content</comment>)");
+        gbc.gridx = 1;
+        panel.add(m_translateHashCommentAsElement, gbc);
+        m_translateHashCommentAsComment = new JRadioButton("a comment (<!--content-->)");
+        gbc.gridy++;
+        panel.add(m_translateHashCommentAsComment, gbc);
+        ButtonGroup hashCommentGroup = new ButtonGroup();
+        hashCommentGroup.add(m_translateHashCommentAsComment);
+        hashCommentGroup.add(m_translateHashCommentAsElement);
+        gbc.gridy++;
+
+        JLabel questionPrefix = new JLabel("Translate JSON keys starting with ? to   ");
+        gbc.gridx = 0;
+        panel.add(questionPrefix, gbc);
+        gbc.gridx = 1;
+        m_translateQuestionPrefixAsElement = new JRadioButton("an element (<pi>content<pi>)");
+        panel.add(m_translateQuestionPrefixAsElement, gbc);
+        gbc.gridy++;
+        m_translateQuestionPrefixAsPI = new JRadioButton("a processing instruction (<?pi content?>)");
+        panel.add(m_translateQuestionPrefixAsPI, gbc);
+        ButtonGroup questionPrefixGroup = new ButtonGroup();
+        questionPrefixGroup.add(m_translateQuestionPrefixAsPI);
+        questionPrefixGroup.add(m_translateQuestionPrefixAsElement);
+        gbc.gridy++;
     }
 
     /**
@@ -308,6 +342,8 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         getSettings().setCreateTextForSpecificKeys(m_createTextForSpecificKeys.isSelected());
         getSettings().setKeyForText(m_keyForText.getText());
         getSettings().setParentKeyAsElementName(m_useParentKeyAsElementName.isSelected());
+        getSettings().setTranslateHashCommentToComment(m_translateHashCommentAsComment.isSelected());
+        getSettings().setTranslateQuestionPrefixToProcessingInstruction(m_translateQuestionPrefixAsPI.isSelected());
         super.saveSettingsTo(settings);
     }
 
@@ -335,5 +371,9 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_keyForText.setText(getSettings().getKeyForText());
         m_keyForText.setEnabled(m_createTextForSpecificKeys.isSelected());
         m_useParentKeyAsElementName.setSelected(getSettings().isParentKeyAsElementName());
+        m_translateHashCommentAsComment.setSelected(getSettings().isTranslateHashCommentToComment());
+        m_translateHashCommentAsElement.setSelected(!getSettings().isTranslateHashCommentToComment());
+        m_translateQuestionPrefixAsPI.setSelected(getSettings().isTranslateQuestionPrefixToProcessingInstruction());
+        m_translateQuestionPrefixAsElement.setSelected(!getSettings().isTranslateQuestionPrefixToProcessingInstruction());
     }
 }
