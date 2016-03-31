@@ -91,9 +91,13 @@ public class JSR353Util {
      * @return The input {@code builder}.
      * @throws IOException When the there was a problem reading {@link BinaryObjectDataValue}s.
      */
-    public static JsonObjectBuilder fromCell(final String key, final DataCell cell, final JsonObjectBuilder builder) throws IOException {
+    public static JsonObjectBuilder fromCell(final String key, final DataCell cell, final JsonObjectBuilder builder)
+        throws IOException {
         if (cell.isMissing()) {
             builder.addNull(key);
+        } else if (cell instanceof BooleanValue) {
+            BooleanValue bv = (BooleanValue)cell;
+            builder.add(key, bv.getBooleanValue());
         } else if (cell instanceof LongValue) {
             LongValue l = (LongValue)cell;
             builder.add(key, l.getLongValue());
@@ -103,9 +107,6 @@ public class JSR353Util {
         } else if (cell instanceof JSONValue) {
             JSONValue jv = (JSONValue)cell;
             builder.add(key, jv.getJsonValue());
-        } else if (cell instanceof BooleanValue) {
-            BooleanValue bv = (BooleanValue)cell;
-            builder.add(key, bv.getBooleanValue());
         } else if (cell instanceof ByteVectorValue) {
             ByteVectorValue bvv = (ByteVectorValue)cell;
             builder.add(key, Base64Variants.getDefaultVariant().encode(JsonPathUtils.toBytes(bvv)));

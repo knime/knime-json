@@ -245,6 +245,7 @@ class TableToJsonNodeDialog extends NodeDialogPane {
         m_settings.loadSettingsDialog(settings, specs[0]);
         m_selectedColumns.loadConfiguration(m_settings.getSelectedColumns(), specs[0]);
         m_rowKeyKey.setText(m_settings.getRowKeyKey());
+        m_outputColumn.setText(m_settings.getOutputColumnName());
         m_columnNameSeparator.setText(m_settings.getColumnNameSeparator());
         switch (m_settings.getDirection()) {
             case RowsOutside:
