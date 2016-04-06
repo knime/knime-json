@@ -80,6 +80,8 @@ class TableToJsonSettings {
 
     private static final String CFGKEY_REMOVE_SOURCE_COLUMNS = "remove.source.columns";
 
+    private static final String CFGKEY_BOOLEANS_AS_NUMBERS = "output.boolean.asNumbers";
+
     static final String DEFAULT_ROWKEY_KEY = "key";
 
     static final Direction DEFAULT_DIRECTION = Direction.RowsOutside;
@@ -109,6 +111,8 @@ class TableToJsonSettings {
 
     private String m_outputColumnName = DEFAULT_OUTPUT_COLUMN_NAME;
 
+    private boolean m_booleansAsNumbers;
+
     TableToJsonSettings() {
     }
 
@@ -127,6 +131,10 @@ class TableToJsonSettings {
         m_rowKey = RowKeyOption.valueOf(settings.getString(CFGKEY_ROW_KEY_OPTION, DEFAULT_ROW_KEY_OPTION.name()));
         m_columnNamesAsPath = settings.getBoolean(CFGKEY_COLUMN_NAMES_AS_PATH, DEFAULT_COLUMN_NAMES_AS_PATH);
         m_removeSourceColumns = settings.getBoolean(CFGKEY_REMOVE_SOURCE_COLUMNS, DEFAULT_REMOVE_SOURCE_COLUMNS);
+
+        // for existing nodes this value should be true; for new nodes it should default to false (see AP-5685)
+        m_booleansAsNumbers =
+            !settings.containsKey(CFGKEY_DIRECTION) || settings.getBoolean(CFGKEY_BOOLEANS_AS_NUMBERS, false);
     }
 
     /**
@@ -144,6 +152,7 @@ class TableToJsonSettings {
         m_rowKey = RowKeyOption.valueOf(settings.getString(CFGKEY_ROW_KEY_OPTION));
         m_columnNamesAsPath = settings.getBoolean(CFGKEY_COLUMN_NAMES_AS_PATH);
         m_removeSourceColumns = settings.getBoolean(CFGKEY_REMOVE_SOURCE_COLUMNS);
+        m_booleansAsNumbers = settings.getBoolean(CFGKEY_BOOLEANS_AS_NUMBERS, true);
     }
 
     /**
@@ -160,6 +169,16 @@ class TableToJsonSettings {
         settings.addString(CFGKEY_ROW_KEY_OPTION, m_rowKey.name());
         settings.addBoolean(CFGKEY_COLUMN_NAMES_AS_PATH, m_columnNamesAsPath);
         settings.addBoolean(CFGKEY_REMOVE_SOURCE_COLUMNS, m_removeSourceColumns);
+        settings.addBoolean(CFGKEY_BOOLEANS_AS_NUMBERS, m_booleansAsNumbers);
+    }
+
+    /**
+     * Returns whether boolean values should be translated to JSON numbers or if they should translate to booleans.
+     *
+     * @return <code>true</code> if booleans should be translated as numbers, <code>false</code> otherwise
+     */
+    boolean isBooleansAsNumbers() {
+        return m_booleansAsNumbers;
     }
 
     /**

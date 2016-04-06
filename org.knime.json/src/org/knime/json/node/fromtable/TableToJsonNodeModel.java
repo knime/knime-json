@@ -20,6 +20,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
@@ -28,6 +29,7 @@ import org.knime.core.data.RowKey;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.def.DefaultRow;
+import org.knime.core.data.def.IntCell;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.node.BufferedDataContainer;
@@ -177,7 +179,7 @@ class TableToJsonNodeModel extends NodeModel {
     private BufferedDataTable columnsOutside(final BufferedDataTable data, final ExecutionContext exec)
         throws InvalidSettingsException {
         BufferedDataContainer container = exec.createDataContainer(configure(new DataTableSpec[]{data.getSpec()})[0]);
-        container.addRowToTable(new DefaultRow(RowKey.createRowKey(1), createCellColumnsOutside(data)));
+        container.addRowToTable(new DefaultRow(RowKey.createRowKey(1L), createCellColumnsOutside(data)));
         container.close();
         return container.getTable();
     }
@@ -301,7 +303,7 @@ class TableToJsonNodeModel extends NodeModel {
     private BufferedDataTable rowsOutside(final BufferedDataTable data, final ExecutionContext exec)
         throws InvalidSettingsException {
         BufferedDataContainer container = exec.createDataContainer(configure(new DataTableSpec[]{data.getSpec()})[0]);
-        container.addRowToTable(new DefaultRow(RowKey.createRowKey(1), createCellRowsOutside(data)));
+        container.addRowToTable(new DefaultRow(RowKey.createRowKey(1L), createCellRowsOutside(data)));
         container.close();
         return container.getTable();
     }
@@ -375,7 +377,7 @@ class TableToJsonNodeModel extends NodeModel {
             final int index = indices[i];
             DataCell cell = dataRow.getCell(index);
             try {
-                JSR353Util.fromCell(includes[i], cell, row);
+                fromCell(row, includes[i], cell);
             } catch (IOException e) {
                 LOGGER.warn("Failed to read binary object data value (row: " + dataRow.getKey() + ")", e);
                 row.addNull(includes[i]);
@@ -610,7 +612,7 @@ class TableToJsonNodeModel extends NodeModel {
         });
     }
 
-    private static void visitStructure(
+    private void visitStructure(
         final Map<String, Object/*Map<String, rec> | Integer | Pair<Integer, Map<String, rec>*/> structure,
         final DataRow row, final JsonObjectBuilder root) {
         for (Entry<String, Object> entry : structure.entrySet()) {
@@ -634,7 +636,7 @@ class TableToJsonNodeModel extends NodeModel {
                 root.add(entry.getKey(), newBuilder);
                 DataCell cell = row.getCell(index);
                 try {
-                    JSR353Util.fromCell(entry.getKey(), cell, newBuilder);
+                    fromCell(newBuilder, entry.getKey(), cell);
                 } catch (IOException e) {
                     LOGGER.warn("Failed to read binary object data value (row: " + row.getKey() + ")", e);
                     newBuilder.addNull(entry.getKey());
@@ -644,12 +646,24 @@ class TableToJsonNodeModel extends NodeModel {
                 Integer index = (Integer)object;
                 DataCell cell = row.getCell(index);
                 try {
-                    JSR353Util.fromCell(entry.getKey(), cell, root);
+                    fromCell(root, entry.getKey(), cell);
                 } catch (IOException e) {
                     LOGGER.warn("Failed to read binary object data value (row: " + row.getKey() + ")", e);
                     root.addNull(entry.getKey());
                 }
             }
+        }
+    }
+
+    private static IntCell TRUE = new IntCell(1);
+    private static IntCell FALSE = new IntCell(0);
+
+    private void fromCell(final JsonObjectBuilder root, final String key, final DataCell cell)
+        throws IOException {
+        if (m_settings.isBooleansAsNumbers() && (cell instanceof BooleanValue)) {
+            JSR353Util.fromCell(key, ((BooleanValue) cell).getBooleanValue() ? TRUE : FALSE, root);
+        } else {
+            JSR353Util.fromCell(key, cell, root);
         }
     }
 
