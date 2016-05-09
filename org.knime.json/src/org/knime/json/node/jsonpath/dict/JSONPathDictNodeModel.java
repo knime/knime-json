@@ -142,7 +142,7 @@ public class JSONPathDictNodeModel extends NodeModel {
         int pathIdx = inData[DICT_TABLE].getSpec().findColumnIndex(m_pathColumn.getStringValue());
         int typeIdx = inData[DICT_TABLE].getSpec().findColumnIndex(m_typeColumn.getStringValue());
         int outputIdx = inData[DICT_TABLE].getSpec().findColumnIndex(m_outputColumn.getStringValue());
-        double allDict = inData[DICT_TABLE].getRowCount(), allRows = inData[INPUT_TABLE].getRowCount();
+        double allDict = inData[DICT_TABLE].size(), allRows = inData[INPUT_TABLE].size();
         double fraction = allDict + allRows == 0 ? 1 : allDict / (allDict * (1 + allRows));
         ExecutionMonitor init = exec.createSubProgress(fraction);
         int i = 0;
@@ -198,6 +198,8 @@ public class JSONPathDictNodeModel extends NodeModel {
                     throw new IllegalStateException("Output type is not String: " + typeCell + " (" + typeCell.getType() + ")");
                 }
                 rearranger.append(new SingleCellFactory(new DataColumnSpecCreator(name, type).createSpec()) {
+                    private Runnable m_setWarning =
+                            () -> setWarningMessage("Large value cannot be stored in an integer column");
                     @Override
                     public DataCell getCell(final DataRow row) {
                         DataCell cell = row.getCell(inputIdx);
@@ -228,13 +230,13 @@ public class JSONPathDictNodeModel extends NodeModel {
                                         array.add(JsonPathUtil.toJackson(
                                             nodeFactory, value));
                                     }
-                                    return JsonPathUtils.convertObjectToReturnType(array, outputType, config, conv);
+                                    return JsonPathUtils.convertObjectToReturnType(array, outputType, config, conv, m_setWarning);
                                 }
                                 throw new IllegalStateException("Expected at most one result, but got: " + values.size() + " ["
                                     + ErrorHandling.shorten(values.toString(), 33) + "]" + "\n   in row: " + row.getKey());
                             } else {
                                 for (final Object object : values) {
-                                    cells.add(JsonPathUtils.convertObjectToReturnType(object, outputType, config, conv));
+                                    cells.add(JsonPathUtils.convertObjectToReturnType(object, outputType, config, conv, m_setWarning));
                                 }
                             }
                             if (returnList) {

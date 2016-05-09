@@ -329,7 +329,7 @@ public final class JSONWriterNodeModel extends NodeModel {
         JSONCellWriterFactory factory = JSONCellWriterFactory.getInstance();
         int index = inputSpec.findColumnIndex(m_settings.getInputColumn());
         List<URIContent> uriContents = new ArrayList<>();
-        double max = table.getRowCount();
+        double max = table.size();
         int count = 0;
         int missingCellCount = 0;
 

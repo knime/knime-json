@@ -54,12 +54,14 @@ import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
+import org.knime.core.data.LongValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.blob.BinaryObjectDataCell;
 import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONValue;
@@ -82,7 +84,12 @@ public enum OutputType implements StringValue {
     /** Integral */
     Integer,
     /** Real */
-    Double;
+    Double,
+    /**
+     * 64 bit signed integral values
+     * @since 3.2
+     */
+    Long;
     /**
      * {@inheritDoc}
      */
@@ -101,6 +108,8 @@ public enum OutputType implements StringValue {
                 return "JSON (JSON cell type)";
             case Base64:
                 return "Base64 (Base64 object cell type)";
+            case Long:
+                return "Number (Long cell type)";
             default:
                 throw new IllegalStateException("Unknown enum value: " + this);
         }
@@ -122,6 +131,8 @@ public enum OutputType implements StringValue {
                 return StringCell.TYPE;
             case Json:
                 return JSONCell.TYPE;
+            case Long:
+                return LongCell.TYPE;
             default:
                 throw new IllegalStateException("Unknown enum value: " + this);
         }
@@ -143,6 +154,8 @@ public enum OutputType implements StringValue {
                 return DoubleValue.UTILITY.getIcon();
             case String:
                 return StringValue.UTILITY.getIcon();
+            case Long:
+                return LongValue.UTILITY.getIcon();
             default:
                 throw new UnsupportedOperationException("Unknown type: " + this);
         }

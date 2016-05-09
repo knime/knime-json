@@ -15,6 +15,7 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.DoubleValue;
+import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.blob.BinaryObjectDataValue;
@@ -223,6 +224,7 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
                                 json.put(key, ((BooleanValue)cell).getBooleanValue());
                             }
                             break;
+                        case Long: //Intentional fall-through
                         case Integer:
                             if (cell.isMissing() || !(cell instanceof LongValue)) {
                                 json.set(key, m_nodeFactory.nullNode());
@@ -308,6 +310,7 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
                                     array.add(((BooleanValue)cell).getBooleanValue());
                                 }
                                 break;
+                            case Long://Intentional fall-through
                             case Integer:
                                 if (cell.isMissing() || !(cell instanceof LongValue)) {
                                     array.add(m_nodeFactory.nullNode());
@@ -399,8 +402,10 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
         OutputType oType;
         if (type.isCompatible(BooleanValue.class)) {
             oType = OutputType.Boolean;
-        } else if (type.isCompatible(LongValue.class)) {
+        } else if (type.isCompatible(IntValue.class)) {
             oType = OutputType.Integer;
+        } else if (type.isCompatible(LongValue.class)) {
+            oType = OutputType.Long;
         } else if (type.isCompatible(DoubleValue.class)) {
             oType = OutputType.Double;
         } else if (type.isCompatible(JSONValue.class)) {

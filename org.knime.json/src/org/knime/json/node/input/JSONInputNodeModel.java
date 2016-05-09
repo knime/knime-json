@@ -101,7 +101,7 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
         throws Exception {
         final BufferedDataContainer container = exec.createDataContainer(configure(new DataTableSpec[0])[0]);
-        container.addRowToTable(new DefaultRow(RowKey.createRowKey(0), JSONCellFactory.create((m_externalValue != null)
+        container.addRowToTable(new DefaultRow(RowKey.createRowKey(0L), JSONCellFactory.create((m_externalValue != null)
             ? m_externalValue : m_configuration.getValue())));
         container.close();
         return new BufferedDataTable[]{container.getTable()};

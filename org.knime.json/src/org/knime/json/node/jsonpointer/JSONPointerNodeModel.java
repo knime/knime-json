@@ -62,7 +62,7 @@ import org.knime.core.data.MissingCell;
 import org.knime.core.data.blob.BinaryObjectCellFactory;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
@@ -176,7 +176,7 @@ public class JSONPointerNodeModel extends SingleColumnReplaceOrAddNodeModel<JSON
                         }
                         switch (returnType) {
                             case Bool:
-                                return BooleanCell.get(Boolean.parseBoolean(value.toString()));
+                                return BooleanCellFactory.create(value.toString());
                             case Int:
                                 return new IntCell(Integer.parseInt(value.toString()));
                             case Json:

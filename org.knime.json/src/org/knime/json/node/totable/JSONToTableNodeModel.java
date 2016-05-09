@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
@@ -83,7 +84,7 @@ public class JSONToTableNodeModel extends NodeModel {
         final DataTableSpec spec = inData[0].getSpec();
         ColumnRearranger rearranger = new ColumnRearranger(spec);
 
-        int r = 0, all = inData[0].getRowCount();
+        long r = 0, all = inData[0].size();
         final int jsonIndex = spec.findColumnIndex(m_settings.getInputColumn());
         final JsonPath jsonPath = JsonPath.compile("$..*");
         final JacksonConversions conv = JacksonConversions.getInstance();
@@ -218,14 +219,21 @@ public class JSONToTableNodeModel extends NodeModel {
     protected OutputKind processValueAndPath(final JSONValue jv, final Path path) {
         Object object = JsonPath.read(jv.toString(), path.toString());
         JsonNode jackson = JsonPathUtil.toJackson(JacksonUtils.nodeFactory(), object);
-        OutputKind kind = JsonPathUtils.kindOfJackson(jackson);
+        final AtomicReference<String> warning = new AtomicReference<>();
+        OutputKind kind = JsonPathUtils.kindOfJackson(jackson, warning);
+        if (warning.get() != null) {
+            setWarningMessage(warning.get());
+        }
         if (!kind.isSingle() && m_settings.getArrayHandling() == ArrayHandling.KeepAllArrayAsJsonArray) {
             return new OutputKind(true, OutputType.Json);
         }
         if (m_settings.isOmitNestedObjects() && jackson.isArray()) {
                 OutputType type = null;
                 for (JsonNode jsonNode : jackson) {
-                    OutputKind kindOfJackson = JsonPathUtils.kindOfJackson(jsonNode);
+                    OutputKind kindOfJackson = JsonPathUtils.kindOfJackson(jsonNode, warning);
+                    if (warning.get() != null) {
+                        setWarningMessage(warning.get());
+                    }
                     if (kindOfJackson.getType() == OutputType.Json) {
                         continue;
                     }

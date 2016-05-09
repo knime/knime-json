@@ -65,7 +65,7 @@ import org.knime.core.data.collection.CollectionCellFactory;
 import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
@@ -237,9 +237,9 @@ public class JSONPathNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONPat
                         case Bool:
                             Boolean bool = mappingProvider.map(object, Boolean.class, config);
                             if (bool == null) {
-                                return BooleanCell.get(Boolean.parseBoolean(object.toString()));
+                                return BooleanCellFactory.create(object.toString());
                             }
-                            return BooleanCell.get(bool.booleanValue());
+                            return BooleanCellFactory.create(bool.booleanValue());
                         case Int:
                             Integer integer = mappingProvider.map(object, Integer.class, config);
                             if (integer == null) {

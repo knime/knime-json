@@ -114,7 +114,7 @@ public final class JSONReaderNodeModel extends NodeModel {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
         throws Exception {
         final BufferedDataContainer container = exec.createDataContainer(configure((PortObjectSpec[])null)[0]);
-        int rowId = 0;
+        long rowId = 0;
         final URL url = FileUtil.toURL(m_settings.getLocation());
         try {
             final File file = FileUtil.getFileFromURL(url);
@@ -143,7 +143,7 @@ public final class JSONReaderNodeModel extends NodeModel {
      * @throws IOException Cannot read the content.
      * @throws MalformedURLException Wrong {@link URI} input.
      */
-    private int readUriContent(final BufferedDataContainer container, int rowId, final URIContent content)
+    private long readUriContent(final BufferedDataContainer container, long rowId, final URIContent content)
         throws IOException, MalformedURLException {
         JsonPath jsonPath;
         try {

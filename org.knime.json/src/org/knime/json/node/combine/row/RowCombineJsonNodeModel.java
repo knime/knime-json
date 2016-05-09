@@ -54,7 +54,7 @@ class RowCombineJsonNodeModel extends NodeModel {
         BufferedDataTable table = inData[0];
         BufferedDataContainer container = exec.createDataContainer(configure(new DataTableSpec[]{table.getSpec()})[0]);
         int counter = 0;
-        final double all = table.getRowCount();
+        final double all = table.size();
         final int idx = table.getSpec().findColumnIndex(m_settings.getInputColumn());
         final JsonArrayBuilder builder = Json.createArrayBuilder();
         final JsonObjectBuilder innerObjectBuilder = Json.createObjectBuilder();
@@ -134,7 +134,7 @@ class RowCombineJsonNodeModel extends NodeModel {
                     throw new IllegalStateException("To make the compiler happy");
             }
         }
-        container.addRowToTable(new DefaultRow(RowKey.createRowKey(1), cell));
+        container.addRowToTable(new DefaultRow(RowKey.createRowKey(1L), cell));
         container.close();
         return new BufferedDataTable[]{container.getTable()};
     }

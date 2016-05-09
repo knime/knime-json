@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
 import org.knime.core.data.BooleanValue;
@@ -69,9 +70,10 @@ import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.data.collection.CollectionCellFactory;
 import org.knime.core.data.collection.ListDataValue;
 import org.knime.core.data.collection.SetDataValue;
-import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
@@ -103,17 +105,29 @@ public class JsonPathUtils {
     }
 
     /**
+     * Disallows long type inference, swallows the warning about not fitting the content.
      * @param jacksonObject A {@link JsonNode}.
      * @return The {@link OutputKind} that can describe {@code jacksonObject}.
+     * @deprecated Use the {@link #kindOfJackson(JsonNode, AtomicReference)} to allow warnings.
      */
+    @Deprecated
     public static OutputKind kindOfJackson(final JsonNode jacksonObject) {
+        return kindOfJackson(jacksonObject, new AtomicReference<>());
+    }
+
+    /**
+     * @param jacksonObject A {@link JsonNode}.
+     * @param warning Possible warning when long should be stored as int.
+     * @return The {@link OutputKind} that can describe {@code jacksonObject}.
+     */
+    public static OutputKind kindOfJackson(final JsonNode jacksonObject, final AtomicReference<String> warning) {
         if (jacksonObject == null) {
             return new OutputKind(true, OutputType.Json);
         }
         if (jacksonObject.isArray()) {
             OutputType type = null;
             for (JsonNode jsonNode : jacksonObject) {
-                OutputKind kindOfJackson = kindOfJackson(jsonNode);
+                OutputKind kindOfJackson = kindOfJackson(jsonNode, warning);
                 type = kindOfJackson.isSingle() ? commonRepresentation(type, kindOfJackson.getType()) : OutputType.Json;
             }
             return new OutputKind(false, type);
@@ -122,7 +136,8 @@ public class JsonPathUtils {
             return new OutputKind(true, OutputType.Json);
         }
         if (jacksonObject.isIntegralNumber()) {
-            return new OutputKind(true, OutputType.Integer);
+            final long l = Long.parseLong(jacksonObject.toString());
+            return new OutputKind(true, fitsInt(l) ? OutputType.Integer : OutputType.Long);
         }
         if (jacksonObject.isFloatingPointNumber()) {
             return new OutputKind(true, OutputType.Double);
@@ -138,6 +153,14 @@ public class JsonPathUtils {
         }
         assert jacksonObject.isMissingNode() || jacksonObject.isNull() : jacksonObject.getNodeType();
         return new OutputKind(true, null);
+    }
+
+    /**
+     * @param l
+     * @return
+     */
+    private static boolean fitsInt(final long l) {
+        return (int)l == l;
     }
 
     /**
@@ -161,6 +184,7 @@ public class JsonPathUtils {
                         return origType;
                     case Boolean://intentional fall-through
                     case Integer://intentional fall-through
+                    case Long://intentional fall-through
                     case Double://intentional fall-through
                         return OutputType.Json;
                     default:
@@ -172,6 +196,7 @@ public class JsonPathUtils {
                     case String://intentional fall-through
                     case Json://intentional fall-through
                     case Integer://intentional fall-through
+                    case Long://intentional fall-through
                     case Double://intentional fall-through
                         return OutputType.Json;
                     default:
@@ -180,6 +205,22 @@ public class JsonPathUtils {
             case Integer:
                 switch (origType) {
                     case Integer://intentional fall-through
+                    case Long://intentional fall-through
+                    case Double://intentional fall-through
+                        return origType;
+                    case Boolean://intentional fall-through
+                    case Base64://intentional fall-through
+                    case String://intentional fall-through
+                    case Json://intentional fall-through
+                        return OutputType.Json;
+                    default:
+                        throw new IllegalStateException("Unknown type: " + origType);
+                }
+            case Long:
+                switch (origType) {
+                    case Integer:
+                        return OutputType.Long;
+                    case Long://intentional fall-through
                     case Double://intentional fall-through
                         return origType;
                     case Boolean://intentional fall-through
@@ -195,6 +236,7 @@ public class JsonPathUtils {
             case Double:
                 switch (origType) {
                     case Integer://intentional fall-through
+                    case Long://intentional fall-through
                     case Double://intentional fall-through
                         return newType;
                     case Boolean://intentional fall-through
@@ -213,6 +255,7 @@ public class JsonPathUtils {
                     case Base64://intentional fall-through
                     case Boolean://intentional fall-through
                     case Integer://intentional fall-through
+                    case Long://intentional fall-through
                     case Double://intentional fall-through
                         return OutputType.Json;
                     default:
@@ -300,30 +343,54 @@ public class JsonPathUtils {
     }
 
     /**
-     * Converts {@code object} to a non-collection {@link DataCell}.
+     * Converts {@code object} to a non-collection {@link DataCell}. (Generates no warnings.)
      *
      * @param object An {@link Object} to convert.
      * @param returnType The expected {@link OutputType}.
      * @param config JsonPath {@link Configuration}.
      * @param conv {@link JacksonConversions}.
      * @return Converted {@code object} to {@link DataCell}. It should be compatible with {@code returnType}.
+     * @deprecated Use {@link #convertObjectToReturnType(Object, OutputType, Configuration, JacksonConversions, Runnable)}
      */
+    @Deprecated
     public static DataCell convertObjectToReturnType(final Object object, final OutputType returnType,
         final Configuration config, final JacksonConversions conv) {
+        return convertObjectToReturnType(object, returnType, config, conv, () -> {});
+    }
+
+    /**
+     * Converts {@code object} to a non-collection {@link DataCell}.
+     *
+     * @param object An {@link Object} to convert.
+     * @param returnType The expected {@link OutputType}.
+     * @param config JsonPath {@link Configuration}.
+     * @param conv {@link JacksonConversions}.
+     * @param setWarning A {@link Runnable} that should set the warning for the wrong values.
+     * @return Converted {@code object} to {@link DataCell}. It should be compatible with {@code returnType}.
+     * @since 3.2
+     */
+    public static DataCell convertObjectToReturnType(final Object object, final OutputType returnType,
+        final Configuration config, final JacksonConversions conv, final Runnable setWarning) {
         try {
             switch (returnType) {
                 case Boolean:
                     Boolean bool = config.mappingProvider().map(object, Boolean.class, config);
                     if (bool == null) {
-                        return BooleanCell.get(Boolean.parseBoolean(object.toString()));
+                        return BooleanCellFactory.create(object.toString());
                     }
-                    return BooleanCell.get(bool.booleanValue());
+                    return BooleanCellFactory.create(bool.booleanValue());
                 case Integer:
                     Integer integer = config.mappingProvider().map(object, Integer.class, config);
                     if (integer == null) {
                         return new IntCell(Integer.parseInt(object.toString()));
                     }
                     return new IntCell(integer.intValue());
+                case Long:
+                    Long longVal = config.mappingProvider().map(object, Long.class, config);
+                    if (longVal == null) {
+                        return new LongCell(Long.parseLong(object.toString()));
+                    }
+                    return new LongCell(longVal.longValue());
                 case Json:
                     return asJson(object, conv);
                 case Double:
@@ -357,6 +424,7 @@ public class JsonPathUtils {
                     throw new UnsupportedOperationException("Unsupported return type: " + returnType);
             }
         } catch (RuntimeException | IOException e) {
+            checkLongProblem(returnType, object, setWarning);
             return new MissingCell(e.getMessage());
         }
     }
@@ -444,5 +512,23 @@ public class JsonPathUtils {
      */
     public static Class<? extends DataValue>[] supportedOutputValuesAsArray() {
         return asArray(LongValue.class, DoubleValue.class, BooleanValue.class, BinaryObjectDataValue.class, JSONValue.class, StringValue.class);
+    }
+
+    /**
+     * Checks whether the problem is caused by wrong casting from long to int, calls {@code setWarning} in that case.
+     *
+     * @param returnType The expected return type.
+     * @param object The actual result.
+     * @param setWarning Thing to do when we are out of range for an integer, but got a long for the expected integer.
+     * @since 3.2
+     */
+    public static void checkLongProblem(final OutputType returnType, final Object object, final Runnable setWarning) {
+        if (object instanceof Long) {
+            final Long l = (Long)object;
+            if (returnType == OutputType.Integer && Math.abs(l) > Integer.MAX_VALUE
+                && l != Integer.MIN_VALUE) {
+                setWarning.run();
+            }
+        }
     }
 }

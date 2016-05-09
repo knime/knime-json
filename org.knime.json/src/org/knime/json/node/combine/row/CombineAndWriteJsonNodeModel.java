@@ -58,7 +58,7 @@ class CombineAndWriteJsonNodeModel extends NodeModel {
         final int objectKeyIndex = table.getSpec().findColumnIndex(m_settings.getObjectKeyColumn());
         final Set<String> processedKeys = new HashSet<>();
         int i = 0;
-        double allRows = table.getRowCount();
+        double allRows = table.size();
         URL outputUrl = FileUtil.toURL(m_settings.getOutputFile());
         Path outputPath = FileUtil.resolveToPath(outputUrl);
         OutputStream stream;

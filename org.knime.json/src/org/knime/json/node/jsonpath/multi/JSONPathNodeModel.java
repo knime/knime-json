@@ -68,9 +68,10 @@ import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.container.SingleCellFactory;
-import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONValue;
@@ -82,6 +83,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.streamable.simple.SimpleStreamableFunctionNodeModel;
+import org.knime.json.node.jsonpath.util.JsonPathUtils;
 import org.knime.json.node.util.ErrorHandling;
 import org.knime.json.util.OutputType;
 
@@ -249,6 +251,9 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
         final OutputType returnType = setting.getReturnType();
         final boolean resultIsList = setting.isResultIsList();
         return new SingleCellFactory(true, output) {
+            private Runnable m_setWarning =
+                () -> setWarningMessage("Large value cannot be stored in an integer column");
+
             @Override
             public DataCell getCell(final DataRow row) {
                 DataCell cell = row.getCell(inputIndex);
@@ -317,15 +322,21 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
                         case Boolean:
                             Boolean bool = mappingProvider.map(object, Boolean.class, config);
                             if (bool == null) {
-                                return BooleanCell.get(Boolean.parseBoolean(object.toString()));
+                                return BooleanCellFactory.create(object.toString());
                             }
-                            return BooleanCell.get(bool.booleanValue());
+                            return BooleanCellFactory.create(bool.booleanValue());
                         case Integer:
                             Integer integer = mappingProvider.map(object, Integer.class, config);
                             if (integer == null) {
                                 return new IntCell(Integer.parseInt(object.toString()));
                             }
                             return new IntCell(integer.intValue());
+                        case Long:
+                            Long longVal = mappingProvider.map(object, Long.class, config);
+                            if (longVal == null) {
+                                return new LongCell(Long.parseLong(object.toString()));
+                            }
+                            return new LongCell(longVal.longValue());
                         case Json:
                             return asJson(object);
                         case Double:
@@ -357,6 +368,8 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
                             throw new UnsupportedOperationException("Unsupported return type: " + returnType);
                     }
                 } catch (RuntimeException | IOException e) {
+                    JsonPathUtils.checkLongProblem(returnType, object,
+                        m_setWarning);
                     return new MissingCell(e.getMessage());
                 }
             }

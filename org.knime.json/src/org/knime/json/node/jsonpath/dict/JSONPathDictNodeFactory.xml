@@ -38,6 +38,7 @@ The <b>paths</b> column contains the following values (String list):
         <option name="Type of column">The name of the type column from the second input table. The content should be one of these values in each row:<ul>
         <li><tt>Boolean</tt> - logical values (<tt>true</tt>/<tt>false</tt>)</li>
         <li><tt>Integer</tt> - integer values</li>
+        <li><tt>Long</tt> - integer values (with possibly large absolute values)</li>
         <li><tt>Double</tt> - real (double precision floating point) numbers</li>
         <li><tt>String</tt> - string of characters/textual content</li>
         <li><tt>Json</tt> - another JSON values</li>
@@ -45,6 +46,7 @@ The <b>paths</b> column contains the following values (String list):
         <li><tt>Base64</tt> - binary objects (encoded as Base64 strings)</li>
         <li><tt>List(Boolean)</tt> - list of logical values (<tt>true</tt>/<tt>false</tt>)</li>
         <li><tt>List(Integer)</tt> - list of integer values</li>
+        <li><tt>List(Long)</tt> - list of possibly large magnitude integer values</li>
         <li><tt>List(Double)</tt> - list of real (double precision floating point) numbers</li>
         <li><tt>List(String)</tt> - list of string of characters/textual content</li>
         <li><tt>List(Json)</tt> - list of another JSON values</li>
@@ -52,6 +54,7 @@ The <b>paths</b> column contains the following values (String list):
         <li><tt>List(Base64)</tt> - list of binary objects (encoded as Base64 strings)</li>
         <li><tt>Set(Boolean)</tt> - set of logical values (<tt>true</tt>/<tt>false</tt>)</li>
         <li><tt>Set(Integer)</tt> - set of integer values</li>
+        <li><tt>Set(Long)</tt> - set of possibly large magnitude integer values</li>
         <li><tt>Set(Double)</tt> - set of real (double precision floating point) numbers</li>
         <li><tt>Set(String)</tt> - set of string of characters/textual content</li>
         <li><tt>Set(Json)</tt> - set of another JSON values</li>

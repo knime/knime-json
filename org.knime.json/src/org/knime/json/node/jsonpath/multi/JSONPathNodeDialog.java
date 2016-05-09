@@ -67,6 +67,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.json.stream.JsonLocation;
 import javax.swing.AbstractAction;
@@ -150,7 +151,6 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
 
     /**
      *
-     * @author Gabor
      */
     private final class AddRow extends AbstractAction {
         private static final long serialVersionUID = 3462402745035997468L;
@@ -177,7 +177,8 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
                 setting.setNewColumnName(suggestColumnName(path));
                 setting.setResultIsList(m_multiple);
                 Object read = JsonPath.compile(path).read(m_preview.getText());
-                OutputKind kind = JsonPathUtils.kindOfJackson(JsonPathUtil.toJackson(JsonNodeFactory.instance, read));
+                final AtomicReference<String> warning = new AtomicReference<>();
+                OutputKind kind = JsonPathUtils.kindOfJackson(JsonPathUtil.toJackson(JsonNodeFactory.instance, read), warning);
                 setting.setReturnType(kind.getType());
                 m_tableModel.addRow(setting);
                 int lastRow = m_tableModel.getRowCount() - 1;
@@ -887,7 +888,7 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
      */
     public void updatePreview() {
         m_previewContainer.setVisible(m_inputTable != null);
-        if (m_inputTable == null || m_inputTable.getRowCount() == 0) {
+        if (m_inputTable == null || m_inputTable.size() == 0L) {
             m_preview.setText("No input");
             m_paths = new Jsr353WithCanonicalPaths("{}"/*new JsonNodeFactory(true).nullNode()*/);
             return;

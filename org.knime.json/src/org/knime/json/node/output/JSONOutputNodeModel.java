@@ -91,7 +91,7 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
         }
 
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        final int rowCount = m_table.getRowCount();
+        final long rowCount = m_table.size();
         try (CloseableRowIterator it = allowStaleState ? m_table.iteratorFailProve() : m_table.iterator()) {
             while (it.hasNext()) {
                 DataRow r = it.next();
