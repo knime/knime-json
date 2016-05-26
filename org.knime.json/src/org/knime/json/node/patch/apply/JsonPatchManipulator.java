@@ -44,98 +44,136 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   24 Sept. 2014 (Gabor): created
+ *   19 May 2016 (Gabor Bakos): created
  */
 package org.knime.json.node.patch.apply;
 
-import java.awt.GridBagConstraints;
-import java.util.Vector;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
-import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.json.JSONValue;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.NotConfigurableException;
-import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.util.RemoveOrAddColumnDialog;
+import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
 
 /**
- * <code>NodeDialog</code> for the "JSONTransformer" Node. Changes JSON values.
+ * Common interface for the JSON Patch {@link Manipulator}s.
  *
  * @author Gabor Bakos
  */
-public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSONPatchApplySettings> {
-    private JComboBox<String> m_patchType;
-
-    private JsonPatchMainPanel m_mainControl;
-
+@FunctionalInterface
+interface JsonPatchManipulator extends Manipulator {
     /**
-     * New pane for configuring the JSONTransformer node.
+     * The JSON Patch category name.
      */
-    protected JSONPatchApplyNodeDialog() {
-        super(JSONPatchApplyNodeModel.createJSONPatchApplySetting(), "JSON column", JSONValue.class);
+    public static final String JSON_PATCH_CATEGORY = "JSON Patch";
+
+    static class ValueManipulator implements JsonPatchManipulator {
+        private String m_name;
+
+        /**
+         *
+         */
+        ValueManipulator(final String name) {
+            m_name = name;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getName() {
+            return m_name;
+        }
+    }
+    static class FromManipulator implements JsonPatchManipulator {
+        private String m_name;
+
+        /**
+         *
+         */
+        FromManipulator(final String name) {
+            m_name = name;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getName() {
+            return m_name;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return "{ \"op\": \"" +getName()+ "\", \"from\": \"\" , \"path\": \"\"}";
+        }
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDescription() {
+            return getName() + "s from (a JSON Pointer expression) to the path (which is also a JSON Pointer expression)".replaceAll("ys", "ies");
+        }
+    }
+
+    static class RemoveManipulator implements JsonPatchManipulator {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getName() {
+            return "remove";
+        }
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int getNrArgs() {
+            return 1;
+        }
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return "{ \"op\": \"" +getName()+ "\", \"path\": \"\" }";
+        }
+    }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    default String getCategory() {
+        return JSON_PATCH_CATEGORY;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected void afterNewColumnName(final JPanel panel, final int afterNewCol) {
-        GridBagConstraints gbc = createInitialConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = afterNewCol;
-        panel.add(new JLabel("Patch type:"), gbc);
-        gbc.gridx = 1;
-        m_patchType = new JComboBox<>(new Vector<>(JSONPatchApplySettings.PATCH_TYPES));
-        panel.add(m_patchType, gbc);
-        gbc.gridy++;
-
-        gbc.gridx = 0;
-        gbc.weighty = 0;
-        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-        final JLabel patchLabel = new JLabel("Patch:");
-        patchLabel.setVerticalAlignment(SwingConstants.TOP);
-        panel.add(patchLabel, gbc);
-        gbc.weighty = 1;
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.CENTER;
-        m_mainControl = new JsonPatchMainPanel();
-        panel.add(m_mainControl, gbc);
+    default int getNrArgs() {
+        return 2;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
-        throws NotConfigurableException {
-        super.loadSettingsFrom(settings, specs);
-        m_patchType.setSelectedItem(getSettings().getPatchType());
-        m_mainControl.update(getSettings().getJsonPatch(), (DataTableSpec)specs[0], getAvailableFlowVariables());
+    default Class<?> getReturnType() {
+        return String.class;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        getSettings().setPatchType((String)m_patchType.getSelectedItem());
-        getSettings().setJsonPatch(m_mainControl.getExpression());
-        super.saveSettingsTo(settings);
+    default String getDisplayName() {
+        return "{ \"op\": \"" +getName()+ "\", \"path\": \"\", \"value\": \"\" }";
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean closeOnESC() {
-        //@see org.knime.base.node.jsnippet.JavaSnippetNodeDialog.closeOnESC()
-        return false;
+    default String getDescription() {
+        return getName() + "s the path (which is a JSON Pointer expression) with value";
     }
 }

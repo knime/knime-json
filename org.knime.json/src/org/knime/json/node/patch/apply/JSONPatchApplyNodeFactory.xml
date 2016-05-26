@@ -8,44 +8,37 @@
     
     <fullDescription>
         <intro><p>Applies a <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge patch</a> on the input JSON column.</p><p>
-        When cannot apply the patch, missing values will be generated, node execution will not fail.</p><p>
+        When a (merge) patch cannot be applied, missing values will be generated, node execution will not fail.</p><p>
         See also the node: <a href="http://www.knime.org/files/node-documentation/org.knime.json.node.patch.create.JSONPatchCreateNodeFactory.html">JSON Diff</a>.</p><p>
         Given <tt>{"a":"b","c":{"d":"e","f": "g"} }</tt> let us assume the target is <tt>{"a":"z","c":{"d":"e"} }</tt> (changing <tt>a</tt>'s value to <tt>z</tt> and
         removing <tt>f</tt>). To achieve this, either the following patch should be applied:
         <tt>[{"op":"replace","path":"/a","value":"z"},{"op":"remove","path":"/c/f"}]</tt> or
         this merge and patch: <tt>{"a":"z","c":{"f": null} }</tt></p><p>
-        The following operators (<tt>op</tt>) are supported: <ul>
+        The following operators (<tt>op</tt>) are supported for patch: <ul>
         <li><tt>add</tt> (<tt>path</tt>, <tt>value</tt>)</li>
         <li><tt>remove</tt> (<tt>path</tt>)</li>
         <li><tt>replace</tt> (<tt>path</tt>, <tt>value</tt>)</li>
         <li><tt>move</tt> (<tt>from</tt>, <tt>path</tt>)</li>
         <li><tt>copy</tt> (<tt>from</tt>, <tt>path</tt>)</li>
         <li><tt>test</tt> (<tt>path</tt>, <tt>value</tt>)</li>
-        </ul> for the patch format.</p><p>
+        </ul></p><p>
         The merge and patch format reconstructs the parts that need to be changed (changes included), all else can be omitted.</p><p>
-        It uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p></intro>
+        It uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p>
+        <p>To refer to flow variables, use the <tt>$${TflowVarName}$$</tt> syntax (where <tt>T</tt> is <tt>S</tt> for String type, <tt>D</tt> for floating point numbers and <tt>I</tt> for integer numbers).</p>
+        <p>To refer to columns (boolean, numeric, String, JSON), use the <tt>$columnName$</tt> syntax.</p>
+        <p>References to (<tt>0</tt>-based) row index (<tt>$$ROWINDEX$$</tt>), row count (<tt>$$ROWCOUNT$$</tt>) and row keys (<tt>$$ROWID$$</tt>) can also be used in values.</p>
+        </intro>
         
         <option name="JSON column">The column containing JSON values</option>
         <option name="Remove source column">When checked, the source column will be removed</option>
         <option name="New column">Name of the new (JSON) column</option>
         <option name="Patch type">Either <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge and patch</a></option>
-        <option name="Patch">A JSON of the selected patch type compatible with the JSON values</option>
-        <!-- possibly more options that can also be grouped by tabs -->
-        <!--
-        <tab name="Standard Options">
-            <option name="short name of first option (like in the dialog)">description of first option</option>
-            <option name="short name of second option (like in the dialog)">description of second option</option>
-        </tab>
-        <tab name="Advanced Options">
-            <option name="short name of first advanced option (like in the dialog)">description of first advanced option</option>
-        </tab>
-        -->
+        <option name="Patch">A JSON of the selected patch type compatible with the JSON values. The patch expression
+        must either be a single JSON Patch expression (object) or an array of JSON Patch expressions.</option>
     </fullDescription>
     
     <ports>
         <inPort index="0" name="table with JSON">A table with JSON column to transform</inPort>
-        <!-- possibly more input ports here-->
         <outPort index="0" name="table with JSON">Table with the transformed JSON values</outPort>
-        <!-- possibly more output ports here-->
     </ports>    
 </knimeNode>
