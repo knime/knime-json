@@ -234,10 +234,7 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
         final String jsonPatchRaw = getSettings().getJsonPatch();
         //It is safe to use null for row and -1 for row index.
         final String jsonPatch = replaceReferences(jsonPatchRaw, getAvailableInputFlowVariables(), null, -1L);
-        JsonNode patchNode = conv.toJackson(((JSONValue)JSONCellFactory.create(jsonPatch, true)).getJsonValue());
-        if (patchNode instanceof ObjectNode) {
-            patchNode = new ArrayNode(JsonNodeFactory.instance, Collections.singletonList(patchNode));
-        }
+        final JsonNode patchNode = conv.toJackson(((JSONValue)JSONCellFactory.create(jsonPatch, true)).getJsonValue());
         final JsonPatch patch;
         final JsonMergePatch mergePatch;
         switch (getSettings().getPatchType()) {
