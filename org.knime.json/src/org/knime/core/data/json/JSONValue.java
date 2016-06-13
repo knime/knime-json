@@ -55,7 +55,7 @@ import javax.swing.Icon;
 
 import org.knime.core.data.DataValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
-import org.knime.core.data.image.png.PNGImageValue;
+import org.knime.core.data.convert.DataValueAccessMethod;
 
 /**
  * This value encapsulates JSR353 {@link JsonValue}.
@@ -70,6 +70,7 @@ public interface JSONValue extends DataValue {
      * @return The parsed {@link JsonValue}. This is a read-only view of the data. (Can be {@code null} when parsing
      *         failed, though that is considered an illegal state.)
      */
+    @DataValueAccessMethod
     public JsonValue getJsonValue();
 
     /**

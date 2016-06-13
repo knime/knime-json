@@ -61,6 +61,7 @@ import org.knime.core.data.DataCellFactory.FromReader;
 import org.knime.core.data.DataCellFactory.FromSimpleString;
 import org.knime.core.data.DataType;
 import org.knime.core.data.container.BlobDataCell;
+import org.knime.core.data.convert.DataCellFactoryMethod;
 import org.knime.core.data.xml.XMLCellFactory;
 import org.knime.core.node.NodeLogger;
 
@@ -157,6 +158,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
      * @return DataCell representing the JSON
      * @throws NullPointerException if argument is null
      */
+    @DataCellFactoryMethod
     public static DataCell create(final JsonValue json) {
         if (json == null) {
             throw new NullPointerException("JSON must not be null");
