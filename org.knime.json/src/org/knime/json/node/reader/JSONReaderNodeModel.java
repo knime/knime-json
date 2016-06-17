@@ -152,7 +152,7 @@ public final class JSONReaderNodeModel extends NodeModel {
             throw new IllegalStateException("The path has invalid syntax: " + m_settings.getJsonPath());
         }
         JacksonConversions jacksonConversions = JacksonConversions.getInstance();
-        try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL())) {
+        try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL(), "UTF-8")) {
             //do {
             JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader, m_settings.isAllowComments());
             DataCell value;
