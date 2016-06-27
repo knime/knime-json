@@ -171,8 +171,8 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     public ExternalNodeData getInputData() {
-        return ExternalNodeData.builder(m_configuration.getParameterName()).jsonValue(m_configuration.getValue())
-            .build();
+        JsonValue value = (m_externalValue != null) ? m_externalValue : m_configuration.getValue();
+        return ExternalNodeData.builder(m_configuration.getParameterName()).jsonValue(value).build();
     }
 
     /**
