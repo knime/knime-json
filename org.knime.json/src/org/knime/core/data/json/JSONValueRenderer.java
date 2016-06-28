@@ -109,7 +109,7 @@ public final class JSONValueRenderer extends MultiLineStringValueRenderer {
         JsonValue v = ((JSONValue)value).getJsonValue();
         String s;
         if (v instanceof JsonStructure) {
-            s = JSONUtil.toPrettyJSONString((JsonStructure)v);
+            s = JSONUtil.toPrettyJSONString(v);
         } else {
             s = v.toString();
         }
