@@ -70,7 +70,7 @@ public interface JSONValue extends DataValue {
      * @return The parsed {@link JsonValue}. This is a read-only view of the data. (Can be {@code null} when parsing
      *         failed, though that is considered an illegal state.)
      */
-    @DataValueAccessMethod(name = "JSON")
+    @DataValueAccessMethod(name = "JsonValue")
     public JsonValue getJsonValue();
 
     /**
