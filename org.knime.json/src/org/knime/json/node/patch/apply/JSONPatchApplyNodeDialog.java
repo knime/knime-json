@@ -51,6 +51,7 @@ package org.knime.json.node.patch.apply;
 import java.awt.GridBagConstraints;
 import java.util.Vector;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -75,6 +76,8 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
 
     private JsonPatchMainPanel m_mainControl;
 
+    private JCheckBox m_keepOriginal;
+
     /**
      * New pane for configuring the JSONTransformer node.
      */
@@ -95,6 +98,11 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
         m_patchType = new JComboBox<>(new Vector<>(JSONPatchApplySettings.PATCH_TYPES));
         panel.add(m_patchType, gbc);
         gbc.gridy++;
+        gbc.weighty = 0;
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        m_keepOriginal = new JCheckBox("Keep original when test fails");
+        panel.add(m_keepOriginal, gbc);
+        gbc.gridy++;
 
         gbc.gridx = 0;
         gbc.weighty = 0;
@@ -102,11 +110,16 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
         final JLabel patchLabel = new JLabel("Patch:");
         patchLabel.setVerticalAlignment(SwingConstants.TOP);
         panel.add(patchLabel, gbc);
+
         gbc.weighty = 1;
         gbc.gridx = 1;
         gbc.anchor = GridBagConstraints.CENTER;
         m_mainControl = new JsonPatchMainPanel();
         panel.add(m_mainControl, gbc);
+
+        m_keepOriginal.setSelected(JSONPatchApplySettings.DEFAULT_KEEP_ORIGINAL_WHEN_TEST_FAILS);
+        m_patchType.addActionListener(
+            e -> m_keepOriginal.setEnabled(JSONPatchApplySettings.PATCH_OPTION.equals(m_patchType.getSelectedItem())));
     }
 
     /**
@@ -118,6 +131,7 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
         super.loadSettingsFrom(settings, specs);
         m_patchType.setSelectedItem(getSettings().getPatchType());
         m_mainControl.update(getSettings().getJsonPatch(), (DataTableSpec)specs[0], getAvailableFlowVariables());
+        m_keepOriginal.setSelected(getSettings().isKeepOriginalWhenTestFails());
     }
 
     /**
@@ -127,6 +141,7 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         getSettings().setPatchType((String)m_patchType.getSelectedItem());
         getSettings().setJsonPatch(m_mainControl.getExpression());
+        getSettings().setKeepOriginalWhenTestFails(m_keepOriginal.isSelected());
         super.saveSettingsTo(settings);
     }
 

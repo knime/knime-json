@@ -236,13 +236,26 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
         final JsonNode patchNode = conv.toJackson(((JSONValue)JSONCellFactory.create(jsonPatch, true)).getJsonValue());
         final JsonPatch patch;
         final JsonMergePatch mergePatch;
+        final boolean keepOriginalForFailedTests;
         switch (getSettings().getPatchType()) {
             case JSONPatchApplySettings.PATCH_OPTION:
                 patch = JsonPatch.fromJson(patchNode);
+                boolean testCheck = getSettings().isKeepOriginalWhenTestFails();
+                if (testCheck) {
+                    testCheck = false;
+                    CheckUtils.checkArgument(patchNode.isArray(), "Should be in array");
+                    for (final JsonNode opNode: ((ArrayNode)patchNode)) {
+                        final JsonNode opValue = opNode.get("op");
+                        CheckUtils.checkArgument(opValue != null && !opValue.isNull(), "op is missing for some of the patch parts: " + opNode);
+                        testCheck |= "test".equals(opValue.asText());
+                    }
+                }
+                keepOriginalForFailedTests = testCheck;
                 mergePatch = null;
                 break;
             case JSONPatchApplySettings.MERGE_PATCH_OPTION:
                 try {
+                    keepOriginalForFailedTests = false;
                     mergePatch = JsonMergePatch.fromJson(patchNode);
                     patch = null;
                 } catch (JsonPatchException e) {
@@ -258,6 +271,9 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
             @Override
             public DataCell getCell(final DataRow row) {
                 DataCell cell = row.getCell(inputIndex);
+                if (cell.isMissing()) {
+                    return cell;
+                }
                 if (cell instanceof JSONValue) {
                     JSONValue jsonCell = (JSONValue)cell;
                     JsonNode jsonNode = conv.toJackson(jsonCell.getJsonValue());
@@ -276,7 +292,7 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
                     } catch (JsonPatchException e) {
                         m_patchFailedCount++;
                         logError(e, m_patchFailedCount);
-                        return new MissingCell(e.getMessage());
+                        return keepOriginalForFailedTests ? cell : new MissingCell(e.getMessage());
                     }
                 }
                 return DataType.getMissingCell();

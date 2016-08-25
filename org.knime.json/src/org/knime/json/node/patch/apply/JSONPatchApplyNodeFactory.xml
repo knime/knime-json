@@ -33,6 +33,7 @@
         <option name="Remove source column">When checked, the source column will be removed</option>
         <option name="New column">Name of the new (JSON) column</option>
         <option name="Patch type">Either <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge and patch</a></option>
+        <option name="Keep original when test fails">When there are failing tests, the original value is kept instead of a missing value (and a warning is issued).</option>
         <option name="Patch">A JSON of the selected patch type compatible with the JSON values. The patch expression
         must either be a single JSON Patch expression (object) or an array of JSON Patch expressions.</option>
     </fullDescription>

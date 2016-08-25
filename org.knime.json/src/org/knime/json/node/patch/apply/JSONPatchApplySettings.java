@@ -74,10 +74,16 @@ final class JSONPatchApplySettings extends RemoveOrAddColumnSettings {
 
     static final String PATCH_TYPE = "patch.type";
 
+    static final String KEEP_ORIGINAL_WHEN_TEST_FAILS = "keep original when test fails";
+
+    static final boolean DEFAULT_KEEP_ORIGINAL_WHEN_TEST_FAILS = false, COMPAT_KEEP_ORIGINAL_WHEN_TEST_FAILS = false;
+
     static final List<String> PATCH_TYPES = Collections.unmodifiableList(Arrays
         .asList(PATCH_OPTION, MERGE_PATCH_OPTION));
 
     private String m_patchType = PATCH_TYPES.get(0), m_jsonPatch = DEFAULT_JSON_PATCH;
+
+    private boolean m_keepOriginalWhenTestFails = false;
 
     /**
      * Constructs the {@link JSONPatchApplySettings} object.
@@ -116,6 +122,20 @@ final class JSONPatchApplySettings extends RemoveOrAddColumnSettings {
     }
 
     /**
+     * @return the keepOriginalWhenTestFails
+     */
+    final boolean isKeepOriginalWhenTestFails() {
+        return m_keepOriginalWhenTestFails;
+    }
+
+    /**
+     * @param keepOriginalWhenTestFails the keepOriginalWhenTestFails to set
+     */
+    final void setKeepOriginalWhenTestFails(final boolean keepOriginalWhenTestFails) {
+        m_keepOriginalWhenTestFails = keepOriginalWhenTestFails;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -123,6 +143,8 @@ final class JSONPatchApplySettings extends RemoveOrAddColumnSettings {
         super.loadSettingsForDialogs(settings, specs);
         m_patchType = settings.getString(PATCH_TYPE, PATCH_TYPES.get(0));
         m_jsonPatch = settings.getString(JSON_PATCH, DEFAULT_JSON_PATCH);
+        m_keepOriginalWhenTestFails =
+            settings.getBoolean(KEEP_ORIGINAL_WHEN_TEST_FAILS, DEFAULT_KEEP_ORIGINAL_WHEN_TEST_FAILS);
     }
 
     /**
@@ -133,6 +155,8 @@ final class JSONPatchApplySettings extends RemoveOrAddColumnSettings {
         super.loadSettingsFrom(settings);
         m_patchType = settings.getString(PATCH_TYPE);
         m_jsonPatch = settings.getString(JSON_PATCH);
+        m_keepOriginalWhenTestFails =
+            settings.getBoolean(KEEP_ORIGINAL_WHEN_TEST_FAILS, COMPAT_KEEP_ORIGINAL_WHEN_TEST_FAILS);
     }
 
     /**
@@ -143,5 +167,6 @@ final class JSONPatchApplySettings extends RemoveOrAddColumnSettings {
         super.saveSettingsTo(settings);
         settings.addString(PATCH_TYPE, m_patchType);
         settings.addString(JSON_PATCH, m_jsonPatch);
+        settings.addBoolean(KEEP_ORIGINAL_WHEN_TEST_FAILS, m_keepOriginalWhenTestFails);
     }
 }
