@@ -63,6 +63,8 @@
         <option name="Keep rows">the selected columns are combined to a new JSON column containing the values from the columns and the name of the columns as keys. This option does not combine the rows of the input table.</option>
         <option name="Remove source columns">When checked, the source columns are removed when the rows are kept. It has no effect for the other <b>Aggregation direction</b> options, when all columns are removed.</option>
         <option name="Column names as paths, where path separator in column names">When <i>From column names as path</i> is selected, this value will be used to find the keys for JSON columns based on the column names.</option>
+        <option name="Missing values are: omitted">Missing values from the input table do not generate their key.</option>
+        <option name="Missing values are: null">Missing values from the input table are <tt>null</tt>.</option>
         <option name="Output column name">Name of the resulting column.</option>
     </fullDescription>
     

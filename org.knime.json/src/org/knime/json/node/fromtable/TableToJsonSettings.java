@@ -82,6 +82,8 @@ class TableToJsonSettings {
 
     private static final String CFGKEY_BOOLEANS_AS_NUMBERS = "output.boolean.asNumbers";
 
+    private static final String CFGKEY_MISSINGS_ARE_OMITTED = "missing.values.are.omitted";
+
     static final String DEFAULT_ROWKEY_KEY = "key";
 
     static final Direction DEFAULT_DIRECTION = Direction.RowsOutside;
@@ -95,6 +97,8 @@ class TableToJsonSettings {
     static final RowKeyOption DEFAULT_ROW_KEY_OPTION = RowKeyOption.omit;
 
     static final boolean DEFAULT_REMOVE_SOURCE_COLUMNS = false;
+
+    static final boolean COMPAT_MISSINGS_ARE_OMITTED = false, DEFAULT_MISSINGS_ARE_OMITTED = true;
 
     private final DataColumnSpecFilterConfiguration m_selectedColumns = new DataColumnSpecFilterConfiguration(
         CFGKEY_SELECTED_COLUMNS, new DataTypeColumnFilter(JsonPathUtils.supportedInputDataValuesAsArray()));
@@ -112,6 +116,8 @@ class TableToJsonSettings {
     private String m_outputColumnName = DEFAULT_OUTPUT_COLUMN_NAME;
 
     private boolean m_booleansAsNumbers;
+
+    private boolean m_missingsAreOmitted = DEFAULT_MISSINGS_ARE_OMITTED;
 
     TableToJsonSettings() {
     }
@@ -135,6 +141,8 @@ class TableToJsonSettings {
         // for existing nodes this value should be true; for new nodes it should default to false (see AP-5685)
         m_booleansAsNumbers =
             !settings.containsKey(CFGKEY_DIRECTION) || settings.getBoolean(CFGKEY_BOOLEANS_AS_NUMBERS, false);
+        //Since 3.3
+        m_missingsAreOmitted = settings.getBoolean(CFGKEY_MISSINGS_ARE_OMITTED, DEFAULT_MISSINGS_ARE_OMITTED);
     }
 
     /**
@@ -153,6 +161,8 @@ class TableToJsonSettings {
         m_columnNamesAsPath = settings.getBoolean(CFGKEY_COLUMN_NAMES_AS_PATH);
         m_removeSourceColumns = settings.getBoolean(CFGKEY_REMOVE_SOURCE_COLUMNS);
         m_booleansAsNumbers = settings.getBoolean(CFGKEY_BOOLEANS_AS_NUMBERS, true);
+        //Since 3.3
+        m_missingsAreOmitted = settings.getBoolean(CFGKEY_MISSINGS_ARE_OMITTED, COMPAT_MISSINGS_ARE_OMITTED);
     }
 
     /**
@@ -170,6 +180,8 @@ class TableToJsonSettings {
         settings.addBoolean(CFGKEY_COLUMN_NAMES_AS_PATH, m_columnNamesAsPath);
         settings.addBoolean(CFGKEY_REMOVE_SOURCE_COLUMNS, m_removeSourceColumns);
         settings.addBoolean(CFGKEY_BOOLEANS_AS_NUMBERS, m_booleansAsNumbers);
+        //Since 3.3
+        settings.addBoolean(CFGKEY_MISSINGS_ARE_OMITTED, m_missingsAreOmitted);
     }
 
     /**
@@ -284,6 +296,20 @@ class TableToJsonSettings {
      */
     final void setRemoveSourceColumns(final boolean removeSourceColumns) {
         this.m_removeSourceColumns = removeSourceColumns;
+    }
+
+    /**
+     * @return the missingsAreOmitted
+     */
+    final boolean isMissingsAreOmitted() {
+        return m_missingsAreOmitted;
+    }
+
+    /**
+     * @param missingsAreOmitted the missingsAreOmitted to set
+     */
+    final void setMissingsAreOmitted(final boolean missingsAreOmitted) {
+        m_missingsAreOmitted = missingsAreOmitted;
     }
 
 

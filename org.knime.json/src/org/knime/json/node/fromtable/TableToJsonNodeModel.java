@@ -660,10 +660,12 @@ class TableToJsonNodeModel extends NodeModel {
 
     private void fromCell(final JsonObjectBuilder root, final String key, final DataCell cell)
         throws IOException {
-        if (m_settings.isBooleansAsNumbers() && (cell instanceof BooleanValue)) {
-            JSR353Util.fromCell(key, ((BooleanValue) cell).getBooleanValue() ? TRUE : FALSE, root);
-        } else {
-            JSR353Util.fromCell(key, cell, root);
+        if (!m_settings.isMissingsAreOmitted() || !cell.isMissing()) {
+            if (m_settings.isBooleansAsNumbers() && (cell instanceof BooleanValue)) {
+                JSR353Util.fromCell(key, ((BooleanValue) cell).getBooleanValue() ? TRUE : FALSE, root);
+            } else {
+                JSR353Util.fromCell(key, cell, root);
+            }
         }
     }
 

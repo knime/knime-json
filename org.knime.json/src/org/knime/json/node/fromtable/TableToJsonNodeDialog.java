@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -43,29 +44,40 @@ class TableToJsonNodeDialog extends NodeDialogPane {
 
     private final JTextField m_rowKeyKey = GUIFactory.createTextField(TableToJsonSettings.DEFAULT_ROWKEY_KEY, 11);
 
-    private final JTextField m_outputColumn = GUIFactory.createTextField(
-        TableToJsonSettings.DEFAULT_OUTPUT_COLUMN_NAME, 22);
+    private final JTextField m_outputColumn =
+        GUIFactory.createTextField(TableToJsonSettings.DEFAULT_OUTPUT_COLUMN_NAME, 22);
 
-    private final JTextField m_columnNameSeparator = GUIFactory.createTextField(
-        TableToJsonSettings.DEFAULT_COLUMN_NAME_SEPARATOR, 3);
+    private final JTextField m_columnNameSeparator =
+        GUIFactory.createTextField(TableToJsonSettings.DEFAULT_COLUMN_NAME_SEPARATOR, 3);
 
     private final ButtonGroup m_directionGroup = new ButtonGroup(), m_rowKeyGroup = new ButtonGroup();
 
     private final JRadioButton m_rowsOutside = new JRadioButton("Row-oriented (n input rows \u2192 1 output cell)",
-        Direction.RowsOutside == TableToJsonSettings.DEFAULT_DIRECTION), m_columnsOutside = new JRadioButton(
-        "Column-oriented (n input rows \u2192 1 output cell)", Direction.ColumnsOutside == TableToJsonSettings.DEFAULT_DIRECTION),
-            m_keepRows = new JRadioButton("Keep rows (n input rows \u2192 n output cell)", Direction.KeepRows == TableToJsonSettings.DEFAULT_DIRECTION);
+        Direction.RowsOutside == TableToJsonSettings.DEFAULT_DIRECTION),
+            m_columnsOutside = new JRadioButton("Column-oriented (n input rows \u2192 1 output cell)",
+                Direction.ColumnsOutside == TableToJsonSettings.DEFAULT_DIRECTION),
+            m_keepRows = new JRadioButton("Keep rows (n input rows \u2192 n output cell)",
+                Direction.KeepRows == TableToJsonSettings.DEFAULT_DIRECTION);
 
-    private final JRadioButton m_omitRowKey = new JRadioButton("Omit row key",
-        RowKeyOption.omit == TableToJsonSettings.DEFAULT_ROW_KEY_OPTION), m_rowKeyAsKey = new JRadioButton(
-        "Row key as JSON key", RowKeyOption.asKey == TableToJsonSettings.DEFAULT_ROW_KEY_OPTION),
+    private final JRadioButton m_omitRowKey =
+        new JRadioButton("Omit row key", RowKeyOption.omit == TableToJsonSettings.DEFAULT_ROW_KEY_OPTION),
+            m_rowKeyAsKey = new JRadioButton("Row key as JSON key",
+                RowKeyOption.asKey == TableToJsonSettings.DEFAULT_ROW_KEY_OPTION),
             m_rowKeyAsValue = new JRadioButton("Row key as JSON value with key: ",
                 RowKeyOption.asValue == TableToJsonSettings.DEFAULT_ROW_KEY_OPTION);
 
-    private final JCheckBox m_columnNamesAsPath = new JCheckBox(
-        "Column names as paths, where path separator in column names:",
-        TableToJsonSettings.DEFAULT_COLUMN_NAMES_AS_PATH), m_removeSourceColumns = new JCheckBox(
-        "Remove source columns", TableToJsonSettings.DEFAULT_REMOVE_SOURCE_COLUMNS);
+    private final JCheckBox m_columnNamesAsPath =
+        new JCheckBox("Column names as paths, where path separator in column names:",
+            TableToJsonSettings.DEFAULT_COLUMN_NAMES_AS_PATH),
+            m_removeSourceColumns =
+                new JCheckBox("Remove source columns", TableToJsonSettings.DEFAULT_REMOVE_SOURCE_COLUMNS);
+
+    //Since 3.3
+    private final JRadioButton m_missingsAreOmitted =
+        new JRadioButton("omitted", TableToJsonSettings.DEFAULT_MISSINGS_ARE_OMITTED),
+            m_missingsAreNull = new JRadioButton("null", !TableToJsonSettings.DEFAULT_MISSINGS_ARE_OMITTED);
+
+    private final ButtonGroup m_missingHandlingGroup = new ButtonGroup();
 
     /**
      * New pane for configuring the TableToJson node.
@@ -98,10 +110,10 @@ class TableToJsonNodeDialog extends NodeDialogPane {
         m_rowKeyAsValue.addActionListener(rowKeyListener);
         m_rowKeyKey.setEnabled(m_rowKeyAsValue.isSelected());
 
-        JPanel directionPanel = new JPanel(), rowKeyPanel =
-            new JPanel(new GridBagLayout()), keepRowsPanel = new JPanel();
+        JPanel directionPanel = new JPanel(), rowKeyPanel = new JPanel(new GridBagLayout()),
+                keepRowsPanel = new JPanel();
         directionPanel.setLayout(new BoxLayout(directionPanel, BoxLayout.PAGE_AXIS));
-//        keepRowsPanel.setLayout(new BoxLayout(keepRowsPanel, BoxLayout.PAGE_AXIS));
+        //        keepRowsPanel.setLayout(new BoxLayout(keepRowsPanel, BoxLayout.PAGE_AXIS));
         keepRowsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
         keepRowsPanel.setBorder(null);
         directionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -151,20 +163,21 @@ class TableToJsonNodeDialog extends NodeDialogPane {
                 if (m_columnsOutside.isSelected() && m_rowKeyAsKey.isSelected()) {
                     m_omitRowKey.setSelected(true);
                 }
-            }};
+            }
+        };
         m_rowsOutside.addActionListener(directionListener);
         m_columnsOutside.addActionListener(directionListener);
         m_keepRows.addActionListener(directionListener);
-//        Dimension fillDim = new Dimension(50, 20);
-//        directionPanel.add(new Box.Filler(fillDim, fillDim, fillDim));
-//        directionPanel.add(new JLabel("    "));
+        //        Dimension fillDim = new Dimension(50, 20);
+        //        directionPanel.add(new Box.Filler(fillDim, fillDim, fillDim));
+        //        directionPanel.add(new JLabel("    "));
         m_removeSourceColumns.setAlignmentY(Component.TOP_ALIGNMENT);
-//        m_removeSourceColumns.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        keepRowsPanel.add(Box.createHorizontalGlue());
+        //        m_removeSourceColumns.setAlignmentX(Component.CENTER_ALIGNMENT);
+        //        keepRowsPanel.add(Box.createHorizontalGlue());
         keepRowsPanel.add(Box.createHorizontalStrut(20));
         keepRowsPanel.add(m_removeSourceColumns);
         //keepRowsPanel.add(Box.createHorizontalGlue());
-//        directionPanel.add(Box.createHorizontalGlue());
+        //        directionPanel.add(Box.createHorizontalGlue());
         directionPanel.setBorder(new TitledBorder("Aggregation direction"));
         gbc.gridheight = 3;
         gbc.weightx = 1;
@@ -179,12 +192,12 @@ class TableToJsonNodeDialog extends NodeDialogPane {
         fromColNamesWithSeparator.add(m_columnNamesAsPath);
         fromColNamesWithSeparator.add(m_columnNameSeparator);
         m_columnNameSeparator.setEnabled(m_columnNamesAsPath.isSelected());
-//        m_columnNamesAsPath.addChangeListener(new ChangeListener() {
-//            @Override
-//            public void stateChanged(final ChangeEvent e) {
-//                m_columnNameSeparator.setEnabled(m_columnNamesAsPath.isSelected());
-//            }
-//        });
+        //        m_columnNamesAsPath.addChangeListener(new ChangeListener() {
+        //            @Override
+        //            public void stateChanged(final ChangeEvent e) {
+        //                m_columnNameSeparator.setEnabled(m_columnNamesAsPath.isSelected());
+        //            }
+        //        });
         m_columnNamesAsPath.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -198,10 +211,43 @@ class TableToJsonNodeDialog extends NodeDialogPane {
         gbc.gridx = 0;
         gbc.gridheight = 3;
         panel.add(directionPanel, gbc);
+        gbc.gridy++;
+        gbc.gridy++;
+        gbc.gridy++;
+
+        final JPanel missingValuesPanel = new JPanel(new GridBagLayout());
+        {
+            gbc.gridheight = 2;
+            m_missingHandlingGroup.add(m_missingsAreOmitted);
+            m_missingHandlingGroup.add(m_missingsAreNull);
+
+            final GridBagConstraints missingGbc = new GridBagConstraints();
+            missingGbc.fill = GridBagConstraints.HORIZONTAL;
+            missingGbc.insets = new Insets(2,4, 2, 4);
+            missingGbc.anchor = GridBagConstraints.FIRST_LINE_START;
+            missingGbc.gridwidth = 1;
+            missingGbc.gridheight = 1;
+            missingGbc.gridx = 0;
+            missingGbc.gridy = 0;
+            missingGbc.weighty = 0;
+            missingValuesPanel.add(new JLabel("Missing values are: "), missingGbc);
+            missingGbc.weightx = 1;
+            missingGbc.gridx = 1;
+            missingValuesPanel.add(m_missingsAreOmitted, missingGbc);
+            missingGbc.gridy++;
+            missingValuesPanel.add(m_missingsAreNull, missingGbc);
+
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.gridwidth = 2;
+            gbc.gridheight = 2;
+            gbc.weightx = 1;
+//            gbc.weighty = 0;
+            panel.add(missingValuesPanel, gbc);
+            gbc.gridy++;
+            gbc.gridy++;
+        }
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridheight = 1;
-        gbc.gridy++;
-        gbc.gridy++;
-        gbc.gridy++;
 
         JPanel outputPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         outputPanel.add(new JLabel("Output column name:"));
@@ -225,14 +271,16 @@ class TableToJsonNodeDialog extends NodeDialogPane {
         m_settings.setRowKeyKey(m_rowKeyKey.getText());
         m_settings.setOutputColumnName(m_outputColumn.getText());
         m_settings.setColumnNameSeparator(m_columnNameSeparator.getText());
-        m_settings.setDirection(m_rowsOutside.isSelected() ? Direction.RowsOutside : m_columnsOutside.isSelected()
-            ? Direction.ColumnsOutside : m_keepRows.isSelected() ? Direction.KeepRows : CheckUtils.checkNotNull(
-                (Direction)null, "No direction options were selected!"));
+        m_settings.setDirection(m_rowsOutside.isSelected() ? Direction.RowsOutside
+            : m_columnsOutside.isSelected() ? Direction.ColumnsOutside : m_keepRows.isSelected() ? Direction.KeepRows
+                : CheckUtils.checkNotNull((Direction)null, "No direction options were selected!"));
         m_settings.setColumnNamesAsPath(m_columnNamesAsPath.isSelected());
-        m_settings.setRowKey(m_omitRowKey.isSelected() ? RowKeyOption.omit : m_rowKeyAsKey.isSelected()
-            ? RowKeyOption.asKey : m_rowKeyAsValue.isSelected() ? RowKeyOption.asValue : CheckUtils.checkNotNull(
-                (RowKeyOption)null, "No row key options were selected!"));
+        m_settings.setRowKey(m_omitRowKey.isSelected() ? RowKeyOption.omit
+            : m_rowKeyAsKey.isSelected() ? RowKeyOption.asKey : m_rowKeyAsValue.isSelected() ? RowKeyOption.asValue
+                : CheckUtils.checkNotNull((RowKeyOption)null, "No row key options were selected!"));
         m_settings.setRemoveSourceColumns(m_removeSourceColumns.isSelected());
+        //Since 3.3
+        m_settings.setMissingsAreOmitted(m_missingsAreOmitted.isSelected());
         m_settings.saveSettings(settings);
     }
 
@@ -281,5 +329,9 @@ class TableToJsonNodeDialog extends NodeDialogPane {
         }
         m_removeSourceColumns.setSelected(m_settings.isRemoveSourceColumns());
         m_rowKeyAsKey.setEnabled(!m_columnsOutside.isSelected());
+
+        //Since 3.3
+        m_missingsAreOmitted.setSelected(m_settings.isMissingsAreOmitted());
+        m_missingsAreNull.setSelected(!m_settings.isMissingsAreOmitted());
     }
 }
