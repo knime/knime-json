@@ -204,6 +204,9 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
      */
     @Override
     protected ColumnRearranger createColumnRearranger(final DataTableSpec inSpecs) throws InvalidSettingsException {
+        if (!m_settings.getOutputSettings().iterator().hasNext()) {
+            throw new InvalidSettingsException("No path was specified, please select at least one!");
+        }
         ColumnRearranger ret = new ColumnRearranger(inSpecs);
         String input = m_settings.getInputColumnName();
         if (input == null || !inSpecs.containsName(input)) {
