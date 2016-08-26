@@ -75,7 +75,7 @@ class TableToJsonNodeDialog extends NodeDialogPane {
     //Since 3.3
     private final JRadioButton m_missingsAreOmitted =
         new JRadioButton("omitted", TableToJsonSettings.DEFAULT_MISSINGS_ARE_OMITTED),
-            m_missingsAreNull = new JRadioButton("null", !TableToJsonSettings.DEFAULT_MISSINGS_ARE_OMITTED);
+            m_missingsAreNull = new JRadioButton("inserted as 'null'", !TableToJsonSettings.DEFAULT_MISSINGS_ARE_OMITTED);
 
     private final ButtonGroup m_missingHandlingGroup = new ButtonGroup();
 
@@ -230,7 +230,7 @@ class TableToJsonNodeDialog extends NodeDialogPane {
             missingGbc.gridx = 0;
             missingGbc.gridy = 0;
             missingGbc.weighty = 0;
-            missingValuesPanel.add(new JLabel("Missing values are: "), missingGbc);
+            missingValuesPanel.add(new JLabel("Missing values are "), missingGbc);
             missingGbc.weightx = 1;
             missingGbc.gridx = 1;
             missingValuesPanel.add(m_missingsAreOmitted, missingGbc);
