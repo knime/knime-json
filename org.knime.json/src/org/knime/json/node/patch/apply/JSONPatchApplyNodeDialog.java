@@ -100,7 +100,7 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
         gbc.gridy++;
         gbc.weighty = 0;
         gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-        m_keepOriginal = new JCheckBox("Keep original when test fails");
+        m_keepOriginal = new JCheckBox("Keep original value when 'test' operation fails");
         panel.add(m_keepOriginal, gbc);
         gbc.gridy++;
 
