@@ -1,4 +1,4 @@
 # Require at least the patched version otherwise com.google.guava cannot be resolved
-requires.0.name=com.github.fge:uri-template
+requires.0.name=com.github.fge.uri-template
 requires.0.range=0.9.0.v20161021-knime
 requires.0.namespace=osgi.bundle
