@@ -88,6 +88,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.CaretEvent;
@@ -464,6 +465,24 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
         });
         controls.add(m_remove);
         controls.add(Box.createHorizontalStrut(11));
+        final JButton moveUpButton = new JButton("\u2B06"); // up arrow
+        moveUpButton.addActionListener(e -> {
+            int selectedRow = m_table.getSelectedRow();
+            if (selectedRow > 0 && m_tableModel.moveUp(selectedRow)) {
+                m_table.getSelectionModel().setSelectionInterval(selectedRow - 1, selectedRow - 1);
+            }
+        });
+        controls.add(moveUpButton);
+        controls.add(Box.createHorizontalStrut(11));
+        final JButton moveDownButton = new JButton("\u2B07"); // down arrow
+        moveDownButton.addActionListener(e -> {
+            int selectedRow = m_table.getSelectedRow();
+            if (selectedRow >= 0 && m_tableModel.moveDown(selectedRow)) {
+                m_table.getSelectionModel().setSelectionInterval(selectedRow + 1, selectedRow + 1);
+            }
+        });
+        controls.add(moveDownButton);
+        controls.add(Box.createHorizontalStrut(11));
         //        controls.add(new JButton(new AbstractAction("Edit") {
         //            private static final long serialVersionUID = -2065702331538862108L;
         //
@@ -477,8 +496,14 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
             public void valueChanged(final ListSelectionEvent e) {
                 updateSingleSetting();
                 //updateEnabled();
-                m_edit.setEnabled(!m_table.getSelectionModel().isSelectionEmpty());
-                m_remove.setEnabled(!m_table.getSelectionModel().isSelectionEmpty());
+                ListSelectionModel selectionModel = m_table.getSelectionModel();
+                boolean isSingleSelection = selectionModel.getMinSelectionIndex() >= 0
+                        && selectionModel.getMinSelectionIndex() == selectionModel.getMaxSelectionIndex();
+                moveUpButton.setEnabled(selectionModel.getMinSelectionIndex() > 0 && isSingleSelection);
+                moveDownButton.setEnabled(selectionModel.getMaxSelectionIndex() < m_table.getRowCount() - 1
+                    && isSingleSelection);
+                m_edit.setEnabled(!selectionModel.isSelectionEmpty());
+                m_remove.setEnabled(!selectionModel.isSelectionEmpty());
             }
         });
         m_tableModel.addTableModelListener(new TableModelListener() {

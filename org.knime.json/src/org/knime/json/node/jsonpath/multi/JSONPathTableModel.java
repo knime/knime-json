@@ -224,6 +224,22 @@ final class JSONPathTableModel extends AbstractTableModel implements Iterable<Si
         content.remove(rowIndex);
         fireTableRowsDeleted(rowIndex, rowIndex);
     }
+    boolean moveUp(final int rowIndex) {
+        if (rowIndex > 0 && rowIndex < content.size()) {
+            content.add(rowIndex - 1, content.remove(rowIndex));
+            fireTableRowsUpdated(rowIndex - 1, rowIndex);
+            return true;
+        }
+        return false;
+    }
+    boolean moveDown(final int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < content.size() - 1) {
+            content.add(rowIndex + 1, content.remove(rowIndex));
+            fireTableRowsUpdated(rowIndex, rowIndex + 1);
+            return true;
+        }
+        return false;
+    }
 
     /**
      *
