@@ -107,14 +107,14 @@ public class TestConverters {
         final JsonObject obj = Json.createObjectBuilder().add("name", "KNIME").build();
         final DataCell cell = JSONCellFactory.create(obj);
 
-        final Optional<DataCellToJavaConverterFactory<DataValue, JsonValue>> factory =
+        final Optional<DataCellToJavaConverterFactory<? extends DataValue, JsonValue>> factory =
             DataCellToJavaConverterRegistry.getInstance().getPreferredConverterFactory(JSONCell.TYPE, JsonValue.class);
         assertTrue(factory.isPresent());
 
-        final DataCellToJavaConverter<DataValue, JsonValue> converter = factory.get().create();
+        final DataCellToJavaConverter<? extends DataValue, JsonValue> converter = factory.get().create();
         assertNotNull(converter);
 
-        assertEquals(converter.convert(cell), obj);
+        assertEquals(converter.convertUnsafe(cell), obj);
     }
 
 }

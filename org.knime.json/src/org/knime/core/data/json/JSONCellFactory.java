@@ -158,7 +158,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
      * @return DataCell representing the JSON
      * @throws NullPointerException if argument is null
      */
-    @DataCellFactoryMethod(name = "JSON")
+    @DataCellFactoryMethod(name = "JsonValue")
     public static DataCell create(final JsonValue json) {
         if (json == null) {
             throw new NullPointerException("JSON must not be null");
