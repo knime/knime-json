@@ -49,12 +49,16 @@
 package org.knime.json.node.reader;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -89,7 +93,7 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
 
     private JSONReaderSettings m_settings = JSONReaderNodeModel.createSettings();
 
-    private FilesHistoryPanel m_location;
+    private final FilesHistoryPanel m_location;
 
     private JTextField m_columnName;
 
@@ -101,39 +105,14 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
 
     private JCheckBox m_allowComments;
 
+    private final JLabel m_warningLabel;
+
     /**
      * New pane for configuring the JSONReader node.
      */
     protected JSONReaderNodeDialog() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        addTab("Settings", panel);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weighty = 0;
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-
-        panel.add(new JLabel("Location"), gbc);
-        gbc.gridx++;
-        gbc.weightx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        m_location =
-            new FilesHistoryPanel(createFlowVariableModel(JSONReaderSettings.LOCATION, Type.STRING), HISTORY_ID,
-                LocationValidation.FileInput, "json|json.gz", "");
-        panel.add(m_location, gbc);
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        panel.add(new JLabel("Output column name"), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1;
+        m_location = new FilesHistoryPanel(createFlowVariableModel(JSONReaderSettings.LOCATION, Type.STRING),
+            HISTORY_ID, LocationValidation.FileInput, "json|json.gz", "");
         m_columnName = GUIFactory.createTextField("", 22);
         m_columnName.getDocument().addDocumentListener(new DocumentListener() {
             private void reportError() {
@@ -169,23 +148,11 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
                 reportError();
             }
         });
-        panel.add(m_columnName, gbc);
-
-        gbc.gridy++;
-
-        gbc.gridx = 1;
         m_selectPart = new JCheckBox("Select with JSONPath");
-        panel.add(m_selectPart, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        panel.add(new JLabel("JSONPath"), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1;
         m_jsonPath = GUIFactory.createTextField("", 22);
         m_jsonPath.setToolTipText("Hint: Use the annotations to explain it.");
-        final JLabel warningLabel = new JLabel();
-        warningLabel.setForeground(Color.RED);
+        m_warningLabel = new JLabel();
+        m_warningLabel.setForeground(Color.RED);
         final DocumentListener docListener = new DocumentListener() {
             @Override
             public void removeUpdate(final DocumentEvent e) {
@@ -216,31 +183,19 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
             }
 
             private void error(final String message) {
-                warningLabel.setText(message);
+                m_warningLabel.setText(message);
             }
 
             private void noError() {
-                warningLabel.setText("");
+                m_warningLabel.setText("");
             }
         };
         m_jsonPath.getDocument().addDocumentListener(docListener);
-        panel.add(m_jsonPath, gbc);
-        gbc.gridy++;
-        panel.add(warningLabel, gbc);
-        gbc.gridy++;
-
         m_failIfNotFound = new JCheckBox("Fail if path not found");
         m_failIfNotFound.setToolTipText("When unchecked and path do not match input, "
             + "missing value will be generated.");
-        gbc.weightx = 1;
-        panel.add(m_failIfNotFound, gbc);
-        gbc.gridy++;
-
-        gbc.gridy++;
         m_allowComments = new JCheckBox("Allow comments in JSON files");
         m_allowComments.setToolTipText("/*...*/, // or #");
-        panel.add(m_allowComments, gbc);
-
         m_selectPart.getModel().addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(final ItemEvent e) {
@@ -253,12 +208,70 @@ final class JSONReaderNodeDialog extends NodeDialogPane {
         m_selectPart.setSelected(true);
         m_selectPart.setSelected(false);
 
+
+
+        addTab("Settings", initLayout());
+    }
+
+    private JPanel initLayout(){
+        final JPanel filePanel = new JPanel();
+        filePanel.setLayout(new BoxLayout(filePanel, BoxLayout.X_AXIS));
+        filePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Input location:"));
+        filePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, m_location.getPreferredSize().height));
+        filePanel.add(m_location);
+
+        JPanel optionsPanel = new JPanel(new GridBagLayout());
+        optionsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Reader options:"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        gbc.gridwidth = 1;
+
+        optionsPanel.add(new JLabel("Output column name"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        optionsPanel.add(m_columnName, gbc);
+
+        gbc.gridy++;
+
+        gbc.gridx = 1;
+        optionsPanel.add(m_selectPart, gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        optionsPanel.add(new JLabel("JSONPath"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        optionsPanel.add(m_jsonPath, gbc);
+        gbc.gridy++;
+        optionsPanel.add(m_warningLabel, gbc);
+        gbc.gridy++;
+
+        gbc.weightx = 1;
+        optionsPanel.add(m_failIfNotFound, gbc);
+        gbc.gridy++;
+
+        gbc.gridy++;
+        optionsPanel.add(m_allowComments, gbc);
+
         //Filling remaining space
         gbc.gridy++;
         gbc.weighty = 1;
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JPanel(), gbc);
+        optionsPanel.add(new JPanel(), gbc);
+
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(filePanel);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(optionsPanel);
+        return panel;
     }
 
     /**

@@ -53,7 +53,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.InvalidPathException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.knime.base.node.util.BufferedFileReader;
@@ -219,27 +218,12 @@ public final class JSONReaderNodeModel extends NodeModel {
      */
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
+        String location = m_settings.getLocation();
+        String warning = CheckUtils.checkSourceFile(location);
+        if (warning != null) {
+            setWarningMessage(warning);
+        }
         m_settings.checkColumnName();
-        URL url;
-        try {
-            url = FileUtil.toURL(m_settings.getLocation());
-        } catch (MalformedURLException | InvalidPathException e) {
-            throw new InvalidSettingsException("Not a valid location: " + m_settings.getLocation(), e);
-        }
-        try {
-            File file = FileUtil.getFileFromURL(url);
-            if (file == null) {
-                throw new IllegalArgumentException("Probably we are on the server.");
-            }
-            if (!file.exists()) {
-                throw new InvalidSettingsException("File do not exists: " + m_settings.getLocation());
-            }
-            if (file.isDirectory()) {
-                throw new InvalidSettingsException("Selected location is a directory: " + m_settings.getLocation());
-            }
-        } catch (IllegalArgumentException e) {
-            //We do not mind if it is remote file, but in this case we do not check for existence either.
-        }
         final DataColumnSpec column = new DataColumnSpecCreator(m_settings.getColumnName(), JSONCell.TYPE).createSpec();
         return new DataTableSpec[]{new DataTableSpec(column)};
     }
