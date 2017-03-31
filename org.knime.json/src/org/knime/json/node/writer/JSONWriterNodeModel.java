@@ -334,7 +334,14 @@ public final class JSONWriterNodeModel extends NodeModel {
         int missingCellCount = 0;
 
         checkOutputLocation();
-        URL container = FileUtil.toURL(m_settings.getOutputLocation());
+        URL container;
+        if (m_settings.getOutputLocation().endsWith("/") || m_settings.getOutputLocation().endsWith("\\")) {
+            container = FileUtil.toURL(m_settings.getOutputLocation());
+        } else {
+            // make sure the URL denotes a directory
+            container = FileUtil.toURL(m_settings.getOutputLocation() + "/");
+        }
+
         if (m_settings.isCompressContents() && m_settings.getCompressionMethod().supportsMultipleFiles()) {
             uriContents.add(new URIContent(container.toURI(), FilenameUtils.getExtension(container.toString())));
         }
