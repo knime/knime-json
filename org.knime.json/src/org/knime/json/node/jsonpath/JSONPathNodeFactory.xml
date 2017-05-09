@@ -38,7 +38,7 @@ The default path (<tt>$..*</tt>) will select all possible subparts (excluding th
 </ul> which are valid JSONPaths for the input JSON value.
 </p><p>The filters <tt>?(expr)</tt>can be used to select contents with specific properties, for example <tt>$..book[?(@.publisher)]</tt> selects the books that specify their publisher (<tt>@</tt> refers to the actual element).
         </p><p>
-        It uses the <a href="https://github.com/jayway/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
+        It uses the <a href="https://github.com/json-path/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
         </intro>
         
         <tab name="Settings">
