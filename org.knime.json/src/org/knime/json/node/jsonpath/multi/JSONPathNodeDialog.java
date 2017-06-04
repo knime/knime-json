@@ -115,6 +115,7 @@ import org.knime.base.data.aggregation.dialogutil.BooleanCellRenderer;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.BufferedDataTable;
@@ -364,9 +365,11 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
             @Override
             public Component getTableCellRendererComponent(final JTable table, final Object value,
                 final boolean isSelected, final boolean hasFocus, final int row, final int column) {
+                String text = (String)((Pair<?, ?>)value).getFirst();
+                OutputType outputType = (OutputType)((Pair<?, ?>)value).getSecond();
                 JLabel ret =
-                    new JLabel((String)((Pair<?, ?>)value).getFirst(),
-                        ((OutputType)((Pair<?, ?>)value).getSecond()).getIcon(), SwingConstants.HORIZONTAL);
+                    new JLabel(text, outputType == null ? DataType.getMissingCell().getType().getIcon() :
+                        outputType.getIcon(), SwingConstants.HORIZONTAL);
                 //                ret.setOpaque(true);
                 JPanel res = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
                 res.add(ret);
