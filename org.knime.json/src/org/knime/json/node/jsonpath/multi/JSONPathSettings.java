@@ -60,6 +60,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.json.node.util.PathOrPointerSettings;
 
 /**
  * The settings object for the JSONPath node.
@@ -204,7 +205,8 @@ final class JSONPathSettings {
             paths[i] = singleSetting.getJsonPath();
             resultIsListArray[i] = singleSetting.isResultIsList();
             resultPaths[i] = singleSetting.isReturnPaths();
-            returnTypes[i] = singleSetting.getReturnType().name();
+            returnTypes[i] = (singleSetting.getReturnType() == null ? PathOrPointerSettings.DEFAULT_RETURN_TYPE :
+                singleSetting.getReturnType()).name();
         }
         settings.addStringArray(SingleSetting.NEW_COLUMN_NAMES, colNames);
         settings.addStringArray(SingleSetting.JSON_PATH, paths);

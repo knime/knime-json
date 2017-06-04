@@ -65,7 +65,7 @@ public class PathOrPointerSettings extends RemoveOrAddColumnSettings {
     //TODO probably a locale and date format would be a good idea to not rely on computer (and lib) settings for dates.
 
     /** Default value for the return type settings. */
-    protected static final OutputType DEFAULT_RETURN_TYPE = OutputType.Json;
+    public static final OutputType DEFAULT_RETURN_TYPE = OutputType.Json;
 
     /** Key for the String type return type settings (encoded as enum by its {@link Enum#name()}). */
     protected static final String RETURN_TYPE = "returnType";
@@ -113,7 +113,7 @@ public class PathOrPointerSettings extends RemoveOrAddColumnSettings {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         super.saveSettingsTo(settings);
-        settings.addString(RETURN_TYPE, m_returnType.name());
+        settings.addString(RETURN_TYPE, m_returnType == null ? DEFAULT_RETURN_TYPE.name() : m_returnType.name());
     }
 
     /**
