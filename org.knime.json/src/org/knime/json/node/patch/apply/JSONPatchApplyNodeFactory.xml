@@ -9,7 +9,7 @@
     <fullDescription>
         <intro><p>Applies a <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a href="http://tools.ietf.org/html/rfc7386">merge patch</a> on the input JSON column.</p><p>
         When a (merge) patch cannot be applied, missing values will be generated, node execution will not fail.</p><p>
-        See also the node: <a href="http://www.knime.org/files/node-documentation/org.knime.json.node.patch.create.JSONPatchCreateNodeFactory.html">JSON Diff</a>.</p><p>
+        See also the node: <a href="http://www.knime.com/files/node-documentation/org.knime.json.node.patch.create.JSONPatchCreateNodeFactory.html">JSON Diff</a>.</p><p>
         Given <tt>{"a":"b","c":{"d":"e","f": "g"} }</tt> let us assume the target is <tt>{"a":"z","c":{"d":"e"} }</tt> (changing <tt>a</tt>'s value to <tt>z</tt> and
         removing <tt>f</tt>). To achieve this, either the following patch should be applied:
         <tt>[{"op":"replace","path":"/a","value":"z"},{"op":"remove","path":"/c/f"}]</tt> or

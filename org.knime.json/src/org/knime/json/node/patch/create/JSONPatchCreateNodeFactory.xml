@@ -9,7 +9,7 @@
     <fullDescription>
         <intro><p>Creates a <a href="http://tools.ietf.org/html/rfc6902">JSON patch</a>/diff between two JSON columns.</p><p>
         When one of the values in the input column is missing, the result is also a missing value.</p><p>
-        See also the node: <a href="http://www.knime.org/files/node-documentation/org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory.html">JSON Transformer</a>.</p><p>
+        See also the node: <a href="http://www.knime.com/files/node-documentation/org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory.html">JSON Transformer</a>.</p><p>
         It uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p></intro>
         
         
