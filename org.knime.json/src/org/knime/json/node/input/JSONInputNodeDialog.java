@@ -115,7 +115,7 @@ final class JSONInputNodeDialog extends NodeDialogPane {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         JSONInputNodeConfiguration config = new JSONInputNodeConfiguration();
-        config.setParameterName(m_parameterNameField.getText());
+        config.setParameterName(m_parameterNameField.getText(), false);
         config.setValue(m_input.getText());
         config.save(settings);
     }

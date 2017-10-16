@@ -49,6 +49,7 @@
 package org.knime.json.node.input;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
@@ -108,14 +109,18 @@ final class JSONInputNodeConfiguration {
      * Sets the parameter name.
      *
      * @param value the new parameter name
+     * @param allowLegacyFormat if true it will allow the {@link DialogNode#PARAMETER_NAME_PATTERN_LEGACY} (backward
+     *            compatible)
      * @return the updated configuration
      */
-    JSONInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    JSONInputNodeConfiguration setParameterName(final String value, final boolean allowLegacyFormat) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
-        CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
+        Pattern pattern = allowLegacyFormat
+                ? DialogNode.PARAMETER_NAME_PATTERN_LEGACY : DialogNode.PARAMETER_NAME_PATTERN;
+        CheckUtils.checkSetting(pattern.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
-            + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
-            value, DialogNode.PARAMETER_NAME_PATTERN.pattern());
+                + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
+            value, pattern.pattern());
         m_parameterName = value;
         return this;
     }
@@ -128,7 +133,7 @@ final class JSONInputNodeConfiguration {
      * @throws InvalidSettingsException if settings are missing or invalid
      */
     JSONInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName"));
+        setParameterName(settings.getString("parameterName"), true);
         setValue(settings.getString("json"));
         return this;
     }
@@ -141,7 +146,7 @@ final class JSONInputNodeConfiguration {
      */
     JSONInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
-            setParameterName(settings.getString("parameterName"));
+            setParameterName(settings.getString("parameterName"), true);
         } catch (InvalidSettingsException e) {
             m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONInputNodeModel.class);
         }

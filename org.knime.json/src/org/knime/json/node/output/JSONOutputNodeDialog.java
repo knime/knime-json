@@ -86,7 +86,7 @@ final class JSONOutputNodeDialog extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         JSONOutputConfiguration config = new JSONOutputConfiguration();
         config.setJsonColumnName(m_columnSelectionPanel.getSelectedColumn());
-        config.setParameterName(m_parameterNameField.getText());
+        config.setParameterName(m_parameterNameField.getText(), false);
         config.setKeepOneRowTablesSimple(m_keepOneRowTablesSimpleChecker.isSelected());
         config.save(settings);
     }

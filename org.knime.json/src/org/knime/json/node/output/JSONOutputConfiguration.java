@@ -20,6 +20,8 @@
  */
 package org.knime.json.node.output;
 
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
@@ -74,14 +76,18 @@ final class JSONOutputConfiguration {
      * Sets the parameter name.
      *
      * @param value the new parameter name
+     * @param allowLegacyFormat if true it will allow the {@link DialogNode#PARAMETER_NAME_PATTERN_LEGACY} (backward
+     *            compatible)
      * @return the updated configuration
      */
-    JSONOutputConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    JSONOutputConfiguration setParameterName(final String value, final boolean allowLegacyFormat) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
-        CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
+        Pattern pattern = allowLegacyFormat
+                ? DialogNode.PARAMETER_NAME_PATTERN_LEGACY : DialogNode.PARAMETER_NAME_PATTERN;
+        CheckUtils.checkSetting(pattern.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
-            + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
-            value, DialogNode.PARAMETER_NAME_PATTERN.pattern());
+                + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
+            value, pattern.pattern());
         m_parameterName = value;
         return this;
     }
@@ -119,7 +125,7 @@ final class JSONOutputConfiguration {
      * @throws InvalidSettingsException if settings are missing or invalid
      */
     JSONOutputConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName"));
+        setParameterName(settings.getString("parameterName"), true);
         setJsonColumnName(settings.getString("jsonColumnName"));
         setKeepOneRowTablesSimple(settings.getBoolean("keepOneRowTablesSimple"));
         return this;
@@ -133,7 +139,7 @@ final class JSONOutputConfiguration {
      */
     JSONOutputConfiguration loadInDialog(final NodeSettingsRO settings, final DataTableSpec inSpec) {
         try {
-            setParameterName(settings.getString("parameterName"));
+            setParameterName(settings.getString("parameterName"), true);
         } catch (InvalidSettingsException e) {
             m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONOutputNodeModel.class);
         }
