@@ -1,7 +1,7 @@
 /*
  * ------------------------------------------------------------------------
  *
- *  Copyright by KNIME GmbH, Konstanz, Germany
+ *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -72,7 +72,7 @@ import org.knime.json.util.JSONUtil;
  * <code>NodeDialog</code> for the "JSONInput" Node. Allows to read a text and return it as a JSON value.
  *
  * @author Gabor Bakos
- * @author Bernd Wiswedel, KNIME.com, Zurich, Switzerland
+ * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
  */
 final class JSONInputNodeDialog extends NodeDialogPane {
     private final JFormattedTextField m_parameterNameField;

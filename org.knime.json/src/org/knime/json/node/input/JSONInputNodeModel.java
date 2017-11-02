@@ -1,7 +1,7 @@
 /*
  * ------------------------------------------------------------------------
  *
- *  Copyright by KNIME GmbH, Konstanz, Germany
+ *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -76,7 +76,7 @@ import org.knime.core.node.dialog.InputNode;
  * This is the model implementation of JSONInput. Allows to read a text and return it as a JSON value.
  *
  * @author Gabor Bakos
- * @author Bernd Wiswedel, KNIME.com, Zurich, Switzerland
+ * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
  */
 final class JSONInputNodeModel extends NodeModel implements InputNode {
     static final String JSON_KEY = "json";

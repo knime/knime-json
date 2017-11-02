@@ -3,7 +3,7 @@
       id="org.knime.features.json"
       label="KNIME JSON-Processing"
       version="3.5.0.qualifier"
-      provider-name="KNIME GmbH, Konstanz, Germany">
+      provider-name="KNIME AG, Zurich, Switzerland">
 
    <description>
       This feature contains several node for reading, manipulating,
@@ -11,7 +11,7 @@ and writing XML data.
    </description>
 
    <copyright>
-      Copyright by KNIME GmbH, Konstanz, Germany
+      Copyright by KNIME AG, Zurich, Switzerland
    </copyright>
 
    <license>
