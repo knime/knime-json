@@ -20,7 +20,10 @@
  */
 package org.knime.json.node.output;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
+
+import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
@@ -32,6 +35,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.json.util.JSONUtil;
 
 /**
  * Configuration for the JSON Output node.
@@ -42,6 +46,7 @@ final class JSONOutputConfiguration {
     private String m_parameterName;
     private String m_jsonColumnName;
     private boolean m_keepOneRowTablesSimple;
+    private JsonValue m_exampleJson;
 
     /**
      * Returns the parameter name.
@@ -70,6 +75,15 @@ final class JSONOutputConfiguration {
      */
     boolean isKeepOneRowTablesSimple() {
         return m_keepOneRowTablesSimple;
+    }
+
+    /**
+     * Returns the JsonValue which should be used for the "example" field for OpenAPI specification.
+     *
+     * @return The json value
+     */
+    JsonValue getExampleJson() {
+        return m_exampleJson;
     }
 
     /**
@@ -118,6 +132,16 @@ final class JSONOutputConfiguration {
     }
 
     /**
+     * Sets the json value for the example field, which is used for OpenAPI specification of the workflow.
+     *
+     * @return the updated configuration
+     */
+    JSONOutputConfiguration setExampleJson(final JsonValue value) {
+        m_exampleJson = value;
+        return this;
+    }
+
+    /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
      * @param settings a node settings object
@@ -128,6 +152,15 @@ final class JSONOutputConfiguration {
         setParameterName(settings.getString("parameterName"), true);
         setJsonColumnName(settings.getString("jsonColumnName"));
         setKeepOneRowTablesSimple(settings.getBoolean("keepOneRowTablesSimple"));
+
+        final String jsonString = settings.getString("exampleJson", "");
+        try {
+            m_exampleJson = JSONUtil.parseJSONValue(jsonString);
+        } catch (IOException e) {
+            // Should always be valid, as not saved otherwise. Therefore must be some other invalid settings.
+            m_exampleJson = null;
+        }
+
         return this;
     }
 
@@ -144,18 +177,27 @@ final class JSONOutputConfiguration {
             m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONOutputNodeModel.class);
         }
         String firstJSONCol = null;
-        for (DataColumnSpec col : inSpec) {
+        for (final DataColumnSpec col : inSpec) {
             if (col.getType().isCompatible(JSONValue.class)) {
                 firstJSONCol = col.getName();
                 break;
             }
         }
         m_jsonColumnName = settings.getString("jsonColumnName", firstJSONCol);
-        DataColumnSpec col = inSpec.getColumnSpec(m_jsonColumnName);
+        final DataColumnSpec col = inSpec.getColumnSpec(m_jsonColumnName);
         if (col == null || !col.getType().isCompatible(JSONValue.class)) {
             m_jsonColumnName = firstJSONCol;
         }
         setKeepOneRowTablesSimple(settings.getBoolean("keepOneRowTablesSimple", true));
+
+        final String jsonString = settings.getString("exampleJson", "null");
+        try {
+            m_exampleJson = JSONUtil.parseJSONValue(jsonString);
+        } catch (IOException e) {
+            // Should always be valid, as not saved otherwise. Therefore must be some other invalid settings.
+            m_exampleJson = null;
+        }
+
         return this;
     }
 
@@ -169,6 +211,11 @@ final class JSONOutputConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("jsonColumnName", m_jsonColumnName);
         settings.addBoolean("keepOneRowTablesSimple", m_keepOneRowTablesSimple);
+
+        if (m_exampleJson != null) {
+            final String jsonString = JSONUtil.toPrettyJSONString(m_exampleJson);
+            settings.addString("exampleJson", jsonString);
+        }
         return this;
     }
 }
