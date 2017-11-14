@@ -119,6 +119,13 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
+        panel.add(new JLabel("Example:"), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy += 1;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
         panel.add(m_fillFromInput, gbc);
 
         gbc.gridx = 0;

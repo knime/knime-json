@@ -21,6 +21,10 @@
           For the special case that the input table contains one row with a non-missing JSON value this value is taken
           as result and not wrapped into a JSON array. 
         </option>
+        <option name="Example">A JSON representing an example of what output received by this node may look like.
+         Mainly used for populating the "example" field of the generated OpenAPI output parameter specification, which
+         is presented to end users for documentation purpose.
+         The content of this node can be filled from input data (if preceding nodes are executed.)</option>
     </fullDescription>
     <ports>
         <inPort index="0" name="JSON Input">A table containing a JSON column whose content is made available to the caller.</inPort>
