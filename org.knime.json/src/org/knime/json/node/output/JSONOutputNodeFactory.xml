@@ -23,7 +23,7 @@
         </option>
         <option name="Example">A JSON representing an example of what output received by this node may look like.
          Mainly used for populating the "example" field of the generated OpenAPI output parameter specification, which
-         is presented to end users for documentation purpose.
+         is presented to end users for documentation purposes.
          The content of this node can be filled from input data (if preceding nodes are executed.)</option>
     </fullDescription>
     <ports>

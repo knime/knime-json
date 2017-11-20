@@ -90,8 +90,8 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
     }
 
     private JPanel createLayout() {
-        final JPanel panel = new JPanel(new GridBagLayout());
-        final GridBagConstraints gbc = new GridBagConstraints();
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
 
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridx = gbc.gridy = 0;
@@ -140,7 +140,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        final JSONOutputConfiguration config = new JSONOutputConfiguration();
+        JSONOutputConfiguration config = new JSONOutputConfiguration();
         config.setJsonColumnName(m_columnSelectionPanel.getSelectedColumn());
         config.setParameterName(m_parameterNameField.getText(), false);
         config.setKeepOneRowTablesSimple(m_keepOneRowTablesSimpleChecker.isSelected());

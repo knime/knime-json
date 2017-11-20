@@ -55,33 +55,32 @@ import org.knime.core.node.util.CheckUtils;
  */
 final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
     private JSONOutputConfiguration m_configuration;
-
     private BufferedDataTable m_table;
 
     JSONOutputNodeModel() {
         super(1, 0);
     }
 
+    /** {@inheritDoc} */
     @SuppressWarnings("null")
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         CheckUtils.checkSetting(m_configuration != null, "No configuration set - confirm in dialog");
-        final DataColumnSpec jsonCol = inSpecs[0].getColumnSpec(m_configuration.getJsonColumnName());
-        CheckUtils.checkSetting(jsonCol != null, "Selected column '%s' does not exist",
-            m_configuration.getJsonColumnName());
-        CheckUtils.checkSetting(jsonCol.getType().isCompatible(JSONValue.class),
-            "Selected column '%s' not " + "json compatible, it's ", m_configuration.getJsonColumnName(),
-            jsonCol.getType());
+        DataColumnSpec jsonCol = inSpecs[0].getColumnSpec(m_configuration.getJsonColumnName());
+        CheckUtils.checkSetting(jsonCol != null,
+                "Selected column '%s' does not exist", m_configuration.getJsonColumnName());
+        CheckUtils.checkSetting(jsonCol.getType().isCompatible(JSONValue.class), "Selected column '%s' not "
+            + "json compatible, it's ", m_configuration.getJsonColumnName(), jsonCol.getType());
         return new DataTableSpec[0];
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
-        throws Exception {
-        final ColumnRearranger r = new ColumnRearranger(inData[0].getDataTableSpec());
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
+        final ExecutionContext exec) throws Exception {
+        ColumnRearranger r = new ColumnRearranger(inData[0].getDataTableSpec());
         r.keepOnly(m_configuration.getJsonColumnName());
         m_table = exec.createColumnRearrangeTable(inData[0], r, exec);
-
         return new BufferedDataTable[0];
     }
 
@@ -100,16 +99,16 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
             return Json.createArrayBuilder().build();
         }
 
-        final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         final long rowCount = table.size();
-        try (final CloseableRowIterator it = allowStaleState ? table.iteratorFailProve() : table.iterator()) {
+        try (CloseableRowIterator it = allowStaleState ? table.iteratorFailProve() : table.iterator()) {
             while (it.hasNext()) {
-                final DataRow r = it.next();
-                final DataCell cell = r.getCell(0);
+                DataRow r = it.next();
+                DataCell cell = r.getCell(0);
                 if (cell.isMissing()) {
                     arrayBuilder.addNull();
                 } else {
-                    final JsonValue jsonValue = ((JSONValue)cell).getJsonValue();
+                    JsonValue jsonValue = ((JSONValue)cell).getJsonValue();
                     if ((rowCount == 1) && keepOneRowTablesSimple) {
                         return jsonValue;
                     } else {
@@ -125,60 +124,75 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
         return readIntoJsonValue(m_table, true, m_configuration.isKeepOneRowTablesSimple());
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void reset() {
         m_table = null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public BufferedDataTable[] getInternalTables() {
-        return new BufferedDataTable[]{m_table};
+        return new BufferedDataTable[] {m_table};
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setInternalTables(final BufferedDataTable[] tables) {
         m_table = tables[0];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         if (m_configuration != null) {
             final JsonValue exampleJson = m_configuration.getExampleJson();
             if (exampleJson == null) {
-                m_configuration.setExampleJson(readIntoJsonValue(m_table, true, m_configuration.isKeepOneRowTablesSimple()));
+                m_configuration
+                    .setExampleJson(readIntoJsonValue(m_table, true, m_configuration.isKeepOneRowTablesSimple()));
             }
 
             m_configuration.save(settings);
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         new JSONOutputConfiguration().loadInModel(settings);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_configuration = new JSONOutputConfiguration().loadInModel(settings);
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
+        CanceledExecutionException {
         // no op
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
+        CanceledExecutionException {
+        // no op
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ExternalNodeData getExternalOutput() {
-        final String id = (m_configuration == null) ? "" : m_configuration.getParameterName();
-        final ExternalNodeDataBuilder builder = ExternalNodeData.builder(id);
+        String id = (m_configuration == null) ? "" : m_configuration.getParameterName();
+        ExternalNodeDataBuilder builder = ExternalNodeData.builder(id);
         if (m_table != null) {
             builder.jsonValue(readIntoJsonValue(m_table, false, m_configuration.isKeepOneRowTablesSimple()));
+        } else if (m_configuration.getExampleJson() != null) {
+            builder.jsonValue(m_configuration.getExampleJson());
         } else {
             builder.jsonValue(JsonValue.NULL);
         }

@@ -153,12 +153,11 @@ final class JSONOutputConfiguration {
         setJsonColumnName(settings.getString("jsonColumnName"));
         setKeepOneRowTablesSimple(settings.getBoolean("keepOneRowTablesSimple"));
 
-        final String jsonString = settings.getString("exampleJson", "");
+        final String jsonString = settings.getString("exampleJson", "{}");
         try {
             m_exampleJson = JSONUtil.parseJSONValue(jsonString);
         } catch (IOException e) {
-            // Should always be valid, as not saved otherwise. Therefore must be some other invalid settings.
-            m_exampleJson = null;
+            throw new InvalidSettingsException("Could not load example JSON: " + e.getMessage(), e);
         }
 
         return this;
@@ -177,20 +176,20 @@ final class JSONOutputConfiguration {
             m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONOutputNodeModel.class);
         }
         String firstJSONCol = null;
-        for (final DataColumnSpec col : inSpec) {
+        for (DataColumnSpec col : inSpec) {
             if (col.getType().isCompatible(JSONValue.class)) {
                 firstJSONCol = col.getName();
                 break;
             }
         }
         m_jsonColumnName = settings.getString("jsonColumnName", firstJSONCol);
-        final DataColumnSpec col = inSpec.getColumnSpec(m_jsonColumnName);
+        DataColumnSpec col = inSpec.getColumnSpec(m_jsonColumnName);
         if (col == null || !col.getType().isCompatible(JSONValue.class)) {
             m_jsonColumnName = firstJSONCol;
         }
         setKeepOneRowTablesSimple(settings.getBoolean("keepOneRowTablesSimple", true));
 
-        final String jsonString = settings.getString("exampleJson", "null");
+        final String jsonString = settings.getString("exampleJson", "");
         try {
             m_exampleJson = JSONUtil.parseJSONValue(jsonString);
         } catch (IOException e) {
