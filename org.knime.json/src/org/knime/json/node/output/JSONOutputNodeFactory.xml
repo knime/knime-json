@@ -17,6 +17,10 @@
         <option name="Parameter Name">A name, which serves as key in the resulting JSON object. This is used to
         assert uniqueness in case multiple output results (nodes) are present in workflow.</option>
         <option name="JSON Column">The column containing the JSON result. All other columns are ignored.</option>
+        <option name="Description">
+            A description for the output parameter. The description is shown in the API specification of the REST
+            interface.
+        </option>
         <option name="Keep single-row tables simple">
           For the special case that the input table contains one row with a non-missing JSON value this value is taken
           as result and not wrapped into a JSON array. 

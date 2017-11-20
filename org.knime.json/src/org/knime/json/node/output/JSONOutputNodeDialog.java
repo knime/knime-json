@@ -20,6 +20,7 @@
  */
 package org.knime.json.node.output;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -31,6 +32,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.border.Border;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -59,6 +62,8 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
 
+    private final JTextArea m_descriptionArea;
+
     private final JCheckBox m_keepOneRowTablesSimpleChecker;
 
     private final JButton m_fillFromInput = new JButton("Fill example JSON from input data");
@@ -75,6 +80,11 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 
         m_keepOneRowTablesSimpleChecker = new JCheckBox("Keep single-row tables simple");
+
+        m_descriptionArea = new JTextArea(1, 20);
+        m_descriptionArea.setLineWrap(true);
+        m_descriptionArea.setPreferredSize(new Dimension(100, 50));
+        m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
         m_input = new RSyntaxTextArea();
         m_input.setCodeFoldingEnabled(true);
@@ -95,19 +105,30 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridx = gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         panel.add(new JLabel("Parameter Name (JSON Key)"), gbc);
-
-        gbc.gridy += 1;
-        panel.add(new JLabel("JSON Column"), gbc);
-
-        gbc.gridy = 0;
         gbc.gridx += 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(m_parameterNameField, gbc);
 
+        gbc.gridx = 0;
         gbc.gridy += 1;
+        panel.add(new JLabel("JSON Column"), gbc);
+        gbc.gridx++;
         panel.add(m_columnSelectionPanel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        panel.add(new JLabel("Description: "), gbc);
+        JScrollPane sp = new JScrollPane(m_descriptionArea);
+        sp.setPreferredSize(m_descriptionArea.getPreferredSize());
+        sp.setMinimumSize(m_descriptionArea.getMinimumSize());
+        gbc.weightx = 1;
+        gbc.gridx++;
+        panel.add(sp, gbc);
+
 
         gbc.gridy += 1;
         gbc.gridx = 0;
@@ -153,6 +174,8 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
                 throw new InvalidSettingsException("Invalid JSON value.", e);
             }
         }
+
+        config.setDescription(m_descriptionArea.getText());
         config.save(settings);
     }
 
@@ -175,6 +198,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
             JSONOutputNodeModel.readIntoJsonValue(input[0], false, config.isKeepOneRowTablesSimple());
         m_fillFromInput.setEnabled(true);
         m_fillFromInput.setToolTipText("Set the example json from input data.");
+        m_descriptionArea.setText(config.getDescription());
     }
 
     JSONOutputConfiguration loadConfig(final NodeSettingsRO settings, final DataTableSpec spec) throws NotConfigurableException {
@@ -187,6 +211,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         final JsonValue exampleJson = config.getExampleJson();
         final String exampleJsonString = (exampleJson == null) ? "" : JSONUtil.toPrettyJSONString(exampleJson);
         m_input.setText(exampleJsonString);
+        m_descriptionArea.setText(config.getDescription());
 
         return config;
     }

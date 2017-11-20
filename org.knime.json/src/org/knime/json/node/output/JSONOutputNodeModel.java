@@ -187,8 +187,11 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
      */
     @Override
     public ExternalNodeData getExternalOutput() {
-        String id = (m_configuration == null) ? "" : m_configuration.getParameterName();
-        ExternalNodeDataBuilder builder = ExternalNodeData.builder(id);
+        if (m_configuration == null) {
+            return ExternalNodeData.builder("").build();
+        }
+
+        ExternalNodeDataBuilder builder = ExternalNodeData.builder(m_configuration.getParameterName());
         if (m_table != null) {
             builder.jsonValue(readIntoJsonValue(m_table, false, m_configuration.isKeepOneRowTablesSimple()));
         } else if (m_configuration.getExampleJson() != null) {
@@ -197,6 +200,7 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
             builder.jsonValue(JsonValue.NULL);
         }
 
+        builder.description(m_configuration.getDescription());
         return builder.build();
     }
 }

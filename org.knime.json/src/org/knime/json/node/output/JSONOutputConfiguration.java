@@ -47,6 +47,25 @@ final class JSONOutputConfiguration {
     private String m_jsonColumnName;
     private boolean m_keepOneRowTablesSimple;
     private JsonValue m_exampleJson;
+    private String m_description = "";
+
+    /**
+     * Returns a user-supplied description for this input node.
+     *
+     * @return a description, never <code>null</code>
+     */
+    String getDescription() {
+        return m_description;
+    }
+
+    /**
+     * Sets a user-supplied description for this input node.
+     *
+     * @param s a description, must not be <code>null</code>
+     */
+    void setDescription(final String s) {
+        m_description = s;
+    }
 
     /**
      * Returns the parameter name.
@@ -160,6 +179,7 @@ final class JSONOutputConfiguration {
             throw new InvalidSettingsException("Could not load example JSON: " + e.getMessage(), e);
         }
 
+        setDescription(settings.getString("description", "")); // added in 3.5
         return this;
     }
 
@@ -197,6 +217,7 @@ final class JSONOutputConfiguration {
             m_exampleJson = null;
         }
 
+        setDescription(settings.getString("description", ""));
         return this;
     }
 
@@ -215,6 +236,8 @@ final class JSONOutputConfiguration {
             final String jsonString = JSONUtil.toPrettyJSONString(m_exampleJson);
             settings.addString("exampleJson", jsonString);
         }
+
+        settings.addString("description", m_description);
         return this;
     }
 }
