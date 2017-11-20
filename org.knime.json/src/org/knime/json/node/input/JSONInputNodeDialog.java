@@ -48,6 +48,7 @@
  */
 package org.knime.json.node.input;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -55,6 +56,8 @@ import java.awt.Insets;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
@@ -77,6 +80,8 @@ import org.knime.json.util.JSONUtil;
 final class JSONInputNodeDialog extends NodeDialogPane {
     private final JFormattedTextField m_parameterNameField;
 
+    private final JTextArea m_descriptionArea;
+
     private final RSyntaxTextArea m_input;
 
     /**
@@ -85,9 +90,16 @@ final class JSONInputNodeDialog extends NodeDialogPane {
     protected JSONInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
+
         m_input = new RSyntaxTextArea();
         m_input.setCodeFoldingEnabled(true);
         m_input.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+
+        m_descriptionArea = new JTextArea(1, 20);
+        m_descriptionArea.setLineWrap(true);
+        m_descriptionArea.setPreferredSize(new Dimension(100, 50));
+        m_descriptionArea.setMinimumSize(new Dimension(100, 30));
+
         addTab("JSON", createLayout(), false);
     }
 
@@ -95,13 +107,26 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         JPanel p = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.insets = new Insets(5, 5, 5, 5);
         p.add(new JLabel("Parameter Name: "), gbc);
-
         gbc.gridx += 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         p.add(m_parameterNameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        p.add(new JLabel("Description: "), gbc);
+        JScrollPane sp = new JScrollPane(m_descriptionArea);
+        sp.setPreferredSize(m_descriptionArea.getPreferredSize());
+        sp.setMinimumSize(m_descriptionArea.getMinimumSize());
+        gbc.weightx = 1;
+        gbc.gridx++;
+        p.add(sp, gbc);
+
+
         gbc.gridx = 0;
         gbc.gridy += 1;
         gbc.gridwidth = 2;
@@ -117,6 +142,7 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         JSONInputNodeConfiguration config = new JSONInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText(), false);
         config.setValue(m_input.getText());
+        config.setDescription(m_descriptionArea.getText());
         config.save(settings);
     }
 
@@ -128,6 +154,7 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         throws NotConfigurableException {
         JSONInputNodeConfiguration config = new JSONInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
+        m_descriptionArea.setText(config.getDescription());
         m_input.setText(JSONUtil.toPrettyJSONString(config.getValue()));
     }
 }

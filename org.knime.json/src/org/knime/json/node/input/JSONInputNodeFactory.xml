@@ -14,6 +14,16 @@
 			workflow, into the workflow. The JSON value is returned as a single JSON cell in the column	<tt>json</tt>.
 		</intro>
 
+        <option name="Parameter name">
+            A unique name for the input parameter. This name is exposed in the REST interface and in the Call
+            Workflow node.
+        </option>
+
+        <option name="Description">
+            A description for the input parameter. The description is shown in the API specification of the REST
+            interface.
+        </option>
+
 		<option name="JSON">
 			The text representing a default JSON value. It might contain comments
 			between	<pre>/* */</pre> or after <tt>#</tt> or	<tt>//</tt>	until the end of line.

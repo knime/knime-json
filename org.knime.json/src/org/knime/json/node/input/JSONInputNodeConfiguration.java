@@ -71,6 +71,27 @@ import org.knime.json.util.JSONUtil;
 final class JSONInputNodeConfiguration {
     private JsonValue m_value = JsonProvider.provider().createObjectBuilder().build();
     private String m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONInputNodeModel.class);
+    private String m_description = "";
+
+
+    /**
+     * Returns a user-supplied description for this input node.
+     *
+     * @return a description, never <code>null</code>
+     */
+    String getDescription() {
+        return m_description;
+    }
+
+
+    /**
+     * Sets a user-supplied description for this input node.
+     *
+     * @param s a description, must not be <code>null</code>
+     */
+    void setDescription(final String s) {
+        m_description = s;
+    }
 
     /**
      * Return the current JSON value.
@@ -135,6 +156,7 @@ final class JSONInputNodeConfiguration {
     JSONInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"), true);
         setValue(settings.getString("json"));
+        setDescription(settings.getString("description", "")); // added in 3.5
         return this;
     }
 
@@ -156,6 +178,8 @@ final class JSONInputNodeConfiguration {
         } catch (InvalidSettingsException e) {
             m_value = JsonProvider.provider().createObjectBuilder().build();
         }
+
+        setDescription(settings.getString("description", ""));
         return this;
     }
 
@@ -168,6 +192,7 @@ final class JSONInputNodeConfiguration {
     JSONInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("json", m_value.toString());
+        settings.addString("description", m_description);
         return this;
     }
 
