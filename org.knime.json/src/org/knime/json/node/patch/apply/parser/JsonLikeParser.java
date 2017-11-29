@@ -104,7 +104,7 @@ public class JsonLikeParser extends ReaderBasedJsonParser {
     public JsonLikeParser(final Reader reader, final int features, final Map<String, Type> flowVariables,
         final Set<String> compatibleColumnNames) {
         super(new IOContext(new BufferRecycler(), reader, false), features, reader, new ObjectMapper(),
-            CharsToNameCanonicalizer.createRoot());
+            CharsToNameCanonicalizer.createRoot().makeChild(features));
         CheckUtils.checkArgument(!compatibleColumnNames.stream().anyMatch(v -> v.contains("$")),
             "Column names with $ in it are not supported.");
         CheckUtils.checkArgument(!flowVariables.keySet().stream().anyMatch(v -> v.contains("}")),
