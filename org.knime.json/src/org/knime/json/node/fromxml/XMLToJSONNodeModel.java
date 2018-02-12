@@ -65,6 +65,7 @@ import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.data.util.AutocloseableSupplier;
 import org.knime.core.data.xml.XMLValue;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
@@ -168,13 +169,13 @@ public class XMLToJSONNodeModel extends SingleColumnReplaceOrAddNodeModel<XMLToJ
             public DataCell getCell(final DataRow row) {
                     DataCell cell = row.getCell(inputIndex);
                     if (cell instanceof XMLValue) {
-                        XMLValue xmlValue = (XMLValue)cell;
-                        Document doc = xmlValue.getDocument();
-                        try {
+                        @SuppressWarnings("unchecked")
+                        XMLValue<Document> xmlValue = (XMLValue<Document>)cell;
+                        try (AutocloseableSupplier<Document> supplier = xmlValue.getDocumentSupplier()){
                             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                             Document newRoot = documentBuilder.newDocument();
                             Element element = newRoot.createElement("fakeroot");
-                            element.appendChild(newRoot.importNode(doc.getDocumentElement(), true));
+                            element.appendChild(newRoot.importNode(supplier.get().getDocumentElement(), true));
                             newRoot.appendChild(element);
                             JsonNode json = xml2Json.toJson(newRoot);
                             return JSONCellFactory.create(conv.toJSR353(json));
