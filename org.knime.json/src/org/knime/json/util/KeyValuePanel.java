@@ -52,7 +52,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -78,6 +77,8 @@ import org.knime.core.node.util.ConfigTablePanel;
  * A visual component to define key - value pairs. Both key and value are of type string.
  *
  * @author Heiko Hofer
+ *
+ * TODO this is similar to the same-name class in knime-core's org.knime.core.node.util package; consider consolidating.
  */
 @SuppressWarnings("serial")
 public class KeyValuePanel extends ConfigTablePanel {
@@ -95,11 +96,13 @@ public class KeyValuePanel extends ConfigTablePanel {
         table.getColumnModel().getColumn(1).setPreferredWidth(200);
         m_model = (KeyValueTableModel)getModel();
 
-        KeyStroke ctrlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK);
+        int menuAcceleratorKeyModifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
+        KeyStroke ctrlV = KeyStroke.getKeyStroke(KeyEvent.VK_V, menuAcceleratorKeyModifier);
         table.getInputMap().put(ctrlV, "TablePaste");
         table.getActionMap().put("TablePaste", new PasteAction(this));
 
-        KeyStroke ctrlC = KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK);
+        KeyStroke ctrlC = KeyStroke.getKeyStroke(KeyEvent.VK_V, menuAcceleratorKeyModifier);
         table.getInputMap().put(ctrlC, "TableCopy");
         table.getActionMap().put("TableCopy", new CopyAction(this));
 
