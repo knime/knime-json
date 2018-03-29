@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-in.png" type="QuickForm"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>Service In</name>
+
+	<shortDescription>
+        TODO TU: write documentation
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+			TODO TU: write documentation
+		</intro>
+
+        <option name="Parameter name">
+            A unique name for the input parameter. This name is exposed in the REST interface and in the Call
+            Workflow node.
+        </option>
+
+        <option name="Description">
+            A description for the input parameter. The description is shown in the API specification of the REST
+            interface.
+        </option>
+
+		<option name="JSON">
+			The text representing a default JSON value. It might contain comments
+			between	<pre>/* */</pre> or after <tt>#</tt> or	<tt>//</tt>	until the end of line.
+		</option>
+	</fullDescription>
+
+	<ports>
+		<outPort index="0" name="JSON">
+			Table containing a single JSON value in the column <tt>json</tt>.
+		</outPort>
+	</ports>
+</knimeNode>

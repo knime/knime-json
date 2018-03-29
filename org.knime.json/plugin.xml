@@ -42,6 +42,10 @@
             factory-class="org.knime.json.node.output.JSONOutputNodeFactory"
             >
       </node>
+      <node
+            category-path="/struct-data/json"
+            factory-class="org.knime.json.node.servicein.ServiceInNodeFactory">
+      </node>
    </extension>
    <extension
            point="org.knime.workbench.repository.registeredFileExtensions">
