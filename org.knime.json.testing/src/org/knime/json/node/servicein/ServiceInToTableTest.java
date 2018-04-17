@@ -85,11 +85,11 @@ public class ServiceInToTableTest {
 
     /**
      * Checks that null is not allowed as service input.
+     * @throws InvalidSettingsException
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullAsServiceInputIsNotAllowed() {
-        ServiceInput serviceInput = null;
-        new ServiceInputToTable(serviceInput, getTestExecutionContext());
+    @Test(expected = InvalidSettingsException.class)
+    public void testNullAsServiceInputIsNotAllowed() throws InvalidSettingsException {
+        ServiceInputToTable.toBufferedDataTable(null, getTestExecutionContext());
     }
 
     /**
@@ -108,8 +108,7 @@ public class ServiceInToTableTest {
                 .withColumnSpec("column-localdate", "localdate")//
                 .build();//
 
-        ServiceInputToTable serviceInputToTable = new ServiceInputToTable(tableWithSpec, getTestExecutionContext());
-        BufferedDataTable[] dataTable = serviceInputToTable.toBufferedDataTable();
+        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
 
         DataTableSpec createdSpecs = dataTable[0].getSpec();
         DataColumnSpec[] expectedColumnSpecs = //
@@ -135,9 +134,7 @@ public class ServiceInToTableTest {
                 .withColumnSpec("column-string", "string")//
                 .build();//
 
-        ServiceInputToTable serviceInputToTable = new ServiceInputToTable(tableWithSpec, getTestExecutionContext());
-        BufferedDataTable[] dataTable = serviceInputToTable.toBufferedDataTable();
-
+        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
         DataTableSpec createdSpecs = dataTable[0].getSpec();
 
         String[] columnNames = createdSpecs.getColumnNames();
@@ -153,12 +150,11 @@ public class ServiceInToTableTest {
     @Test(expected = InvalidSettingsException.class)
     public void testServiceInputWithNullTableSpecThrowsException() throws Exception {
         ServiceInput serviceInput = //
-                new ServiceInputBuilder()//
+            new ServiceInputBuilder()//
                 .withNullTableSpec()//
                 .build();//
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -180,8 +176,7 @@ public class ServiceInToTableTest {
                 .withTableRow("value2", 432, 0.4, "2018-03-28")//
                 .build();//
 
-        ServiceInputToTable serviceInputToTable = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        BufferedDataTable[] dataTable = serviceInputToTable.toBufferedDataTable();
+        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
@@ -208,8 +203,7 @@ public class ServiceInToTableTest {
                 .withColumnSpec("column-unsupported", "not supported type")//
                 .build();//
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -225,8 +219,7 @@ public class ServiceInToTableTest {
                 .withTableRow(2.0)//
                 .build();//
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -242,8 +235,7 @@ public class ServiceInToTableTest {
                 .withTableRow(2)//
                 .build();//
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -259,8 +251,7 @@ public class ServiceInToTableTest {
                 .withTableRow("Hello int column!")//
                 .build();//
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -276,8 +267,7 @@ public class ServiceInToTableTest {
                 .withTableRow(2.4)//
                 .build();//
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -295,8 +285,7 @@ public class ServiceInToTableTest {
 
         // TODO TU: which exception should be thrown here? Date time parsing exception gives better context.
 
-        ServiceInputToTable tableCreator = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        tableCreator.toBufferedDataTable();
+        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -314,8 +303,7 @@ public class ServiceInToTableTest {
                 .withTableRow(1, 2, 3)//
                 .build();//
 
-        ServiceInputToTable serviceInputToTable = new ServiceInputToTable(serviceInput, getTestExecutionContext());
-        BufferedDataTable[] dataTable = serviceInputToTable.toBufferedDataTable();
+        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
@@ -346,7 +334,7 @@ public class ServiceInToTableTest {
         for (int i = 0; i < expectedDataCells.length; i++) {
             DataCell actualDataCell = actualDataRow.getCell(i);
             Object expectedDataCellObject = expectedDataCells[i];
-            DataCell expectedDataCell = ServiceInputValidDataTypeFactory.of(actualDataCell.getType()).parseToDataCall(expectedDataCellObject);
+            DataCell expectedDataCell = ServiceInputValidDataTypeFactory.of(actualDataCell.getType()).parseObject(expectedDataCellObject);
             assertEquals(expectedDataCell, actualDataCell);
         }
     }
@@ -354,12 +342,9 @@ public class ServiceInToTableTest {
     private ExecutionContext getTestExecutionContext() {
         @SuppressWarnings({"unchecked", "rawtypes"})
         NodeFactory<NodeModel> dummyFactory =
-            (NodeFactory) new VirtualParallelizedChunkPortObjectInNodeFactory(new PortType[0]);
-        return new ExecutionContext(//
-            new DefaultNodeProgressMonitor(), //
-            new Node(dummyFactory), //
-            SingleNodeContainer.MemoryPolicy.CacheOnDisc, //
-            new HashMap<Integer, ContainerTable>());//
+            (NodeFactory)new VirtualParallelizedChunkPortObjectInNodeFactory(new PortType[0]);
+        return new ExecutionContext(new DefaultNodeProgressMonitor(), new Node(dummyFactory),
+            SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<Integer, ContainerTable>());
     }
 
 }

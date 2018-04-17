@@ -48,31 +48,34 @@
  */
 package org.knime.json.node.servicein;
 
+import java.time.LocalDate;
+
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;
-import org.knime.core.data.def.IntCell;
+import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputIntegerDataType implements ServiceInputValidDataType {
+public class ServiceInputLocalDateParser implements ServiceInputCellParser {
 
     /**
      * The concrete type of this implementation.
      */
-    public static final DataType DATA_TYPE = IntCell.TYPE;
+    public static final DataType DATA_TYPE = LocalDateCellFactory.TYPE;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public DataCell parseToDataCall(final Object cellObject) throws InvalidSettingsException {
-        if (cellObject instanceof Integer) {
-            return new IntCell((Integer) cellObject);
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof String) {
+            LocalDate.parse((String) cellObject);
+            return LocalDateCellFactory.create(LocalDate.parse((String) cellObject));
         } else {
-            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" does not have the expected data type \"" + DATA_TYPE + "\"");
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
         }
     }
 

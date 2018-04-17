@@ -44,76 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 17, 2018 (Tobias Urhaug): created
+ *   Apr 11, 2018 (Tobias Urhaug): created
  */
 package org.knime.json.node.servicein;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;
-import org.knime.core.data.def.DoubleCell;
-import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
-import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
- * Enum holding all valid data types for the service in node.
- * A valid data type contains its type and a parser that parses a given object if possible.
  *
  * @author Tobias Urhaug
  */
-public enum ServiceInputValidDataType {
+public class ServiceInputStringParser implements ServiceInputCellParser {
 
     /**
-     *
+     * The concrete type of this implementation.
      */
-    STRING(StringCell.TYPE, new ServiceInputStringParser()),
-    /**
-     *
-     */
-    INTEGER(IntCell.TYPE, new ServiceInputIntegerParser()),
-    /**
-     *
-     */
-    DOUBLE(DoubleCell.TYPE, new ServiceInputDoubleParser()),
-    /**
-     *
-     */
-    LOCAL_DATE(LocalDateCellFactory.TYPE, new ServiceInputLocalDateParser());
-
-
-    private final DataType m_dataType;
-    private final ServiceInputCellParser m_objectParser;
+    public static final DataType DATA_TYPE = StringCell.TYPE;
 
     /**
-     * Constructor for the data types.
-     *
-     * @param m_dataType
-     * @param m_objectParser
+     * {@inheritDoc}
      */
-    private ServiceInputValidDataType(final DataType dataType, final ServiceInputCellParser objectParser) {
-        this.m_dataType = dataType;
-        this.m_objectParser = objectParser;
-    }
-
-    /**
-     * Returns the data type of the concrete instance.
-     *
-     * @return the data type of the concrete instance
-     */
-    public DataType getDataType() {
-        return m_dataType;
-    }
-
-    /**
-     * Parses the input object to a data cell of the concrete instance.
-     *
-     * @param cellObject
-     * @return DataCell parsed data cell of the input object
-     * @throws InvalidSettingsException if the input object cannot be parsed
-     */
-    public DataCell parseObject(final Object cellObject) throws InvalidSettingsException {
-        return m_objectParser.parse(cellObject);
+    @Override
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof String) {
+            return new StringCell((String) cellObject);
+        } else {
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+        }
     }
 
 }

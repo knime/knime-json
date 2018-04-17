@@ -50,29 +50,29 @@ package org.knime.json.node.servicein;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;
-import org.knime.core.data.def.StringCell;
+import org.knime.core.data.def.DoubleCell;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputStringDataType implements ServiceInputValidDataType {
+public class ServiceInputDoubleParser implements ServiceInputCellParser {
 
     /**
      * The concrete type of this implementation.
      */
-    public static final DataType DATA_TYPE = StringCell.TYPE;
+    public static final DataType DATA_TYPE = DoubleCell.TYPE;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public DataCell parseToDataCall(final Object cellObject) throws InvalidSettingsException {
-        if (cellObject instanceof String) {
-            return new StringCell((String) cellObject);
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof Double) {
+            return new DoubleCell((Double) cellObject);
         } else {
-            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" does not have the expected data type \"" + DATA_TYPE + "\"");
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
         }
     }
 

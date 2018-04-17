@@ -48,35 +48,23 @@
  */
 package org.knime.json.node.servicein;
 
-import java.time.LocalDate;
-
 import org.knime.core.data.DataCell;
-import org.knime.core.data.DataType;
-import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
  *
+ *
  * @author Tobias Urhaug
  */
-public class ServiceInputLocalDateDataType implements ServiceInputValidDataType {
+public interface ServiceInputCellParser {
 
     /**
-     * The concrete type of this implementation.
+     * Parses the given cell object to a data cell of the type of the implementing parser.
+     *
+     * @param cellObject
+     * @return DataCell
+     * @throws InvalidSettingsException if the input can not be parsed to the implementing parsers type
      */
-    public static final DataType DATA_TYPE = LocalDateCellFactory.TYPE;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DataCell parseToDataCall(final Object cellObject) throws InvalidSettingsException {
-        if (cellObject instanceof String) {
-            LocalDate.parse((String) cellObject);
-            return LocalDateCellFactory.create(LocalDate.parse((String) cellObject));
-        } else {
-            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" does not have the expected column type \"" + DATA_TYPE + "\"");
-        }
-    }
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException;
 
 }

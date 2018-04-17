@@ -57,26 +57,25 @@ import org.knime.core.data.time.localdate.LocalDateCell;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
- * Abstract class representing the valid input data types for the service in node.
+ * Factory class for valid service input types.
  *
  * @author Tobias Urhaug
  */
 public abstract class ServiceInputValidDataTypeFactory {
 
     /**
-     * Factory method for creating a ServiceInputValidDataType object of
-     * the given data type string.
+     * Gets the DataType
      *
      * @param dataType type that should be converted
      * @return ServiceInputValidDataType object corresponding to the input data type
      * @throws InvalidSettingsException
      */
-    public static DataType of(final String dataType) throws InvalidSettingsException {
+    public static ServiceInputValidDataType of(final String dataType) throws InvalidSettingsException {
         switch (dataType) {
-            case "string" : return ServiceInputStringDataType.DATA_TYPE;
-            case "int" : return ServiceInputIntegerDataType.DATA_TYPE;
-            case "double" : return ServiceInputDoubleDataType.DATA_TYPE;
-            case "localdate" : return ServiceInputLocalDateDataType.DATA_TYPE;
+            case "string" : return ServiceInputValidDataType.STRING;
+            case "int" : return ServiceInputValidDataType.INTEGER;
+            case "double" : return ServiceInputValidDataType.DOUBLE;
+            case "localdate" : return ServiceInputValidDataType.LOCAL_DATE;
             default : throw new InvalidSettingsException("Unsupported data type: \"" + dataType + "\"");
         }
     }
@@ -93,16 +92,14 @@ public abstract class ServiceInputValidDataTypeFactory {
         Class<? extends DataCell> dataTypeCellClass = dataType.getCellClass();
         assert dataTypeCellClass != null;
 
-        // TODO TU: is there a more clever way to solve this? Will create heaps of new objects only for a short life span!
-
         if (StringCell.class.equals(dataTypeCellClass)) {
-            return new ServiceInputStringDataType();
+            return ServiceInputValidDataType.STRING;
         } else if (IntCell.class.equals(dataTypeCellClass)) {
-            return new ServiceInputIntegerDataType();
+            return ServiceInputValidDataType.INTEGER;
         } else if (DoubleCell.class.equals(dataTypeCellClass)) {
-            return new ServiceInputDoubleDataType();
+            return ServiceInputValidDataType.DOUBLE;
         } else if (LocalDateCell.class.equals(dataTypeCellClass)) {
-            return new ServiceInputLocalDateDataType();
+            return ServiceInputValidDataType.LOCAL_DATE;
         } else {
             throw new InvalidSettingsException("Unsupported data type: \"" + dataType + "\"");
         }
