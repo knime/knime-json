@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-in.png" type="QuickForm"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>Service Table Input</name>
+
+	<shortDescription>
+        Injects a table to the workflow.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+		
+			This node allows injecting a table from outside of the workflow, e.g. via the advanced batch executor,a server-exposed
+			workflow or the call workflow(local/remote) nodes. The injected table can contain columns of types 
+			<i>string</i>, <i>int</i>, <i>double</i>, <i>long</i>, <i>boolean</i>, <i>localdate</i>, <i>localdatetime</i> and <i>zoneddatetime</i>.<br/>
+			<br/>
+			If a data table is connected to the optional input, the node will simply forward this table.<br/>
+			If no input is given, the node will output the following <b>default table</b>:<br/>
+		
+			<table>
+				<tr><th>column-string</th><th>column-int</th><th>column-double</th><th>column-long</th><th>column-long</th><th>column-localdate</th><th>column-localdatetime</th><th>column-zoneddatetime</th></tr>
+				<tr><td>value1</td><td>1</td><td>1.5</td><td>1000</td><td>true</td><td>2018-03-27</td><td>2018-03-27T08:30:45.111</td><td>2018-03-27T08:30:45.111+01:00[Europe/Paris]</td></tr>
+				<tr><td>value2</td><td>2</td><td>2.5</td><td>2000</td><td>false</td><td>2018-03-28</td><td>2018-03-28T08:30:45.111</td><td>2018-03-28T08:30:45.111+01:00[Europe/Paris]</td></tr>
+			</table>
+		
+		</intro>
+
+        <option name="Parameter name">
+            A unique name for the input parameter. This name is exposed in the REST interface and in the Call
+            Workflow node.
+        </option>
+
+        <option name="Description">
+            A description for the input parameter. The description is shown in the API specification of the REST
+            interface.
+        </option>
+	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Any input table">
+			An optional input that is directly forwarded to the output of the node. 
+		</inPort>
+	
+		<outPort index="0" name="The injected table">
+			The injected table, default table if no table has been injected.
+		</outPort>
+	</ports>
+</knimeNode>

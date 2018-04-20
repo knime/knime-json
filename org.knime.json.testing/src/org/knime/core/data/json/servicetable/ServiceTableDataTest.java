@@ -46,83 +46,98 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
+import org.knime.core.data.json.servicetable.ServiceTableData;
+import org.knime.core.data.json.servicetable.ServiceTableRow;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputTableSpecTest {
+public class ServiceTableDataTest {
 
     /**
-     * Checks that a single column table spec is correctly serialized.
+     * Checks that a table containing a single row is correctly serialized to json.
      *
      * @throws JsonProcessingException
      */
     @Test
-    public void testSerializingSingleColumnTableSpec() throws JsonProcessingException {
-        ServiceInputColumnSpec serviceInputColumnSpec = new ServiceInputColumnSpec("column-string", "string");
-        ServiceInputTableSpec tableSpec = new ServiceInputTableSpec(Arrays.asList(serviceInputColumnSpec));
+    public void testSerializingASingleRowTable() throws JsonProcessingException {
+        ServiceTableRow tableRow = new ServiceTableRow(Arrays.asList("value1", "value2"));
+        ServiceTableData tableData = new ServiceTableData(Arrays.asList(tableRow));
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
-        String json = objectMapper.writeValueAsString(tableSpec);
+        String json = objectMapper.writeValueAsString(tableData);
 
-        assertEquals("{\"table-spec\":[{\"column-string\":\"string\"}]}", json);
+        assertEquals("[[\"value1\",\"value2\"]]", json);
     }
 
     /**
-     * Checks that a multiple column table spec is correctly serialized.
+     * Checks that a table containing multiple rows is correctly serialized to json.
      *
      * @throws JsonProcessingException
      */
     @Test
-    public void testSerializingMultipleColumnTableSpecs() throws JsonProcessingException {
-        ServiceInputColumnSpec stringColumnSpec = new ServiceInputColumnSpec("column-string", "string");
-        ServiceInputColumnSpec doubleColumnSpec = new ServiceInputColumnSpec("column-double", "double");
-        ServiceInputTableSpec tableSpec = new ServiceInputTableSpec(Arrays.asList(stringColumnSpec, doubleColumnSpec));
+    public void testSerializingMultipleRowsTable() throws JsonProcessingException {
+        ServiceTableRow tableRow1 = new ServiceTableRow(Arrays.asList("value1", 1));
+        ServiceTableRow tableRow2 = new ServiceTableRow(Arrays.asList(12, 3.5));
+        ServiceTableData tableData = new ServiceTableData(Arrays.asList(tableRow1, tableRow2));
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
-        String json = objectMapper.writeValueAsString(tableSpec);
+        String json = objectMapper.writeValueAsString(tableData);
 
-        assertEquals("{\"table-spec\":[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]}", json);
+        assertEquals("[[\"value1\",1],[12,3.5]]", json);
     }
 
     /**
-     * Checks that a json representation of a multiple column table spec is correctly deserialized.
+     * Checks that a json representing a table with multiple rows with multiple values
+     * is correctly deserialized.
      *
      * @throws JsonParseException
      * @throws JsonMappingException
      * @throws IOException
      */
     @Test
-    public void testDeserializingMultipleColumnSpecs() throws JsonParseException, JsonMappingException, IOException {
-        String json = "{\"table-spec\":[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]}";
-
+    public void testDeserializeJson() throws JsonParseException, JsonMappingException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true);
+        ServiceTableData table = objectMapper.readValue("[[\"value1\",1],[12,3.5]]", ServiceTableData.class);
 
-        TypeReference<ServiceInputTableSpec> typeReference = new TypeReference<ServiceInputTableSpec>() {};
-        ServiceInputTableSpec tableSpec = objectMapper.readValue(json, typeReference);
+        List<ServiceTableRow> tableRows = table.getServiceInputTableRows();
+        assertEquals("value1", tableRows.get(0).getDataCellObjects().get(0));
+        assertEquals(1, tableRows.get(0).getDataCellObjects().get(1));
+        assertEquals(12, tableRows.get(1).getDataCellObjects().get(0));
+        assertEquals(3.5, tableRows.get(1).getDataCellObjects().get(1));
+    }
 
-        assertEquals(new ServiceInputColumnSpec("column-string", "string"), tableSpec.getServiceInputColumnSpecs().get(0));
-        assertEquals(new ServiceInputColumnSpec("column-double", "double"), tableSpec.getServiceInputColumnSpecs().get(1));
+    /**
+     * Checks that a json remains the same after having been deserialized and then serialized.
+     *
+     * @throws JsonParseException
+     * @throws JsonMappingException
+     * @throws IOException
+     */
+    @Test
+    public void testDeserializingAndThenSerializing() throws JsonParseException, JsonMappingException, IOException {
+        String json = "[[\"value1\",1],[12,3.5]]";
+        ObjectMapper objectMapper = new ObjectMapper();
+        ServiceTableData table = objectMapper.readValue(json, ServiceTableData.class);
+
+        String serializedJson = objectMapper.writeValueAsString(table);
+
+        assertEquals(json, serializedJson);
     }
 
 }

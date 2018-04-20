@@ -44,54 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 11, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable.validdatatypes;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import org.junit.Test;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.core.data.DataCell;
+import org.knime.core.data.DataType;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.node.InvalidSettingsException;
 
 /**
- * Test cases for serializing and deserializing column specs to or from json.
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputColumnSpecTest {
+public class ServiceInputDoubleParser implements ServiceInputCellParser {
 
     /**
-     * Checks that a column spec is correctly serialized.
-     *
-     * @throws JsonProcessingException
+     * The concrete type of this implementation.
      */
-    @Test
-    public void testSerializeColumnSpec() throws JsonProcessingException {
-        ServiceInputColumnSpec serviceInputColumnSpec = new ServiceInputColumnSpec("column-string", "string");
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(serviceInputColumnSpec);
-
-        assertEquals("{\"column-string\":\"string\"}", json);
-    }
+    public static final DataType DATA_TYPE = DoubleCell.TYPE;
 
     /**
-     * Checks that a column spec is correctly deserialized.
-     *
-     * @throws IOException
+     * {@inheritDoc}
      */
-    @Test
-    public void testDeserializeColumnSpec() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        TypeReference<ServiceInputColumnSpec> typeReference = new TypeReference<ServiceInputColumnSpec>() {};
-        ServiceInputColumnSpec serviceInputColumnSpec = objectMapper.readValue("{\"column-string\":\"string\"}", typeReference);
-
-        assertEquals("column-string", serviceInputColumnSpec.getName());
-        assertEquals("string", serviceInputColumnSpec.getType());
+    @Override
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof Double) {
+            return new DoubleCell((Double) cellObject);
+        } else {
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+        }
     }
 
 }

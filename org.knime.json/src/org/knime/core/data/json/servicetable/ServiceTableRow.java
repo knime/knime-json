@@ -44,27 +44,88 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 11, 2018 (Tobias Urhaug): created
+ *   Apr 6, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
-import org.knime.core.data.DataCell;
-import org.knime.core.node.InvalidSettingsException;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- *
+ * Representation of a Table Row containing Data Cells of the generic type Object.
+ * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug
  */
-public interface ServiceInputCellParser {
+public class ServiceTableRow {
+
+    private final List<Object> m_dataCells;
 
     /**
-     * Parses the given cell object to a data cell of the type of the implementing parser.
+     * Constructs a new data row containing the input data cells.
      *
-     * @param cellObject
-     * @return DataCell
-     * @throws InvalidSettingsException if the input can not be parsed to the implementing parsers type
+     * @param dataCells the data cells of this data row
      */
-    public DataCell parse(final Object cellObject) throws InvalidSettingsException;
+    @JsonCreator
+    public ServiceTableRow(final List<Object> dataCells) {
+        m_dataCells = dataCells;
+    }
+
+    /**
+     * Gets the data cells in this data row.
+     *
+     * @return the data cells of this table row
+     */
+    @JsonValue
+    public List<Object> getDataCellObjects() {
+        return m_dataCells;
+    }
+
+    /**
+     * The number of cells in this data row.
+     *
+     * @return the size of this table row
+     */
+    public int size() {
+        return m_dataCells.size();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((m_dataCells == null) ? 0 : m_dataCells.hashCode());
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ServiceTableRow other = (ServiceTableRow)obj;
+        if (m_dataCells == null) {
+            if (other.m_dataCells != null) {
+                return false;
+            }
+        } else if (!m_dataCells.equals(other.m_dataCells)) {
+            return false;
+        }
+        return true;
+    }
 
 }

@@ -44,39 +44,106 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 11, 2018 (Tobias Urhaug): created
+ *   Apr 9, 2018 (Tobias Urhaug): created
  */
 package org.knime.json.node.servicein;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import org.knime.core.data.DataCell;
-import org.knime.core.data.DataType;
-import org.knime.core.data.time.localdate.LocalDateCellFactory;
-import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.data.json.servicetable.ServiceTable;
+import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
+import org.knime.core.data.json.servicetable.ServiceTableData;
+import org.knime.core.data.json.servicetable.ServiceTableRow;
+import org.knime.core.data.json.servicetable.ServiceTableSpec;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputLocalDateParser implements ServiceInputCellParser {
+public class ServiceTableBuilder {
+
+    private List<ServiceTableColumnSpec> m_columnSpecs;
+    private List<ServiceTableRow> m_tableRows;
 
     /**
-     * The concrete type of this implementation.
+     *
      */
-    public static final DataType DATA_TYPE = LocalDateCellFactory.TYPE;
+    public ServiceTableBuilder() {
+        m_columnSpecs = new ArrayList<>();
+        m_tableRows = new ArrayList<>();
+    }
 
     /**
-     * {@inheritDoc}
+     * Adds a table spec to the table.
+     *
+     * @param columnName
+     * @param columnType
+     * @return this factory
      */
-    @Override
-    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
-        if (cellObject instanceof String) {
-            LocalDate.parse((String) cellObject);
-            return LocalDateCellFactory.create(LocalDate.parse((String) cellObject));
-        } else {
-            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+    public ServiceTableBuilder withColumnSpec(final String columnName, final String columnType) {
+        m_columnSpecs.add(new ServiceTableColumnSpec(columnName, columnType));
+        return this;
+    }
+
+    /**
+     * Adds a null table spec to the service input.
+     *
+     * @return this factory
+     */
+    public ServiceTableBuilder withNullTableSpec() {
+        m_columnSpecs = null;
+        return this;
+    }
+
+    /**
+     * Adds table specs to the table.
+     *
+     * @param serviceInputColumnSpecs
+     * @return this factory
+     */
+    public ServiceTableBuilder withColumnSpecs(final List<ServiceTableColumnSpec> serviceInputColumnSpecs) {
+        m_columnSpecs.addAll(serviceInputColumnSpecs);
+        return this;
+    }
+
+    /**
+     * Adds a row to the table.
+     *
+     * @param tableRow
+     * @return this factory
+     */
+    public ServiceTableBuilder withTableRow(final Object... tableRow) {
+        m_tableRows.add(new ServiceTableRow(Arrays.asList(tableRow)));
+        return this;
+    }
+
+    /**
+     * Adds a null table data to the service input.
+     *
+     * @return this factory
+     */
+    public ServiceTableBuilder withNullTableData() {
+        m_tableRows = null;
+        return this;
+    }
+
+    /**
+     * Builds a Service Input object.
+     *
+     * @return a Service Input object with the factory state
+     */
+    public ServiceTable build() {
+        ServiceTableSpec tableSpec = null;
+        if (m_columnSpecs != null) {
+            tableSpec = new ServiceTableSpec(m_columnSpecs);
         }
+        ServiceTableData tableData = null;
+        if (m_tableRows != null) {
+            tableData = new ServiceTableData(m_tableRows);
+        }
+        return new ServiceTable(tableSpec, tableData);
     }
 
 }

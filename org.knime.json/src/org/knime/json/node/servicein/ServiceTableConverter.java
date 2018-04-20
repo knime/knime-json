@@ -57,6 +57,12 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
+import org.knime.core.data.json.servicetable.ServiceTable;
+import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
+import org.knime.core.data.json.servicetable.ServiceTableData;
+import org.knime.core.data.json.servicetable.ServiceTableRow;
+import org.knime.core.data.json.servicetable.ServiceTableSpec;
+import org.knime.core.data.json.servicetable.validdatatypes.ServiceInputValidDataTypeFactory;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
@@ -69,7 +75,7 @@ import org.knime.core.util.UniqueNameGenerator;
  *
  * @author Tobias Urhaug
  */
-final class ServiceInputToTable {
+final class ServiceTableConverter {
 
     /**
      * Creates a buffered data table of the service input.
@@ -79,7 +85,7 @@ final class ServiceInputToTable {
      * @return a BufferedDataTable[] from the service input
      * @throws InvalidSettingsException
      */
-    public static BufferedDataTable[] toBufferedDataTable(final ServiceInput serviceInput, final ExecutionContext exec)
+    public static BufferedDataTable[] toBufferedDataTable(final ServiceTable serviceInput, final ExecutionContext exec)
             throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(serviceInput, "Service input cannot be null");
         BufferedDataContainer dataContainer = exec.createDataContainer(createTableSpec(serviceInput));
@@ -88,8 +94,8 @@ final class ServiceInputToTable {
         return new BufferedDataTable[]{dataContainer.getTable()};
     }
 
-    public static DataTableSpec createTableSpec(final ServiceInput serviceInput) throws InvalidSettingsException {
-        ServiceInputTableSpec tableSpec =
+    public static DataTableSpec createTableSpec(final ServiceTable serviceInput) throws InvalidSettingsException {
+        ServiceTableSpec tableSpec =
             CheckUtils.checkSettingNotNull(serviceInput.getServiceInputTableSpec(), "table spec cannot be null");
         int size = tableSpec.size();
         String[] columnNames = new String[size];
@@ -97,7 +103,7 @@ final class ServiceInputToTable {
 
         UniqueNameGenerator uniqueNameGenerator = new UniqueNameGenerator(Collections.emptySet());
         for (int i = 0; i < size; i++) {
-            ServiceInputColumnSpec serviceInputColumnSpec = tableSpec.getServiceInputColumnSpecs().get(i);
+            ServiceTableColumnSpec serviceInputColumnSpec = tableSpec.getServiceInputColumnSpecs().get(i);
             columnNames[i] = uniqueNameGenerator.newName(serviceInputColumnSpec.getName());
             String columnType = serviceInputColumnSpec.getType();
             columnTypes[i] = ServiceInputValidDataTypeFactory.of(columnType).getDataType();
@@ -107,18 +113,17 @@ final class ServiceInputToTable {
         return new DataTableSpec(columnSpec);
     }
 
-    private static void addDataRows(final BufferedDataContainer dataContainer, final ServiceInput serviceInput)
+    private static void addDataRows(final BufferedDataContainer dataContainer, final ServiceTable serviceInput)
             throws InvalidSettingsException {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
-        ServiceInputTableData tableData = serviceInput.getServiceInputTableData();
-        for (ServiceInputTableRow tableRow : tableData.getServiceInputTableRows()) {
-            dataContainer
-                .addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec)));
+        ServiceTableData tableData = serviceInput.getServiceInputTableData();
+        for (ServiceTableRow tableRow : tableData.getServiceInputTableRows()) {
+            dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec)));
         }
     }
 
-    private static DataCell[] getDataCells(final ServiceInputTableRow tableRow, final DataTableSpec tableSpec)
+    private static DataCell[] getDataCells(final ServiceTableRow tableRow, final DataTableSpec tableSpec)
         throws InvalidSettingsException {
         DataCell[] dataCells = new DataCell[tableRow.size()];
         List<Object> cells = tableRow.getDataCellObjects();

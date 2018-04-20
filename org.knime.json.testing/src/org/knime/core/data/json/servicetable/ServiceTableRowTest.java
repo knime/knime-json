@@ -46,7 +46,7 @@
  * History
  *   Apr 6, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
 import static org.junit.Assert.assertEquals;
 
@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.knime.core.data.json.servicetable.ServiceTableRow;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -64,7 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputTableRowTest {
+public class ServiceTableRowTest {
 
     /**
      * Checks that a single string cell in a table row is correctly serialized to json.
@@ -73,7 +74,7 @@ public class ServiceInputTableRowTest {
      */
     @Test
     public void testSerializingSingleStringCell() throws JsonProcessingException {
-        ServiceInputTableRow tableRow = new ServiceInputTableRow(Arrays.asList("string-value"));
+        ServiceTableRow tableRow = new ServiceTableRow(Arrays.asList("string-value"));
         String json = new ObjectMapper().writeValueAsString(tableRow);
         assertEquals("[\"string-value\"]", json);
     }
@@ -85,7 +86,7 @@ public class ServiceInputTableRowTest {
      */
     @Test
     public void testSerializingMultipleStringCells() throws JsonProcessingException {
-        ServiceInputTableRow tableRow = new ServiceInputTableRow(Arrays.asList("value1", "value2"));
+        ServiceTableRow tableRow = new ServiceTableRow(Arrays.asList("value1", "value2"));
         String json = new ObjectMapper().writeValueAsString(tableRow);
         assertEquals("[\"value1\",\"value2\"]", json);
     }
@@ -97,7 +98,7 @@ public class ServiceInputTableRowTest {
      */
     @Test
     public void testSerializingSingleIntegerCell() throws JsonProcessingException {
-        ServiceInputTableRow tableRow = new ServiceInputTableRow(Arrays.asList(1));
+        ServiceTableRow tableRow = new ServiceTableRow(Arrays.asList(1));
         String json = new ObjectMapper().writeValueAsString(tableRow);
         assertEquals("[1]", json);
     }
@@ -109,7 +110,7 @@ public class ServiceInputTableRowTest {
      */
     @Test
     public void testSerializingSingleDoubleCell() throws JsonProcessingException {
-        ServiceInputTableRow tableRow = new ServiceInputTableRow(Arrays.asList(1.5));
+        ServiceTableRow tableRow = new ServiceTableRow(Arrays.asList(1.5));
         String json = new ObjectMapper().writeValueAsString(tableRow);
         assertEquals("[1.5]", json);
     }
@@ -121,7 +122,7 @@ public class ServiceInputTableRowTest {
      */
     @Test
     public void testSerializingMultipleCellsOfDifferentTypes() throws JsonProcessingException {
-        ServiceInputTableRow tableRow = new ServiceInputTableRow(Arrays.asList("string-value", 42, 1.7));
+        ServiceTableRow tableRow = new ServiceTableRow(Arrays.asList("string-value", 42, 1.7));
         String json = new ObjectMapper().writeValueAsString(tableRow);
         assertEquals("[\"string-value\",42,1.7]", json);
     }
@@ -136,7 +137,7 @@ public class ServiceInputTableRowTest {
     @Test
     public void testDeserializingMultipleValues() throws JsonParseException, JsonMappingException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        ServiceInputTableRow tableRow = objectMapper.readValue("[\"string-value\",42,1.7]", ServiceInputTableRow.class);
+        ServiceTableRow tableRow = objectMapper.readValue("[\"string-value\",42,1.7]", ServiceTableRow.class);
 
         assertEquals("string-value", tableRow.getDataCellObjects().get(0));
         assertEquals(42, tableRow.getDataCellObjects().get(1));

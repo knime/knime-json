@@ -44,43 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 11, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable.validdatatypes;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.knime.core.data.DataCell;
+import org.knime.core.data.DataType;
+import org.knime.core.data.def.IntCell;
+import org.knime.core.node.InvalidSettingsException;
 
 /**
- * Representation of Table Data containing multiple Table Rows.
- * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputTableData {
-
-    private final List<ServiceInputTableRow> m_tableRows;
+public class ServiceInputIntegerParser implements ServiceInputCellParser {
 
     /**
-     * Constructs a table of the given rows.
-     *
-     * @param tableRows rows in the table
+     * The concrete type of this implementation.
      */
-    @JsonCreator
-    public ServiceInputTableData(final List<ServiceInputTableRow> tableRows) {
-        m_tableRows = tableRows;
-    }
+    public static final DataType DATA_TYPE = IntCell.TYPE;
 
     /**
-     * Gets the rows of this table.
-     *
-     * @return the rows in this table
+     * {@inheritDoc}
      */
-    @JsonValue
-    public List<ServiceInputTableRow> getServiceInputTableRows() {
-        return m_tableRows;
+    @Override
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof Integer) {
+            return new IntCell((Integer) cellObject);
+        } else {
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+        }
     }
 
 }

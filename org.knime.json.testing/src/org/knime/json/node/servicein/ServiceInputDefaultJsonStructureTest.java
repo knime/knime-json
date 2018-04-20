@@ -44,20 +44,26 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 20, 2018 (Tobias Urhaug): created
  */
 package org.knime.json.node.servicein;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
+
+import javax.json.JsonValue;
 
 import org.junit.Test;
+import org.knime.core.data.json.servicetable.ServiceTable;
+import org.knime.core.data.json.servicetable.ServiceTableData;
+import org.knime.core.data.json.servicetable.ServiceTableRow;
+import org.knime.core.data.json.servicetable.ServiceTableSpec;
+import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -65,77 +71,57 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputTableDataTest {
+public class ServiceInputDefaultJsonStructureTest {
 
     /**
-     * Checks that a table containing a single row is correctly serialized to json.
-     *
-     * @throws JsonProcessingException
-     */
-    @Test
-    public void testSerializingASingleRowTable() throws JsonProcessingException {
-        ServiceInputTableRow tableRow = new ServiceInputTableRow(Arrays.asList("value1", "value2"));
-        ServiceInputTableData tableData = new ServiceInputTableData(Arrays.asList(tableRow));
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(tableData);
-
-        assertEquals("[[\"value1\",\"value2\"]]", json);
-    }
-
-    /**
-     * Checks that a table containing multiple rows is correctly serialized to json.
-     *
-     * @throws JsonProcessingException
-     */
-    @Test
-    public void testSerializingMultipleRowsTable() throws JsonProcessingException {
-        ServiceInputTableRow tableRow1 = new ServiceInputTableRow(Arrays.asList("value1", 1));
-        ServiceInputTableRow tableRow2 = new ServiceInputTableRow(Arrays.asList(12, 3.5));
-        ServiceInputTableData tableData = new ServiceInputTableData(Arrays.asList(tableRow1, tableRow2));
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(tableData);
-
-        assertEquals("[[\"value1\",1],[12,3.5]]", json);
-    }
-
-    /**
-     * Checks that a json representing a table with multiple rows with multiple values
-     * is correctly deserialized.
+     * Checks that the table spec of the default json structure is correctly deserialized.
      *
      * @throws JsonParseException
      * @throws JsonMappingException
      * @throws IOException
      */
     @Test
-    public void testDeserializeJson() throws JsonParseException, JsonMappingException, IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ServiceInputTableData table = objectMapper.readValue("[[\"value1\",1],[12,3.5]]", ServiceInputTableData.class);
+    public void testDeserializeDefaultJsonStructureTableSpec() throws JsonParseException, JsonMappingException, IOException {
+        String defaultJsonStructure = ServiceTableInputDefaultJsonStructure.asString();
 
-        List<ServiceInputTableRow> tableRows = table.getServiceInputTableRows();
-        assertEquals("value1", tableRows.get(0).getDataCellObjects().get(0));
-        assertEquals(1, tableRows.get(0).getDataCellObjects().get(1));
-        assertEquals(12, tableRows.get(1).getDataCellObjects().get(0));
-        assertEquals(3.5, tableRows.get(1).getDataCellObjects().get(1));
+        ServiceTable serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ServiceTable.class);
+
+        ServiceTableSpec tableSpec = serviceInput.getServiceInputTableSpec();
+        assertTrue(tableSpec.contains("column-string", "string"));
+        assertTrue(tableSpec.contains("column-int", "int"));
+        assertTrue(tableSpec.contains("column-double", "double"));
+        assertTrue(tableSpec.contains("column-long", "long"));
+        assertTrue(tableSpec.contains("column-boolean", "boolean"));
+        assertTrue(tableSpec.contains("column-localdate", "localdate"));
+        assertTrue(tableSpec.contains("column-localdatetime", "localdatetime"));
+        assertTrue(tableSpec.contains("column-zoneddatetime", "zoneddatetime"));
     }
 
     /**
-     * Checks that a json remains the same after having been deserialized and then serialized.
+     * Checks that the table data of the default json structure is correctly deserialized.
      *
-     * @throws JsonParseException
-     * @throws JsonMappingException
      * @throws IOException
+     * @throws JsonMappingException
+     * @throws JsonParseException
+     *
      */
     @Test
-    public void testDeserializingAndThenSerializing() throws JsonParseException, JsonMappingException, IOException {
-        String json = "[[\"value1\",1],[12,3.5]]";
+    public void testDeserializeDefaultJsonStructureTableData() throws JsonParseException, JsonMappingException, IOException {
+        String defaultJsonStructure = ServiceTableInputDefaultJsonStructure.asString();
+
+        JsonValue parseJSONValue = JSONUtil.parseJSONValue(defaultJsonStructure);
+        System.out.println(JSONUtil.toPrettyJSONString(parseJSONValue));
+
         ObjectMapper objectMapper = new ObjectMapper();
-        ServiceInputTableData table = objectMapper.readValue(json, ServiceInputTableData.class);
+        ServiceTable serviceInput = objectMapper.readValue(defaultJsonStructure, ServiceTable.class);
 
-        String serializedJson = objectMapper.writeValueAsString(table);
+        ServiceTableRow firstExpectedRow = new ServiceTableRow(Arrays.asList("value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"));
+        ServiceTableRow secondExpectedRow =new ServiceTableRow(Arrays.asList("value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"));
 
-        assertEquals(json, serializedJson);
+        ServiceTableData tableData = serviceInput.getServiceInputTableData();
+
+        assertEquals(firstExpectedRow, tableData.getServiceInputTableRows().get(0));
+        assertEquals(secondExpectedRow, tableData.getServiceInputTableRows().get(1));
     }
 
 }

@@ -44,88 +44,53 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 6, 2018 (Tobias Urhaug): created
+ *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.IOException;
+
+import org.junit.Test;
+import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Representation of a Table Row containing Data Cells of the generic type Object.
- * Can be serialized/deserialized to/from json with jackson.
+ * Test cases for serializing and deserializing column specs to or from json.
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputTableRow {
-
-    private final List<Object> m_dataCells;
+public class ServiceColumnSpecTest {
 
     /**
-     * Constructs a new data row containing the input data cells.
+     * Checks that a column spec is correctly serialized.
      *
-     * @param dataCells the data cells of this data row
+     * @throws JsonProcessingException
      */
-    @JsonCreator
-    public ServiceInputTableRow(final List<Object> dataCells) {
-        m_dataCells = dataCells;
+    @Test
+    public void testSerializeColumnSpec() throws JsonProcessingException {
+        ServiceTableColumnSpec serviceInputColumnSpec = new ServiceTableColumnSpec("column-string", "string");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(serviceInputColumnSpec);
+
+        assertEquals("{\"column-string\":\"string\"}", json);
     }
 
     /**
-     * Gets the data cells in this data row.
+     * Checks that a column spec is correctly deserialized.
      *
-     * @return the data cells of this table row
+     * @throws IOException
      */
-    @JsonValue
-    public List<Object> getDataCellObjects() {
-        return m_dataCells;
-    }
+    @Test
+    public void testDeserializeColumnSpec() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ServiceTableColumnSpec serviceInputColumnSpec = objectMapper.readValue("{\"column-string\":\"string\"}", ServiceTableColumnSpec.class);
 
-    /**
-     * The number of cells in this data row.
-     *
-     * @return the size of this table row
-     */
-    public int size() {
-        return m_dataCells.size();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((m_dataCells == null) ? 0 : m_dataCells.hashCode());
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ServiceInputTableRow other = (ServiceInputTableRow)obj;
-        if (m_dataCells == null) {
-            if (other.m_dataCells != null) {
-                return false;
-            }
-        } else if (!m_dataCells.equals(other.m_dataCells)) {
-            return false;
-        }
-        return true;
+        assertEquals("column-string", serviceInputColumnSpec.getName());
+        assertEquals("string", serviceInputColumnSpec.getType());
     }
 
 }

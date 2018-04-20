@@ -44,65 +44,58 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 5, 2018 (Tobias Urhaug): created
+ *   Mar 29, 2018 (Tobias Urhaug): created
  */
 package org.knime.json.node.servicein;
 
-import org.knime.core.data.DataCell;
-import org.knime.core.data.DataType;
-import org.knime.core.data.def.DoubleCell;
-import org.knime.core.data.def.IntCell;
-import org.knime.core.data.def.StringCell;
-import org.knime.core.data.time.localdate.LocalDateCell;
-import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
 
 /**
- * Factory class for valid service input types.
  *
  * @author Tobias Urhaug
  */
-public abstract class ServiceInputValidDataTypeFactory {
+public class ServiceTableInputNodeFactory extends NodeFactory<ServiceTableInputNodeModel> {
 
     /**
-     * Gets the DataType
-     *
-     * @param dataType type that should be converted
-     * @return ServiceInputValidDataType object corresponding to the input data type
-     * @throws InvalidSettingsException
+     * Constructor for the node model.
      */
-    public static ServiceInputValidDataType of(final String dataType) throws InvalidSettingsException {
-        switch (dataType) {
-            case "string" : return ServiceInputValidDataType.STRING;
-            case "int" : return ServiceInputValidDataType.INTEGER;
-            case "double" : return ServiceInputValidDataType.DOUBLE;
-            case "localdate" : return ServiceInputValidDataType.LOCAL_DATE;
-            default : throw new InvalidSettingsException("Unsupported data type: \"" + dataType + "\"");
-        }
+    @Override
+    public ServiceTableInputNodeModel createNodeModel() {
+        return new ServiceTableInputNodeModel();
     }
 
     /**
-     * Factory method for creating a ServiceInputValidDataType object of
-     * the given data type.
-     *
-     * @param dataType type that should be converted
-     * @return ServiceInputValidDataType object corresponding to the input data type
-     * @throws InvalidSettingsException
+     * {@inheritDoc}
      */
-    public static ServiceInputValidDataType of(final DataType dataType) throws InvalidSettingsException {
-        Class<? extends DataCell> dataTypeCellClass = dataType.getCellClass();
-        assert dataTypeCellClass != null;
-
-        if (StringCell.class.equals(dataTypeCellClass)) {
-            return ServiceInputValidDataType.STRING;
-        } else if (IntCell.class.equals(dataTypeCellClass)) {
-            return ServiceInputValidDataType.INTEGER;
-        } else if (DoubleCell.class.equals(dataTypeCellClass)) {
-            return ServiceInputValidDataType.DOUBLE;
-        } else if (LocalDateCell.class.equals(dataTypeCellClass)) {
-            return ServiceInputValidDataType.LOCAL_DATE;
-        } else {
-            throw new InvalidSettingsException("Unsupported data type: \"" + dataType + "\"");
-        }
+    @Override
+    public int getNrNodeViews() {
+        return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeView<ServiceTableInputNodeModel> createNodeView(final int viewIndex, final ServiceTableInputNodeModel nodeModel) {
+        throw new UnsupportedOperationException("No views! " + viewIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasDialog() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return new ServiceTableInputNodeDialog();
+    }
 }
+

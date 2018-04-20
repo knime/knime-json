@@ -44,76 +44,62 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 17, 2018 (Tobias Urhaug): created
+ *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
-import org.knime.core.data.DataCell;
-import org.knime.core.data.DataType;
-import org.knime.core.data.def.DoubleCell;
-import org.knime.core.data.def.IntCell;
-import org.knime.core.data.def.StringCell;
-import org.knime.core.data.time.localdate.LocalDateCellFactory;
-import org.knime.core.node.InvalidSettingsException;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Enum holding all valid data types for the service in node.
- * A valid data type contains its type and a parser that parses a given object if possible.
+ * Representation of a Table Spec.
+ * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug
  */
-public enum ServiceInputValidDataType {
+public class ServiceTableSpec {
+
+    private final List<ServiceTableColumnSpec> m_columnSpecs;
 
     /**
+     * Constructs a TableSpec from the given columnSpecs.
      *
+     * @param serviceInputColumnSpecs
      */
-    STRING(StringCell.TYPE, new ServiceInputStringParser()),
-    /**
-     *
-     */
-    INTEGER(IntCell.TYPE, new ServiceInputIntegerParser()),
-    /**
-     *
-     */
-    DOUBLE(DoubleCell.TYPE, new ServiceInputDoubleParser()),
-    /**
-     *
-     */
-    LOCAL_DATE(LocalDateCellFactory.TYPE, new ServiceInputLocalDateParser());
-
-
-    private final DataType m_dataType;
-    private final ServiceInputCellParser m_objectParser;
-
-    /**
-     * Constructor for the data types.
-     *
-     * @param m_dataType
-     * @param m_objectParser
-     */
-    private ServiceInputValidDataType(final DataType dataType, final ServiceInputCellParser objectParser) {
-        this.m_dataType = dataType;
-        this.m_objectParser = objectParser;
+    @JsonCreator
+    public ServiceTableSpec(final List<ServiceTableColumnSpec> serviceInputColumnSpecs) {
+        m_columnSpecs = serviceInputColumnSpecs;
     }
 
     /**
-     * Returns the data type of the concrete instance.
+     * Returns the list of column specs for this table spec.
      *
-     * @return the data type of the concrete instance
+     * @return list of column specs
      */
-    public DataType getDataType() {
-        return m_dataType;
+    @JsonValue
+    public List<ServiceTableColumnSpec> getServiceInputColumnSpecs() {
+        return m_columnSpecs;
     }
 
     /**
-     * Parses the input object to a data cell of the concrete instance.
+     * Checks if a given column name/type pair is contained in this table spec.
      *
-     * @param cellObject
-     * @return DataCell parsed data cell of the input object
-     * @throws InvalidSettingsException if the input object cannot be parsed
+     * @param columnName
+     * @param columnType
+     * @return true if this table spec contains the name/type pair
      */
-    public DataCell parseObject(final Object cellObject) throws InvalidSettingsException {
-        return m_objectParser.parse(cellObject);
+    public boolean contains(final String columnName, final String columnType) {
+        return m_columnSpecs.contains(new ServiceTableColumnSpec(columnName, columnType));
     }
 
+    /**
+     * Returns the number of column specs in this table spec.
+     *
+     * @return the number of column specs
+     */
+    public int size() {
+        return m_columnSpecs.size();
+    }
 }

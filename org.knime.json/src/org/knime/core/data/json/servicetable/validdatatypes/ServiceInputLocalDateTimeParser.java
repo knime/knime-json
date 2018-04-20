@@ -44,118 +44,44 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Mar 29, 2018 (Tobias Urhaug): created
+ *   Apr 19, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable.validdatatypes;
 
-import java.io.File;
-import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
-import org.knime.core.node.CanceledExecutionException;
-import org.knime.core.node.ExecutionMonitor;
+import org.knime.core.data.DataCell;
+import org.knime.core.data.DataType;
+import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeModel;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.dialog.ExternalNodeData;
-import org.knime.core.node.dialog.InputNode;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInNodeModel extends NodeModel implements InputNode {
-
+public class ServiceInputLocalDateTimeParser implements ServiceInputCellParser {
 
     /**
-     * TODO TU: Describe
+     * The concrete type of this implementation.
      */
-    protected ServiceInNodeModel() {
-        super(0, 1);
-        // TODO Auto-generated constructor stub
-    }
+    public static final DataType DATA_TYPE = LocalDateTimeCellFactory.TYPE;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ExternalNodeData getInputData() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void reset() {
-        // TODO Auto-generated method stub
-
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof String) {
+            try {
+                LocalDateTime.parse((String) cellObject);
+            } catch (DateTimeParseException  e) {
+                throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"", e);
+            }
+            return LocalDateTimeCellFactory.create(LocalDateTime.parse((String) cellObject));
+        } else {
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+        }
     }
 
 }

@@ -44,112 +44,97 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 17, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable.validdatatypes;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.knime.core.data.DataCell;
+import org.knime.core.data.DataType;
+import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.LongCell;
+import org.knime.core.data.def.StringCell;
+import org.knime.core.data.time.localdate.LocalDateCellFactory;
+import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
+import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCellFactory;
+import org.knime.core.node.InvalidSettingsException;
 
 /**
+ * Enum holding all valid data types for the service in node.
+ * A valid data type contains its type and a parser that parses a given object to the type, if possible,
+ * and throws an exception if the object cannot be parsed.
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputColumnSpec {
-
-    private final Map<String, String> m_columnSpec;
+public enum ServiceInputValidDataType {
 
     /**
-     * @param columnName
-     * @param columnType
-     */
-    public ServiceInputColumnSpec(final String columnName, final String columnType) {
-        m_columnSpec = new HashMap<>();
-        m_columnSpec.put(columnName, columnType);
-    }
-
-    /**
-     * @param columnSpec
-     */
-    @JsonCreator
-    public ServiceInputColumnSpec(final Map<String, String> columnSpec) {
-        m_columnSpec = columnSpec;
-    }
-
-    /**
-     * Gets the column spec.
      *
-     * @return this column spec
      */
-    @JsonValue
-    public Map<String, String> getServiceInputColumnSpec() {
-        return m_columnSpec;
+    STRING(StringCell.TYPE, new ServiceInputStringParser()),
+    /**
+     *
+     */
+    INTEGER(IntCell.TYPE, new ServiceInputIntegerParser()),
+    /**
+     *
+     */
+    DOUBLE(DoubleCell.TYPE, new ServiceInputDoubleParser()),
+    /**
+     *
+     */
+    LONG(LongCell.TYPE, new ServiceInputLongParser()),
+    /**
+     *
+     */
+    BOOLEAN(BooleanCell.TYPE, new ServiceInputBooleanParser()),
+    /**
+     *
+     */
+    LOCAL_DATE(LocalDateCellFactory.TYPE, new ServiceInputLocalDateParser()),
+    /**
+     *
+     */
+    LOCAL_DATE_TIME(LocalDateTimeCellFactory.TYPE, new ServiceInputLocalDateTimeParser()),
+    /**
+     *
+     */
+    ZONED_DATE_TIME(ZonedDateTimeCellFactory.TYPE, new ServiceInputZonedDateTimeParser());
+
+
+    private final DataType m_dataType;
+    private final ServiceInputCellParser m_objectParser;
+
+    /**
+     * Constructor for the data types.
+     *
+     * @param m_dataType
+     * @param m_objectParser
+     */
+    private ServiceInputValidDataType(final DataType dataType, final ServiceInputCellParser objectParser) {
+        this.m_dataType = dataType;
+        this.m_objectParser = objectParser;
     }
 
     /**
-     * Gets the column name of this column spec.
+     * Returns the data type of the concrete instance.
      *
-     * @return the column name
+     * @return the data type of the concrete instance
      */
-    public String getName() {
-        String columnName = null;
-        for (Entry<String,String> spec : m_columnSpec.entrySet()) {
-            columnName = spec.getKey();
-        }
-        return columnName;
+    public DataType getDataType() {
+        return m_dataType;
     }
 
     /**
-     * Gets the column type of this column spec.
+     * Parses the input object to a data cell of the type of the concrete instance.
      *
-     * @return the column type
+     * @param cellObject
+     * @return DataCell parsed data cell of the input object
+     * @throws InvalidSettingsException if the input object cannot be parsed
      */
-    public String getType() {
-        String columnType = null;
-        for (Entry<String,String> spec : m_columnSpec.entrySet()) {
-            columnType = spec.getValue();
-        }
-        return columnType;
+    public DataCell parseObject(final Object cellObject) throws InvalidSettingsException {
+        return m_objectParser.parse(cellObject);
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((m_columnSpec == null) ? 0 : m_columnSpec.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ServiceInputColumnSpec other = (ServiceInputColumnSpec) obj;
-        if (m_columnSpec == null) {
-            if (other.m_columnSpec != null) {
-                return false;
-            }
-        } else if (!m_columnSpec.equals(other.m_columnSpec)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return getName() + ":" + getType();
-    }
-
 
 }

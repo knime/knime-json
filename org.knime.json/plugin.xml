@@ -44,7 +44,7 @@
       </node>
       <node
             category-path="/struct-data/json"
-            factory-class="org.knime.json.node.servicein.ServiceInNodeFactory">
+            factory-class="org.knime.json.node.servicein.ServiceTableInputNodeFactory">
       </node>
    </extension>
    <extension

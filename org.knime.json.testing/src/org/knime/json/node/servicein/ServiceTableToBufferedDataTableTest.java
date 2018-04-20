@@ -65,6 +65,9 @@ import org.knime.core.data.container.ContainerTable;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.servicetable.ServiceTable;
+import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
+import org.knime.core.data.json.servicetable.validdatatypes.ServiceInputValidDataTypeFactory;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DefaultNodeProgressMonitor;
@@ -81,7 +84,7 @@ import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPor
  *
  * @author Tobias Urhaug
  */
-public class ServiceInToTableTest {
+public class ServiceTableToBufferedDataTableTest {
 
     /**
      * Checks that null is not allowed as service input.
@@ -89,7 +92,7 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testNullAsServiceInputIsNotAllowed() throws InvalidSettingsException {
-        ServiceInputToTable.toBufferedDataTable(null, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(null, getTestExecutionContext());
     }
 
     /**
@@ -100,15 +103,15 @@ public class ServiceInToTableTest {
      */
     @Test
     public void testServiceInputWithValidSpecsCreatesTableWithTheSpecs() throws Exception {
-        ServiceInput tableWithSpec = //
-            new ServiceInputBuilder()//
+        ServiceTable tableWithSpec = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withColumnSpec("column-int", "int")//
                 .withColumnSpec("column-double", "double")//
                 .withColumnSpec("column-localdate", "localdate")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
 
         DataTableSpec createdSpecs = dataTable[0].getSpec();
         DataColumnSpec[] expectedColumnSpecs = //
@@ -128,13 +131,13 @@ public class ServiceInToTableTest {
      */
     @Test
     public void testServiceInputWithDupliceSpecNamesAreHandled() throws Exception {
-        ServiceInput tableWithSpec = //
-            new ServiceInputBuilder()//
+        ServiceTable tableWithSpec = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withColumnSpec("column-string", "string")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
         DataTableSpec createdSpecs = dataTable[0].getSpec();
 
         String[] columnNames = createdSpecs.getColumnNames();
@@ -149,12 +152,12 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testServiceInputWithNullTableSpecThrowsException() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withNullTableSpec()//
                 .build();//
 
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -165,18 +168,18 @@ public class ServiceInToTableTest {
      */
     @Test
     public void testServiceInputWithValidDataRowsCreatesTableWithTheRows() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpecs(Arrays.asList(//
-                    new ServiceInputColumnSpec("column-string", "string"), //
-                    new ServiceInputColumnSpec("column-int", "int"), //
-                    new ServiceInputColumnSpec("column-double", "double"), //
-                    new ServiceInputColumnSpec("column-localdate", "localdate")))//
+                    new ServiceTableColumnSpec("column-string", "string"), //
+                    new ServiceTableColumnSpec("column-int", "int"), //
+                    new ServiceTableColumnSpec("column-double", "double"), //
+                    new ServiceTableColumnSpec("column-localdate", "localdate")))//
                 .withTableRow("value1", 123, 4.5, "2018-03-27")//
                 .withTableRow("value2", 432, 0.4, "2018-03-28")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
@@ -198,12 +201,12 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testUnsupportedDataTypeColumnSpecThrowsException() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-unsupported", "not supported type")//
                 .build();//
 
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -213,13 +216,13 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testColumnExpectingStringObjectsThrowsExceptionWhenGivenOtherDataType() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withTableRow(2.0)//
                 .build();//
 
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -229,13 +232,13 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testColumnExpectingDoubleObjectsThrowsExceptionWhenGivenWrongDataType() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-double", "double")//
                 .withTableRow(2)//
                 .build();//
 
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -245,13 +248,13 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testColumnExpectingIntegerObjectsThrowsExceptionWhenGivenWrongDataType() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-int", "int")//
                 .withTableRow("Hello int column!")//
                 .build();//
 
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -261,13 +264,13 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testColumnExpectingLocalDatesThrowsExceptionWhenGivenWrongDataType() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-localdate", "localdate")//
                 .withTableRow(2.4)//
                 .build();//
 
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -277,15 +280,13 @@ public class ServiceInToTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testColumnExpectingLocalDatesThrowsExceptionWhenGivenStringNotRepresentingALocalDate() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-localdate", "localdate")//
                 .withTableRow("this is not a local date!")//
                 .build();//
 
-        // TODO TU: which exception should be thrown here? Date time parsing exception gives better context.
-
-        ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -295,15 +296,15 @@ public class ServiceInToTableTest {
      */
     @Test
     public void testThatInputColumnOrderIsMaintained() throws Exception {
-        ServiceInput serviceInput = //
-            new ServiceInputBuilder()//
+        ServiceTable serviceInput = //
+            new ServiceTableBuilder()//
                 .withColumnSpec("column-int1", "int")//
                 .withColumnSpec("column-int2", "int")//
                 .withColumnSpec("column-int3", "int")//
                 .withTableRow(1, 2, 3)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceInputToTable.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
@@ -312,22 +313,6 @@ public class ServiceInToTableTest {
             assertDataRow(dataRow, 1, 2, 3);
         }
     }
-
-
-
-
-    /*
-     * TODO TU:
-     *
-     * Some interesting test cases
-     *
-     *  - null values / missing values
-     *  - local dates of different valid formats
-     *  - string column type with an input that can be cast to string? Boolean, Integer etc. What should happen??
-     *
-     *
-     *  # go over documentation
-     */
 
     private void assertDataRow(final DataRow actualDataRow, final Object... expectedDataCells) throws InvalidSettingsException {
         assertEquals("Actual row has unexpected size" ,expectedDataCells.length, actualDataRow.getNumCells());

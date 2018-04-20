@@ -46,60 +46,110 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Representation of a Table Spec.
- * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputTableSpec {
+public class ServiceTableColumnSpec {
 
-    private final List<ServiceInputColumnSpec> m_columnSpecs;
-
-    /**
-     * Constructs a TableSpec from the given columnSpecs.
-     *
-     * @param serviceInputColumnSpecs
-     */
-    @JsonCreator
-    public ServiceInputTableSpec(final List<ServiceInputColumnSpec> serviceInputColumnSpecs) {
-        m_columnSpecs = serviceInputColumnSpecs;
-    }
+    private final Map<String, String> m_columnSpec;
 
     /**
-     * Returns the list of column specs for this table spec.
-     *
-     * @return list of column specs
-     */
-    @JsonValue
-    public List<ServiceInputColumnSpec> getServiceInputColumnSpecs() {
-        return m_columnSpecs;
-    }
-
-    /**
-     * Checks if a given column name/type pair is contained in this table spec.
-     *
      * @param columnName
      * @param columnType
-     * @return true if this table spec contains the name/type pair
      */
-    public boolean contains(final String columnName, final String columnType) {
-        return m_columnSpecs.contains(new ServiceInputColumnSpec(columnName, columnType));
+    public ServiceTableColumnSpec(final String columnName, final String columnType) {
+        m_columnSpec = new HashMap<>();
+        m_columnSpec.put(columnName, columnType);
     }
 
     /**
-     * Returns the number of column specs in this table spec.
-     *
-     * @return the number of column specs
+     * @param columnSpec
      */
-    public int size() {
-        return m_columnSpecs.size();
+    @JsonCreator
+    public ServiceTableColumnSpec(final Map<String, String> columnSpec) {
+        m_columnSpec = columnSpec;
     }
+
+    /**
+     * Gets the column spec.
+     *
+     * @return this column spec
+     */
+    @JsonValue
+    public Map<String, String> getServiceInputColumnSpec() {
+        return m_columnSpec;
+    }
+
+    /**
+     * Gets the column name of this column spec.
+     *
+     * @return the column name
+     */
+    public String getName() {
+        String columnName = null;
+        for (Entry<String,String> spec : m_columnSpec.entrySet()) {
+            columnName = spec.getKey();
+        }
+        return columnName;
+    }
+
+    /**
+     * Gets the column type of this column spec.
+     *
+     * @return the column type
+     */
+    public String getType() {
+        String columnType = null;
+        for (Entry<String,String> spec : m_columnSpec.entrySet()) {
+            columnType = spec.getValue();
+        }
+        return columnType;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((m_columnSpec == null) ? 0 : m_columnSpec.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ServiceTableColumnSpec other = (ServiceTableColumnSpec) obj;
+        if (m_columnSpec == null) {
+            if (other.m_columnSpec != null) {
+                return false;
+            }
+        } else if (!m_columnSpec.equals(other.m_columnSpec)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + ":" + getType();
+    }
+
+
 }

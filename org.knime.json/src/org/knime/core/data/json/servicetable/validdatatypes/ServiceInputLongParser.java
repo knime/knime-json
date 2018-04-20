@@ -44,58 +44,37 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Mar 29, 2018 (Tobias Urhaug): created
+ *   Apr 19, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable.validdatatypes;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
+import org.knime.core.data.DataCell;
+import org.knime.core.data.DataType;
+import org.knime.core.data.def.LongCell;
+import org.knime.core.node.InvalidSettingsException;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInNodeFactory extends NodeFactory<ServiceInNodeModel> {
+public class ServiceInputLongParser implements ServiceInputCellParser {
 
     /**
-     * Constructor for the node model.
+     * The concrete type of this implementation.
      */
-    @Override
-    public ServiceInNodeModel createNodeModel() {
-        return new ServiceInNodeModel();
-    }
+    public static final DataType DATA_TYPE = LongCell.TYPE;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int getNrNodeViews() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<ServiceInNodeModel> createNodeView(final int viewIndex, final ServiceInNodeModel nodeModel) {
-        throw new UnsupportedOperationException("No views! " + viewIndex);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new ServiceInNodeDialog();
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof Integer) {
+            return new LongCell(new Long((Integer) cellObject));
+        } else if (cellObject instanceof Long) {
+            return new LongCell((Long) cellObject);
+        } else {
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+        }
     }
 }
-

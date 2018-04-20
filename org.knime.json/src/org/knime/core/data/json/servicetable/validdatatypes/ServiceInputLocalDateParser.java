@@ -44,52 +44,44 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 11, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable.validdatatypes;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
+import org.knime.core.data.DataCell;
+import org.knime.core.data.DataType;
+import org.knime.core.data.time.localdate.LocalDateCellFactory;
+import org.knime.core.node.InvalidSettingsException;
 
 /**
  *
  * @author Tobias Urhaug
  */
-@JsonPropertyOrder({"m_tableSpec", "m_tableData"})
-public class ServiceInput {
-
-    private final ServiceInputTableSpec m_tableSpec;
-    private final ServiceInputTableData m_tableData;
+public class ServiceInputLocalDateParser implements ServiceInputCellParser {
 
     /**
-     * Constructor for the service input.
-     *
-     * @param tableSpec
-     * @param tableData
+     * The concrete type of this implementation.
      */
-    public ServiceInput(
-            @JsonProperty("table-spec") final ServiceInputTableSpec tableSpec,
-            @JsonProperty("table-data") final ServiceInputTableData tableData) {
-        m_tableSpec = tableSpec;
-        m_tableData = tableData;
-    }
+    public static final DataType DATA_TYPE = LocalDateCellFactory.TYPE;
 
     /**
-     * Gets the table spec of this input.
-     * @return the table spec
+     * {@inheritDoc}
      */
-    @JsonProperty("table-spec")
-    public ServiceInputTableSpec getServiceInputTableSpec() {
-        return m_tableSpec;
-    }
-
-    /**
-     * Gets the table data of this input.
-     * @return the table data
-     */
-    @JsonProperty("table-data")
-    public ServiceInputTableData getServiceInputTableData() {
-        return m_tableData;
+    @Override
+    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
+        if (cellObject instanceof String) {
+            try {
+                LocalDate.parse((String) cellObject);
+            } catch (DateTimeParseException  e) {
+                throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"", e);
+            }
+            return LocalDateCellFactory.create(LocalDate.parse((String) cellObject));
+        } else {
+            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+        }
     }
 
 }

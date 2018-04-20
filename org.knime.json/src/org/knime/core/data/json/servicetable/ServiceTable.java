@@ -46,98 +46,50 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputBuilder {
+@JsonPropertyOrder({"m_tableSpec", "m_tableData"})
+public class ServiceTable {
 
-    private List<ServiceInputColumnSpec> m_columnSpecs;
-    private List<ServiceInputTableRow> m_tableRows;
+    private final ServiceTableSpec m_tableSpec;
+    private final ServiceTableData m_tableData;
 
     /**
+     * Constructor for the service input.
      *
+     * @param tableSpec
+     * @param tableData
      */
-    public ServiceInputBuilder() {
-        m_columnSpecs = new ArrayList<>();
-        m_tableRows = new ArrayList<>();
+    public ServiceTable(
+            @JsonProperty("table-spec") final ServiceTableSpec tableSpec,
+            @JsonProperty("table-data") final ServiceTableData tableData) {
+        m_tableSpec = tableSpec;
+        m_tableData = tableData;
     }
 
     /**
-     * Adds a table spec to the table.
-     *
-     * @param columnName
-     * @param columnType
-     * @return this factory
+     * Gets the table spec of this input.
+     * @return the table spec
      */
-    public ServiceInputBuilder withColumnSpec(final String columnName, final String columnType) {
-        m_columnSpecs.add(new ServiceInputColumnSpec(columnName, columnType));
-        return this;
+    @JsonProperty("table-spec")
+    public ServiceTableSpec getServiceInputTableSpec() {
+        return m_tableSpec;
     }
 
     /**
-     * Adds a null table spec to the service input.
-     *
-     * @return this factory
+     * Gets the table data of this input.
+     * @return the table data
      */
-    public ServiceInputBuilder withNullTableSpec() {
-        m_columnSpecs = null;
-        return this;
-    }
-
-    /**
-     * Adds table specs to the table.
-     *
-     * @param serviceInputColumnSpecs
-     * @return this factory
-     */
-    public ServiceInputBuilder withColumnSpecs(final List<ServiceInputColumnSpec> serviceInputColumnSpecs) {
-        m_columnSpecs.addAll(serviceInputColumnSpecs);
-        return this;
-    }
-
-    /**
-     * Adds a row to the table.
-     *
-     * @param tableRow
-     * @return this factory
-     */
-    public ServiceInputBuilder withTableRow(final Object... tableRow) {
-        m_tableRows.add(new ServiceInputTableRow(Arrays.asList(tableRow)));
-        return this;
-    }
-
-    /**
-     * Adds a null table data to the service input.
-     *
-     * @return this factory
-     */
-    public ServiceInputBuilder withNullTableData() {
-        m_tableRows = null;
-        return this;
-    }
-
-    /**
-     * Builds a Service Input object.
-     *
-     * @return a Service Input object with the factory state
-     */
-    public ServiceInput build() {
-        ServiceInputTableSpec tableSpec = null;
-        if (m_columnSpecs != null) {
-            tableSpec = new ServiceInputTableSpec(m_columnSpecs);
-        }
-        ServiceInputTableData tableData = null;
-        if (m_tableRows != null) {
-            tableData = new ServiceInputTableData(m_tableRows);
-        }
-        return new ServiceInput(tableSpec, tableData);
+    @JsonProperty("table-data")
+    public ServiceTableData getServiceInputTableData() {
+        return m_tableData;
     }
 
 }

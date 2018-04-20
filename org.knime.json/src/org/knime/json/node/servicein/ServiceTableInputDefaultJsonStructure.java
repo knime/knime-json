@@ -63,7 +63,7 @@ import org.knime.json.util.JSONUtil;
  *
  * @author Tobias Urhaug
  */
-final class ServiceInputDefaultJsonStructure {
+final class ServiceTableInputDefaultJsonStructure {
 
     /**
      * Creates a JsonValue object of the hard coded structure.
@@ -98,15 +98,19 @@ final class ServiceInputDefaultJsonStructure {
                 .add(factory.createObjectBuilder().add("column-string", "string"))
                 .add(factory.createObjectBuilder().add("column-int", "int"))
                 .add(factory.createObjectBuilder().add("column-double", "double"))
+                .add(factory.createObjectBuilder().add("column-long", "long"))
+                .add(factory.createObjectBuilder().add("column-boolean", "boolean"))
                 .add(factory.createObjectBuilder().add("column-localdate", "localdate"))
+                .add(factory.createObjectBuilder().add("column-localdatetime", "localdatetime"))
+                .add(factory.createObjectBuilder().add("column-zoneddatetime", "zoneddatetime"))
                 .build();
     }
 
     private static JsonArray createDataTable(final JsonBuilderFactory factory) {
         return
             factory.createArrayBuilder()
-                .add(createRow(factory, "value1", 1, 1.5, "2018-03-27"))
-                .add(createRow(factory, "value2", 2, 2.5, "2018-03-28"))
+                .add(createRow(factory, "value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"))
+                .add(createRow(factory, "value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"))
                 .build();
     }
 
@@ -119,8 +123,10 @@ final class ServiceInputDefaultJsonStructure {
                 arrayBuilder.add((Integer) cell);
             } else if (cell instanceof Double) {
                 arrayBuilder.add((Double) cell);
-            } else {
-
+            } else if (cell instanceof Long) {
+                arrayBuilder.add((Long) cell);
+            } else if (cell instanceof Boolean) {
+                arrayBuilder.add((Boolean) cell);
             }
         }
 

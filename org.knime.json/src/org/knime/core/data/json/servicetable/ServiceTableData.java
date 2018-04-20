@@ -44,36 +44,43 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 11, 2018 (Tobias Urhaug): created
+ *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.core.data.json.servicetable;
 
-import org.knime.core.data.DataCell;
-import org.knime.core.data.DataType;
-import org.knime.core.data.def.DoubleCell;
-import org.knime.core.node.InvalidSettingsException;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
+ * Representation of Table Data containing multiple Table Rows.
+ * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug
  */
-public class ServiceInputDoubleParser implements ServiceInputCellParser {
+public class ServiceTableData {
+
+    private final List<ServiceTableRow> m_tableRows;
 
     /**
-     * The concrete type of this implementation.
+     * Constructs a table of the given rows.
+     *
+     * @param tableRows rows in the table
      */
-    public static final DataType DATA_TYPE = DoubleCell.TYPE;
+    @JsonCreator
+    public ServiceTableData(final List<ServiceTableRow> tableRows) {
+        m_tableRows = tableRows;
+    }
 
     /**
-     * {@inheritDoc}
+     * Gets the rows of this table.
+     *
+     * @return the rows in this table
      */
-    @Override
-    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
-        if (cellObject instanceof Double) {
-            return new DoubleCell((Double) cellObject);
-        } else {
-            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
-        }
+    @JsonValue
+    public List<ServiceTableRow> getServiceInputTableRows() {
+        return m_tableRows;
     }
 
 }
