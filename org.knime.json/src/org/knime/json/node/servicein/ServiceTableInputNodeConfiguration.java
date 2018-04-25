@@ -58,7 +58,7 @@ import org.knime.core.node.util.CheckUtils;
 /**
  * Configuration for the Service In node.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 final class ServiceTableInputNodeConfiguration {
 
@@ -68,12 +68,12 @@ final class ServiceTableInputNodeConfiguration {
 
     private String m_parameterName;
     private String m_description;
-    private String m_fileName;
+    private String m_variableInjectedFileName;
 
     public ServiceTableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
-        m_fileName = DEFAULT_FILE_NAME;
+        m_variableInjectedFileName = DEFAULT_FILE_NAME;
     }
 
     /**
@@ -125,14 +125,14 @@ final class ServiceTableInputNodeConfiguration {
      * @return the m_fileName
      */
     String getFileName() {
-        return m_fileName;
+        return m_variableInjectedFileName;
     }
 
     /**
-     * @param fileName the m_fileName to set
+     * @param fileName the fileName to set
      */
     void setFileName(final String fileName) {
-        this.m_fileName = fileName;
+        this.m_variableInjectedFileName = fileName;
     }
 
     /**
@@ -157,13 +157,12 @@ final class ServiceTableInputNodeConfiguration {
      */
     ServiceTableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
-            setParameterName(settings.getString("parameterName"));
-            setFileName(settings.getString("fileName"));
+            setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
-
-        setDescription(settings.getString("description", ""));
+        setFileName(settings.getString("fileName", DEFAULT_FILE_NAME));
+        setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }
 
@@ -176,7 +175,7 @@ final class ServiceTableInputNodeConfiguration {
     ServiceTableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
-        settings.addString("fileName", m_fileName);
+        settings.addString("fileName", m_variableInjectedFileName);
         return this;
     }
 

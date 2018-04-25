@@ -53,7 +53,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,7 +60,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Test cases for serializing and deserializing column specs to or from json.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceColumnSpecTest {
 

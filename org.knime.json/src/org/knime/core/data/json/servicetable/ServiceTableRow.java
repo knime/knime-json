@@ -49,6 +49,7 @@
 package org.knime.core.data.json.servicetable;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -57,7 +58,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Representation of a Table Row containing Data Cells of the generic type Object.
  * Can be serialized/deserialized to/from json with jackson.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableRow {
 
@@ -118,14 +119,7 @@ public class ServiceTableRow {
             return false;
         }
         ServiceTableRow other = (ServiceTableRow)obj;
-        if (m_dataCells == null) {
-            if (other.m_dataCells != null) {
-                return false;
-            }
-        } else if (!m_dataCells.equals(other.m_dataCells)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(m_dataCells, other.m_dataCells);
     }
 
 }

@@ -51,37 +51,30 @@ package org.knime.json.node.servicein;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Arrays;
-
-import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableData;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
-import org.knime.json.util.JSONUtil;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * Test suite for serializing/deserializing {@link ServiceTableInputDefaultJsonStructure}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceInputDefaultJsonStructureTest {
+public class ServiceTableInputDefaultJsonStructureTest {
 
     /**
      * Checks that the table spec of the default json structure is correctly deserialized.
      *
-     * @throws JsonParseException
-     * @throws JsonMappingException
-     * @throws IOException
+     * @throws Exception
      */
     @Test
-    public void testDeserializeDefaultJsonStructureTableSpec() throws JsonParseException, JsonMappingException, IOException {
+    public void testDeserializeDefaultJsonStructureTableSpec() throws Exception {
         String defaultJsonStructure = ServiceTableInputDefaultJsonStructure.asString();
 
         ServiceTable serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ServiceTable.class);
@@ -100,24 +93,16 @@ public class ServiceInputDefaultJsonStructureTest {
     /**
      * Checks that the table data of the default json structure is correctly deserialized.
      *
-     * @throws IOException
-     * @throws JsonMappingException
-     * @throws JsonParseException
-     *
+     * @throws Exception
      */
     @Test
-    public void testDeserializeDefaultJsonStructureTableData() throws JsonParseException, JsonMappingException, IOException {
+    public void testDeserializeDefaultJsonStructureTableData() throws Exception {
         String defaultJsonStructure = ServiceTableInputDefaultJsonStructure.asString();
-
-        JsonValue parseJSONValue = JSONUtil.parseJSONValue(defaultJsonStructure);
-        System.out.println(JSONUtil.toPrettyJSONString(parseJSONValue));
-
         ObjectMapper objectMapper = new ObjectMapper();
         ServiceTable serviceInput = objectMapper.readValue(defaultJsonStructure, ServiceTable.class);
 
         ServiceTableRow firstExpectedRow = new ServiceTableRow(Arrays.asList("value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"));
         ServiceTableRow secondExpectedRow =new ServiceTableRow(Arrays.asList("value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"));
-
         ServiceTableData tableData = serviceInput.getServiceInputTableData();
 
         assertEquals(firstExpectedRow, tableData.getServiceInputTableRows().get(0));

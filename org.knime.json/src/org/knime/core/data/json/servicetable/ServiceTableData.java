@@ -57,7 +57,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Representation of Table Data containing multiple Table Rows.
  * Can be serialized/deserialized to/from json with jackson.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableData {
 

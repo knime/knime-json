@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.knime.core.data.json.servicetable.ServiceTableRow;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -62,8 +61,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * Test suite for serializing/deserializing {@link ServiceTableRow}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableRowTest {
 

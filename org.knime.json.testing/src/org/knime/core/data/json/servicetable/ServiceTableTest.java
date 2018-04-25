@@ -51,28 +51,25 @@ package org.knime.core.data.json.servicetable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.io.IOException;
-
 import org.junit.Test;
 import org.knime.json.node.servicein.ServiceTableBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+  * Test suite for serializing/deserializing {@link ServiceTable}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableTest {
 
-
-
     /**
-     * @throws JsonProcessingException
+     * Checks that a ServiceTable is correctly serialized.
      *
+     * @throws Exception
      */
     @Test
-    public void testSerialization() throws JsonProcessingException {
+    public void testSerialization() throws Exception {
         ServiceTable input =
             new ServiceTableBuilder()
                 .withColumnSpec("column-string", "string")
@@ -85,12 +82,12 @@ public class ServiceTableTest {
     }
 
     /**
-     * Checks that a null value is
+     * Checks that a null value is correctly serialized.
      *
-     * @throws JsonProcessingException
+     * @throws Exception
      */
     @Test
-    public void testSerializingNullValues() throws JsonProcessingException {
+    public void testSerializingNullValues() throws Exception {
         ServiceTable input =
             new ServiceTableBuilder()
                 .withColumnSpec("column-string", "string")
@@ -103,11 +100,12 @@ public class ServiceTableTest {
     }
 
     /**
-     * @throws IOException
+     * Checks that a null value is correctly deserialized.
      *
+     * @throws Exception
      */
     @Test
-    public void testDeserializingNullValues() throws IOException {
+    public void testDeserializingNullValues() throws Exception {
         String json = "{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[null]]}";
 
         ServiceTable serviceInput =  new ObjectMapper().readValue(json, ServiceTable.class);

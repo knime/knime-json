@@ -59,8 +59,9 @@ import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
 
 /**
+ * Builder class that simplifies setting up test fixtures using {@link ServiceTable}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableBuilder {
 
@@ -68,7 +69,7 @@ public class ServiceTableBuilder {
     private List<ServiceTableRow> m_tableRows;
 
     /**
-     *
+     * Constructs an empty builder.
      */
     public ServiceTableBuilder() {
         m_columnSpecs = new ArrayList<>();
@@ -78,8 +79,8 @@ public class ServiceTableBuilder {
     /**
      * Adds a table spec to the table.
      *
-     * @param columnName
-     * @param columnType
+     * @param columnName the column name of the column spec
+     * @param columnType the column type of the column spec
      * @return this factory
      */
     public ServiceTableBuilder withColumnSpec(final String columnName, final String columnType) {
@@ -100,7 +101,7 @@ public class ServiceTableBuilder {
     /**
      * Adds table specs to the table.
      *
-     * @param serviceInputColumnSpecs
+     * @param serviceInputColumnSpecs list of column specs
      * @return this factory
      */
     public ServiceTableBuilder withColumnSpecs(final List<ServiceTableColumnSpec> serviceInputColumnSpecs) {

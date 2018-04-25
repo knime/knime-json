@@ -48,32 +48,36 @@
  */
 package org.knime.json.node.servicein;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
+import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 import org.knime.core.data.json.servicetable.ServiceTableData;
+import org.knime.core.data.json.servicetable.ServiceTableInputValidDataTypes;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
-import org.knime.core.data.json.servicetable.validdatatypes.ServiceInputValidDataTypeFactory;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
-import org.knime.core.util.UniqueNameGenerator;
 
 /**
+ * Utility class for converting {@link ServiceTable}.
  *
- *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 final class ServiceTableConverter {
 
@@ -88,50 +92,74 @@ final class ServiceTableConverter {
     public static BufferedDataTable[] toBufferedDataTable(final ServiceTable serviceInput, final ExecutionContext exec)
             throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(serviceInput, "Service input cannot be null");
-        BufferedDataContainer dataContainer = exec.createDataContainer(createTableSpec(serviceInput));
-        addDataRows(dataContainer, serviceInput);
+        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(serviceInput));
+        addDataRows(dataContainer, serviceInput, exec);
         dataContainer.close();
         return new BufferedDataTable[]{dataContainer.getTable()};
     }
 
-    public static DataTableSpec createTableSpec(final ServiceTable serviceInput) throws InvalidSettingsException {
+    /**
+     * Creates a data table spec of the service input.
+     *
+     * @param serviceInput input of which the table spec is created from
+     * @return a DataTableSpec from the service input
+     * @throws InvalidSettingsException
+     */
+    public static DataTableSpec toTableSpec(final ServiceTable serviceInput) throws InvalidSettingsException {
         ServiceTableSpec tableSpec =
             CheckUtils.checkSettingNotNull(serviceInput.getServiceInputTableSpec(), "table spec cannot be null");
         int size = tableSpec.size();
         String[] columnNames = new String[size];
         DataType[] columnTypes = new DataType[size];
 
-        UniqueNameGenerator uniqueNameGenerator = new UniqueNameGenerator(Collections.emptySet());
+        Set<String> alreadyUsedColumnNames = new HashSet<>();
+        Map<String, Integer> usedColumnNamesToIndex = new HashMap<>();
         for (int i = 0; i < size; i++) {
             ServiceTableColumnSpec serviceInputColumnSpec = tableSpec.getServiceInputColumnSpecs().get(i);
-            columnNames[i] = uniqueNameGenerator.newName(serviceInputColumnSpec.getName());
-            String columnType = serviceInputColumnSpec.getType();
-            columnTypes[i] = ServiceInputValidDataTypeFactory.of(columnType).getDataType();
+            String columnName = serviceInputColumnSpec.getName();
+            if (alreadyUsedColumnNames.add(columnName)) {
+                usedColumnNamesToIndex.put(columnName, i);
+                columnNames[i] = columnName;
+                String columnType = serviceInputColumnSpec.getType();
+                columnTypes[i] = ServiceTableInputValidDataTypes.parse(columnType);
+            } else {
+                throw new InvalidSettingsException("Columns \"" + usedColumnNamesToIndex.get(columnName) + "\" and \"" + i
+                    + "\" have equal names. Duplicate column names in input are not allowed.");
+            }
         }
 
         DataColumnSpec[] columnSpec = DataTableSpec.createColumnSpecs(columnNames, columnTypes);
         return new DataTableSpec(columnSpec);
     }
 
-    private static void addDataRows(final BufferedDataContainer dataContainer, final ServiceTable serviceInput)
+    private static void addDataRows(final BufferedDataContainer dataContainer, final ServiceTable serviceInput, final ExecutionContext exec)
             throws InvalidSettingsException {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
         ServiceTableData tableData = serviceInput.getServiceInputTableData();
         for (ServiceTableRow tableRow : tableData.getServiceInputTableRows()) {
-            dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec)));
+            dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec)));
         }
     }
 
-    private static DataCell[] getDataCells(final ServiceTableRow tableRow, final DataTableSpec tableSpec)
-        throws InvalidSettingsException {
+    private static DataCell[] getDataCells(final ServiceTableRow tableRow, final DataTableSpec tableSpec, final ExecutionContext exec)
+            throws InvalidSettingsException {
         DataCell[] dataCells = new DataCell[tableRow.size()];
         List<Object> cells = tableRow.getDataCellObjects();
-
+        DataCellFactory cellFactory = new DataCellFactory(exec);
         for (int i = 0; i < cells.size(); i++) {
             DataType columnType = tableSpec.getColumnSpec(i).getType();
             Object cellObject = cells.get(i);
-            dataCells[i] = ServiceInputValidDataTypeFactory.of(columnType).parseObject(cellObject);
+            if (cellObject == null) {
+                dataCells[i] = DataType.getMissingCell();
+            } else {
+                String cellObjectString = cellObject.toString();
+                DataCell dataCell = cellFactory.createDataCellOfType(columnType, cellObjectString);
+                if (dataCell == null) {
+                    dataCell = new MissingCell("Could not parse: \"" + cellObjectString + "\" to type: \"" + columnType + "\"");
+                }
+                dataCells[i] = dataCell;
+            }
         }
         return dataCells;
     }

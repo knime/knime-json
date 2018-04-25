@@ -68,10 +68,11 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
 
 /**
+ * Dialog for the Service Table Input node.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableInputNodeDialog extends NodeDialogPane {
+class ServiceTableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;

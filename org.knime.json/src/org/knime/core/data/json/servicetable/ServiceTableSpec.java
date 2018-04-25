@@ -57,7 +57,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Representation of a Table Spec.
  * Can be serialized/deserialized to/from json with jackson.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableSpec {
 
@@ -66,7 +66,7 @@ public class ServiceTableSpec {
     /**
      * Constructs a TableSpec from the given columnSpecs.
      *
-     * @param serviceInputColumnSpecs
+     * @param serviceInputColumnSpecs the column specs
      */
     @JsonCreator
     public ServiceTableSpec(final List<ServiceTableColumnSpec> serviceInputColumnSpecs) {
@@ -86,8 +86,8 @@ public class ServiceTableSpec {
     /**
      * Checks if a given column name/type pair is contained in this table spec.
      *
-     * @param columnName
-     * @param columnType
+     * @param columnName name of the column
+     * @param columnType type of the column
      * @return true if this table spec contains the name/type pair
      */
     public boolean contains(final String columnName, final String columnType) {

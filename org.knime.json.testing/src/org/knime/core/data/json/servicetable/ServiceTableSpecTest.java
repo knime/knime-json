@@ -54,20 +54,16 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
-import org.knime.core.data.json.servicetable.ServiceTableSpec;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
+ * Test suite for serializing/deserializing {@link ServiceTableSpec}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableSpecTest {
 
@@ -82,10 +78,9 @@ public class ServiceTableSpecTest {
         ServiceTableSpec tableSpec = new ServiceTableSpec(Arrays.asList(serviceInputColumnSpec));
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         String json = objectMapper.writeValueAsString(tableSpec);
 
-        assertEquals("{\"table-spec\":[{\"column-string\":\"string\"}]}", json);
+        assertEquals("[{\"column-string\":\"string\"}]", json);
     }
 
     /**
@@ -100,10 +95,9 @@ public class ServiceTableSpecTest {
         ServiceTableSpec tableSpec = new ServiceTableSpec(Arrays.asList(stringColumnSpec, doubleColumnSpec));
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         String json = objectMapper.writeValueAsString(tableSpec);
 
-        assertEquals("{\"table-spec\":[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]}", json);
+        assertEquals("[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]", json);
     }
 
     /**
@@ -115,13 +109,10 @@ public class ServiceTableSpecTest {
      */
     @Test
     public void testDeserializingMultipleColumnSpecs() throws JsonParseException, JsonMappingException, IOException {
-        String json = "{\"table-spec\":[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]}";
+        String json = "[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]";
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true);
-
-        TypeReference<ServiceTableSpec> typeReference = new TypeReference<ServiceTableSpec>() {};
-        ServiceTableSpec tableSpec = objectMapper.readValue(json, typeReference);
+        ServiceTableSpec tableSpec = objectMapper.readValue(json, ServiceTableSpec.class);
 
         assertEquals(new ServiceTableColumnSpec("column-string", "string"), tableSpec.getServiceInputColumnSpecs().get(0));
         assertEquals(new ServiceTableColumnSpec("column-double", "double"), tableSpec.getServiceInputColumnSpecs().get(1));

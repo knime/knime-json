@@ -44,37 +44,73 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 19, 2018 (Tobias Urhaug): created
+ *   Apr 5, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable.validdatatypes;
+package org.knime.core.data.json.servicetable;
 
-import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DataTypeRegistry;
+import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
+import org.knime.core.data.def.StringCell;
+import org.knime.core.data.time.localdate.LocalDateCellFactory;
+import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
+import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCellFactory;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
+ * Class responsible for parsing a string to a {@link DataType}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceInputLongParser implements ServiceInputCellParser {
+public abstract class ServiceTableInputValidDataTypes {
 
     /**
-     * The concrete type of this implementation.
+     * Gets the DataType of the given string.
+     *
+     * @param dataType type that should be converted
+     * @return ServiceInputValidDataType object corresponding to the input data type
+     * @throws InvalidSettingsException
      */
-    public static final DataType DATA_TYPE = LongCell.TYPE;
+    public static DataType parse(final String dataType) throws InvalidSettingsException {
+        switch (dataType) {
+            case "string" : return StringCell.TYPE;
+            case "int" : return IntCell.TYPE;
+            case "double" : return DoubleCell.TYPE;
+            case "long" : return LongCell.TYPE;
+            case "boolean" : return BooleanCell.TYPE;
+            case "localdate" : return LocalDateCellFactory.TYPE;
+            case "localdatetime" : return LocalDateTimeCellFactory.TYPE;
+            case "zoneddatetime" : return ZonedDateTimeCellFactory.TYPE;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DataCell parse(final Object cellObject) throws InvalidSettingsException {
-        if (cellObject instanceof Integer) {
-            return new LongCell(new Long((Integer) cellObject));
-        } else if (cellObject instanceof Long) {
-            return new LongCell((Long) cellObject);
-        } else {
-            throw new InvalidSettingsException("Cell object \"" + cellObject + "\" cannot be parsed to \"" + DATA_TYPE + "\"");
+            default : return getDataTypeByName(dataType);
         }
     }
+
+    /**
+     * Gets the data type of the given string if the type is present in the data type registry.
+     * Comparison is done by the getName method of {@link DataType}.
+     *
+     * @param dataType the string representation of the data type
+     * @throws InvalidSettingsException if the given data type is not supported
+     */
+    private static DataType getDataTypeByName(final String dataType) throws InvalidSettingsException {
+        DataType result = null;
+        for (DataType type : DataTypeRegistry.getInstance().availableDataTypes()) {
+            String name = type.getName();
+            if (name.equals(dataType)) {
+                if (result != null) {
+                    throw new InvalidSettingsException("Ambigous return for value: \"" + dataType + "\". Two or more data types use this name.");
+                }
+                result = type;
+            }
+        }
+        if (result == null) {
+            throw new InvalidSettingsException("Unsupported data type: \"" + dataType + "\"");
+        }
+        return result;
+    }
+
 }

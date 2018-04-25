@@ -48,35 +48,40 @@
  */
 package org.knime.core.data.json.servicetable;
 
+import org.knime.core.node.util.CheckUtils;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
+ * Representation of a Service Table containing Service Table Specs and Service Table Data.
+ * Main function is to serve as an interface between JSON and BufferedDataTables.
+ * Can be serialized/deserialized to/from json with jackson.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-@JsonPropertyOrder({"m_tableSpec", "m_tableData"})
+@JsonPropertyOrder({"table-spec", "table-data"})
 public class ServiceTable {
 
     private final ServiceTableSpec m_tableSpec;
     private final ServiceTableData m_tableData;
 
     /**
-     * Constructor for the service input.
+     * Constructor for the service table.
      *
-     * @param tableSpec
-     * @param tableData
+     * @param tableSpec the table spec for this table, not null
+     * @param tableData the table data for this table, not null
      */
     public ServiceTable(
             @JsonProperty("table-spec") final ServiceTableSpec tableSpec,
             @JsonProperty("table-data") final ServiceTableData tableData) {
-        m_tableSpec = tableSpec;
-        m_tableData = tableData;
+        m_tableSpec = CheckUtils.checkArgumentNotNull(tableSpec);
+        m_tableData = CheckUtils.checkArgumentNotNull(tableData);
     }
 
     /**
      * Gets the table spec of this input.
-     * @return the table spec
+     * @return the table spec, can not be null
      */
     @JsonProperty("table-spec")
     public ServiceTableSpec getServiceInputTableSpec() {
@@ -85,7 +90,7 @@ public class ServiceTable {
 
     /**
      * Gets the table data of this input.
-     * @return the table data
+     * @return the table data, can not be null
      */
     @JsonProperty("table-data")
     public ServiceTableData getServiceInputTableData() {

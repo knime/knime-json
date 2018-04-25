@@ -59,11 +59,11 @@ import javax.json.JsonValue;
 import org.knime.json.util.JSONUtil;
 
 /**
- * Class that holds a hard coded prototype JSON structure for the Service In node.
+ * Class that holds a hard coded prototype JSON structure for the Service Table Input node.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-final class ServiceTableInputDefaultJsonStructure {
+public final class ServiceTableInputDefaultJsonStructure {
 
     /**
      * Creates a JsonValue object of the hard coded structure.

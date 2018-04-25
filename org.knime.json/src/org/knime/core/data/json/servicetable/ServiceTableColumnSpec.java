@@ -48,36 +48,54 @@
  */
 package org.knime.core.data.json.servicetable;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.knime.core.node.util.CheckUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
+ * Representation of a column spec containing a name and type.
+ * Can be serialized/deserialized to/from json with jackson.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableColumnSpec {
 
-    private final Map<String, String> m_columnSpec;
+    private final String m_columnName;
+    private final String m_columnType;
 
     /**
-     * @param columnName
-     * @param columnType
+     * Constructs a Service Column Spec from the given name and type.
+     *
+     * @param columnName name of the column
+     * @param columnType type of the column
      */
     public ServiceTableColumnSpec(final String columnName, final String columnType) {
-        m_columnSpec = new HashMap<>();
-        m_columnSpec.put(columnName, columnType);
+        m_columnName = columnName;
+        m_columnType = columnType;
     }
 
     /**
-     * @param columnSpec
+     * Constructs an instance from the given spec.
+     *
+     * @param columnSpec spec to be created
      */
     @JsonCreator
-    public ServiceTableColumnSpec(final Map<String, String> columnSpec) {
-        m_columnSpec = columnSpec;
+    private ServiceTableColumnSpec(final Map<String, String> columnSpec) {
+        CheckUtils.checkArgumentNotNull(columnSpec);
+        String columnName = null;
+        String columnType = null;
+        for (Entry<String,String> spec : columnSpec.entrySet()) {
+            columnName = spec.getKey();
+            columnType = spec.getValue();
+        }
+
+        m_columnName = CheckUtils.checkArgumentNotNull(columnName);
+        m_columnType = CheckUtils.checkArgumentNotNull(columnType);
     }
 
     /**
@@ -86,8 +104,8 @@ public class ServiceTableColumnSpec {
      * @return this column spec
      */
     @JsonValue
-    public Map<String, String> getServiceInputColumnSpec() {
-        return m_columnSpec;
+    private Map<String, String> getServiceInputColumnSpec() {
+        return Collections.singletonMap(m_columnName, m_columnType);
     }
 
     /**
@@ -96,11 +114,7 @@ public class ServiceTableColumnSpec {
      * @return the column name
      */
     public String getName() {
-        String columnName = null;
-        for (Entry<String,String> spec : m_columnSpec.entrySet()) {
-            columnName = spec.getKey();
-        }
-        return columnName;
+        return m_columnName;
     }
 
     /**
@@ -109,21 +123,24 @@ public class ServiceTableColumnSpec {
      * @return the column type
      */
     public String getType() {
-        String columnType = null;
-        for (Entry<String,String> spec : m_columnSpec.entrySet()) {
-            columnType = spec.getValue();
-        }
-        return columnType;
+        return m_columnType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((m_columnSpec == null) ? 0 : m_columnSpec.hashCode());
+        result = prime * result + ((m_columnName == null) ? 0 : m_columnName.hashCode());
+        result = prime * result + ((m_columnType == null) ? 0 : m_columnType.hashCode());
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -135,12 +152,19 @@ public class ServiceTableColumnSpec {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ServiceTableColumnSpec other = (ServiceTableColumnSpec) obj;
-        if (m_columnSpec == null) {
-            if (other.m_columnSpec != null) {
+        ServiceTableColumnSpec other = (ServiceTableColumnSpec)obj;
+        if (m_columnName == null) {
+            if (other.m_columnName != null) {
                 return false;
             }
-        } else if (!m_columnSpec.equals(other.m_columnSpec)) {
+        } else if (!m_columnName.equals(other.m_columnName)) {
+            return false;
+        }
+        if (m_columnType == null) {
+            if (other.m_columnType != null) {
+                return false;
+            }
+        } else if (!m_columnType.equals(other.m_columnType)) {
             return false;
         }
         return true;

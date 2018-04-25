@@ -53,13 +53,14 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
+ * Factory for the Service Table Input node.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableInputNodeFactory extends NodeFactory<ServiceTableInputNodeModel> {
 
     /**
-     * Constructor for the node model.
+     * {@inheritDoc}
      */
     @Override
     public ServiceTableInputNodeModel createNodeModel() {

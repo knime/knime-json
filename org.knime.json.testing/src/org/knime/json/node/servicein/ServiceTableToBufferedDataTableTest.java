@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.junit.Test;
+import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
@@ -67,7 +68,7 @@ import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
-import org.knime.core.data.json.servicetable.validdatatypes.ServiceInputValidDataTypeFactory;
+import org.knime.core.data.time.duration.DurationCellFactory;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DefaultNodeProgressMonitor;
@@ -81,8 +82,9 @@ import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 
 /**
+ * Test suite for converting a {@link ServiceTable} to a {@link BufferedDataTable}.
  *
- * @author Tobias Urhaug
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class ServiceTableToBufferedDataTableTest {
 
@@ -129,20 +131,34 @@ public class ServiceTableToBufferedDataTableTest {
      *
      * @throws Exception
      */
-    @Test
-    public void testServiceInputWithDupliceSpecNamesAreHandled() throws Exception {
+    @Test(expected = InvalidSettingsException.class)
+    public void testServiceInputWithDupliceSpecNamesThrowsAnException() throws Exception {
         ServiceTable tableWithSpec = //
             new ServiceTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withColumnSpec("column-string", "string")//
                 .build();//
 
+        ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+    }
+
+    /**
+     * Checks that a name to any implementation of {@link DataCell} can be used
+     * as the column type in the table-spec
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testServiceInputWithFullyQualifiedTypeNameAsColumnSepcTypeIsResolved() throws Exception {
+        ServiceTable tableWithSpec = //
+            new ServiceTableBuilder()//
+                .withColumnSpec("column-FQ-name", "Duration")//
+                .build();//
+
         BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
         DataTableSpec createdSpecs = dataTable[0].getSpec();
 
-        String[] columnNames = createdSpecs.getColumnNames();
-        assertEquals("column-string", columnNames[0]);
-        assertEquals("column-string (#1)", columnNames[1]);
+        assertTrue(createdSpecs.getColumnSpec(0).getType() == DurationCellFactory.TYPE);
     }
 
     /**
@@ -150,7 +166,7 @@ public class ServiceTableToBufferedDataTableTest {
      *
      * @throws Exception
      */
-    @Test(expected = InvalidSettingsException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testServiceInputWithNullTableSpecThrowsException() throws Exception {
         ServiceTable serviceInput = //
             new ServiceTableBuilder()//
@@ -182,15 +198,12 @@ public class ServiceTableToBufferedDataTableTest {
         BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
-        assertTrue("Rows should have been created", iterator.hasNext());
-        if (iterator.hasNext()) {
-            DataRow dataRow = iterator.next();
-            assertDataRow(dataRow, "value1", 123, 4.5, "2018-03-27");
-        }
-        if (iterator.hasNext()) {
-            DataRow dataRow = iterator.next();
-            assertDataRow(dataRow, "value2", 432, 0.4, "2018-03-28");
-        }
+        assertTrue("First row should have been created", iterator.hasNext());
+        DataRow firstRow = iterator.next();
+        assertDataRow(firstRow, "value1", 123, 4.5, "2018-03-27");
+        assertTrue("Second row should have been created", iterator.hasNext());
+        DataRow secondRow = iterator.next();
+        assertDataRow(secondRow, "value2", 432, 0.4, "2018-03-28");
     }
 
     /**
@@ -214,12 +227,12 @@ public class ServiceTableToBufferedDataTableTest {
      *
      * @throws Exception
      */
-    @Test(expected = InvalidSettingsException.class)
-    public void testColumnExpectingStringObjectsThrowsExceptionWhenGivenOtherDataType() throws Exception {
+    @Test
+    public void testColumnExpectingStringObjectsCastsCompatibleTypes() throws Exception {
         ServiceTable serviceInput = //
             new ServiceTableBuilder()//
                 .withColumnSpec("column-string", "string")//
-                .withTableRow(2.0)//
+                .withTableRow(1)//
                 .build();//
 
         ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
@@ -230,63 +243,39 @@ public class ServiceTableToBufferedDataTableTest {
      *
      * @throws Exception
      */
-    @Test(expected = InvalidSettingsException.class)
-    public void testColumnExpectingDoubleObjectsThrowsExceptionWhenGivenWrongDataType() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
-                .withColumnSpec("column-double", "double")//
-                .withTableRow(2)//
-                .build();//
-
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
-    }
-
-    /**
-     * Checks that an exception is thrown when data in a row does not comply to the column specs.
-     *
-     * @throws Exception
-     */
-    @Test(expected = InvalidSettingsException.class)
-    public void testColumnExpectingIntegerObjectsThrowsExceptionWhenGivenWrongDataType() throws Exception {
+    @Test
+    public void testColumnParsesWrongDataTypeToMissingValue() throws Exception {
         ServiceTable serviceInput = //
             new ServiceTableBuilder()//
                 .withColumnSpec("column-int", "int")//
                 .withTableRow("Hello int column!")//
                 .build();//
 
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        CloseableRowIterator iterator = dataTable[0].iterator();
+        assertTrue("First row should have been created", iterator.hasNext());
+        DataRow dataRow = iterator.next();
+        assertDataRow(dataRow, "missing value");
     }
 
     /**
-     * Checks that an exception is thrown when data in a row does not comply to the column specs.
+     * Checks that an null cell is parsed to missing value.
      *
      * @throws Exception
      */
-    @Test(expected = InvalidSettingsException.class)
-    public void testColumnExpectingLocalDatesThrowsExceptionWhenGivenWrongDataType() throws Exception {
+    @Test
+    public void testInputCellWithNullValueIsParsedToMissingValue() throws Exception {
         ServiceTable serviceInput = //
             new ServiceTableBuilder()//
                 .withColumnSpec("column-localdate", "localdate")//
-                .withTableRow(2.4)//
+                .withTableRow((String) null)//
                 .build();//
 
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
-    }
-
-    /**
-     * Checks that an exception is thrown when data in a row does not comply to the column specs.
-     *
-     * @throws Exception
-     */
-    @Test(expected = InvalidSettingsException.class)
-    public void testColumnExpectingLocalDatesThrowsExceptionWhenGivenStringNotRepresentingALocalDate() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
-                .withColumnSpec("column-localdate", "localdate")//
-                .withTableRow("this is not a local date!")//
-                .build();//
-
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        CloseableRowIterator iterator = dataTable[0].iterator();
+        assertTrue("First row should have been created", iterator.hasNext());
+        DataRow dataRow = iterator.next();
+        assertDataRow(dataRow, "missing value");
     }
 
     /**
@@ -308,10 +297,8 @@ public class ServiceTableToBufferedDataTableTest {
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
-        if (iterator.hasNext()) {
-            DataRow dataRow = iterator.next();
-            assertDataRow(dataRow, 1, 2, 3);
-        }
+        DataRow dataRow = iterator.next();
+        assertDataRow(dataRow, 1, 2, 3);
     }
 
     private void assertDataRow(final DataRow actualDataRow, final Object... expectedDataCells) throws InvalidSettingsException {
@@ -319,8 +306,15 @@ public class ServiceTableToBufferedDataTableTest {
         for (int i = 0; i < expectedDataCells.length; i++) {
             DataCell actualDataCell = actualDataRow.getCell(i);
             Object expectedDataCellObject = expectedDataCells[i];
-            DataCell expectedDataCell = ServiceInputValidDataTypeFactory.of(actualDataCell.getType()).parseObject(expectedDataCellObject);
-            assertEquals(expectedDataCell, actualDataCell);
+
+            DataCell expectedDataCell;
+            if (expectedDataCellObject instanceof String && "missing value".equals(expectedDataCellObject)) {
+                expectedDataCell = DataType.getMissingCell();
+            } else {
+                DataCellFactory factory = new DataCellFactory(getTestExecutionContext());
+                expectedDataCell = factory.createDataCellOfType(actualDataCell.getType(), expectedDataCellObject.toString());
+            }
+            assertEquals("Cells in column " + i + " missmatch", expectedDataCell, actualDataCell);
         }
     }
 
