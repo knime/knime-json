@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-in.png" type="QuickForm"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>Service Variable Input</name>
+
+	<shortDescription>
+        Injects flow variables to the workflow.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+			This node allows injecting flow variables from outside of the workflow, e.g. via the advanced batch executor,a server-exposed
+			workflow or the call workflow(local/remote) nodes.<br/>
+			<br/>
+		</intro>
+
+        <option name="Parameter name">
+            A unique name for the input parameter. This name is exposed in the REST interface and in the Call
+            Workflow node.
+        </option>
+
+        <option name="Description">
+            A description for the input parameter. The description is shown in the API specification of the REST
+            interface.
+        </option>
+	</fullDescription>
+
+	<ports>
+	
+<!-- 		TODO TU: describe ports when knowing how they should behave, i.e. if there should be an optional input and if the output should have a default value -->
+	
+		<inPort index="0" name="Any input table">
+			An optional input that is directly forwarded to the output of the node. 
+		</inPort>
+	
+		<outPort index="0" name="The injected table">
+			The injected variables, default variables if none has been injected.
+		</outPort>
+	</ports>
+</knimeNode>
