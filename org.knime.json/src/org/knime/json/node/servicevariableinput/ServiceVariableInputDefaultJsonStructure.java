@@ -48,62 +48,86 @@
  */
 package org.knime.json.node.servicevariableinput;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonValue;
 
 /**
- * Test suite for the serialization/deserialization of a {@link ServiceVariableInput} via Jackson.
+ * Class that holds a hard coded prototype JSON structure for the Service Variable Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceVariableInputTest {
+public class ServiceVariableInputDefaultJsonStructure {
 
     /**
-     * Checks that a ServiceVariableInput with a map of variables is correctly serialized to JSON.
-     *
-     * @throws Exception
+     * Default string variable name.
      */
-    @Test
-    public void testSerialize() throws Exception {
-        List<Map<String, Object>> variableList = ServiceVariableInputDefaultJsonStructure.asVariableList();
-        ServiceVariableInput serviceVariableInput = new ServiceVariableInput(variableList);
+    public final static String STRING_VARIABLE_NAME = "variable-string";
+    /**
+     * Default string variable value.
+     */
+    public final static String STRING_VARIABLE_VALUE = "somevariable";
+    /**
+     * Default double variable name.
+     */
+    public final static String DOUBLE_VARIABLE_NAME = "variable-double";
+    /**
+     * Default double variable value.
+     */
+    public final static Double DOUBLE_VARIABLE_VALUE = 42.0;
+    /**
+     * Default int variable name.
+     */
+    public final static String INT_VARIABLE_NAME = "variable-int";
+    /**
+     * Default int variable value.
+     */
+    protected final static Integer INT_VARIABLE_VALUE = 100;
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String actualJson = objectMapper.writeValueAsString(serviceVariableInput);
+    /**
+     * Returns the default variables as a list of singleton maps.
+     *
+     * @return the list of default variables
+     */
+    public static List<Map<String, Object>> asVariableList() {
+        Map<String, Object> variable1 = Collections.singletonMap(STRING_VARIABLE_NAME, STRING_VARIABLE_VALUE);
+        Map<String, Object> variable2 = Collections.singletonMap(DOUBLE_VARIABLE_NAME, DOUBLE_VARIABLE_VALUE);
+        Map<String, Object> variable3 = Collections.singletonMap(INT_VARIABLE_NAME, INT_VARIABLE_VALUE);
 
-        String expectedJson = ServiceVariableInputDefaultJsonStructure.asString();
-        assertEquals(expectedJson, actualJson);
+        return Arrays.asList(variable1, variable2, variable3);
     }
 
     /**
-     * Checks that a JSON representing the variables is correctly deserialized to ServiceVariableInput.
+     * Returns a string representation of the default structure.
      *
-     * @throws Exception
+     * @return the default variable input as string
      */
-    @Test
-    public void testDeserialize() throws  Exception {
-        String inputJson = ServiceVariableInputDefaultJsonStructure.asString();
+    public static String asString() {
+        return asJsonValue().toString();
+    }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ServiceVariableInput deserializedInput = objectMapper.readValue(inputJson, ServiceVariableInput.class);
+    /**
+     * Returns a JsonValue of the default structure.
+     *
+     * @return the default variable input as JsonValue
+     */
+    public static JsonValue asJsonValue() {
+        JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        return factory.createObjectBuilder().add("variables", createVariables(factory)).build();
+    }
 
-        List<Map<String, Object>> deserializedVariables = deserializedInput.getVariables();
-        assertTrue(deserializedVariables.get(0) //
-            .get(ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME) //
-            .equals(ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
-        assertTrue(deserializedVariables.get(1) //
-            .get(ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME) //
-            .equals(ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
-        assertTrue(deserializedVariables.get(2) //
-            .get(ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_NAME) //
-            .equals(ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
+    private static JsonArray createVariables(final JsonBuilderFactory factory) {
+        return factory.createArrayBuilder() //
+                .add(factory.createObjectBuilder().add(STRING_VARIABLE_NAME, STRING_VARIABLE_VALUE)) //
+                .add(factory.createObjectBuilder().add(DOUBLE_VARIABLE_NAME, DOUBLE_VARIABLE_VALUE)) //
+                .add(factory.createObjectBuilder().add(INT_VARIABLE_NAME, INT_VARIABLE_VALUE)) //
+                .build(); //
     }
 
 }
