@@ -52,8 +52,7 @@
       </node>
       <node
             category-path="/struct-data/json"
-            factory-class="/org.knime.json.node.servicevariableinput.ServiceVariableInputNodeFactory"
-      </node>
+            factory-class="/org.knime.json.node.servicevariableinput.ServiceVariableInputNodeFactory" >
       </node>
    </extension>
    <extension
