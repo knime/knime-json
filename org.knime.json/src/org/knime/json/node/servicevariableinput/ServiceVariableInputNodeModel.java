@@ -50,6 +50,8 @@ package org.knime.json.node.servicevariableinput;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.json.JsonValue;
 
@@ -67,14 +69,17 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
-import org.knime.ext.sun.nodes.script.calculator.FlowVariableProvider;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The node model for the Service Variable Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceVariableInputNodeModel extends NodeModel implements InputNode, FlowVariableProvider {
+public class ServiceVariableInputNodeModel extends NodeModel implements InputNode {
+
+    private final ObjectMapper m_objectMapper;
 
     private JsonValue m_externalValue;
     private ServiceVariableInputNodeConfiguration m_configuration = new ServiceVariableInputNodeConfiguration();
@@ -86,6 +91,7 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
         super(
             new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL},
             new PortType[]{FlowVariablePortObject.TYPE});
+        m_objectMapper = new ObjectMapper();
     }
 
     /**
@@ -102,10 +108,43 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
      */
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-
-
+        if (m_externalValue != null) {
+            pushVariablesToStack(m_externalValue.toString());
+        } else {
+            if (inSpecs[0] == null) {
+                pushVariablesToStack(ServiceVariableInputDefaultJsonStructure.asString());
+            }
+        }
 
         return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
+    }
+
+    private void pushVariablesToStack(final String json) throws InvalidSettingsException {
+        ServiceVariableInput variableInput = deserializeJsonString(json);
+        for (Map<String, Object> variable : variableInput.getVariables()) {
+            for (Entry<String, Object> variableEntry : variable.entrySet()) {
+                String name = variableEntry.getKey();
+                Object value = variableEntry.getValue();
+
+                if (Integer.class.equals(value.getClass())) {
+                    pushFlowVariableInt(name, (int) value);
+                } else if (Double.class.equals(value.getClass())) {
+                    pushFlowVariableDouble(name, (double) value);
+                } else if (String.class.equals(value.getClass())) {
+                    pushFlowVariableString(name, (String) value);
+                } else {
+                    throw new RuntimeException("Variable \"" + name + "\" has invalid variable class \"" + value + "\"");
+                }
+            }
+        }
+    }
+
+    private ServiceVariableInput deserializeJsonString(final String json) throws InvalidSettingsException {
+        try {
+            return m_objectMapper.readValue(json, ServiceVariableInput.class);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Error while parsing json-input: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -145,8 +184,7 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
      */
     @Override
     public ExternalNodeData getInputData() {
-        // TODO TU: introduce null handling? Create a default value?
-        JsonValue value = m_externalValue;
+        JsonValue value = m_externalValue != null ? m_externalValue : ServiceVariableInputDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
                 .jsonValue(value)
@@ -187,26 +225,6 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
         //No internal state.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object readVariable(final String name, final Class<?> type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public int getRowCount() {
-        return 0;
     }
 
 }
