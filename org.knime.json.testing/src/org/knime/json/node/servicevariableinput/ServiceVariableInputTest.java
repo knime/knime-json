@@ -48,8 +48,10 @@
  */
 package org.knime.json.node.servicevariableinput;
 
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Map;
@@ -95,15 +97,24 @@ public class ServiceVariableInputTest {
         ServiceVariableInput deserializedInput = objectMapper.readValue(inputJson, ServiceVariableInput.class);
 
         List<Map<String, Object>> deserializedVariables = deserializedInput.getVariables();
-        assertTrue(deserializedVariables.get(0) //
-            .get(ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME) //
-            .equals(ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
-        assertTrue(deserializedVariables.get(1) //
-            .get(ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME) //
-            .equals(ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
-        assertTrue(deserializedVariables.get(2) //
-            .get(ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_NAME) //
-            .equals(ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
+
+        Map<String, Object> stringVariable = deserializedVariables.get(0);
+        assertThat(stringVariable.entrySet(), hasSize(1));
+        assertThat(stringVariable, hasEntry(//
+            ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME, //
+            ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
+
+        Map<String, Object> doubleVariable = deserializedVariables.get(1);
+        assertThat(doubleVariable.entrySet(), hasSize(1));
+        assertThat(doubleVariable, hasEntry(//
+            ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME, //
+            ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
+
+        Map<String, Object> intVariable = deserializedVariables.get(2);
+        assertThat(intVariable.entrySet(), hasSize(1));
+        assertThat(intVariable, hasEntry(//
+            ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_NAME, //
+            ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
     }
 
 }

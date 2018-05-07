@@ -89,9 +89,11 @@ public class ServiceVariableInputNodeConfiguration {
      * Sets a user-supplied description for this input node.
      *
      * @param s a description, must not be <code>null</code>
+     * @return the updated configuration
      */
-    void setDescription(final String s) {
+    ServiceVariableInputNodeConfiguration setDescription(final String s) {
         m_description = s;
+        return this;
     }
 
     /**
@@ -107,8 +109,6 @@ public class ServiceVariableInputNodeConfiguration {
      * Sets the parameter name.
      *
      * @param value the new parameter name
-     * @param allowLegacyFormat if true it will allow the {@link DialogNode#PARAMETER_NAME_PATTERN_LEGACY} (backward
-     *            compatible)
      * @return the updated configuration
      */
     ServiceVariableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {

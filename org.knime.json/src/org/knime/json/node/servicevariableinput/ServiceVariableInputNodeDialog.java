@@ -72,7 +72,7 @@ import org.knime.core.node.port.PortObjectSpec;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceVariableInputNodeDialog extends NodeDialogPane {
+class ServiceVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;

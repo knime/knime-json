@@ -110,10 +110,8 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
         if (m_externalValue != null) {
             pushVariablesToStack(m_externalValue.toString());
-        } else {
-            if (inSpecs[0] == null) {
-                pushVariablesToStack(ServiceVariableInputDefaultJsonStructure.asString());
-            }
+        } else if (inSpecs[0] == null) {
+            pushVariablesToStack(ServiceVariableInputDefaultJsonStructure.asString());
         }
 
         return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
