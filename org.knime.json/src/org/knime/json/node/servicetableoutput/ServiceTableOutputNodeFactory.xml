@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-in.png" type="QuickForm"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>Service Table Output</name>
+
+	<shortDescription>
+		Reads the content of a table and makes it available to an external caller.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+		
+			Reads the content of a table and makes it available to an external caller. This node is used
+	        in KNIME server web services, where the result of the web service is represented by the input of this node. 
+	        
+<!-- 	        TODO TU: Describe what the node does -->
+	        
+		</intro>
+
+        <option name="Parameter name">
+<!-- 	        TODO TU: Describe  -->
+            A name, which serves as key in the resulting JSON object. This is used to
+        	assert uniqueness in case multiple output results (nodes) are present in workflow.
+        </option>
+
+        <option name="Description">
+            A description for the output parameter. The description is shown in the API specification of the REST
+            interface.
+        </option>
+	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Any input table">
+			A table. 
+		</inPort>
+	
+		<outPort index="0" name="The table">
+			An optional output that directly forwards the input of the node. 
+		</outPort>
+	</ports>
+</knimeNode>
