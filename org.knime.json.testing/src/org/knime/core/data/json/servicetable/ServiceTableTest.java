@@ -109,8 +109,8 @@ public class ServiceTableTest {
         String json = "{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[null]]}";
 
         ServiceTable serviceInput =  new ObjectMapper().readValue(json, ServiceTable.class);
-        ServiceTableData serviceInputTableData = serviceInput.getServiceInputTableData();
-        Object deserializedValue = serviceInputTableData.getServiceInputTableRows().get(0).getDataCellObjects().get(0);
+        ServiceTableData serviceInputTableData = serviceInput.getServiceTableData();
+        Object deserializedValue = serviceInputTableData.getServiceTableRows().get(0).getDataCellObjects().get(0);
 
         assertNull(deserializedValue);
     }

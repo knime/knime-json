@@ -107,7 +107,7 @@ final class ServiceTableConverter {
      */
     public static DataTableSpec toTableSpec(final ServiceTable serviceInput) throws InvalidSettingsException {
         ServiceTableSpec tableSpec =
-            CheckUtils.checkSettingNotNull(serviceInput.getServiceInputTableSpec(), "table spec cannot be null");
+            CheckUtils.checkSettingNotNull(serviceInput.getServiceTableSpec(), "table spec cannot be null");
         int size = tableSpec.size();
         String[] columnNames = new String[size];
         DataType[] columnTypes = new DataType[size];
@@ -115,7 +115,7 @@ final class ServiceTableConverter {
         Set<String> alreadyUsedColumnNames = new HashSet<>();
         Map<String, Integer> usedColumnNamesToIndex = new HashMap<>();
         for (int i = 0; i < size; i++) {
-            ServiceTableColumnSpec serviceInputColumnSpec = tableSpec.getServiceInputColumnSpecs().get(i);
+            ServiceTableColumnSpec serviceInputColumnSpec = tableSpec.getServiceTableColumnSpecs().get(i);
             String columnName = serviceInputColumnSpec.getName();
             if (alreadyUsedColumnNames.add(columnName)) {
                 usedColumnNamesToIndex.put(columnName, i);
@@ -136,8 +136,8 @@ final class ServiceTableConverter {
             throws InvalidSettingsException {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
-        ServiceTableData tableData = serviceInput.getServiceInputTableData();
-        for (ServiceTableRow tableRow : tableData.getServiceInputTableRows()) {
+        ServiceTableData tableData = serviceInput.getServiceTableData();
+        for (ServiceTableRow tableRow : tableData.getServiceTableRows()) {
             dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec)));
         }
     }

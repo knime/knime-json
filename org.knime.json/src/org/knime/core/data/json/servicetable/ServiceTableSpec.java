@@ -79,7 +79,7 @@ public class ServiceTableSpec {
      * @return list of column specs
      */
     @JsonValue
-    public List<ServiceTableColumnSpec> getServiceInputColumnSpecs() {
+    public List<ServiceTableColumnSpec> getServiceTableColumnSpecs() {
         return m_columnSpecs;
     }
 

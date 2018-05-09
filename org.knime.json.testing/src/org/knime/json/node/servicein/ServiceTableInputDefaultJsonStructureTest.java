@@ -79,7 +79,7 @@ public class ServiceTableInputDefaultJsonStructureTest {
 
         ServiceTable serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ServiceTable.class);
 
-        ServiceTableSpec tableSpec = serviceInput.getServiceInputTableSpec();
+        ServiceTableSpec tableSpec = serviceInput.getServiceTableSpec();
         assertTrue(tableSpec.contains("column-string", "string"));
         assertTrue(tableSpec.contains("column-int", "int"));
         assertTrue(tableSpec.contains("column-double", "double"));
@@ -103,10 +103,10 @@ public class ServiceTableInputDefaultJsonStructureTest {
 
         ServiceTableRow firstExpectedRow = new ServiceTableRow(Arrays.asList("value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"));
         ServiceTableRow secondExpectedRow =new ServiceTableRow(Arrays.asList("value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"));
-        ServiceTableData tableData = serviceInput.getServiceInputTableData();
+        ServiceTableData tableData = serviceInput.getServiceTableData();
 
-        assertEquals(firstExpectedRow, tableData.getServiceInputTableRows().get(0));
-        assertEquals(secondExpectedRow, tableData.getServiceInputTableRows().get(1));
+        assertEquals(firstExpectedRow, tableData.getServiceTableRows().get(0));
+        assertEquals(secondExpectedRow, tableData.getServiceTableRows().get(1));
     }
 
 }

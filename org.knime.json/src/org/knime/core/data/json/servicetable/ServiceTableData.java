@@ -79,7 +79,7 @@ public class ServiceTableData {
      * @return the rows in this table
      */
     @JsonValue
-    public List<ServiceTableRow> getServiceInputTableRows() {
+    public List<ServiceTableRow> getServiceTableRows() {
         return m_tableRows;
     }
 

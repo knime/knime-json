@@ -114,8 +114,8 @@ public class ServiceTableSpecTest {
         ObjectMapper objectMapper = new ObjectMapper();
         ServiceTableSpec tableSpec = objectMapper.readValue(json, ServiceTableSpec.class);
 
-        assertEquals(new ServiceTableColumnSpec("column-string", "string"), tableSpec.getServiceInputColumnSpecs().get(0));
-        assertEquals(new ServiceTableColumnSpec("column-double", "double"), tableSpec.getServiceInputColumnSpecs().get(1));
+        assertEquals(new ServiceTableColumnSpec("column-string", "string"), tableSpec.getServiceTableColumnSpecs().get(0));
+        assertEquals(new ServiceTableColumnSpec("column-double", "double"), tableSpec.getServiceTableColumnSpecs().get(1));
     }
 
 }

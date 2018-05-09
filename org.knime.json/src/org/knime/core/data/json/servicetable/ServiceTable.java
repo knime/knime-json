@@ -84,7 +84,7 @@ public class ServiceTable {
      * @return the table spec, can not be null
      */
     @JsonProperty("table-spec")
-    public ServiceTableSpec getServiceInputTableSpec() {
+    public ServiceTableSpec getServiceTableSpec() {
         return m_tableSpec;
     }
 
@@ -93,7 +93,7 @@ public class ServiceTable {
      * @return the table data, can not be null
      */
     @JsonProperty("table-data")
-    public ServiceTableData getServiceInputTableData() {
+    public ServiceTableData getServiceTableData() {
         return m_tableData;
     }
 

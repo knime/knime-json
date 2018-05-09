@@ -114,7 +114,7 @@ public class ServiceTableDataTest {
         ObjectMapper objectMapper = new ObjectMapper();
         ServiceTableData table = objectMapper.readValue("[[\"value1\",1],[12,3.5]]", ServiceTableData.class);
 
-        List<ServiceTableRow> tableRows = table.getServiceInputTableRows();
+        List<ServiceTableRow> tableRows = table.getServiceTableRows();
         assertEquals("value1", tableRows.get(0).getDataCellObjects().get(0));
         assertEquals(1, tableRows.get(0).getDataCellObjects().get(1));
         assertEquals(12, tableRows.get(1).getDataCellObjects().get(0));
