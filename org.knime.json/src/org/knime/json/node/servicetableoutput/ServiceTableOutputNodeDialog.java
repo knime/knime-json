@@ -72,7 +72,7 @@ import org.knime.core.node.dialog.DialogNode;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableOutputNodeDialog extends NodeDialogPane {
+class ServiceTableOutputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;

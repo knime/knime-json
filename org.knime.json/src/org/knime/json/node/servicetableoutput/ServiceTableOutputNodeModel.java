@@ -50,8 +50,16 @@ package org.knime.json.node.servicetableoutput;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.json.JsonValue;
 
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -63,6 +71,9 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.node.port.PortType;
+import org.knime.json.util.JSONUtil;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The model implementation of the service table output node.
@@ -73,8 +84,10 @@ import org.knime.core.node.port.PortType;
  */
 public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode {
 
+    private static String INTERNAL_STATE_FILE_PATH = "table.json";
 
     private ServiceTableOutputNodeConfiguration m_configuration = new ServiceTableOutputNodeConfiguration();
+    private ServiceTable m_inputTable;
 
     /**
      * Constructor for the node model.
@@ -82,7 +95,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     protected ServiceTableOutputNodeModel() {
         super(
             new PortType[]{BufferedDataTable.TYPE},
-            new PortType[]{BufferedDataTable.TYPE_OPTIONAL}); // TODO TU: does it make sense to keep this optional?
+            new PortType[]{BufferedDataTable.TYPE});
     }
 
     /**
@@ -91,14 +104,8 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-
-        // TODO TU: set internal table to inData and then forward it?
-
-        // TODO TU: Calculate a json value conforming to the schema here and then save it internally?
-
-        // TODO TU: the actual calculation happens in getExternalOutput
-
-        return null;
+        m_inputTable = BufferedDataTableToServiceTable.toServiceTable(inData);
+        return inData;
     }
 
     /**
@@ -106,17 +113,33 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
      */
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-
-
-        return null;
+        return inSpecs;
     }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public ExternalNodeData getExternalOutput() {
-        // TODO Auto-generated method stub
-        return null;
+        return
+            ExternalNodeData.builder(m_configuration.getParameterName())
+                .description(m_configuration.getDescription())
+                .jsonValue(getJsonValue())
+                .build();
+    }
+
+    private JsonValue getJsonValue() {
+        JsonValue jsonValue = null;
+        try {
+            if (m_inputTable == null) {
+                jsonValue = JSONUtil.parseJSONValue("{}");
+            } else {
+                jsonValue = JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(m_inputTable));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error while parsing JSON", e);
+        }
+        return jsonValue;
     }
 
     /**
@@ -124,8 +147,11 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
      */
     @Override
     protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
-        // no op
+            throws IOException, CanceledExecutionException {
+        Path path = Paths.get(nodeInternDir.getPath(), INTERNAL_STATE_FILE_PATH);
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            m_inputTable = new ObjectMapper().readValue(inputStream, ServiceTable.class);
+        }
     }
 
     /**
@@ -133,8 +159,11 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
      */
     @Override
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
-        // no op
+            throws IOException, CanceledExecutionException {
+        Path path = Paths.get(nodeInternDir.getPath(), INTERNAL_STATE_FILE_PATH);
+        try (OutputStream outputStream = Files.newOutputStream(Files.createFile(path))) {
+            new ObjectMapper().writeValue(outputStream, m_inputTable);
+        }
     }
 
     /**
@@ -159,7 +188,6 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_configuration = new ServiceTableOutputNodeConfiguration().loadInModel(settings);
-
     }
 
     /**
@@ -167,8 +195,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
      */
     @Override
     protected void reset() {
-        // TODO Auto-generated method stub
-
+        m_inputTable = null;
     }
 
 }
