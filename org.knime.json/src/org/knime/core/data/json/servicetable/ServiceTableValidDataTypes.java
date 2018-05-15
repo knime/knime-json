@@ -55,35 +55,49 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.time.localdate.LocalDateCell;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
+import org.knime.core.data.time.localdatetime.LocalDateTimeCell;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
+import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCell;
 import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCellFactory;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.util.CheckUtils;
 
 /**
- * Class responsible for parsing a string to a {@link DataType}.
+ * Holds hard coded simple names for the valid primitive types of a {@link ServiceTable}
+ * and is responsible for conversion from Strings to {@link DataType} and back.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public abstract class ServiceTableInputValidDataTypes {
+public abstract class ServiceTableValidDataTypes {
+
+    private static final String STRING_NAME = "string";
+    private static final String DOUBLE_NAME = "double";
+    private static final String INT_NAME = "int";
+    private static final String LONG_NAME = "long";
+    private static final String BOOLEAN_NAME = "boolean";
+    private static final String LOCAL_DATE_NAME = "localdate";
+    private static final String LOCAL_DATE_TIME_NAME = "localdatetime";
+    private static final String ZONED_DATE_TIME_NAME = "zoneddatetime";
 
     /**
-     * Gets the DataType of the given string.
+     * Gets the {@link DataType} of the given string.
      *
-     * @param dataType type that should be converted
+     * @param dataType type to be converted
      * @return ServiceInputValidDataType object corresponding to the input data type
      * @throws InvalidSettingsException
      */
     public static DataType parse(final String dataType) throws InvalidSettingsException {
         switch (dataType) {
-            case "string" : return StringCell.TYPE;
-            case "int" : return IntCell.TYPE;
-            case "double" : return DoubleCell.TYPE;
-            case "long" : return LongCell.TYPE;
-            case "boolean" : return BooleanCell.TYPE;
-            case "localdate" : return LocalDateCellFactory.TYPE;
-            case "localdatetime" : return LocalDateTimeCellFactory.TYPE;
-            case "zoneddatetime" : return ZonedDateTimeCellFactory.TYPE;
+            case STRING_NAME : return StringCell.TYPE;
+            case INT_NAME : return IntCell.TYPE;
+            case DOUBLE_NAME : return DoubleCell.TYPE;
+            case LONG_NAME : return LongCell.TYPE;
+            case BOOLEAN_NAME : return BooleanCell.TYPE;
+            case LOCAL_DATE_NAME : return LocalDateCellFactory.TYPE;
+            case LOCAL_DATE_TIME_NAME : return LocalDateTimeCellFactory.TYPE;
+            case ZONED_DATE_TIME_NAME : return ZonedDateTimeCellFactory.TYPE;
 
             default : return getDataTypeByName(dataType);
         }
@@ -102,7 +116,7 @@ public abstract class ServiceTableInputValidDataTypes {
             String name = type.getName();
             if (name.equals(dataType)) {
                 if (result != null) {
-                    throw new InvalidSettingsException("Ambigous return for value: \"" + dataType + "\". Two or more data types use this name.");
+                    throw new InvalidSettingsException("Ambiguous return for value: \"" + dataType + "\". Two or more data types use this name.");
                 }
                 result = type;
             }
@@ -111,6 +125,36 @@ public abstract class ServiceTableInputValidDataTypes {
             throw new InvalidSettingsException("Unsupported data type: \"" + dataType + "\"");
         }
         return result;
+    }
+
+    /**
+     * Gets the string name of the given {@link DataType}.
+     *
+     * @param dataType type to be converted
+     * @return string representation of the data type
+     */
+    public static String parse(final DataType dataType) {
+        CheckUtils.checkArgumentNotNull(dataType);
+
+        if (dataType.getCellClass().equals(StringCell.class)) {
+            return STRING_NAME;
+        } else if (dataType.getCellClass().equals(DoubleCell.class)) {
+            return DOUBLE_NAME;
+        } else if (dataType.getCellClass().equals(IntCell.class)) {
+            return INT_NAME;
+        } else if (dataType.getCellClass().equals(LongCell.class)) {
+            return LONG_NAME;
+        } else if (dataType.getCellClass().equals(BooleanCell.class)) {
+            return BOOLEAN_NAME;
+        } else if (dataType.getCellClass().equals(LocalDateCell.class)) {
+            return LOCAL_DATE_NAME;
+        } else if (dataType.getCellClass().equals(LocalDateTimeCell.class)) {
+            return LOCAL_DATE_TIME_NAME;
+        } else if (dataType.getCellClass().equals(ZonedDateTimeCell.class)) {
+            return ZONED_DATE_TIME_NAME;
+        } else {
+            return dataType.getName();
+        }
     }
 
 }

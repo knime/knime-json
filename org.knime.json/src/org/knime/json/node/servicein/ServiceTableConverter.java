@@ -65,7 +65,7 @@ import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 import org.knime.core.data.json.servicetable.ServiceTableData;
-import org.knime.core.data.json.servicetable.ServiceTableInputValidDataTypes;
+import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
 import org.knime.core.node.BufferedDataContainer;
@@ -121,7 +121,7 @@ final class ServiceTableConverter {
                 usedColumnNamesToIndex.put(columnName, i);
                 columnNames[i] = columnName;
                 String columnType = serviceInputColumnSpec.getType();
-                columnTypes[i] = ServiceTableInputValidDataTypes.parse(columnType);
+                columnTypes[i] = ServiceTableValidDataTypes.parse(columnType);
             } else {
                 throw new InvalidSettingsException("Columns \"" + usedColumnNamesToIndex.get(columnName) + "\" and \"" + i
                     + "\" have equal names. Duplicate column names in input are not allowed.");
