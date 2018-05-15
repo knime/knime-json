@@ -64,9 +64,11 @@ public class ServiceTableOutputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
+    private static final String DEFAULT_OUTPUT_FILE_PATH = "";
 
     private String m_parameterName;
     private String m_description;
+    private String m_outputFilePath;
 
     /**
      * Constructs a new configuration.
@@ -74,6 +76,7 @@ public class ServiceTableOutputNodeConfiguration {
     public ServiceTableOutputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
+        m_outputFilePath = DEFAULT_OUTPUT_FILE_PATH;
     }
 
     /**
@@ -88,10 +91,11 @@ public class ServiceTableOutputNodeConfiguration {
     /**
      * Sets a user-supplied description for this input node.
      *
-     * @param s a description, must not be <code>null</code>
+     * @param description a description, must not be <code>null</code>
      */
-    void setDescription(final String s) {
-        m_description = s;
+    ServiceTableOutputNodeConfiguration setDescription(final String description) {
+        m_description = description;
+        return this;
     }
 
     /**
@@ -121,6 +125,26 @@ public class ServiceTableOutputNodeConfiguration {
         return this;
     }
 
+
+    /**
+     * Returns the outputFilePath.
+     *
+     * @return the outputFilePath
+     */
+    String getOutputFilePath() {
+        return m_outputFilePath;
+    }
+
+    /**
+     * Sets the outputFilePath.
+     *
+     * @param outputFilePath the outputFilePath to set
+     */
+    ServiceTableOutputNodeConfiguration setOutputFilePath(final String outputFilePath) {
+        m_outputFilePath = outputFilePath;
+        return this;
+    }
+
     /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
@@ -129,8 +153,9 @@ public class ServiceTableOutputNodeConfiguration {
      * @throws InvalidSettingsException if settings are missing or invalid
      */
     ServiceTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName"));
-        setDescription(settings.getString("description", "")); // added in 3.5
+        setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
+        setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
+        setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
         return this;
     }
 
@@ -143,6 +168,7 @@ public class ServiceTableOutputNodeConfiguration {
     ServiceTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
+            setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
@@ -159,6 +185,7 @@ public class ServiceTableOutputNodeConfiguration {
     ServiceTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
+        settings.addString("outputFilePath", m_outputFilePath);
         return this;
     }
 

@@ -58,6 +58,7 @@ import java.nio.file.Paths;
 
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.node.BufferedDataTable;
@@ -105,6 +106,16 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
         m_inputTable = BufferedDataTableToServiceTable.toServiceTable(inData);
+
+        String outputFilePath = m_configuration.getOutputFilePath();
+        if (StringUtils.isNotEmpty(outputFilePath)) {
+            Path path = Paths.get(outputFilePath);
+            Files.deleteIfExists(path);
+            try (OutputStream outputStream = Files.newOutputStream(Files.createFile(path))) {
+                new ObjectMapper().writeValue(outputStream, m_inputTable);
+            }
+        }
+
         return inData;
     }
 
