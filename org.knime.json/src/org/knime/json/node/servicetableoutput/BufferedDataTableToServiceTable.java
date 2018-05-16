@@ -63,9 +63,9 @@ import org.knime.core.data.def.LongCell;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 import org.knime.core.data.json.servicetable.ServiceTableData;
-import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
+import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
@@ -124,9 +124,10 @@ public class BufferedDataTableToServiceTable {
             DataCell dataCell = originRow.getCell(i);
             if (dataCell.isMissing()) {
                 resultRow.add(null);
+            } else {
+                DataType columnType = dataTableSpec.getColumnSpec(i).getType();
+                resultRow.add(parse(dataCell, columnType));
             }
-            DataType columnType = dataTableSpec.getColumnSpec(i).getType();
-            resultRow.add(parse(dataCell, columnType));
         }
         return new ServiceTableRow(resultRow);
     }

@@ -316,6 +316,31 @@ public class BufferedDataTableToServiceTableTest {
     }
 
     /**
+     * Checks that a data table row in a BufferedDataTable is converted to an
+     * @throws Exception
+     */
+    @Test
+    public void testSerializedMissingValuesAreNull() throws Exception {
+        ExecutionContext exec = getTestExecutionContext();
+
+        BufferedDataTable[] table = //
+            new TestBufferedDataTableBuilder() //
+                .withColumnNames("column-string") //
+                .withColumnTypes(StringCell.TYPE) //
+                .withTableRow(DataType.getMissingCell()) //
+                .build(exec); //
+
+        ServiceTable serviceTable = BufferedDataTableToServiceTable.toServiceTable(table);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String actualJson = objectMapper.writeValueAsString(serviceTable);
+        String expectedJson =
+                "{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[null]]}";
+
+        assertThat(actualJson, is(expectedJson));
+    }
+
+    /**
      * Helper class to build {@link BufferedDataTable} with desired specs and rows in a testing context.
      * Simplifies setting up text fixtures in a fluent and readable way.
      *
