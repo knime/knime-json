@@ -5,38 +5,44 @@
 	<name>Service Table Input</name>
 
 	<shortDescription>
-        Injects a table to the workflow.
-    </shortDescription>
+		Reads the content of a table from an external caller (e.g a Call Workflow node).
+     </shortDescription>
+ 
+ 	<fullDescription>
+ 		<intro>
 
-	<fullDescription>
-		<intro>
-		
-			This node allows injecting a table from outside of the workflow, e.g. via the advanced batch executor,a server-exposed
-			workflow or the call workflow(local/remote) nodes.<br/>
+			This node simplifies orchestrating KNIME workflows using the <i>Call Workflow</i> node. 
+			It defines the input of a workflow, which callers such as the <i>Call Workflow</i> node can
+			inject a KNIME table to. <br/>
 			<br/>
-			If a data table is connected to the optional input, the node will simply forward this table.<br/>
-			If no input is given, a default table will be output.<br/>
+			
+			If a data table is connected to the optional input, the node will simply forward this table to the output port 
+			unless a table is supplied via the REST API, in which case the supplied table will be available at the output port.<br/>
+			<br/>
 		
-		</intro>
-
-        <option name="Parameter name">
-            A unique name for the input parameter. This name is exposed in the REST interface and in the Call
-            Workflow node.
-        </option>
-
-        <option name="Description">
-            A description for the input parameter. The description is shown in the API specification of the REST
-            interface.
-        </option>
-	</fullDescription>
+			If no input is given, a default table is output.
+			
+ 		</intro>
+ 
+         <option name="Parameter name">
+             A name for the input parameter(preferably unique). This name is exposed in the REST interface and in the
+             <i>Call Workflow</i> node.
+         </option>
+ 
+         <option name="Description">
+             A description for the input parameter. The description is shown in the API specification of the REST
+             interface. 
+         </option>
+ 	</fullDescription>
 
 	<ports>
 		<inPort index="0" name="Any input table">
-			An optional input that is directly forwarded to the output of the node. 
+			An optional input that is directly forwarded to the output of the node, unless overwritten by supplying a table via the REST API.
 		</inPort>
 	
-		<outPort index="0" name="The injected table">
+		<outPort index="0" name="The forwarded input table">
 			The injected table, default table if no table has been injected.
 		</outPort>
 	</ports>
+
 </knimeNode>
