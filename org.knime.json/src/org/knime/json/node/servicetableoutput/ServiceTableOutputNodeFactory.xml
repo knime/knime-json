@@ -5,23 +5,24 @@
 	<name>Service Table Output</name>
 
 	<shortDescription>
-		Reads the content of a table and makes it available to an external caller (Call Workflow node).
+		Reads the content of a table and makes it available to an external caller (e.g a Call Workflow node).
     </shortDescription>
 
 	<fullDescription>
 		<intro>
-
-			Service Table Output simplifies orchestrating KNIME workflows using the Call Workflow node. 
-			It defines the output of a workflow, which the Call Workflow node receives and forwards as a KNIME Table.
-	
+			This node simplifies orchestrating KNIME workflows using the <i>Call Workflow</i> node. 
+			It defines the output of a workflow, which callers such as the <i>Call Workflow</i> node receive and
+			forward as a KNIME table.
 		</intro>
 
         <option name="Parameter name">
-            A name for the output parameter(preferably unique). This name is exposed in the REST interface and in the Call Workflow node.
+            A name for the output parameter(preferably unique). This name is exposed in the REST interface and in the
+            <i>Call Workflow</i> node.
         </option>
 
         <option name="Description">
-            A description for the output parameter. The description is shown in the API specification of the REST interface. 
+            A description for the output parameter. The description is shown in the API specification of the REST
+            interface. 
         </option>
 	</fullDescription>
 

@@ -310,7 +310,9 @@ public class BufferedDataTableToServiceTableTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String actualJson = objectMapper.writeValueAsString(serviceTable);
         String expectedJson =
-            "{\"table-spec\":[{\"column-string\":\"string\"},{\"column-int\":\"int\"},{\"column-double\":\"double\"},{\"column-long\":\"long\"},{\"column-boolean\":\"boolean\"}],\"table-data\":[[\"test\",123,2.3,3000,true]]}";
+            "{\"table-spec\":[{\"column-string\":\"string\"},{\"column-int\":\"int\"},{\"column-double\":\"double\"},"
+                + "{\"column-long\":\"long\"},"
+                + "{\"column-boolean\":\"boolean\"}],\"table-data\":[[\"test\",123,2.3,3000,true]]}";
 
         assertThat(actualJson, is(expectedJson));
     }
@@ -415,12 +417,11 @@ public class BufferedDataTableToServiceTableTest {
 
     }
 
-    private ExecutionContext getTestExecutionContext() {
+    private static ExecutionContext getTestExecutionContext() {
         @SuppressWarnings({"unchecked", "rawtypes"})
         NodeFactory<NodeModel> dummyFactory =
             (NodeFactory)new VirtualParallelizedChunkPortObjectInNodeFactory(new PortType[0]);
         return new ExecutionContext(new DefaultNodeProgressMonitor(), new Node(dummyFactory),
             SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<Integer, ContainerTable>());
     }
-
 }

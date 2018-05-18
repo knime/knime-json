@@ -71,7 +71,6 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
-import org.knime.core.node.port.PortType;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,9 +93,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
      * Constructor for the node model.
      */
     protected ServiceTableOutputNodeModel() {
-        super(
-            new PortType[]{BufferedDataTable.TYPE},
-            new PortType[]{BufferedDataTable.TYPE});
+        super(1, 1);
     }
 
     /**
@@ -110,8 +107,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
         String outputFilePath = m_configuration.getOutputFilePath();
         if (StringUtils.isNotEmpty(outputFilePath)) {
             Path path = Paths.get(outputFilePath);
-            Files.deleteIfExists(path);
-            try (OutputStream outputStream = Files.newOutputStream(Files.createFile(path))) {
+            try (OutputStream outputStream = Files.newOutputStream(path)) {
                 new ObjectMapper().writeValue(outputStream, m_inputTable);
             }
         }

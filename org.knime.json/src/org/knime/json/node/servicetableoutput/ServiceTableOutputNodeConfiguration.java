@@ -136,7 +136,8 @@ public class ServiceTableOutputNodeConfiguration {
     }
 
     /**
-     * Sets the outputFilePath.
+     * Sets the output file path. This settings isn't exposed in the dialog but can be controlled by a flow variable
+     * from an external caller. In case the value is empty, no file will be written.
      *
      * @param outputFilePath the outputFilePath to set
      */
