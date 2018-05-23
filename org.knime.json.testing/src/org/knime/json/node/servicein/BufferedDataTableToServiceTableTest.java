@@ -82,7 +82,6 @@ import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionContext;
-import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.Node;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeModel;
@@ -99,16 +98,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
 public class BufferedDataTableToServiceTableTest {
-
-    /**
-     * Checks that null as input throws exception.
-     * @throws Exception
-     */
-    @Test(expected = InvalidSettingsException.class)
-    public void testNullAsInputIsNotAllowed() throws Exception {
-        BufferedDataTableToServiceTable.toServiceTable(null);
-    }
-
     /**
      * Checks that an empty input table results in an empty ServiceTable.
      * @throws Exception
@@ -117,7 +106,7 @@ public class BufferedDataTableToServiceTableTest {
     public void testEmptyInputCreatesEmptyOutput() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .build(exec); //
 
@@ -137,7 +126,7 @@ public class BufferedDataTableToServiceTableTest {
     public void testStringColumnSpecIsCorrectlyConverted() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-string") //
                 .withColumnTypes(StringCell.TYPE) //
@@ -159,7 +148,7 @@ public class BufferedDataTableToServiceTableTest {
     public void testBooleanColumnSpecIsCorrectlyConverted() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-boolean") //
                 .withColumnTypes(BooleanCell.TYPE) //
@@ -181,7 +170,7 @@ public class BufferedDataTableToServiceTableTest {
     public void testNumericColumnSpecsAreCorrectlyConverted() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-int", "column-double", "column-long") //
                 .withColumnTypes(IntCell.TYPE, DoubleCell.TYPE, LongCell.TYPE) //
@@ -211,7 +200,7 @@ public class BufferedDataTableToServiceTableTest {
     public void testDateColumnSpecsAreCorrectlyConverted() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-localdate", "column-localdatetime", "column-zoneddatetime") //
                 .withColumnTypes(LocalDateCellFactory.TYPE, LocalDateTimeCellFactory.TYPE, ZonedDateTimeCellFactory.TYPE) //
@@ -241,7 +230,7 @@ public class BufferedDataTableToServiceTableTest {
     public void testNonPrimitiveColumnSpecUsesTheirNameAsColumnSpecType() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-duration") //
                 .withColumnTypes(DurationCellFactory.TYPE) //
@@ -256,14 +245,14 @@ public class BufferedDataTableToServiceTableTest {
     }
 
     /**
-     * Checks that a data table row in a BufferedDataTable is converted to an
+     * Checks that a data table row in a BufferedDataTable is converted to equivalent Service Table rows.
      * @throws Exception
      */
     @Test
     public void testRowsAreCorrectlyConverted() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-string", "column-int", "column-double", "column-boolean") //
                 .withColumnTypes(StringCell.TYPE, IntCell.TYPE, DoubleCell.TYPE, BooleanCell.TYPE) //
@@ -291,14 +280,14 @@ public class BufferedDataTableToServiceTableTest {
     }
 
     /**
-     * Checks that a data table row in a BufferedDataTable is converted to an
+     * Checks that a service table created by the parse method conforms to the Service Table JSON structure.
      * @throws Exception
      */
     @Test
     public void testSerializingCreatedTable() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-string", "column-int", "column-double", "column-long", "column-boolean") //
                 .withColumnTypes(StringCell.TYPE, IntCell.TYPE, DoubleCell.TYPE, LongCell.TYPE, BooleanCell.TYPE) //
@@ -318,14 +307,14 @@ public class BufferedDataTableToServiceTableTest {
     }
 
     /**
-     * Checks that a data table row in a BufferedDataTable is converted to an
+     * Checks that missing values are serialized as null.
      * @throws Exception
      */
     @Test
     public void testSerializedMissingValuesAreNull() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
-        BufferedDataTable[] table = //
+        BufferedDataTable table = //
             new TestBufferedDataTableBuilder() //
                 .withColumnNames("column-string") //
                 .withColumnTypes(StringCell.TYPE) //
@@ -402,7 +391,7 @@ public class BufferedDataTableToServiceTableTest {
          * @param exec context in which the container is created
          * @return a BufferedDataContainer with the builders column names and types
          */
-        public BufferedDataTable[] build(final ExecutionContext exec) {
+        public BufferedDataTable build(final ExecutionContext exec) {
             DataColumnSpec[] columnSpecs = DataTableSpec.createColumnSpecs(m_columnNames, m_columnTypes);
             DataTableSpec dataTableSpec = new DataTableSpec(columnSpecs);
             BufferedDataContainer dataContainer = exec.createDataContainer(dataTableSpec);
@@ -412,7 +401,7 @@ public class BufferedDataTableToServiceTableTest {
                 dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), row));
             }
             dataContainer.close();
-            return new BufferedDataTable[]{dataContainer.getTable()};
+            return dataContainer.getTable();
         }
 
     }

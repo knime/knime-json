@@ -51,11 +51,14 @@ package org.knime.json.node.servicetableoutput;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.DataType;
+import org.knime.core.data.DoubleValue;
+import org.knime.core.data.IntValue;
+import org.knime.core.data.LongValue;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -67,8 +70,6 @@ import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
 import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.node.BufferedDataTable;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.util.CheckUtils;
 
 /**
  * Class that converts a {@link BufferedDataTable} to a {@link ServiceTable}.
@@ -80,23 +81,14 @@ public class BufferedDataTableToServiceTable {
     /**
      * Converts the given {@link BufferedDataTable} to a {@link ServiceTable}.
      *
-     * @param tableInput table to be converted to a ServiceTable
+     * @param table table to be converted to a ServiceTable
      * @return ServiceTable
-     * @throws InvalidSettingsException
      */
-    public static ServiceTable toServiceTable(final BufferedDataTable[] tableInput) throws InvalidSettingsException {
-        CheckUtils.checkSettingNotNull(tableInput, "Table input cannot be null");
-        CheckUtils.checkArgument(tableInput.length == 1, "Table input must contain only one table");
-        CheckUtils.checkSettingNotNull(tableInput[0], "Table cannot be null");
-        BufferedDataTable table = tableInput[0];
+    public static ServiceTable toServiceTable(final BufferedDataTable table) {
         return new ServiceTable(createServiceTableSpecs(table), createServiceTableData(table));
     }
 
     private static ServiceTableSpec createServiceTableSpecs(final BufferedDataTable table) {
-        return new ServiceTableSpec(createServiceTableColumnSpecs(table));
-    }
-
-    private static List<ServiceTableColumnSpec> createServiceTableColumnSpecs(final BufferedDataTable table) {
         DataTableSpec dataTableSpec = table.getDataTableSpec();
         List<ServiceTableColumnSpec> serviceTableColumnSpecs = new ArrayList<>();
         for (DataColumnSpec columnSpec : dataTableSpec) {
@@ -104,17 +96,17 @@ public class BufferedDataTableToServiceTable {
             String type = ServiceTableValidDataTypes.parse(columnSpec.getType());
             serviceTableColumnSpecs.add(new ServiceTableColumnSpec(name, type));
         }
-        return serviceTableColumnSpecs;
+        return new ServiceTableSpec(serviceTableColumnSpecs);
     }
-
     private static ServiceTableData createServiceTableData(final BufferedDataTable table) {
-        return new ServiceTableData(createServiceTableRows(table));
-    }
-    private static List<ServiceTableRow> createServiceTableRows(final BufferedDataTable table) {
         List<ServiceTableRow> serviceTableRows = new ArrayList<>();
         DataTableSpec dataTableSpec = table.getDataTableSpec();
-        table.forEach(row -> serviceTableRows.add(createServiceTableRow(row, dataTableSpec)));
-        return serviceTableRows;
+
+        for (DataRow row : table) {
+            serviceTableRows.add(createServiceTableRow(row, dataTableSpec));
+        }
+
+        return new ServiceTableData(serviceTableRows);
     }
 
     private static ServiceTableRow createServiceTableRow(final DataRow originRow, final DataTableSpec dataTableSpec) {
@@ -125,37 +117,26 @@ public class BufferedDataTableToServiceTable {
             if (dataCell.isMissing()) {
                 resultRow.add(null);
             } else {
-                DataType columnType = dataTableSpec.getColumnSpec(i).getType();
-                resultRow.add(parse(dataCell, columnType));
+                resultRow.add(parse(dataCell));
             }
         }
         return new ServiceTableRow(resultRow);
     }
 
-    private static Object parse(final DataCell dataCell, final DataType targetType) {
-        Object cellObject = null;
+    private static Object parse(final DataCell dataCell) {
+        Class<? extends DataCell> dataCellClass = dataCell.getClass();
 
-        if (targetType.getCellClass().equals(DoubleCell.class)) {
-            if (dataCell.getClass().equals(DoubleCell.class)) {
-                cellObject = ((DoubleCell) dataCell).getDoubleValue();
-            }
-        } else if (targetType.getCellClass().equals(IntCell.class)) {
-            if (dataCell.getClass().equals(IntCell.class)) {
-                cellObject = ((IntCell) dataCell).getIntValue();
-            }
-        } else if (targetType.getCellClass().equals(LongCell.class)) {
-            if (dataCell.getClass().equals(LongCell.class)) {
-                cellObject = ((LongCell) dataCell).getLongValue();
-            }
-        } else if (targetType.getCellClass().equals(BooleanCell.class)) {
-            if (dataCell.getClass().equals(BooleanCell.class)) {
-                cellObject = ((BooleanCell) dataCell).getBooleanValue();
-            }
+        if (dataCellClass.equals(DoubleCell.class)) {
+            return ((DoubleValue) dataCell).getDoubleValue();
+        }  else if (dataCellClass.equals(IntCell.class)) {
+            return ((IntValue) dataCell).getIntValue();
+        } else if (dataCellClass.equals(LongCell.class)) {
+            return ((LongValue) dataCell).getLongValue();
+        } else if (dataCellClass.equals(BooleanCell.class)) {
+            return ((BooleanValue) dataCell).getBooleanValue();
         } else {
-            cellObject = dataCell.toString();
+            return dataCell.toString();
         }
-
-        return cellObject;
     }
 
 }

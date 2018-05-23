@@ -50,7 +50,6 @@ package org.knime.json.node.servicetableoutput;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,6 +61,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
@@ -73,6 +73,8 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.json.util.JSONUtil;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -82,12 +84,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode {
-
-    private static String INTERNAL_STATE_FILE_PATH = "table.json";
+public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
     private ServiceTableOutputNodeConfiguration m_configuration = new ServiceTableOutputNodeConfiguration();
-    private ServiceTable m_inputTable;
+    private BufferedDataTable m_table;
 
     /**
      * Constructor for the node model.
@@ -102,17 +102,20 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-        m_inputTable = BufferedDataTableToServiceTable.toServiceTable(inData);
+        m_table = inData[0];
+        writeInputAsJsonFileIfPathPresent();
 
+        return inData;
+    }
+
+    private void writeInputAsJsonFileIfPathPresent() throws IOException, JsonGenerationException, JsonMappingException {
         String outputFilePath = m_configuration.getOutputFilePath();
         if (StringUtils.isNotEmpty(outputFilePath)) {
             Path path = Paths.get(outputFilePath);
             try (OutputStream outputStream = Files.newOutputStream(path)) {
-                new ObjectMapper().writeValue(outputStream, m_inputTable);
+                new ObjectMapper().writeValue(outputStream, BufferedDataTableToServiceTable.toServiceTable(m_table));
             }
         }
-
-        return inData;
     }
 
     /**
@@ -138,10 +141,11 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     private JsonValue getJsonValue() {
         JsonValue jsonValue = null;
         try {
-            if (m_inputTable == null) {
+            if (m_table == null) {
                 jsonValue = JSONUtil.parseJSONValue("{}");
             } else {
-                jsonValue = JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(m_inputTable));
+                ServiceTable inputTable = BufferedDataTableToServiceTable.toServiceTable(m_table);
+                jsonValue = JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(inputTable));
             }
         } catch (IOException e) {
             throw new RuntimeException("Error while parsing JSON", e);
@@ -155,10 +159,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     @Override
     protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
             throws IOException, CanceledExecutionException {
-        Path path = Paths.get(nodeInternDir.getPath(), INTERNAL_STATE_FILE_PATH);
-        try (InputStream inputStream = Files.newInputStream(path)) {
-            m_inputTable = new ObjectMapper().readValue(inputStream, ServiceTable.class);
-        }
+        // Handled by BufferedDataTableHolder
     }
 
     /**
@@ -167,10 +168,19 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
     @Override
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
             throws IOException, CanceledExecutionException {
-        Path path = Paths.get(nodeInternDir.getPath(), INTERNAL_STATE_FILE_PATH);
-        try (OutputStream outputStream = Files.newOutputStream(Files.createFile(path))) {
-            new ObjectMapper().writeValue(outputStream, m_inputTable);
-        }
+        // Handled by BufferedDataTableHolder
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BufferedDataTable[] getInternalTables() {
+        return new BufferedDataTable[] {m_table};
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setInternalTables(final BufferedDataTable[] tables) {
+        m_table = tables[0];
     }
 
     /**
@@ -202,7 +212,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements OutputNode
      */
     @Override
     protected void reset() {
-        m_inputTable = null;
+        m_table = null;
     }
 
 }

@@ -48,6 +48,7 @@
  */
 package org.knime.core.data.json.servicetable;
 
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataTypeRegistry;
 import org.knime.core.data.def.BooleanCell;
@@ -59,6 +60,8 @@ import org.knime.core.data.time.localdate.LocalDateCell;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCell;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
+import org.knime.core.data.time.localtime.LocalTimeCell;
+import org.knime.core.data.time.localtime.LocalTimeCellFactory;
 import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCell;
 import org.knime.core.data.time.zoneddatetime.ZonedDateTimeCellFactory;
 import org.knime.core.node.InvalidSettingsException;
@@ -77,6 +80,7 @@ public abstract class ServiceTableValidDataTypes {
     private static final String INT_NAME = "int";
     private static final String LONG_NAME = "long";
     private static final String BOOLEAN_NAME = "boolean";
+    private static final String LOCAL_TIME_NAME = "localtime";
     private static final String LOCAL_DATE_NAME = "localdate";
     private static final String LOCAL_DATE_TIME_NAME = "localdatetime";
     private static final String ZONED_DATE_TIME_NAME = "zoneddatetime";
@@ -96,6 +100,7 @@ public abstract class ServiceTableValidDataTypes {
             case LONG_NAME : return LongCell.TYPE;
             case BOOLEAN_NAME : return BooleanCell.TYPE;
             case LOCAL_DATE_NAME : return LocalDateCellFactory.TYPE;
+            case LOCAL_TIME_NAME : return LocalTimeCellFactory.TYPE;
             case LOCAL_DATE_TIME_NAME : return LocalDateTimeCellFactory.TYPE;
             case ZONED_DATE_TIME_NAME : return ZonedDateTimeCellFactory.TYPE;
 
@@ -135,22 +140,25 @@ public abstract class ServiceTableValidDataTypes {
      */
     public static String parse(final DataType dataType) {
         CheckUtils.checkArgumentNotNull(dataType);
+        Class<? extends DataCell> cellClass = dataType.getCellClass();
 
-        if (dataType.getCellClass().equals(StringCell.class)) {
+        if (cellClass.equals(StringCell.class)) {
             return STRING_NAME;
-        } else if (dataType.getCellClass().equals(DoubleCell.class)) {
+        } else if (cellClass.equals(DoubleCell.class)) {
             return DOUBLE_NAME;
-        } else if (dataType.getCellClass().equals(IntCell.class)) {
+        } else if (cellClass.equals(IntCell.class)) {
             return INT_NAME;
-        } else if (dataType.getCellClass().equals(LongCell.class)) {
+        } else if (cellClass.equals(LongCell.class)) {
             return LONG_NAME;
-        } else if (dataType.getCellClass().equals(BooleanCell.class)) {
+        } else if (cellClass.equals(BooleanCell.class)) {
             return BOOLEAN_NAME;
-        } else if (dataType.getCellClass().equals(LocalDateCell.class)) {
+        } else if (cellClass.equals(LocalDateCell.class)) {
             return LOCAL_DATE_NAME;
-        } else if (dataType.getCellClass().equals(LocalDateTimeCell.class)) {
+        } else if (cellClass.equals(LocalTimeCell.class)) {
+            return LOCAL_TIME_NAME;
+        } else if (cellClass.equals(LocalDateTimeCell.class)) {
             return LOCAL_DATE_TIME_NAME;
-        } else if (dataType.getCellClass().equals(ZonedDateTimeCell.class)) {
+        } else if (cellClass.equals(ZonedDateTimeCell.class)) {
             return ZONED_DATE_TIME_NAME;
         } else {
             return dataType.getName();
