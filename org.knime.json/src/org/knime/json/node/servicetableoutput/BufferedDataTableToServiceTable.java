@@ -56,13 +56,10 @@ import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
-import org.knime.core.data.def.BooleanCell;
-import org.knime.core.data.def.DoubleCell;
-import org.knime.core.data.def.IntCell;
-import org.knime.core.data.def.LongCell;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 import org.knime.core.data.json.servicetable.ServiceTableData;
@@ -113,30 +110,28 @@ public class BufferedDataTableToServiceTable {
         List<Object> resultRow = new ArrayList<>();
         int numColumns = dataTableSpec.getNumColumns();
         for (int i = 0; i < numColumns; i++) {
+            DataType type = dataTableSpec.getColumnSpec(i).getType();
             DataCell dataCell = originRow.getCell(i);
             if (dataCell.isMissing()) {
                 resultRow.add(null);
             } else {
-                resultRow.add(parse(dataCell));
+                resultRow.add(parse(dataCell, type));
             }
         }
         return new ServiceTableRow(resultRow);
     }
 
-    private static Object parse(final DataCell dataCell) {
-        Class<? extends DataCell> dataCellClass = dataCell.getClass();
-
-        if (dataCellClass.equals(DoubleCell.class)) {
+    private static Object parse(final DataCell dataCell, final DataType type) {
+        if (DoubleValue.class.equals(type.getPreferredValueClass())) {
             return ((DoubleValue) dataCell).getDoubleValue();
-        }  else if (dataCellClass.equals(IntCell.class)) {
+        }  else if (IntValue.class.equals(type.getPreferredValueClass())) {
             return ((IntValue) dataCell).getIntValue();
-        } else if (dataCellClass.equals(LongCell.class)) {
+        } else if (LongValue.class.equals(type.getPreferredValueClass())) {
             return ((LongValue) dataCell).getLongValue();
-        } else if (dataCellClass.equals(BooleanCell.class)) {
+        } else if (BooleanValue.class.equals(type.getPreferredValueClass())) {
             return ((BooleanValue) dataCell).getBooleanValue();
         } else {
             return dataCell.toString();
         }
     }
-
 }
