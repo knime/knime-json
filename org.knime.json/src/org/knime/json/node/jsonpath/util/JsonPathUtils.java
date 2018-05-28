@@ -380,6 +380,10 @@ public class JsonPathUtils {
                     }
                     return BooleanCellFactory.create(bool.booleanValue());
                 case Integer:
+                    if (JsonPathUtils.checkLongProblem(returnType, object, setWarning)) {
+                        return new MissingCell("Value " + object + " is too large for an integer");
+                    }
+
                     Integer integer = config.mappingProvider().map(object, Integer.class, config);
                     if (integer == null) {
                         return new IntCell(Integer.parseInt(object.toString()));
@@ -424,7 +428,6 @@ public class JsonPathUtils {
                     throw new UnsupportedOperationException("Unsupported return type: " + returnType);
             }
         } catch (RuntimeException | IOException e) {
-            checkLongProblem(returnType, object, setWarning);
             return new MissingCell(e.getMessage());
         }
     }
@@ -520,15 +523,18 @@ public class JsonPathUtils {
      * @param returnType The expected return type.
      * @param object The actual result.
      * @param setWarning Thing to do when we are out of range for an integer, but got a long for the expected integer.
+     * @return <code>true</code> if we have an integer overflow, <code>false</code> if everything is fine
      * @since 3.2
      */
-    public static void checkLongProblem(final OutputType returnType, final Object object, final Runnable setWarning) {
+    public static boolean checkLongProblem(final OutputType returnType, final Object object, final Runnable setWarning) {
         if (object instanceof Long) {
             final Long l = (Long)object;
             if (returnType == OutputType.Integer && Math.abs(l) > Integer.MAX_VALUE
                 && l != Integer.MIN_VALUE) {
                 setWarning.run();
+                return true;
             }
         }
+        return false;
     }
 }

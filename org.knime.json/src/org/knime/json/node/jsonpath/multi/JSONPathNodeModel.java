@@ -329,6 +329,10 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
                             }
                             return BooleanCellFactory.create(bool.booleanValue());
                         case Integer:
+                            if (JsonPathUtils.checkLongProblem(returnType, object, m_setWarning)) {
+                                return new MissingCell("Value " + object + " is too large for an integer");
+                            }
+
                             Integer integer = mappingProvider.map(object, Integer.class, config);
                             if (integer == null) {
                                 return new IntCell(Integer.parseInt(object.toString()));
@@ -371,8 +375,6 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
                             throw new UnsupportedOperationException("Unsupported return type: " + returnType);
                     }
                 } catch (RuntimeException | IOException e) {
-                    JsonPathUtils.checkLongProblem(returnType, object,
-                        m_setWarning);
                     return new MissingCell(e.getMessage());
                 }
             }
