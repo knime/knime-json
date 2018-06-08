@@ -62,6 +62,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public class ServiceTableColumnSpec {
 

@@ -6,7 +6,11 @@ Bundle-Version: 3.6.0.qualifier
 Bundle-Activator: org.knime.json.internal.Activator
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Export-Package: org.knime.core.data.json,
+ org.knime.core.data.json.servicetable,
  org.knime.json.node.jsonpath;x-internal:=true,
+ org.knime.json.node.service.input.variable,
+ org.knime.json.node.service.output.table,
+ org.knime.json.node.service.input.table,
  org.knime.json.node.util;x-internal:=true,
  org.knime.json.util
 Require-Bundle: com.jayway.jsonpath.json-path;bundle-version="[2.4.0,3.0.0)",

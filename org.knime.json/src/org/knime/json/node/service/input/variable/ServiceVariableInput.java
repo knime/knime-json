@@ -44,59 +44,46 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicevariableinput;
+package org.knime.json.node.service.input.variable;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Factory for the Service Variable Input node.
+ * Representation of the Service Variable Input containing a list of variables.
+ * Is serializable/deserializable with Jackson.
+ *
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-public class ServiceVariableInputNodeFactory extends NodeFactory<ServiceVariableInputNodeModel> {
+public class ServiceVariableInput {
+
+    private final List<Map<String, Object>> m_variables;
 
     /**
-     * {@inheritDoc}
+     * Constructor for the Service Variable Input.
+     *
+     * @param variables the variables in this input
      */
-    @Override
-    public ServiceVariableInputNodeModel createNodeModel() {
-        return new ServiceVariableInputNodeModel();
+    @JsonCreator
+    public ServiceVariableInput(@JsonProperty("variables") final List<Map<String, Object>> variables) {
+        m_variables = variables;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the variables in this input.
+     *
+     * @return the variables
      */
-    @Override
-    public int getNrNodeViews() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<ServiceVariableInputNodeModel> createNodeView(final int viewIndex, final ServiceVariableInputNodeModel nodeModel) {
-        throw new UnsupportedOperationException("No views! " + viewIndex);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new ServiceVariableInputNodeDialog();
+    @JsonProperty("variables")
+    public List<Map<String, Object>> getVariables() {
+        return m_variables;
     }
 
 }

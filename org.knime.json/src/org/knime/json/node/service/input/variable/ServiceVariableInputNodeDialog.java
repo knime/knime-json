@@ -44,9 +44,9 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Mar 29, 2018 (Tobias Urhaug): created
+ *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.service.input.variable;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -59,28 +59,28 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.port.PortObjectSpec;
 
 /**
- * Dialog for the Service Table Input node.
+ * Node dialog for the Service Variable Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-class ServiceTableInputNodeDialog extends NodeDialogPane {
+class ServiceVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
 
     /**
-     * New pane for configuring the Service In node.
+     * New pane for configuring the Service Variable Input node.
      */
-    protected ServiceTableInputNodeDialog() {
+    protected ServiceVariableInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 
@@ -89,7 +89,7 @@ class ServiceTableInputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        addTab("Service Tabel Input", createLayout(), false);
+        addTab("Service Variable Input", createLayout(), false);
     }
 
     private JPanel createLayout() {
@@ -123,7 +123,7 @@ class ServiceTableInputNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        ServiceTableInputNodeConfiguration config = new ServiceTableInputNodeConfiguration();
+        ServiceVariableInputNodeConfiguration config = new ServiceVariableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
         config.save(settings);
@@ -133,8 +133,8 @@ class ServiceTableInputNodeDialog extends NodeDialogPane {
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs) throws NotConfigurableException {
-        ServiceTableInputNodeConfiguration config = new ServiceTableInputNodeConfiguration().loadInDialog(settings);
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
+        ServiceVariableInputNodeConfiguration config = new ServiceVariableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
     }

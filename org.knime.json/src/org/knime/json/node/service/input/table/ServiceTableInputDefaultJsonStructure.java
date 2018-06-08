@@ -46,7 +46,7 @@
  * History
  *   Apr 3, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.service.input.table;
 
 import java.io.IOException;
 
@@ -62,6 +62,7 @@ import org.knime.json.util.JSONUtil;
  * Class that holds a hard coded prototype JSON structure for the Service Table Input node.
  *
  * @author Tobias Urhaug, Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public final class ServiceTableInputDefaultJsonStructure {
 

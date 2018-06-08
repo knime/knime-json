@@ -46,7 +46,7 @@
  * History
  *   Apr 4, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.serviceinputtable;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -80,6 +80,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
+import org.knime.json.node.service.input.table.ServiceInputMapper;
 
 /**
  * Test suite for converting a {@link ServiceTable} to a {@link BufferedDataTable}.
@@ -94,7 +95,7 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testNullAsServiceInputIsNotAllowed() throws InvalidSettingsException {
-        ServiceTableConverter.toBufferedDataTable(null, getTestExecutionContext());
+        ServiceInputMapper.toBufferedDataTable((ServiceTable) null, getTestExecutionContext());
     }
 
     /**
@@ -113,7 +114,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withColumnSpec("column-localdate", "localdate")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceInputMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
 
         DataTableSpec createdSpecs = dataTable[0].getSpec();
         DataColumnSpec[] expectedColumnSpecs = //
@@ -139,7 +140,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withColumnSpec("column-string", "string")//
                 .build();//
 
-        ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        ServiceInputMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
     }
 
     /**
@@ -155,7 +156,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withColumnSpec("column-FQ-name", "Duration")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceInputMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
         DataTableSpec createdSpecs = dataTable[0].getSpec();
 
         assertTrue(createdSpecs.getColumnSpec(0).getType() == DurationCellFactory.TYPE);
@@ -173,7 +174,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withNullTableSpec()//
                 .build();//
 
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -195,7 +196,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withTableRow("value2", 432, 0.4, "2018-03-28")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("First row should have been created", iterator.hasNext());
@@ -219,7 +220,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withColumnSpec("column-unsupported", "not supported type")//
                 .build();//
 
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -235,7 +236,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withTableRow(1)//
                 .build();//
 
-        ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -251,7 +252,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withTableRow("Hello int column!")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("First row should have been created", iterator.hasNext());
         DataRow dataRow = iterator.next();
@@ -271,7 +272,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withTableRow((String) null)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("First row should have been created", iterator.hasNext());
         DataRow dataRow = iterator.next();
@@ -293,7 +294,7 @@ public class ServiceTableToBufferedDataTableTest {
                 .withTableRow(1, 2, 3)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableConverter.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ServiceInputMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         CloseableRowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());

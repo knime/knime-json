@@ -46,13 +46,16 @@
  * History
  *   Apr 4, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.service.input.table;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.json.JsonValue;
 
 import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
@@ -65,21 +68,47 @@ import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 import org.knime.core.data.json.servicetable.ServiceTableData;
-import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
+import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Utility class for converting {@link ServiceTable}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-final class ServiceTableConverter {
+public final class ServiceInputMapper {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    /**
+     * Converts a JsonValue conforming to the structure of {@link ServiceTable}
+     * to a {@link BufferedDataTable}.
+     *
+     * @param json json representation of a {@link ServiceTable}
+     * @param exec context in which the call has been made
+     * @return a Buffered data table corresponding to the json input
+     * @throws InvalidSettingsException
+     */
+    public static BufferedDataTable[] toBufferedDataTable(final JsonValue json, final ExecutionContext exec) throws InvalidSettingsException {
+        return toBufferedDataTable(asServiceTable(json), exec);
+    }
+
+    private static ServiceTable asServiceTable(final JsonValue json) throws InvalidSettingsException {
+        try {
+            return OBJECT_MAPPER.readValue(json.toString(), ServiceTable.class);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse JsonValue to a Buffered Data Table", e);
+        }
+    }
 
     /**
      * Creates a buffered data table of the service input.
@@ -96,6 +125,17 @@ final class ServiceTableConverter {
         addDataRows(dataContainer, serviceInput, exec);
         dataContainer.close();
         return new BufferedDataTable[]{dataContainer.getTable()};
+    }
+
+    /**
+     * Creates a data table spec of the service input.
+     *
+     * @param serviceInput input of which the table spec is created from
+     * @return a DataTableSpec from the service input
+     * @throws InvalidSettingsException
+     */
+    public static DataTableSpec toTableSpec(final JsonValue serviceInput) throws InvalidSettingsException {
+        return toTableSpec(asServiceTable(serviceInput));
     }
 
     /**

@@ -52,7 +52,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-import org.knime.json.node.servicein.ServiceTableBuilder;
+import org.knime.json.node.serviceinputtable.ServiceTableBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

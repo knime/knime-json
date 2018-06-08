@@ -46,7 +46,7 @@
  * History
  *   Mar 29, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.service.input.table;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +57,6 @@ import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -70,18 +69,16 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.port.PortType;
 import org.knime.core.util.FileUtil;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.json.util.JSONUtil;
 
 /**
  * The model implementation of the service table input node.
  * Creates a knime table of a json input conforming to a set schema.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
-
-    private final ObjectMapper m_objectMapper;
 
     private JsonValue m_externalValue;
     private ServiceTableInputNodeConfiguration m_configuration = new ServiceTableInputNodeConfiguration();
@@ -92,8 +89,8 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
     protected ServiceTableInputNodeModel() {
         super(
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
-            new PortType[]{BufferedDataTable.TYPE});
-        m_objectMapper = new ObjectMapper();
+            new PortType[]{BufferedDataTable.TYPE}
+        );
     }
 
     /**
@@ -102,16 +99,14 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-        ServiceTable externalServiceInput = getExternalServiceInput();
+        JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return ServiceTableConverter.toBufferedDataTable(externalServiceInput, exec);
+            return ServiceInputMapper.toBufferedDataTable(externalServiceInput, exec);
         } else {
             if (inData[0] != null) {
                 return inData;
             } else {
-                String defaultJson = ServiceTableInputDefaultJsonStructure.asString();
-                ServiceTable defaultTable = mapJsonToServiceTable(defaultJson);
-                return ServiceTableConverter.toBufferedDataTable(defaultTable, exec);
+                return ServiceInputMapper.toBufferedDataTable(ServiceTableInputDefaultJsonStructure.asJsonValue(), exec);
             }
         }
     }
@@ -121,42 +116,33 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-        ServiceTable externalServiceInput = getExternalServiceInput();
+        JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return new DataTableSpec[]{ServiceTableConverter.toTableSpec(externalServiceInput)};
+            return new DataTableSpec[]{ServiceInputMapper.toTableSpec(externalServiceInput)};
         } else {
             if (inSpecs[0] != null) {
                 return inSpecs;
             } else {
-                String defaultJson = ServiceTableInputDefaultJsonStructure.asString();
-                ServiceTable defaultTable = mapJsonToServiceTable(defaultJson);
-                return new DataTableSpec[]{ServiceTableConverter.toTableSpec(defaultTable)};
+                return new DataTableSpec[]{ServiceInputMapper.toTableSpec(ServiceTableInputDefaultJsonStructure.asJsonValue())};
             }
         }
     }
 
-    private ServiceTable getExternalServiceInput() throws InvalidSettingsException {
-        String externalInput = null;
+    private JsonValue getExternalServiceInput() throws InvalidSettingsException {
+        JsonValue externalInput = null;
         String inputFileName = m_configuration.getFileName();
         if (!StringUtils.isEmpty(inputFileName)) {
             try {
                 File inputFile = FileUtil.getFileFromURL(new URL(inputFileName));
-                externalInput = new String(Files.readAllBytes(inputFile.toPath()));
+                String externalJsonString= new String(Files.readAllBytes(inputFile.toPath()));
+                externalInput = JSONUtil.parseJSONValue(externalJsonString);
             } catch (IOException  e) {
                 throw new InvalidSettingsException("Input path \"" + inputFileName + "\" could not be resolved" , e);
             }
         } else if (m_externalValue != null) {
-            externalInput = m_externalValue.toString();
+            externalInput = m_externalValue;
         }
-        return externalInput == null ? null : mapJsonToServiceTable(externalInput);
-    }
-
-    private ServiceTable mapJsonToServiceTable(final String jsonInput) throws InvalidSettingsException {
-        try {
-            return m_objectMapper.readValue(jsonInput, ServiceTable.class);
-        } catch (IOException e) {
-            throw new InvalidSettingsException("Input could not be parsed to table: " + e.getMessage(), e);
-        }
+        return externalInput;
     }
 
     /**

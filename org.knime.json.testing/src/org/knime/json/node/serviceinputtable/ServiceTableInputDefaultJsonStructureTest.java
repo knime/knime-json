@@ -46,7 +46,7 @@
  * History
  *   Apr 20, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.serviceinputtable;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -58,6 +58,7 @@ import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableData;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
+import org.knime.json.node.service.input.table.ServiceTableInputDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

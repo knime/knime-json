@@ -46,7 +46,7 @@
  * History
  *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicevariableinput;
+package org.knime.json.node.service.input.variable;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +76,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * The node model for the Service Variable Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public class ServiceVariableInputNodeModel extends NodeModel implements InputNode {
 

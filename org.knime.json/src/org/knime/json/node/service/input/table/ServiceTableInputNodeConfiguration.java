@@ -44,9 +44,9 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Apr 03, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicetableoutput;
+package org.knime.json.node.service.input.table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
@@ -56,27 +56,24 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Configuration for the Service Table Output node.
+ * Configuration for the Service In node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableOutputNodeConfiguration {
+final class ServiceTableInputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "output";
+    private static final String DEFAULT_PARAMETER_NAME = "input";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_OUTPUT_FILE_PATH = "";
+    private static final String DEFAULT_FILE_NAME = "";
 
     private String m_parameterName;
     private String m_description;
-    private String m_outputFilePath;
+    private String m_variableInjectedFileName;
 
-    /**
-     * Constructs a new configuration.
-     */
-    public ServiceTableOutputNodeConfiguration() {
+    public ServiceTableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
-        m_outputFilePath = DEFAULT_OUTPUT_FILE_PATH;
+        m_variableInjectedFileName = DEFAULT_FILE_NAME;
     }
 
     /**
@@ -91,11 +88,10 @@ public class ServiceTableOutputNodeConfiguration {
     /**
      * Sets a user-supplied description for this input node.
      *
-     * @param description a description, must not be <code>null</code>
+     * @param s a description, must not be <code>null</code>
      */
-    ServiceTableOutputNodeConfiguration setDescription(final String description) {
-        m_description = description;
-        return this;
+    void setDescription(final String s) {
+        m_description = s;
     }
 
     /**
@@ -115,7 +111,7 @@ public class ServiceTableOutputNodeConfiguration {
      *            compatible)
      * @return the updated configuration
      */
-    ServiceTableOutputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    ServiceTableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
         CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
@@ -125,25 +121,18 @@ public class ServiceTableOutputNodeConfiguration {
         return this;
     }
 
-
     /**
-     * Returns the outputFilePath.
-     *
-     * @return the outputFilePath
+     * @return the m_fileName
      */
-    String getOutputFilePath() {
-        return m_outputFilePath;
+    String getFileName() {
+        return m_variableInjectedFileName;
     }
 
     /**
-     * Sets the output file path. This settings isn't exposed in the dialog but can be controlled by a flow variable
-     * from an external caller. In case the value is empty, no file will be written.
-     *
-     * @param outputFilePath the outputFilePath to set
+     * @param fileName the fileName to set
      */
-    ServiceTableOutputNodeConfiguration setOutputFilePath(final String outputFilePath) {
-        m_outputFilePath = outputFilePath;
-        return this;
+    void setFileName(final String fileName) {
+        this.m_variableInjectedFileName = fileName;
     }
 
     /**
@@ -153,10 +142,10 @@ public class ServiceTableOutputNodeConfiguration {
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ServiceTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
-        setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
-        setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
+    ServiceTableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+        setParameterName(settings.getString("parameterName"));
+        setDescription(settings.getString("description", "")); // added in 3.5
+        setFileName(settings.getString("fileName"));
         return this;
     }
 
@@ -166,13 +155,13 @@ public class ServiceTableOutputNodeConfiguration {
      * @param settings a node settings object
      * @return the updated configuration
      */
-    ServiceTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
+    ServiceTableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
-            setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
+        setFileName(settings.getString("fileName", DEFAULT_FILE_NAME));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }
@@ -183,10 +172,10 @@ public class ServiceTableOutputNodeConfiguration {
      * @param settings a settings object
      * @return this object
      */
-    ServiceTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
+    ServiceTableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
-        settings.addString("outputFilePath", m_outputFilePath);
+        settings.addString("fileName", m_variableInjectedFileName);
         return this;
     }
 
@@ -195,5 +184,4 @@ public class ServiceTableOutputNodeConfiguration {
     public String toString() {
         return "\"" + m_parameterName + "\"";
     }
-
 }

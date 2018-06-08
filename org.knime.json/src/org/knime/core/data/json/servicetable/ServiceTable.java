@@ -48,10 +48,15 @@
  */
 package org.knime.core.data.json.servicetable;
 
+import java.io.IOException;
+
+import javax.json.JsonValue;
+
 import org.knime.core.node.util.CheckUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Representation of a Service Table containing Service Table Specs and Service Table Data.
@@ -59,6 +64,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 @JsonPropertyOrder({"table-spec", "table-data"})
 public class ServiceTable {
@@ -95,6 +101,21 @@ public class ServiceTable {
     @JsonProperty("table-data")
     public ServiceTableData getServiceTableData() {
         return m_tableData;
+    }
+
+    /**
+     * Checks if a json value conforms to the structure of {@link ServiceTable}.
+     *
+     * @param jsonValue the json value under question
+     * @return true if the supplied Json value conforms to {@link ServiceTable}
+     */
+    public static boolean isServiceTableJson(final JsonValue jsonValue) {
+        try {
+            new ObjectMapper().readValue(jsonValue.toString(), ServiceTable.class);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
 }

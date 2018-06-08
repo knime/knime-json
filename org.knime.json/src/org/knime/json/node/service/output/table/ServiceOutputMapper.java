@@ -46,10 +46,13 @@
  * History
  *   May 7, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicetableoutput;
+package org.knime.json.node.service.output.table;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.json.JsonValue;
 
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
@@ -67,13 +70,43 @@ import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
 import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
 import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.json.util.JSONUtil;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Class that converts a {@link BufferedDataTable} to a {@link ServiceTable}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-public class BufferedDataTableToServiceTable {
+public final class ServiceOutputMapper {
+
+    private ServiceOutputMapper() {
+
+    }
+
+    /**
+     * Converts the incoming table to a json value conforming to the {@link ServiceTable} structure.
+     *
+     * @param table table to be converted to a json value
+     * @return json value representing the input table
+     * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
+     */
+    public static JsonValue toServiceTableJsonValue(final BufferedDataTable table) throws InvalidSettingsException {
+        JsonValue result = null;
+        try {
+            ServiceTable serviceTable = toServiceTable(table);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String serviceTableJson = objectMapper.writeValueAsString(serviceTable);
+            result = JSONUtil.parseJSONValue(serviceTableJson);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse JsonValue to a Buffered Data Table", e);
+        }
+
+        return result;
+    }
 
     /**
      * Converts the given {@link BufferedDataTable} to a {@link ServiceTable}.

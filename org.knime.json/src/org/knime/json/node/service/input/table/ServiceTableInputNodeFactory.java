@@ -44,9 +44,9 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 4, 2018 (Tobias Urhaug): created
+ *   Mar 29, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicetableoutput;
+package org.knime.json.node.service.input.table;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
@@ -56,15 +56,16 @@ import org.knime.core.node.NodeView;
  * Factory for the Service Table Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-public class ServiceTableOutputNodeFactory extends NodeFactory<ServiceTableOutputNodeModel> {
+public class ServiceTableInputNodeFactory extends NodeFactory<ServiceTableInputNodeModel> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ServiceTableOutputNodeModel createNodeModel() {
-        return new ServiceTableOutputNodeModel();
+    public ServiceTableInputNodeModel createNodeModel() {
+        return new ServiceTableInputNodeModel();
     }
 
     /**
@@ -79,7 +80,7 @@ public class ServiceTableOutputNodeFactory extends NodeFactory<ServiceTableOutpu
      * {@inheritDoc}
      */
     @Override
-    public NodeView<ServiceTableOutputNodeModel> createNodeView(final int viewIndex, final ServiceTableOutputNodeModel nodeModel) {
+    public NodeView<ServiceTableInputNodeModel> createNodeView(final int viewIndex, final ServiceTableInputNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
@@ -96,7 +97,7 @@ public class ServiceTableOutputNodeFactory extends NodeFactory<ServiceTableOutpu
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new ServiceTableOutputNodeDialog();
+        return new ServiceTableInputNodeDialog();
     }
 }
 

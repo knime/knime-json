@@ -44,9 +44,9 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 03, 2018 (Tobias Urhaug): created
+ *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.service.input.variable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
@@ -56,24 +56,25 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Configuration for the Service In node.
+ * Configuration of the Service Variable Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-final class ServiceTableInputNodeConfiguration {
+public class ServiceVariableInputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "input";
+    private static final String DEFAULT_PARAMETER_NAME = "variable-input";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_FILE_NAME = "";
 
     private String m_parameterName;
     private String m_description;
-    private String m_variableInjectedFileName;
 
-    public ServiceTableInputNodeConfiguration() {
+    /**
+     * Constructs a new configuration object.
+     */
+    public ServiceVariableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
-        m_variableInjectedFileName = DEFAULT_FILE_NAME;
     }
 
     /**
@@ -89,9 +90,11 @@ final class ServiceTableInputNodeConfiguration {
      * Sets a user-supplied description for this input node.
      *
      * @param s a description, must not be <code>null</code>
+     * @return the updated configuration
      */
-    void setDescription(final String s) {
+    ServiceVariableInputNodeConfiguration setDescription(final String s) {
         m_description = s;
+        return this;
     }
 
     /**
@@ -107,11 +110,9 @@ final class ServiceTableInputNodeConfiguration {
      * Sets the parameter name.
      *
      * @param value the new parameter name
-     * @param allowLegacyFormat if true it will allow the {@link DialogNode#PARAMETER_NAME_PATTERN_LEGACY} (backward
-     *            compatible)
      * @return the updated configuration
      */
-    ServiceTableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    ServiceVariableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
         CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
@@ -122,30 +123,15 @@ final class ServiceTableInputNodeConfiguration {
     }
 
     /**
-     * @return the m_fileName
-     */
-    String getFileName() {
-        return m_variableInjectedFileName;
-    }
-
-    /**
-     * @param fileName the fileName to set
-     */
-    void setFileName(final String fileName) {
-        this.m_variableInjectedFileName = fileName;
-    }
-
-    /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
      * @param settings a node settings object
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ServiceTableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+    ServiceVariableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
-        setDescription(settings.getString("description", "")); // added in 3.5
-        setFileName(settings.getString("fileName"));
+        setDescription(settings.getString("description", ""));
         return this;
     }
 
@@ -155,13 +141,12 @@ final class ServiceTableInputNodeConfiguration {
      * @param settings a node settings object
      * @return the updated configuration
      */
-    ServiceTableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
+    ServiceVariableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
-        setFileName(settings.getString("fileName", DEFAULT_FILE_NAME));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }
@@ -172,10 +157,9 @@ final class ServiceTableInputNodeConfiguration {
      * @param settings a settings object
      * @return this object
      */
-    ServiceTableInputNodeConfiguration save(final NodeSettingsWO settings) {
+    ServiceVariableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
-        settings.addString("fileName", m_variableInjectedFileName);
         return this;
     }
 

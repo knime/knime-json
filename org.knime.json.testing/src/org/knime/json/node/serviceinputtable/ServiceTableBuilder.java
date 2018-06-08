@@ -46,7 +46,7 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicein;
+package org.knime.json.node.serviceinputtable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -44,9 +44,9 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicevariableinput;
+package org.knime.json.node.service.output.table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
@@ -56,24 +56,28 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Configuration of the Service Variable Input node.
+ * Configuration for the Service Table Output node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-public class ServiceVariableInputNodeConfiguration {
+public class ServiceTableOutputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "variable-input";
+    private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
+    private static final String DEFAULT_OUTPUT_FILE_PATH = "";
 
     private String m_parameterName;
     private String m_description;
+    private String m_outputFilePath;
 
     /**
-     * Constructs a new configuration object.
+     * Constructs a new configuration.
      */
-    public ServiceVariableInputNodeConfiguration() {
+    public ServiceTableOutputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
+        m_outputFilePath = DEFAULT_OUTPUT_FILE_PATH;
     }
 
     /**
@@ -88,11 +92,10 @@ public class ServiceVariableInputNodeConfiguration {
     /**
      * Sets a user-supplied description for this input node.
      *
-     * @param s a description, must not be <code>null</code>
-     * @return the updated configuration
+     * @param description a description, must not be <code>null</code>
      */
-    ServiceVariableInputNodeConfiguration setDescription(final String s) {
-        m_description = s;
+    ServiceTableOutputNodeConfiguration setDescription(final String description) {
+        m_description = description;
         return this;
     }
 
@@ -109,15 +112,38 @@ public class ServiceVariableInputNodeConfiguration {
      * Sets the parameter name.
      *
      * @param value the new parameter name
+     * @param allowLegacyFormat if true it will allow the {@link DialogNode#PARAMETER_NAME_PATTERN_LEGACY} (backward
+     *            compatible)
      * @return the updated configuration
      */
-    ServiceVariableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    ServiceTableOutputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
         CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
                 + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
             value, DialogNode.PARAMETER_NAME_PATTERN.pattern());
         m_parameterName = value;
+        return this;
+    }
+
+
+    /**
+     * Returns the outputFilePath.
+     *
+     * @return the outputFilePath
+     */
+    String getOutputFilePath() {
+        return m_outputFilePath;
+    }
+
+    /**
+     * Sets the output file path. This settings isn't exposed in the dialog but can be controlled by a flow variable
+     * from an external caller. In case the value is empty, no file will be written.
+     *
+     * @param outputFilePath the outputFilePath to set
+     */
+    ServiceTableOutputNodeConfiguration setOutputFilePath(final String outputFilePath) {
+        m_outputFilePath = outputFilePath;
         return this;
     }
 
@@ -128,9 +154,10 @@ public class ServiceVariableInputNodeConfiguration {
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ServiceVariableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName"));
-        setDescription(settings.getString("description", ""));
+    ServiceTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+        setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
+        setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
+        setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
         return this;
     }
 
@@ -140,9 +167,10 @@ public class ServiceVariableInputNodeConfiguration {
      * @param settings a node settings object
      * @return the updated configuration
      */
-    ServiceVariableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
+    ServiceTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
+            setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
@@ -156,9 +184,10 @@ public class ServiceVariableInputNodeConfiguration {
      * @param settings a settings object
      * @return this object
      */
-    ServiceVariableInputNodeConfiguration save(final NodeSettingsWO settings) {
+    ServiceTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
+        settings.addString("outputFilePath", m_outputFilePath);
         return this;
     }
 
@@ -167,4 +196,5 @@ public class ServiceVariableInputNodeConfiguration {
     public String toString() {
         return "\"" + m_parameterName + "\"";
     }
+
 }

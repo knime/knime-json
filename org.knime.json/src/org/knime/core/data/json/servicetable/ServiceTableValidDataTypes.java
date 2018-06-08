@@ -72,6 +72,7 @@ import org.knime.core.node.util.CheckUtils;
  * and is responsible for conversion from Strings to {@link DataType} and back.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public abstract class ServiceTableValidDataTypes {
 

@@ -46,7 +46,7 @@
  * History
  *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicetableoutput;
+package org.knime.json.node.service.output.table;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,6 +71,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
+import org.knime.json.node.service.input.table.ServiceTableInputDefaultJsonStructure;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -83,6 +84,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * and makes it available for a caller through the {@link OutputNode} interface.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
@@ -113,7 +115,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDa
         if (StringUtils.isNotEmpty(outputFilePath)) {
             Path path = Paths.get(outputFilePath);
             try (OutputStream outputStream = Files.newOutputStream(path)) {
-                new ObjectMapper().writeValue(outputStream, BufferedDataTableToServiceTable.toServiceTable(m_table));
+                new ObjectMapper().writeValue(outputStream, ServiceOutputMapper.toServiceTable(m_table));
             }
         }
     }
@@ -142,9 +144,10 @@ public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDa
         JsonValue jsonValue = null;
         try {
             if (m_table == null) {
-                jsonValue = JSONUtil.parseJSONValue("{}");
+                String defaultJson = ServiceTableInputDefaultJsonStructure.asString();
+                jsonValue = JSONUtil.parseJSONValue(defaultJson);
             } else {
-                ServiceTable inputTable = BufferedDataTableToServiceTable.toServiceTable(m_table);
+                ServiceTable inputTable = ServiceOutputMapper.toServiceTable(m_table);
                 jsonValue = JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(inputTable));
             }
         } catch (IOException e) {

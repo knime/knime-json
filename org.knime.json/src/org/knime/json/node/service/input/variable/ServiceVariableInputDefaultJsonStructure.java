@@ -46,7 +46,7 @@
  * History
  *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicevariableinput;
+package org.knime.json.node.service.input.variable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,6 +62,7 @@ import javax.json.JsonValue;
  * Class that holds a hard coded prototype JSON structure for the Service Variable Input node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
 public class ServiceVariableInputDefaultJsonStructure {
 
@@ -88,7 +89,7 @@ public class ServiceVariableInputDefaultJsonStructure {
     /**
      * Default int variable value.
      */
-    protected final static Integer INT_VARIABLE_VALUE = 100;
+    public final static Integer INT_VARIABLE_VALUE = 100;
 
     /**
      * Returns the default variables as a list of singleton maps.

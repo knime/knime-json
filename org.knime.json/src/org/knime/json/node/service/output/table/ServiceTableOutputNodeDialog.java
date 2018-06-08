@@ -46,7 +46,7 @@
  * History
  *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.servicetableoutput;
+package org.knime.json.node.service.output.table;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
