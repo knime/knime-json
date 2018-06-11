@@ -65,9 +65,11 @@ public class ServiceVariableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "variable-input";
     private static final String DEFAULT_DESCRIPTION = "";
+    private static final String DEFAULT_FILE_NAME = "";
 
     private String m_parameterName;
     private String m_description;
+    private String m_variableInjectedFileName;
 
     /**
      * Constructs a new configuration object.
@@ -75,6 +77,7 @@ public class ServiceVariableInputNodeConfiguration {
     public ServiceVariableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
+        m_variableInjectedFileName = DEFAULT_FILE_NAME;
     }
 
     /**
@@ -123,6 +126,20 @@ public class ServiceVariableInputNodeConfiguration {
     }
 
     /**
+     * @return the m_fileName
+     */
+    String getFileName() {
+        return m_variableInjectedFileName;
+    }
+
+    /**
+     * @param fileName the fileName to set
+     */
+    void setFileName(final String fileName) {
+        m_variableInjectedFileName = fileName;
+    }
+
+    /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
      * @param settings a node settings object
@@ -132,6 +149,7 @@ public class ServiceVariableInputNodeConfiguration {
     ServiceVariableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description", ""));
+        setFileName(settings.getString("fileName"));
         return this;
     }
 
@@ -160,6 +178,7 @@ public class ServiceVariableInputNodeConfiguration {
     ServiceVariableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
+        settings.addString("fileName", m_variableInjectedFileName);
         return this;
     }
 

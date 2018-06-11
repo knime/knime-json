@@ -50,11 +50,14 @@ package org.knime.json.node.service.input.variable;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
@@ -69,6 +72,8 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
+import org.knime.core.util.FileUtil;
+import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -109,13 +114,31 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
      */
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        if (m_externalValue != null) {
-            pushVariablesToStack(m_externalValue.toString());
+        JsonValue externalJsonValue = getExternalVariableInput();
+        if (externalJsonValue != null) {
+            pushVariablesToStack(externalJsonValue.toString());
         } else if (inSpecs[0] == null) {
             pushVariablesToStack(ServiceVariableInputDefaultJsonStructure.asString());
         }
 
         return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
+    }
+
+    private JsonValue getExternalVariableInput() throws InvalidSettingsException {
+        JsonValue externalServiceInput = null;
+        String inputFileName = m_configuration.getFileName();
+        if (StringUtils.isNotEmpty(inputFileName)) {
+            try {
+                File inputFile = FileUtil.getFileFromURL(new URL(inputFileName));
+                String externalJsonString= new String(Files.readAllBytes(inputFile.toPath()));
+                externalServiceInput = JSONUtil.parseJSONValue(externalJsonString);
+            } catch (IOException  e) {
+                throw new InvalidSettingsException("Input path \"" + inputFileName + "\" could not be resolved" , e);
+            }
+        } else if (m_externalValue != null) {
+            externalServiceInput = m_externalValue;
+        }
+        return externalServiceInput;
     }
 
     private void pushVariablesToStack(final String json) throws InvalidSettingsException {
