@@ -88,7 +88,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
-import org.knime.json.node.service.output.table.ServiceOutputMapper;
+import org.knime.json.node.service.mappers.ServiceTableMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -110,7 +110,7 @@ public class BufferedDataTableToServiceTableTest {
             new TestBufferedDataTableBuilder() //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         List<ServiceTableRow> tableRows = serviceTable.getServiceTableData().getServiceTableRows();
         List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
 
@@ -132,7 +132,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(StringCell.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
 
         ServiceTableColumnSpec stringColumnSpec = tableSpecs.get(0);
@@ -154,7 +154,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(BooleanCell.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
 
         ServiceTableColumnSpec stringColumnSpec = tableSpecs.get(0);
@@ -176,7 +176,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(IntCell.TYPE, DoubleCell.TYPE, LongCell.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
 
         ServiceTableColumnSpec intColumnSpec = tableSpecs.get(0);
@@ -206,7 +206,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(LocalDateCellFactory.TYPE, LocalDateTimeCellFactory.TYPE, ZonedDateTimeCellFactory.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
 
         ServiceTableColumnSpec localDateColumnSpec = tableSpecs.get(0);
@@ -236,7 +236,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(DurationCellFactory.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
 
         ServiceTableColumnSpec durationColumnSpec = tableSpecs.get(0);
@@ -260,7 +260,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withTableRow(new StringCell("second row"), new IntCell(222), new DoubleCell(2.2), BooleanCell.FALSE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
         ServiceTableData serviceTableData = serviceTable.getServiceTableData();
         List<ServiceTableRow> serviceTableRows = serviceTableData.getServiceTableRows();
 
@@ -294,7 +294,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withTableRow(new StringCell("test"), new IntCell(123), new DoubleCell(2.3), new LongCell(3000), BooleanCell.TRUE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String actualJson = objectMapper.writeValueAsString(serviceTable);
@@ -321,7 +321,7 @@ public class BufferedDataTableToServiceTableTest {
                 .withTableRow(DataType.getMissingCell()) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceOutputMapper.toServiceTable(table);
+        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String actualJson = objectMapper.writeValueAsString(serviceTable);

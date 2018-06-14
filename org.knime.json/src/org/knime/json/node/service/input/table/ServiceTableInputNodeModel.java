@@ -69,6 +69,7 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.port.PortType;
 import org.knime.core.util.FileUtil;
+import org.knime.json.node.service.mappers.ServiceTableMapper;
 import org.knime.json.util.JSONUtil;
 
 /**
@@ -101,12 +102,12 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
             throws Exception {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return ServiceInputMapper.toBufferedDataTable(externalServiceInput, exec);
+            return ServiceTableMapper.toBufferedDataTable(externalServiceInput, exec);
         } else {
             if (inData[0] != null) {
                 return inData;
             } else {
-                return ServiceInputMapper.toBufferedDataTable(ServiceTableInputDefaultJsonStructure.asJsonValue(), exec);
+                return ServiceTableMapper.toBufferedDataTable(ServiceTableInputDefaultJsonStructure.asJsonValue(), exec);
             }
         }
     }
@@ -118,12 +119,12 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return new DataTableSpec[]{ServiceInputMapper.toTableSpec(externalServiceInput)};
+            return new DataTableSpec[]{ServiceTableMapper.toTableSpec(externalServiceInput)};
         } else {
             if (inSpecs[0] != null) {
                 return inSpecs;
             } else {
-                return new DataTableSpec[]{ServiceInputMapper.toTableSpec(ServiceTableInputDefaultJsonStructure.asJsonValue())};
+                return new DataTableSpec[]{ServiceTableMapper.toTableSpec(ServiceTableInputDefaultJsonStructure.asJsonValue())};
             }
         }
     }

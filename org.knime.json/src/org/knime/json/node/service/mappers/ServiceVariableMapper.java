@@ -44,67 +44,68 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Jun 13, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.input.variable;
+package org.knime.json.node.service.mappers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.json.JsonValue;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.workflow.FlowVariable;
+import org.knime.json.node.service.input.variable.ServiceVariableInput;
+import org.knime.json.util.JSONUtil;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Representation of the Service Variable Input containing a list of variables.
- * Is serializable/deserializable with Jackson.
- *
+ * Class that converts flow variables to a JsonValue conforming to {@link ServiceVariableInput}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableInput {
-
-    private final List<Map<String, Object>> m_variables;
+public class ServiceVariableMapper {
 
     /**
-     * Constructor for the Service Variable Input.
+     * Converts a collection of flow variables to a JsonValue conforming to {@link ServiceVariableInput}.
      *
-     * @param variables the variables in this input
+     * @param flowVariables the flow variables
+     * @return a JsonValue representing the flow variables
+     * @throws InvalidSettingsException if variables cannot be mapped to {@link ServiceVariableInput}
      */
-    @JsonCreator
-    public ServiceVariableInput(@JsonProperty("variables") final List<Map<String, Object>> variables) {
-        m_variables = variables;
-    }
-
-    /**
-     * Returns the variables in this input.
-     *
-     * @return the variables
-     */
-    @JsonProperty("variables")
-    public List<Map<String, Object>> getVariables() {
-        return m_variables;
-    }
-
-    /**
-     * Checks if a json value conforms to the structure of {@link ServiceVariableInput}.
-     *
-     * @param jsonValue the json value under question
-     * @return true if the supplied Json value conforms to {@link ServiceVariableInput}
-     */
-    public static boolean isServiceVariablesJson(final JsonValue jsonValue) {
-        if (jsonValue.toString().equals("{}")) {
-            return false;
-        }
+    public static JsonValue toServiceVariableJsonValue(final Collection<FlowVariable> flowVariables) throws InvalidSettingsException {
+        ServiceVariableInput serviceVariableInput = new ServiceVariableInput(createVariables(flowVariables));
         try {
-            new ObjectMapper().readValue(jsonValue.toString(), ServiceVariableInput.class);
-            return true;
+            String serviceTableJson = new ObjectMapper().writeValueAsString(serviceVariableInput);
+            return JSONUtil.parseJSONValue(serviceTableJson);
         } catch (IOException e) {
-            return false;
+            throw new InvalidSettingsException("Could not parse the variables to JsonValue", e);
+        }
+    }
+
+    private static List<Map<String, Object>> createVariables(final Collection<FlowVariable> flowVariables) {
+        List<Map<String, Object>> variables = new ArrayList<>();
+        for (FlowVariable flowVariable : flowVariables) {
+            String flowVariableName = flowVariable.getName();
+            if (!flowVariable.isGlobalConstant()) {
+                variables.add(Collections.singletonMap(flowVariableName, parseFlowVariable(flowVariable)));
+            }
+        }
+        return variables;
+    }
+
+    private static Object parseFlowVariable(final FlowVariable variable) {
+        switch (variable.getType()) {
+            case INTEGER : return variable.getIntValue();
+            case STRING : return variable.getStringValue();
+            case DOUBLE : return variable.getDoubleValue();
+            default : return variable.getValueAsString();
         }
     }
 

@@ -72,6 +72,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.json.node.service.input.table.ServiceTableInputDefaultJsonStructure;
+import org.knime.json.node.service.mappers.ServiceTableMapper;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -115,7 +116,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDa
         if (StringUtils.isNotEmpty(outputFilePath)) {
             Path path = Paths.get(outputFilePath);
             try (OutputStream outputStream = Files.newOutputStream(path)) {
-                new ObjectMapper().writeValue(outputStream, ServiceOutputMapper.toServiceTable(m_table));
+                new ObjectMapper().writeValue(outputStream, ServiceTableMapper.toServiceTable(m_table));
             }
         }
     }
@@ -147,7 +148,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDa
                 String defaultJson = ServiceTableInputDefaultJsonStructure.asString();
                 jsonValue = JSONUtil.parseJSONValue(defaultJson);
             } else {
-                ServiceTable inputTable = ServiceOutputMapper.toServiceTable(m_table);
+                ServiceTable inputTable = ServiceTableMapper.toServiceTable(m_table);
                 jsonValue = JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(inputTable));
             }
         } catch (IOException e) {

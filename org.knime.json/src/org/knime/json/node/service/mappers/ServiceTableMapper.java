@@ -46,14 +46,19 @@
  * History
  *   May 7, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.output.table;
+package org.knime.json.node.service.mappers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
@@ -63,14 +68,20 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
+import org.knime.core.data.MissingCell;
+import org.knime.core.data.RowKey;
+import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.servicetable.ServiceTable;
 import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
 import org.knime.core.data.json.servicetable.ServiceTableData;
 import org.knime.core.data.json.servicetable.ServiceTableRow;
 import org.knime.core.data.json.servicetable.ServiceTableSpec;
 import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
+import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,10 +92,127 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public final class ServiceOutputMapper {
+public final class ServiceTableMapper {
 
-    private ServiceOutputMapper() {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private ServiceTableMapper() {
+
+    }
+
+    /**
+     * Converts a JsonValue conforming to the structure of {@link ServiceTable}
+     * to a {@link BufferedDataTable}.
+     *
+     * @param json json representation of a {@link ServiceTable}
+     * @param exec context in which the call has been made
+     * @return a Buffered data table corresponding to the json input
+     * @throws InvalidSettingsException
+     */
+    public static BufferedDataTable[] toBufferedDataTable(final JsonValue json, final ExecutionContext exec) throws InvalidSettingsException {
+        return toBufferedDataTable(asServiceTable(json), exec);
+    }
+
+    private static ServiceTable asServiceTable(final JsonValue json) throws InvalidSettingsException {
+        try {
+            return OBJECT_MAPPER.readValue(json.toString(), ServiceTable.class);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse JsonValue to a Buffered Data Table", e);
+        }
+    }
+
+    /**
+     * Creates a buffered data table of the service input.
+     *
+     * @param serviceInput input of which the table is created from
+     * @param exec the execution context
+     * @return a BufferedDataTable[] from the service input
+     * @throws InvalidSettingsException
+     */
+    public static BufferedDataTable[] toBufferedDataTable(final ServiceTable serviceInput, final ExecutionContext exec)
+            throws InvalidSettingsException {
+        CheckUtils.checkSettingNotNull(serviceInput, "Service input cannot be null");
+        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(serviceInput));
+        addDataRows(dataContainer, serviceInput, exec);
+        dataContainer.close();
+        return new BufferedDataTable[]{dataContainer.getTable()};
+    }
+
+    /**
+     * Creates a data table spec of the service input.
+     *
+     * @param serviceInput input of which the table spec is created from
+     * @return a DataTableSpec from the service input
+     * @throws InvalidSettingsException
+     */
+    public static DataTableSpec toTableSpec(final JsonValue serviceInput) throws InvalidSettingsException {
+        return toTableSpec(asServiceTable(serviceInput));
+    }
+
+    /**
+     * Creates a data table spec of the service input.
+     *
+     * @param serviceInput input of which the table spec is created from
+     * @return a DataTableSpec from the service input
+     * @throws InvalidSettingsException
+     */
+    public static DataTableSpec toTableSpec(final ServiceTable serviceInput) throws InvalidSettingsException {
+        ServiceTableSpec tableSpec =
+            CheckUtils.checkSettingNotNull(serviceInput.getServiceTableSpec(), "table spec cannot be null");
+        int size = tableSpec.size();
+        String[] columnNames = new String[size];
+        DataType[] columnTypes = new DataType[size];
+
+        Set<String> alreadyUsedColumnNames = new HashSet<>();
+        Map<String, Integer> usedColumnNamesToIndex = new HashMap<>();
+        for (int i = 0; i < size; i++) {
+            ServiceTableColumnSpec serviceInputColumnSpec = tableSpec.getServiceTableColumnSpecs().get(i);
+            String columnName = serviceInputColumnSpec.getName();
+            if (alreadyUsedColumnNames.add(columnName)) {
+                usedColumnNamesToIndex.put(columnName, i);
+                columnNames[i] = columnName;
+                String columnType = serviceInputColumnSpec.getType();
+                columnTypes[i] = ServiceTableValidDataTypes.parse(columnType);
+            } else {
+                throw new InvalidSettingsException("Columns \"" + usedColumnNamesToIndex.get(columnName) + "\" and \"" + i
+                    + "\" have equal names. Duplicate column names in input are not allowed.");
+            }
+        }
+
+        DataColumnSpec[] columnSpec = DataTableSpec.createColumnSpecs(columnNames, columnTypes);
+        return new DataTableSpec(columnSpec);
+    }
+
+    private static void addDataRows(final BufferedDataContainer dataContainer, final ServiceTable serviceInput, final ExecutionContext exec)
+            throws InvalidSettingsException {
+        long rowKeyIndex = 0L;
+        DataTableSpec tableSpec = dataContainer.getTableSpec();
+        ServiceTableData tableData = serviceInput.getServiceTableData();
+        for (ServiceTableRow tableRow : tableData.getServiceTableRows()) {
+            dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec)));
+        }
+    }
+
+    private static DataCell[] getDataCells(final ServiceTableRow tableRow, final DataTableSpec tableSpec, final ExecutionContext exec)
+            throws InvalidSettingsException {
+        DataCell[] dataCells = new DataCell[tableRow.size()];
+        List<Object> cells = tableRow.getDataCellObjects();
+        DataCellFactory cellFactory = new DataCellFactory(exec);
+        for (int i = 0; i < cells.size(); i++) {
+            DataType columnType = tableSpec.getColumnSpec(i).getType();
+            Object cellObject = cells.get(i);
+            if (cellObject == null) {
+                dataCells[i] = DataType.getMissingCell();
+            } else {
+                String cellObjectString = cellObject.toString();
+                DataCell dataCell = cellFactory.createDataCellOfType(columnType, cellObjectString);
+                if (dataCell == null) {
+                    dataCell = new MissingCell("Could not parse: \"" + cellObjectString + "\" to type: \"" + columnType + "\"");
+                }
+                dataCells[i] = dataCell;
+            }
+        }
+        return dataCells;
     }
 
     /**
@@ -102,7 +230,7 @@ public final class ServiceOutputMapper {
             String serviceTableJson = objectMapper.writeValueAsString(serviceTable);
             result = JSONUtil.parseJSONValue(serviceTableJson);
         } catch (IOException e) {
-            throw new InvalidSettingsException("Could not parse JsonValue to a Buffered Data Table", e);
+            throw new InvalidSettingsException("Could not parse the table to JsonValue", e);
         }
 
         return result;
@@ -167,4 +295,5 @@ public final class ServiceOutputMapper {
             return dataCell.toString();
         }
     }
+
 }
