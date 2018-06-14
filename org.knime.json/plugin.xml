@@ -11,7 +11,7 @@
             name="JSON"
             path="/struct-data"/>
    </extension>
-   
+
    <extension point="org.knime.workbench.repository.nodes">
       <node category-path="/struct-data/json" factory-class="org.knime.json.node.reader.JSONReaderNodeFactory" />
       <node category-path="/struct-data/json" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory"  after="org.knime.json.node.reader.JSONReaderNodeFactory"/>
@@ -43,16 +43,16 @@
             >
       </node>
       <node
-            category-path="/struct-data/json"
+            category-path="/flowcontrol/automation"
             factory-class="org.knime.json.node.service.input.table.ServiceTableInputNodeFactory">
       </node>
       <node
-            category-path="/struct-data/json"
+            category-path="/flowcontrol/automation"
             factory-class="org.knime.json.node.service.input.variable.ServiceVariableInputNodeFactory" 
             after="org.knime.json.node.service.input.table.ServiceTableInputNodeFactory">
       </node>
       <node
-            category-path="/struct-data/json"
+            category-path="/flowcontrol/automation"
             factory-class="org.knime.json.node.service.output.table.ServiceTableOutputNodeFactory"
             after="org.knime.json.node.service.input.variable.ServiceVariableInputNodeFactory">
       </node>

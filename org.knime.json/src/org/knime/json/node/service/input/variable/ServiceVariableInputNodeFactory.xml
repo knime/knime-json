@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./json-in.png" type="QuickForm"
+<knimeNode icon="./service-in.png" type="QuickForm"
 	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
 	<name>Service Variable Input</name>
@@ -10,25 +10,33 @@
 
 	<fullDescription>
 		<intro>
-			This node allows injecting flow variables from outside of the workflow, e.g. via the advanced batch executor,a server-exposed
-			workflow or the call workflow(local/remote) nodes.<br/>
+		
+			This node receives flow variables from an external caller (i.e. the <i>Call Workflow (Table Based)</i> node) and makes them available to the workflow.
+ 			A configured parameter makes the <i>Service Variable Input</i> visible from the external caller and enables the external caller to send the variables to 
+ 			the <i>Service Table Input</i> node.<br/>
 			<br/>
+		
+<!-- 			This node defines the variable input interface of workflows called from the <i>Call Workflow (Table Based)</i> node. -->
+<!-- 			The parameter defined in this node is visible from the <i>Call Workflow (Table Based)</i> node and allows -->
+<!-- 			it to inject variables into the workflow this node resides in. <br/> -->
+<!-- 			<br/> -->
+
 		</intro>
 
         <option name="Parameter name">
-            A unique name for the input parameter. This name is exposed in the REST interface and in the Call
-            Workflow node.
+            A name for the variable input parameter(preferably unique). This name is exposed in the REST interface and in the
+            <i>Call Workflow (Table Based)</i> node.
         </option>
 
         <option name="Description">
-            A description for the input parameter. The description is shown in the API specification of the REST
+            A description for the variable input parameter. The description is shown in the API specification of the REST
             interface.
         </option>
 	</fullDescription>
 
 	<ports>
 		<inPort index="0" name="Any input variables">
-			An optional input that is directly forwarded to the output of the node. 
+			An optional input that is directly forwarded to the output of the node, unless overwritten by supplying variables via the REST API.
 		</inPort>
 	
 		<outPort index="0" name="The injected variables">

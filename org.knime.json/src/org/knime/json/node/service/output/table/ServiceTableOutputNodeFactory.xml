@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./json-out.png" type="QuickForm"
+<knimeNode icon="./service-out.png" type="QuickForm"
 	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
 	<name>Service Table Output</name>
@@ -10,14 +10,23 @@
 
 	<fullDescription>
 		<intro>
-			This node simplifies orchestrating KNIME workflows using the <i>Call Workflow</i> node. 
-			It defines the output of a workflow, which callers such as the <i>Call Workflow</i> node receive and
-			forward as a KNIME table.
+		
+			This node sends a KNIME table to an external caller (i.e. the <i>Call Workflow (Table Based)</i> node).
+			A configured parameter makes the <i>Service Table Output</i> visible from the external caller and enables 
+			the external caller to fetch a KNIME table from the <i>Service Table Output</i> node.<br/>
+			<br/>
+		
+<!-- 			This node defines a table output interface of workflows called from the <i>Call Workflow (Table Based)</i> node. -->
+<!-- 			The parameter defined in this node is visible from the <i>Call Workflow (Table Based)</i> node and allows -->
+<!-- 			it to fetch the data table provided to the input of this node. <br/> -->
+<!-- 			<br/> -->
+		
+			If a data table is connected to the input port, the node will simply forward this table to the output port. 
 		</intro>
 
         <option name="Parameter name">
             A name for the output parameter(preferably unique). This name is exposed in the REST interface and in the
-            <i>Call Workflow</i> node.
+            <i>Call Workflow (Table Based)</i> node.
         </option>
 
         <option name="Description">
