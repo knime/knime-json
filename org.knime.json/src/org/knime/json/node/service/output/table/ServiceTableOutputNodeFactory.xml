@@ -16,11 +16,6 @@
 			the external caller to fetch a KNIME table from the <i>Service Table Output</i> node.<br/>
 			<br/>
 		
-<!-- 			This node defines a table output interface of workflows called from the <i>Call Workflow (Table Based)</i> node. -->
-<!-- 			The parameter defined in this node is visible from the <i>Call Workflow (Table Based)</i> node and allows -->
-<!-- 			it to fetch the data table provided to the input of this node. <br/> -->
-<!-- 			<br/> -->
-		
 			If a data table is connected to the input port, the node will simply forward this table to the output port. 
 		</intro>
 

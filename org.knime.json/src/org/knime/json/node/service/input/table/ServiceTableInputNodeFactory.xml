@@ -15,12 +15,6 @@
  			A configured parameter makes the <i>Service Table Input</i> visible from the external caller and enables the external caller to send a KNIME table to 
  			the <i>Service Table Input</i> node.<br/>
 			<br/>
- 			
-
-<!-- 			This node defines the table input interface of workflows called from the <i>Call Workflow (Table Based)</i> node. -->
-<!-- 			The input parameter defined in this node is visible from the <i>Call Workflow (Table Based)</i> node and allows -->
-<!-- 			it to inject a data table into this node. <br/> -->
-<!-- 			<br/> -->
 
 			If a data table is connected to the optional input, the node will simply forward this table to the output port 
 			unless a table is supplied via the REST API, in which case the supplied table will be available at the output port.<br/>

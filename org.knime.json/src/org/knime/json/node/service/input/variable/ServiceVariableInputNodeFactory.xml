@@ -16,11 +16,6 @@
  			the <i>Service Table Input</i> node.<br/>
 			<br/>
 		
-<!-- 			This node defines the variable input interface of workflows called from the <i>Call Workflow (Table Based)</i> node. -->
-<!-- 			The parameter defined in this node is visible from the <i>Call Workflow (Table Based)</i> node and allows -->
-<!-- 			it to inject variables into the workflow this node resides in. <br/> -->
-<!-- 			<br/> -->
-
 		</intro>
 
         <option name="Parameter name">
