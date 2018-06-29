@@ -74,9 +74,8 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
 import org.knime.core.util.FileUtil;
+import org.knime.json.node.container.mappers.ContainerVariableMapper;
 import org.knime.json.util.JSONUtil;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The node model for the Container Input (Variable) node.
@@ -85,8 +84,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @since 3.6
  */
 public class ContainerVariableInputNodeModel extends NodeModel implements InputNode {
-
-    private final ObjectMapper m_objectMapper;
 
     private JsonValue m_externalValue;
     private ContainerVariableInputNodeConfiguration m_configuration = new ContainerVariableInputNodeConfiguration();
@@ -98,7 +95,6 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
         super(
             new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL},
             new PortType[]{FlowVariablePortObject.TYPE});
-        m_objectMapper = new ObjectMapper();
     }
 
     /**
@@ -143,7 +139,7 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
     }
 
     private void pushVariablesToStack(final String json) throws InvalidSettingsException {
-        ContainerVariableJsonSchema variableInput = deserializeJsonString(json);
+        ContainerVariableJsonSchema variableInput = ContainerVariableMapper.toContainerVariableJsonSchema(json);
         for (Map<String, Object> variable : variableInput.getVariables()) {
             for (Entry<String, Object> variableEntry : variable.entrySet()) {
                 String name = variableEntry.getKey();
@@ -159,14 +155,6 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
                     throw new RuntimeException("Variable \"" + name + "\" has invalid variable class \"" + value + "\"");
                 }
             }
-        }
-    }
-
-    private ContainerVariableJsonSchema deserializeJsonString(final String json) throws InvalidSettingsException {
-        try {
-            return m_objectMapper.readValue(json, ContainerVariableJsonSchema.class);
-        } catch (IOException e) {
-            throw new InvalidSettingsException("Error while parsing json-input: " + e.getMessage(), e);
         }
     }
 

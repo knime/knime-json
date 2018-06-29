@@ -72,6 +72,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ContainerVariableMapper {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     /**
      * Converts a collection of flow variables to a JsonValue conforming to {@link ContainerVariableJsonSchema}.
      *
@@ -106,6 +108,21 @@ public class ContainerVariableMapper {
             case STRING : return variable.getStringValue();
             case DOUBLE : return variable.getDoubleValue();
             default : return variable.getValueAsString();
+        }
+    }
+
+    /**
+     * Maps a json string to {@link ContainerVariableJsonSchema}, if if conforms to the schema.
+     *
+     * @param json json string that should be mapped to {@link ContainerVariableJsonSchema}
+     * @return {@link ContainerVariableJsonSchema} of the given input string
+     * @throws InvalidSettingsException if the input string does not conform to {@link ContainerVariableJsonSchema}
+     */
+    public static ContainerVariableJsonSchema toContainerVariableJsonSchema(final String json) throws InvalidSettingsException {
+        try {
+            return OBJECT_MAPPER.readValue(json, ContainerVariableJsonSchema.class);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Error while parsing json: " + e.getMessage(), e);
         }
     }
 
