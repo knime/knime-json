@@ -44,75 +44,60 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Mar 29, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.json.node.service.input.table;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import org.junit.Test;
-import org.knime.json.node.serviceinputtable.ServiceTableBuilder;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
 
 /**
-  * Test suite for serializing/deserializing {@link ServiceTable}.
+ * Factory for the Container Input (Table) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-public class ServiceTableTest {
+public class ContainerTableInputNodeFactory extends NodeFactory<ContainerTableInputNodeModel> {
 
     /**
-     * Checks that a ServiceTable is correctly serialized.
-     *
-     * @throws Exception
+     * {@inheritDoc}
      */
-    @Test
-    public void testSerialization() throws Exception {
-        ServiceTable input =
-            new ServiceTableBuilder()
-                .withColumnSpec("column-string", "string")
-                .withTableRow("value1")
-                .build();
-
-        String json = new ObjectMapper().writeValueAsString(input);
-
-        assertEquals("{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[\"value1\"]]}", json);
+    @Override
+    public ContainerTableInputNodeModel createNodeModel() {
+        return new ContainerTableInputNodeModel();
     }
 
     /**
-     * Checks that a null value is correctly serialized.
-     *
-     * @throws Exception
+     * {@inheritDoc}
      */
-    @Test
-    public void testSerializingNullValues() throws Exception {
-        ServiceTable input =
-            new ServiceTableBuilder()
-                .withColumnSpec("column-string", "string")
-                .withTableRow((Object)null)
-                .build();
-
-        String json = new ObjectMapper().writeValueAsString(input);
-
-        assertEquals("{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[null]]}", json);
+    @Override
+    public int getNrNodeViews() {
+        return 0;
     }
 
     /**
-     * Checks that a null value is correctly deserialized.
-     *
-     * @throws Exception
+     * {@inheritDoc}
      */
-    @Test
-    public void testDeserializingNullValues() throws Exception {
-        String json = "{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[null]]}";
-
-        ServiceTable serviceInput =  new ObjectMapper().readValue(json, ServiceTable.class);
-        ServiceTableData serviceInputTableData = serviceInput.getServiceTableData();
-        Object deserializedValue = serviceInputTableData.getServiceTableRows().get(0).getDataCellObjects().get(0);
-
-        assertNull(deserializedValue);
+    @Override
+    public NodeView<ContainerTableInputNodeModel> createNodeView(final int viewIndex, final ContainerTableInputNodeModel nodeModel) {
+        throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasDialog() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return new ContainerTableInputNodeDialog();
+    }
 }
+

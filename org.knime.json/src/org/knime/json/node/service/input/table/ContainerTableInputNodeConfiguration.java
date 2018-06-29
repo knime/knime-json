@@ -56,11 +56,11 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Configuration for the Service In node.
+ * Configuration for the Container Input (Table) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-final class ServiceTableInputNodeConfiguration {
+final class ContainerTableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "input";
     private static final String DEFAULT_DESCRIPTION = "";
@@ -70,7 +70,7 @@ final class ServiceTableInputNodeConfiguration {
     private String m_description;
     private String m_variableInjectedFileName;
 
-    public ServiceTableInputNodeConfiguration() {
+    public ContainerTableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_variableInjectedFileName = DEFAULT_FILE_NAME;
@@ -111,7 +111,7 @@ final class ServiceTableInputNodeConfiguration {
      *            compatible)
      * @return the updated configuration
      */
-    ServiceTableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    ContainerTableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
         CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
@@ -142,7 +142,7 @@ final class ServiceTableInputNodeConfiguration {
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ServiceTableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+    ContainerTableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description", "")); // added in 3.5
         setFileName(settings.getString("fileName"));
@@ -155,7 +155,7 @@ final class ServiceTableInputNodeConfiguration {
      * @param settings a node settings object
      * @return the updated configuration
      */
-    ServiceTableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
+    ContainerTableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
         } catch (InvalidSettingsException e) {
@@ -172,7 +172,7 @@ final class ServiceTableInputNodeConfiguration {
      * @param settings a settings object
      * @return this object
      */
-    ServiceTableInputNodeConfiguration save(final NodeSettingsWO settings) {
+    ContainerTableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("fileName", m_variableInjectedFileName);

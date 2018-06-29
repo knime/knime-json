@@ -69,25 +69,25 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.port.PortType;
 import org.knime.core.util.FileUtil;
-import org.knime.json.node.service.mappers.ServiceTableMapper;
+import org.knime.json.node.service.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
 
 /**
- * The model implementation of the service table input node.
- * Creates a knime table of a json input conforming to a set schema.
+ * The model implementation of the Container Input (Table) node.
+ * Creates a KNIME table of a json input conforming to a set schema.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
+public class ContainerTableInputNodeModel extends NodeModel implements InputNode {
 
     private JsonValue m_externalValue;
-    private ServiceTableInputNodeConfiguration m_configuration = new ServiceTableInputNodeConfiguration();
+    private ContainerTableInputNodeConfiguration m_configuration = new ContainerTableInputNodeConfiguration();
 
     /**
      * Constructor for the node model.
      */
-    protected ServiceTableInputNodeModel() {
+    protected ContainerTableInputNodeModel() {
         super(
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
             new PortType[]{BufferedDataTable.TYPE}
@@ -102,12 +102,12 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
             throws Exception {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return ServiceTableMapper.toBufferedDataTable(externalServiceInput, exec);
+            return ContainerTableMapper.toBufferedDataTable(externalServiceInput, exec);
         } else {
             if (inData[0] != null) {
                 return inData;
             } else {
-                return ServiceTableMapper.toBufferedDataTable(ServiceTableInputDefaultJsonStructure.asJsonValue(), exec);
+                return ContainerTableMapper.toBufferedDataTable(ContainerTableInputDefaultJsonStructure.asJsonValue(), exec);
             }
         }
     }
@@ -119,12 +119,12 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return new DataTableSpec[]{ServiceTableMapper.toTableSpec(externalServiceInput)};
+            return new DataTableSpec[]{ContainerTableMapper.toTableSpec(externalServiceInput)};
         } else {
             if (inSpecs[0] != null) {
                 return inSpecs;
             } else {
-                return new DataTableSpec[]{ServiceTableMapper.toTableSpec(ServiceTableInputDefaultJsonStructure.asJsonValue())};
+                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(ContainerTableInputDefaultJsonStructure.asJsonValue())};
             }
         }
     }
@@ -167,7 +167,7 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_configuration = new ServiceTableInputNodeConfiguration().loadInModel(settings);
+        m_configuration = new ContainerTableInputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -175,7 +175,7 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        new ServiceTableInputNodeConfiguration().loadInModel(settings);
+        new ContainerTableInputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -183,7 +183,7 @@ public class ServiceTableInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ServiceTableInputDefaultJsonStructure.asJsonValue();
+        JsonValue value = m_externalValue != null ? m_externalValue : ContainerTableInputDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
                 .jsonValue(value)

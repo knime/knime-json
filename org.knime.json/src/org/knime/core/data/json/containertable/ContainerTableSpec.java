@@ -46,7 +46,7 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.core.data.json.containertable;
 
 import java.util.List;
 
@@ -54,24 +54,24 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Representation of a Table Spec.
+ * Representation of a Container Table Spec.
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableSpec {
+public class ContainerTableSpec {
 
-    private final List<ServiceTableColumnSpec> m_columnSpecs;
+    private final List<ContainerTableColumnSpec> m_columnSpecs;
 
     /**
-     * Constructs a TableSpec from the given columnSpecs.
+     * Constructs a ContainerTableSpec from the given columnSpecs.
      *
-     * @param serviceInputColumnSpecs the column specs
+     * @param columnSpecs the column specs
      */
     @JsonCreator
-    public ServiceTableSpec(final List<ServiceTableColumnSpec> serviceInputColumnSpecs) {
-        m_columnSpecs = serviceInputColumnSpecs;
+    public ContainerTableSpec(final List<ContainerTableColumnSpec> columnSpecs) {
+        m_columnSpecs = columnSpecs;
     }
 
     /**
@@ -80,7 +80,7 @@ public class ServiceTableSpec {
      * @return list of column specs
      */
     @JsonValue
-    public List<ServiceTableColumnSpec> getServiceTableColumnSpecs() {
+    public List<ContainerTableColumnSpec> getContainerTableColumnSpecs() {
         return m_columnSpecs;
     }
 
@@ -92,7 +92,7 @@ public class ServiceTableSpec {
      * @return true if this table spec contains the name/type pair
      */
     public boolean contains(final String columnName, final String columnType) {
-        return m_columnSpecs.contains(new ServiceTableColumnSpec(columnName, columnType));
+        return m_columnSpecs.contains(new ContainerTableColumnSpec(columnName, columnType));
     }
 
     /**

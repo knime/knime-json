@@ -46,7 +46,7 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.core.data.json.containertable;
 
 import java.util.Collections;
 import java.util.Map;
@@ -64,7 +64,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableColumnSpec {
+public class ContainerTableColumnSpec {
 
     private final String m_columnName;
     private final String m_columnType;
@@ -75,7 +75,7 @@ public class ServiceTableColumnSpec {
      * @param columnName name of the column
      * @param columnType type of the column
      */
-    public ServiceTableColumnSpec(final String columnName, final String columnType) {
+    public ContainerTableColumnSpec(final String columnName, final String columnType) {
         m_columnName = columnName;
         m_columnType = columnType;
     }
@@ -86,7 +86,7 @@ public class ServiceTableColumnSpec {
      * @param columnSpec spec to be created
      */
     @JsonCreator
-    private ServiceTableColumnSpec(final Map<String, String> columnSpec) {
+    private ContainerTableColumnSpec(final Map<String, String> columnSpec) {
         CheckUtils.checkArgumentNotNull(columnSpec);
         String columnName = null;
         String columnType = null;
@@ -153,7 +153,7 @@ public class ServiceTableColumnSpec {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ServiceTableColumnSpec other = (ServiceTableColumnSpec)obj;
+        ContainerTableColumnSpec other = (ContainerTableColumnSpec)obj;
         if (m_columnName == null) {
             if (other.m_columnName != null) {
                 return false;

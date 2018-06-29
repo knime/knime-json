@@ -52,26 +52,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.knime.core.data.json.servicetable.ServiceTable;
-import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
-import org.knime.core.data.json.servicetable.ServiceTableData;
-import org.knime.core.data.json.servicetable.ServiceTableRow;
-import org.knime.core.data.json.servicetable.ServiceTableSpec;
+import org.knime.core.data.json.containertable.ContainerTableColumnSpec;
+import org.knime.core.data.json.containertable.ContainerTableData;
+import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
+import org.knime.core.data.json.containertable.ContainerTableRow;
+import org.knime.core.data.json.containertable.ContainerTableSpec;
 
 /**
- * Builder class that simplifies setting up test fixtures using {@link ServiceTable}.
+ * Builder class that simplifies setting up test fixtures using {@link ContainerTableJsonSchema}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableBuilder {
+public class ContainerTableBuilder {
 
-    private List<ServiceTableColumnSpec> m_columnSpecs;
-    private List<ServiceTableRow> m_tableRows;
+    private List<ContainerTableColumnSpec> m_columnSpecs;
+    private List<ContainerTableRow> m_tableRows;
 
     /**
      * Constructs an empty builder.
      */
-    public ServiceTableBuilder() {
+    public ContainerTableBuilder() {
         m_columnSpecs = new ArrayList<>();
         m_tableRows = new ArrayList<>();
     }
@@ -83,8 +83,8 @@ public class ServiceTableBuilder {
      * @param columnType the column type of the column spec
      * @return this factory
      */
-    public ServiceTableBuilder withColumnSpec(final String columnName, final String columnType) {
-        m_columnSpecs.add(new ServiceTableColumnSpec(columnName, columnType));
+    public ContainerTableBuilder withColumnSpec(final String columnName, final String columnType) {
+        m_columnSpecs.add(new ContainerTableColumnSpec(columnName, columnType));
         return this;
     }
 
@@ -93,7 +93,7 @@ public class ServiceTableBuilder {
      *
      * @return this factory
      */
-    public ServiceTableBuilder withNullTableSpec() {
+    public ContainerTableBuilder withNullTableSpec() {
         m_columnSpecs = null;
         return this;
     }
@@ -104,7 +104,7 @@ public class ServiceTableBuilder {
      * @param serviceInputColumnSpecs list of column specs
      * @return this factory
      */
-    public ServiceTableBuilder withColumnSpecs(final List<ServiceTableColumnSpec> serviceInputColumnSpecs) {
+    public ContainerTableBuilder withColumnSpecs(final List<ContainerTableColumnSpec> serviceInputColumnSpecs) {
         m_columnSpecs.addAll(serviceInputColumnSpecs);
         return this;
     }
@@ -115,8 +115,8 @@ public class ServiceTableBuilder {
      * @param tableRow
      * @return this factory
      */
-    public ServiceTableBuilder withTableRow(final Object... tableRow) {
-        m_tableRows.add(new ServiceTableRow(Arrays.asList(tableRow)));
+    public ContainerTableBuilder withTableRow(final Object... tableRow) {
+        m_tableRows.add(new ContainerTableRow(Arrays.asList(tableRow)));
         return this;
     }
 
@@ -125,7 +125,7 @@ public class ServiceTableBuilder {
      *
      * @return this factory
      */
-    public ServiceTableBuilder withNullTableData() {
+    public ContainerTableBuilder withNullTableData() {
         m_tableRows = null;
         return this;
     }
@@ -135,16 +135,16 @@ public class ServiceTableBuilder {
      *
      * @return a Service Input object with the factory state
      */
-    public ServiceTable build() {
-        ServiceTableSpec tableSpec = null;
+    public ContainerTableJsonSchema build() {
+        ContainerTableSpec tableSpec = null;
         if (m_columnSpecs != null) {
-            tableSpec = new ServiceTableSpec(m_columnSpecs);
+            tableSpec = new ContainerTableSpec(m_columnSpecs);
         }
-        ServiceTableData tableData = null;
+        ContainerTableData tableData = null;
         if (m_tableRows != null) {
-            tableData = new ServiceTableData(m_tableRows);
+            tableData = new ContainerTableData(m_tableRows);
         }
-        return new ServiceTable(tableSpec, tableData);
+        return new ContainerTableJsonSchema(tableSpec, tableData);
     }
 
 }

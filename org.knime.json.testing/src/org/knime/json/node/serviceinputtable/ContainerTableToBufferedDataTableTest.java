@@ -66,8 +66,8 @@ import org.knime.core.data.container.ContainerTable;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
-import org.knime.core.data.json.servicetable.ServiceTable;
-import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
+import org.knime.core.data.json.containertable.ContainerTableColumnSpec;
+import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
 import org.knime.core.data.time.duration.DurationCellFactory;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.BufferedDataTable;
@@ -80,14 +80,14 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
-import org.knime.json.node.service.mappers.ServiceTableMapper;
+import org.knime.json.node.service.mappers.ContainerTableMapper;
 
 /**
- * Test suite for converting a {@link ServiceTable} to a {@link BufferedDataTable}.
+ * Test suite for converting a {@link ContainerTableJsonSchema} to a {@link BufferedDataTable}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableToBufferedDataTableTest {
+public class ContainerTableToBufferedDataTableTest {
 
     /**
      * Checks that null is not allowed as service input.
@@ -95,7 +95,7 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testNullAsServiceInputIsNotAllowed() throws InvalidSettingsException {
-        ServiceTableMapper.toBufferedDataTable((ServiceTable) null, getTestExecutionContext());
+        ContainerTableMapper.toBufferedDataTable((ContainerTableJsonSchema) null, getTestExecutionContext());
     }
 
     /**
@@ -106,15 +106,15 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testServiceInputWithValidSpecsCreatesTableWithTheSpecs() throws Exception {
-        ServiceTable tableWithSpec = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema tableWithSpec = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withColumnSpec("column-int", "int")//
                 .withColumnSpec("column-double", "double")//
                 .withColumnSpec("column-localdate", "localdate")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
 
         DataTableSpec createdSpecs = dataTable[0].getSpec();
         DataColumnSpec[] expectedColumnSpecs = //
@@ -134,13 +134,13 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testServiceInputWithDupliceSpecNamesThrowsAnException() throws Exception {
-        ServiceTable tableWithSpec = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema tableWithSpec = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withColumnSpec("column-string", "string")//
                 .build();//
 
-        ServiceTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        ContainerTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
     }
 
     /**
@@ -151,12 +151,12 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testServiceInputWithFullyQualifiedTypeNameAsColumnSepcTypeIsResolved() throws Exception {
-        ServiceTable tableWithSpec = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema tableWithSpec = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-FQ-name", "Duration")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionContext());
         DataTableSpec createdSpecs = dataTable[0].getSpec();
 
         assertTrue(createdSpecs.getColumnSpec(0).getType() == DurationCellFactory.TYPE);
@@ -169,12 +169,12 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testServiceInputWithNullTableSpecThrowsException() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withNullTableSpec()//
                 .build();//
 
-        ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -185,18 +185,18 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testServiceInputWithValidDataRowsCreatesTableWithTheRows() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withColumnSpecs(Arrays.asList(//
-                    new ServiceTableColumnSpec("column-string", "string"), //
-                    new ServiceTableColumnSpec("column-int", "int"), //
-                    new ServiceTableColumnSpec("column-double", "double"), //
-                    new ServiceTableColumnSpec("column-localdate", "localdate")))//
+                    new ContainerTableColumnSpec("column-string", "string"), //
+                    new ContainerTableColumnSpec("column-int", "int"), //
+                    new ContainerTableColumnSpec("column-double", "double"), //
+                    new ContainerTableColumnSpec("column-localdate", "localdate")))//
                 .withTableRow("value1", 123, 4.5, "2018-03-27")//
                 .withTableRow("value2", 432, 0.4, "2018-03-28")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
@@ -216,12 +216,12 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test(expected = InvalidSettingsException.class)
     public void testUnsupportedDataTypeColumnSpecThrowsException() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-unsupported", "not supported type")//
                 .build();//
 
-        ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -231,13 +231,13 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testColumnExpectingStringObjectsCastsCompatibleTypes() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-string", "string")//
                 .withTableRow(1)//
                 .build();//
 
-        ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
@@ -247,13 +247,13 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testColumnParsesWrongDataTypeToMissingValue() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-int", "int")//
                 .withTableRow("Hello int column!")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
             DataRow dataRow = iterator.next();
@@ -268,13 +268,13 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testInputCellWithNullValueIsParsedToMissingValue() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-localdate", "localdate")//
                 .withTableRow((String) null)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
             DataRow dataRow = iterator.next();
@@ -289,15 +289,15 @@ public class ServiceTableToBufferedDataTableTest {
      */
     @Test
     public void testThatInputColumnOrderIsMaintained() throws Exception {
-        ServiceTable serviceInput = //
-            new ServiceTableBuilder()//
+        ContainerTableJsonSchema serviceInput = //
+            new ContainerTableBuilder()//
                 .withColumnSpec("column-int1", "int")//
                 .withColumnSpec("column-int2", "int")//
                 .withColumnSpec("column-int3", "int")//
                 .withTableRow(1, 2, 3)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ServiceTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
 
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("Rows should have been created", iterator.hasNext());

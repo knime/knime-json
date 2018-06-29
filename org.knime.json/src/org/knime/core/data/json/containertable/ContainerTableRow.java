@@ -44,78 +44,83 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 6, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.core.data.json.containertable;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
-import javax.json.JsonValue;
-
-import org.knime.core.node.util.CheckUtils;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Representation of a Service Table containing Service Table Specs and Service Table Data.
- * Main function is to serve as an interface between JSON and BufferedDataTables.
+ * Representation of a Container Table Row containing Data Cells of the generic type Object.
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-@JsonPropertyOrder({"table-spec", "table-data"})
-public class ServiceTable {
+public class ContainerTableRow {
 
-    private final ServiceTableSpec m_tableSpec;
-    private final ServiceTableData m_tableData;
+    private final List<Object> m_dataCells;
 
     /**
-     * Constructor for the service table.
+     * Constructs a new data row containing the input data cells.
      *
-     * @param tableSpec the table spec for this table, not null
-     * @param tableData the table data for this table, not null
+     * @param dataCells the data cells of this data row
      */
-    public ServiceTable(
-            @JsonProperty("table-spec") final ServiceTableSpec tableSpec,
-            @JsonProperty("table-data") final ServiceTableData tableData) {
-        m_tableSpec = CheckUtils.checkArgumentNotNull(tableSpec);
-        m_tableData = CheckUtils.checkArgumentNotNull(tableData);
+    @JsonCreator
+    public ContainerTableRow(final List<Object> dataCells) {
+        m_dataCells = dataCells;
     }
 
     /**
-     * Gets the table spec of this input.
-     * @return the table spec, can not be null
-     */
-    @JsonProperty("table-spec")
-    public ServiceTableSpec getServiceTableSpec() {
-        return m_tableSpec;
-    }
-
-    /**
-     * Gets the table data of this input.
-     * @return the table data, can not be null
-     */
-    @JsonProperty("table-data")
-    public ServiceTableData getServiceTableData() {
-        return m_tableData;
-    }
-
-    /**
-     * Checks if a json value conforms to the structure of {@link ServiceTable}.
+     * Gets the data cells in this data row.
      *
-     * @param jsonValue the json value under question
-     * @return true if the supplied Json value conforms to {@link ServiceTable}
+     * @return the data cells of this table row
      */
-    public static boolean isServiceTableJson(final JsonValue jsonValue) {
-        try {
-            new ObjectMapper().readValue(jsonValue.toString(), ServiceTable.class);
+    @JsonValue
+    public List<Object> getDataCellObjects() {
+        return m_dataCells;
+    }
+
+    /**
+     * The number of cells in this data row.
+     *
+     * @return the size of this table row
+     */
+    public int size() {
+        return m_dataCells.size();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((m_dataCells == null) ? 0 : m_dataCells.hashCode());
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
-        } catch (IOException e) {
+        }
+        if (obj == null) {
             return false;
         }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ContainerTableRow other = (ContainerTableRow)obj;
+        return Objects.equals(m_dataCells, other.m_dataCells);
     }
 
 }

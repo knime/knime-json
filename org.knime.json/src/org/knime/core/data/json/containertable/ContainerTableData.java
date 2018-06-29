@@ -44,83 +44,44 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 6, 2018 (Tobias Urhaug): created
+ *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.core.data.json.containertable;
 
 import java.util.List;
-import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Representation of a Table Row containing Data Cells of the generic type Object.
+ * Representation of Container Table Data containing multiple Container Table Rows.
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableRow {
+public class ContainerTableData {
 
-    private final List<Object> m_dataCells;
+    private final List<ContainerTableRow> m_tableRows;
 
     /**
-     * Constructs a new data row containing the input data cells.
+     * Constructs a table of the given rows.
      *
-     * @param dataCells the data cells of this data row
+     * @param tableRows rows in the table
      */
     @JsonCreator
-    public ServiceTableRow(final List<Object> dataCells) {
-        m_dataCells = dataCells;
+    public ContainerTableData(final List<ContainerTableRow> tableRows) {
+        m_tableRows = tableRows;
     }
 
     /**
-     * Gets the data cells in this data row.
+     * Gets the rows of this table.
      *
-     * @return the data cells of this table row
+     * @return the rows in this table
      */
     @JsonValue
-    public List<Object> getDataCellObjects() {
-        return m_dataCells;
-    }
-
-    /**
-     * The number of cells in this data row.
-     *
-     * @return the size of this table row
-     */
-    public int size() {
-        return m_dataCells.size();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((m_dataCells == null) ? 0 : m_dataCells.hashCode());
-        return result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ServiceTableRow other = (ServiceTableRow)obj;
-        return Objects.equals(m_dataCells, other.m_dataCells);
+    public List<ContainerTableRow> getContainerTableRows() {
+        return m_tableRows;
     }
 
 }

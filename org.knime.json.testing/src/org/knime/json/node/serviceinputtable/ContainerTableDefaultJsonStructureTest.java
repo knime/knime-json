@@ -44,78 +44,70 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 20, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.json.node.serviceinputtable;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.knime.core.data.json.containertable.ContainerTableData;
+import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
+import org.knime.core.data.json.containertable.ContainerTableRow;
+import org.knime.core.data.json.containertable.ContainerTableSpec;
+import org.knime.json.node.service.input.table.ContainerTableInputDefaultJsonStructure;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test suite for serializing/deserializing {@link ServiceTableSpec}.
+ * Test suite for serializing/deserializing {@link ContainerTableInputDefaultJsonStructure}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceTableSpecTest {
+public class ContainerTableDefaultJsonStructureTest {
 
     /**
-     * Checks that a single column table spec is correctly serialized.
+     * Checks that the table spec of the default json structure is correctly deserialized.
      *
-     * @throws JsonProcessingException
+     * @throws Exception
      */
     @Test
-    public void testSerializingSingleColumnTableSpec() throws JsonProcessingException {
-        ServiceTableColumnSpec serviceInputColumnSpec = new ServiceTableColumnSpec("column-string", "string");
-        ServiceTableSpec tableSpec = new ServiceTableSpec(Arrays.asList(serviceInputColumnSpec));
+    public void testDeserializeDefaultJsonStructureTableSpec() throws Exception {
+        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(tableSpec);
+        ContainerTableJsonSchema serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
 
-        assertEquals("[{\"column-string\":\"string\"}]", json);
+        ContainerTableSpec tableSpec = serviceInput.getContainerTableSpec();
+        assertTrue(tableSpec.contains("column-string", "string"));
+        assertTrue(tableSpec.contains("column-int", "int"));
+        assertTrue(tableSpec.contains("column-double", "double"));
+        assertTrue(tableSpec.contains("column-long", "long"));
+        assertTrue(tableSpec.contains("column-boolean", "boolean"));
+        assertTrue(tableSpec.contains("column-localdate", "localdate"));
+        assertTrue(tableSpec.contains("column-localdatetime", "localdatetime"));
+        assertTrue(tableSpec.contains("column-zoneddatetime", "zoneddatetime"));
     }
 
     /**
-     * Checks that a multiple column table spec is correctly serialized.
+     * Checks that the table data of the default json structure is correctly deserialized.
      *
-     * @throws JsonProcessingException
+     * @throws Exception
      */
     @Test
-    public void testSerializingMultipleColumnTableSpecs() throws JsonProcessingException {
-        ServiceTableColumnSpec stringColumnSpec = new ServiceTableColumnSpec("column-string", "string");
-        ServiceTableColumnSpec doubleColumnSpec = new ServiceTableColumnSpec("column-double", "double");
-        ServiceTableSpec tableSpec = new ServiceTableSpec(Arrays.asList(stringColumnSpec, doubleColumnSpec));
-
+    public void testDeserializeDefaultJsonStructureTableData() throws Exception {
+        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(tableSpec);
+        ContainerTableJsonSchema serviceInput = objectMapper.readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
 
-        assertEquals("[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]", json);
-    }
+        ContainerTableRow firstExpectedRow = new ContainerTableRow(Arrays.asList("value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"));
+        ContainerTableRow secondExpectedRow =new ContainerTableRow(Arrays.asList("value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"));
+        ContainerTableData tableData = serviceInput.getContainerTableData();
 
-    /**
-     * Checks that a json representation of a multiple column table spec is correctly deserialized.
-     *
-     * @throws JsonParseException
-     * @throws JsonMappingException
-     * @throws IOException
-     */
-    @Test
-    public void testDeserializingMultipleColumnSpecs() throws JsonParseException, JsonMappingException, IOException {
-        String json = "[{\"column-string\":\"string\"},{\"column-double\":\"double\"}]";
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        ServiceTableSpec tableSpec = objectMapper.readValue(json, ServiceTableSpec.class);
-
-        assertEquals(new ServiceTableColumnSpec("column-string", "string"), tableSpec.getServiceTableColumnSpecs().get(0));
-        assertEquals(new ServiceTableColumnSpec("column-double", "double"), tableSpec.getServiceTableColumnSpecs().get(1));
+        assertEquals(firstExpectedRow, tableData.getContainerTableRows().get(0));
+        assertEquals(secondExpectedRow, tableData.getContainerTableRows().get(1));
     }
 
 }

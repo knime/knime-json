@@ -70,10 +70,10 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
-import org.knime.core.data.json.servicetable.ServiceTable;
-import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
-import org.knime.core.data.json.servicetable.ServiceTableData;
-import org.knime.core.data.json.servicetable.ServiceTableRow;
+import org.knime.core.data.json.containertable.ContainerTableColumnSpec;
+import org.knime.core.data.json.containertable.ContainerTableData;
+import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
+import org.knime.core.data.json.containertable.ContainerTableRow;
 import org.knime.core.data.time.duration.DurationCellFactory;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
@@ -88,18 +88,18 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
-import org.knime.json.node.service.mappers.ServiceTableMapper;
+import org.knime.json.node.service.mappers.ContainerTableMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test suite for converting {@link BufferedDataTable} to {@link ServiceTable}.
+ * Test suite for converting {@link BufferedDataTable} to {@link ContainerTableJsonSchema}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class BufferedDataTableToServiceTableTest {
+public class BufferedDataTableToContainerTableTest {
     /**
-     * Checks that an empty input table results in an empty ServiceTable.
+     * Checks that an empty input table results in an empty Container Table.
      * @throws Exception
      */
     @Test
@@ -110,16 +110,16 @@ public class BufferedDataTableToServiceTableTest {
             new TestBufferedDataTableBuilder() //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        List<ServiceTableRow> tableRows = serviceTable.getServiceTableData().getServiceTableRows();
-        List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        List<ContainerTableRow> tableRows = containerTable.getContainerTableData().getContainerTableRows();
+        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
         assertThat(tableRows, hasSize(0));
         assertThat(tableSpecs, hasSize(0));
     }
 
     /**
-     * Checks that a string table spec from an input table is converted to an equivalent service table spec.
+     * Checks that a string table spec from an input table is converted to an equivalent container table spec.
      * @throws Exception
      */
     @Test
@@ -132,16 +132,16 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(StringCell.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
-        ServiceTableColumnSpec stringColumnSpec = tableSpecs.get(0);
+        ContainerTableColumnSpec stringColumnSpec = tableSpecs.get(0);
         assertThat(stringColumnSpec.getName(), equalTo("column-string"));
         assertThat(stringColumnSpec.getType(), equalTo("string"));
     }
 
     /**
-     * Checks that a boolean table spec from an input table is converted to an equivalent service table spec.
+     * Checks that a boolean table spec from an input table is converted to an equivalent container table spec.
      * @throws Exception
      */
     @Test
@@ -154,16 +154,16 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(BooleanCell.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
-        ServiceTableColumnSpec stringColumnSpec = tableSpecs.get(0);
+        ContainerTableColumnSpec stringColumnSpec = tableSpecs.get(0);
         assertThat(stringColumnSpec.getName(), equalTo("column-boolean"));
         assertThat(stringColumnSpec.getType(), equalTo("boolean"));
     }
 
     /**
-     * Checks that numeric column specs from the input table are converted to equivalent service table specs.
+     * Checks that numeric column specs from the input table are converted to equivalent container table specs.
      * @throws Exception
      */
     @Test
@@ -176,24 +176,24 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(IntCell.TYPE, DoubleCell.TYPE, LongCell.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
-        ServiceTableColumnSpec intColumnSpec = tableSpecs.get(0);
+        ContainerTableColumnSpec intColumnSpec = tableSpecs.get(0);
         assertThat(intColumnSpec.getName(), equalTo("column-int"));
         assertThat(intColumnSpec.getType(), equalTo("int"));
 
-        ServiceTableColumnSpec doubleColumnSpec = tableSpecs.get(1);
+        ContainerTableColumnSpec doubleColumnSpec = tableSpecs.get(1);
         assertThat(doubleColumnSpec.getName(), equalTo("column-double"));
         assertThat(doubleColumnSpec.getType(), equalTo("double"));
 
-        ServiceTableColumnSpec longColumnSpec = tableSpecs.get(2);
+        ContainerTableColumnSpec longColumnSpec = tableSpecs.get(2);
         assertThat(longColumnSpec.getName(), equalTo("column-long"));
         assertThat(longColumnSpec.getType(), equalTo("long"));
     }
 
     /**
-     * Checks that date column specs from the input table are converted to equivalent service table specs.
+     * Checks that date column specs from the input table are converted to equivalent container table specs.
      * @throws Exception
      */
     @Test
@@ -206,18 +206,18 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(LocalDateCellFactory.TYPE, LocalDateTimeCellFactory.TYPE, ZonedDateTimeCellFactory.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
-        ServiceTableColumnSpec localDateColumnSpec = tableSpecs.get(0);
+        ContainerTableColumnSpec localDateColumnSpec = tableSpecs.get(0);
         assertThat(localDateColumnSpec.getName(), equalTo("column-localdate"));
         assertThat(localDateColumnSpec.getType(), equalTo("localdate"));
 
-        ServiceTableColumnSpec localDateTimeColumnSpec = tableSpecs.get(1);
+        ContainerTableColumnSpec localDateTimeColumnSpec = tableSpecs.get(1);
         assertThat(localDateTimeColumnSpec.getName(), equalTo("column-localdatetime"));
         assertThat(localDateTimeColumnSpec.getType(), equalTo("localdatetime"));
 
-        ServiceTableColumnSpec zonedDateTimeColumnSpec = tableSpecs.get(2);
+        ContainerTableColumnSpec zonedDateTimeColumnSpec = tableSpecs.get(2);
         assertThat(zonedDateTimeColumnSpec.getName(), equalTo("column-zoneddatetime"));
         assertThat(zonedDateTimeColumnSpec.getType(), equalTo("zoneddatetime"));
     }
@@ -236,16 +236,16 @@ public class BufferedDataTableToServiceTableTest {
                 .withColumnTypes(DurationCellFactory.TYPE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        List<ServiceTableColumnSpec> tableSpecs = serviceTable.getServiceTableSpec().getServiceTableColumnSpecs();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
-        ServiceTableColumnSpec durationColumnSpec = tableSpecs.get(0);
+        ContainerTableColumnSpec durationColumnSpec = tableSpecs.get(0);
         assertThat(durationColumnSpec.getName(), equalTo("column-duration"));
         assertThat(durationColumnSpec.getType(), equalTo("Duration"));
     }
 
     /**
-     * Checks that a data table row in a BufferedDataTable is converted to equivalent Service Table rows.
+     * Checks that a data table row in a BufferedDataTable is converted to equivalent container Table rows.
      * @throws Exception
      */
     @Test
@@ -260,19 +260,19 @@ public class BufferedDataTableToServiceTableTest {
                 .withTableRow(new StringCell("second row"), new IntCell(222), new DoubleCell(2.2), BooleanCell.FALSE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
-        ServiceTableData serviceTableData = serviceTable.getServiceTableData();
-        List<ServiceTableRow> serviceTableRows = serviceTableData.getServiceTableRows();
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
+        ContainerTableData containerTableData = containerTable.getContainerTableData();
+        List<ContainerTableRow> containerTableRows = containerTableData.getContainerTableRows();
 
-        assertThat(serviceTableRows, hasSize(2));
+        assertThat(containerTableRows, hasSize(2));
 
-        List<Object> firstRow = serviceTableRows.get(0).getDataCellObjects();
+        List<Object> firstRow = containerTableRows.get(0).getDataCellObjects();
         assertThat(firstRow.get(0), is("first row"));
         assertThat((Integer) firstRow.get(1), is(111));
         assertThat((Double) firstRow.get(2), is(1.1));
         assertThat((Boolean) firstRow.get(3), is(true));
 
-        List<Object> secondRow = serviceTableRows.get(1).getDataCellObjects();
+        List<Object> secondRow = containerTableRows.get(1).getDataCellObjects();
         assertThat(secondRow.get(0), is("second row"));
         assertThat((Integer) secondRow.get(1), is(222));
         assertThat((Double) secondRow.get(2), is(2.2));
@@ -280,7 +280,7 @@ public class BufferedDataTableToServiceTableTest {
     }
 
     /**
-     * Checks that a service table created by the parse method conforms to the Service Table JSON structure.
+     * Checks that a container table created by the parse method conforms to {@link ContainerTableJsonSchema}.
      * @throws Exception
      */
     @Test
@@ -294,10 +294,10 @@ public class BufferedDataTableToServiceTableTest {
                 .withTableRow(new StringCell("test"), new IntCell(123), new DoubleCell(2.3), new LongCell(3000), BooleanCell.TRUE) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String actualJson = objectMapper.writeValueAsString(serviceTable);
+        String actualJson = objectMapper.writeValueAsString(containerTable);
         String expectedJson =
             "{\"table-spec\":[{\"column-string\":\"string\"},{\"column-int\":\"int\"},{\"column-double\":\"double\"},"
                 + "{\"column-long\":\"long\"},"
@@ -321,10 +321,10 @@ public class BufferedDataTableToServiceTableTest {
                 .withTableRow(DataType.getMissingCell()) //
                 .build(exec); //
 
-        ServiceTable serviceTable = ServiceTableMapper.toServiceTable(table);
+        ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String actualJson = objectMapper.writeValueAsString(serviceTable);
+        String actualJson = objectMapper.writeValueAsString(containerTable);
         String expectedJson =
                 "{\"table-spec\":[{\"column-string\":\"string\"}],\"table-data\":[[null]]}";
 

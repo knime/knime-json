@@ -46,7 +46,7 @@
  * History
  *   Apr 5, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
+package org.knime.core.data.json.containertable;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;
@@ -68,13 +68,13 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Holds hard coded simple names for the valid primitive types of a {@link ServiceTable}
+ * Holds hard coded simple names for the valid primitive types of a {@link ContainerTableJsonSchema}
  * and is responsible for conversion from Strings to {@link DataType} and back.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public abstract class ServiceTableValidDataTypes {
+public abstract class ContainerTableValidDataTypes {
 
     private static final String STRING_NAME = "string";
     private static final String DOUBLE_NAME = "double";
@@ -89,8 +89,8 @@ public abstract class ServiceTableValidDataTypes {
     /**
      * Gets the {@link DataType} of the given string.
      *
-     * @param dataType type to be converted
-     * @return ServiceInputValidDataType object corresponding to the input data type
+     * @param dataType string representation of type to be converted
+     * @return DataType object corresponding to the input data type
      * @throws InvalidSettingsException
      */
     public static DataType parse(final String dataType) throws InvalidSettingsException {

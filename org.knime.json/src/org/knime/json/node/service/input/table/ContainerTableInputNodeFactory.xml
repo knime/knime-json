@@ -2,18 +2,18 @@
 <knimeNode icon="./service-in.png" type="QuickForm"
 	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
-	<name>Service Table Input</name>
+	<name>Container Input (Table)</name>
 
 	<shortDescription>
-		Reads the content of a table from an external caller (e.g a Call Workflow node).
+		Reads the content of a table from an external caller (e.g the Call Workflow (Table Based) node).
      </shortDescription>
  
  	<fullDescription>
  		<intro>
  		
  			This node receives a KNIME table from an external caller (i.e. the <i>Call Workflow (Table Based)</i> node) and makes it available at the output port.
- 			A configured parameter makes the <i>Service Table Input</i> visible from the external caller and enables the external caller to send a KNIME table to 
- 			the <i>Service Table Input</i> node.<br/>
+ 			A configured parameter makes the <i>Container Input (Table)</i> visible from the external caller and enables the external caller to send a KNIME table to 
+ 			the <i>Container Input (Table)</i> node.<br/>
 			<br/>
 
 			If a data table is connected to the optional input, the node will simply forward this table to the output port 

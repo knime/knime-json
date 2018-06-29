@@ -46,50 +46,77 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.servicetable;
-
-import static org.junit.Assert.assertEquals;
+package org.knime.core.data.json.containertable;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import javax.json.JsonValue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.knime.core.node.util.CheckUtils;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test cases for serializing and deserializing column specs to or from json.
+ * Defines a json schema for tables being sent to Container Input (Table) nodes
+ * and received from Container Output (Table) nodes from external callers.
+ * Main function is to serve as an interface between JSON and BufferedDataTables.
+ * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.6
  */
-public class ServiceColumnSpecTest {
+@JsonPropertyOrder({"table-spec", "table-data"})
+public class ContainerTableJsonSchema {
+
+    private final ContainerTableSpec m_tableSpec;
+    private final ContainerTableData m_tableData;
 
     /**
-     * Checks that a column spec is correctly serialized.
+     * Constructor for the container table.
      *
-     * @throws JsonProcessingException
+     * @param tableSpec the table spec for this table, not null
+     * @param tableData the table data for this table, not null
      */
-    @Test
-    public void testSerializeColumnSpec() throws JsonProcessingException {
-        ServiceTableColumnSpec serviceInputColumnSpec = new ServiceTableColumnSpec("column-string", "string");
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(serviceInputColumnSpec);
-
-        assertEquals("{\"column-string\":\"string\"}", json);
+    public ContainerTableJsonSchema(
+            @JsonProperty("table-spec") final ContainerTableSpec tableSpec,
+            @JsonProperty("table-data") final ContainerTableData tableData) {
+        m_tableSpec = CheckUtils.checkArgumentNotNull(tableSpec);
+        m_tableData = CheckUtils.checkArgumentNotNull(tableData);
     }
 
     /**
-     * Checks that a column spec is correctly deserialized.
-     *
-     * @throws IOException
+     * Gets the table spec of this input.
+     * @return the table spec, can not be null
      */
-    @Test
-    public void testDeserializeColumnSpec() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ServiceTableColumnSpec serviceInputColumnSpec = objectMapper.readValue("{\"column-string\":\"string\"}", ServiceTableColumnSpec.class);
+    @JsonProperty("table-spec")
+    public ContainerTableSpec getContainerTableSpec() {
+        return m_tableSpec;
+    }
 
-        assertEquals("column-string", serviceInputColumnSpec.getName());
-        assertEquals("string", serviceInputColumnSpec.getType());
+    /**
+     * Gets the table data of this input.
+     * @return the table data, can not be null
+     */
+    @JsonProperty("table-data")
+    public ContainerTableData getContainerTableData() {
+        return m_tableData;
+    }
+
+    /**
+     * Checks if a json value conforms to the structure of {@link ContainerTableJsonSchema}.
+     *
+     * @param jsonValue the json value under question
+     * @return true if the supplied Json value conforms to {@link ContainerTableJsonSchema}
+     */
+    public static boolean hasContainerTableJsonSchema(final JsonValue jsonValue) {
+        try {
+            new ObjectMapper().readValue(jsonValue.toString(), ContainerTableJsonSchema.class);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
 }

@@ -71,12 +71,12 @@ import org.knime.core.data.LongValue;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
-import org.knime.core.data.json.servicetable.ServiceTable;
-import org.knime.core.data.json.servicetable.ServiceTableColumnSpec;
-import org.knime.core.data.json.servicetable.ServiceTableData;
-import org.knime.core.data.json.servicetable.ServiceTableRow;
-import org.knime.core.data.json.servicetable.ServiceTableSpec;
-import org.knime.core.data.json.servicetable.ServiceTableValidDataTypes;
+import org.knime.core.data.json.containertable.ContainerTableColumnSpec;
+import org.knime.core.data.json.containertable.ContainerTableData;
+import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
+import org.knime.core.data.json.containertable.ContainerTableRow;
+import org.knime.core.data.json.containertable.ContainerTableSpec;
+import org.knime.core.data.json.containertable.ContainerTableValidDataTypes;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
@@ -87,78 +87,78 @@ import org.knime.json.util.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Class that converts a {@link BufferedDataTable} to a {@link ServiceTable}.
+ * Class that converts a {@link BufferedDataTable} to a {@link ContainerTableJsonSchema}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public final class ServiceTableMapper {
+public final class ContainerTableMapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private ServiceTableMapper() {
+    private ContainerTableMapper() {
 
     }
 
     /**
-     * Converts a JsonValue conforming to the structure of {@link ServiceTable}
+     * Converts a JsonValue conforming to the structure of {@link ContainerTableJsonSchema}
      * to a {@link BufferedDataTable}.
      *
-     * @param json json representation of a {@link ServiceTable}
+     * @param json json representation of a {@link ContainerTableJsonSchema}
      * @param exec context in which the call has been made
      * @return a Buffered data table corresponding to the json input
      * @throws InvalidSettingsException
      */
     public static BufferedDataTable[] toBufferedDataTable(final JsonValue json, final ExecutionContext exec) throws InvalidSettingsException {
-        return toBufferedDataTable(asServiceTable(json), exec);
+        return toBufferedDataTable(asContainerTableJson(json), exec);
     }
 
-    private static ServiceTable asServiceTable(final JsonValue json) throws InvalidSettingsException {
+    private static ContainerTableJsonSchema asContainerTableJson(final JsonValue json) throws InvalidSettingsException {
         try {
-            return OBJECT_MAPPER.readValue(json.toString(), ServiceTable.class);
+            return OBJECT_MAPPER.readValue(json.toString(), ContainerTableJsonSchema.class);
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not parse JsonValue to a Buffered Data Table", e);
         }
     }
 
     /**
-     * Creates a buffered data table of the service input.
+     * Creates a buffered data table of the container input.
      *
-     * @param serviceInput input of which the table is created from
+     * @param containerTable input of which the table is created from
      * @param exec the execution context
-     * @return a BufferedDataTable[] from the service input
+     * @return a BufferedDataTable[] from the container table input
      * @throws InvalidSettingsException
      */
-    public static BufferedDataTable[] toBufferedDataTable(final ServiceTable serviceInput, final ExecutionContext exec)
+    public static BufferedDataTable[] toBufferedDataTable(final ContainerTableJsonSchema containerTable, final ExecutionContext exec)
             throws InvalidSettingsException {
-        CheckUtils.checkSettingNotNull(serviceInput, "Service input cannot be null");
-        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(serviceInput));
-        addDataRows(dataContainer, serviceInput, exec);
+        CheckUtils.checkSettingNotNull(containerTable, "Container Table cannot be null");
+        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(containerTable));
+        addDataRows(dataContainer, containerTable, exec);
         dataContainer.close();
         return new BufferedDataTable[]{dataContainer.getTable()};
     }
 
     /**
-     * Creates a data table spec of the service input.
+     * Creates a data table spec of the container table json.
      *
-     * @param serviceInput input of which the table spec is created from
-     * @return a DataTableSpec from the service input
+     * @param jsonInput input of which the table spec is created from
+     * @return a DataTableSpec from the json input
      * @throws InvalidSettingsException
      */
-    public static DataTableSpec toTableSpec(final JsonValue serviceInput) throws InvalidSettingsException {
-        return toTableSpec(asServiceTable(serviceInput));
+    public static DataTableSpec toTableSpec(final JsonValue jsonInput) throws InvalidSettingsException {
+        return toTableSpec(asContainerTableJson(jsonInput));
     }
 
     /**
-     * Creates a data table spec of the service input.
+     * Creates a data table spec of a container table.
      *
-     * @param serviceInput input of which the table spec is created from
-     * @return a DataTableSpec from the service input
+     * @param containerTable input of which the table spec is created from
+     * @return a DataTableSpec from the container table input
      * @throws InvalidSettingsException
      */
-    public static DataTableSpec toTableSpec(final ServiceTable serviceInput) throws InvalidSettingsException {
-        ServiceTableSpec tableSpec =
-            CheckUtils.checkSettingNotNull(serviceInput.getServiceTableSpec(), "table spec cannot be null");
+    public static DataTableSpec toTableSpec(final ContainerTableJsonSchema containerTable) throws InvalidSettingsException {
+        ContainerTableSpec tableSpec =
+            CheckUtils.checkSettingNotNull(containerTable.getContainerTableSpec(), "table spec cannot be null");
         int size = tableSpec.size();
         String[] columnNames = new String[size];
         DataType[] columnTypes = new DataType[size];
@@ -166,13 +166,13 @@ public final class ServiceTableMapper {
         Set<String> alreadyUsedColumnNames = new HashSet<>();
         Map<String, Integer> usedColumnNamesToIndex = new HashMap<>();
         for (int i = 0; i < size; i++) {
-            ServiceTableColumnSpec serviceInputColumnSpec = tableSpec.getServiceTableColumnSpecs().get(i);
-            String columnName = serviceInputColumnSpec.getName();
+            ContainerTableColumnSpec containerTableColumnSpec = tableSpec.getContainerTableColumnSpecs().get(i);
+            String columnName = containerTableColumnSpec.getName();
             if (alreadyUsedColumnNames.add(columnName)) {
                 usedColumnNamesToIndex.put(columnName, i);
                 columnNames[i] = columnName;
-                String columnType = serviceInputColumnSpec.getType();
-                columnTypes[i] = ServiceTableValidDataTypes.parse(columnType);
+                String columnType = containerTableColumnSpec.getType();
+                columnTypes[i] = ContainerTableValidDataTypes.parse(columnType);
             } else {
                 throw new InvalidSettingsException("Columns \"" + usedColumnNamesToIndex.get(columnName) + "\" and \"" + i
                     + "\" have equal names. Duplicate column names in input are not allowed.");
@@ -183,17 +183,17 @@ public final class ServiceTableMapper {
         return new DataTableSpec(columnSpec);
     }
 
-    private static void addDataRows(final BufferedDataContainer dataContainer, final ServiceTable serviceInput, final ExecutionContext exec)
+    private static void addDataRows(final BufferedDataContainer dataContainer, final ContainerTableJsonSchema containerTable, final ExecutionContext exec)
             throws InvalidSettingsException {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
-        ServiceTableData tableData = serviceInput.getServiceTableData();
-        for (ServiceTableRow tableRow : tableData.getServiceTableRows()) {
+        ContainerTableData tableData = containerTable.getContainerTableData();
+        for (ContainerTableRow tableRow : tableData.getContainerTableRows()) {
             dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec)));
         }
     }
 
-    private static DataCell[] getDataCells(final ServiceTableRow tableRow, final DataTableSpec tableSpec, final ExecutionContext exec)
+    private static DataCell[] getDataCells(final ContainerTableRow tableRow, final DataTableSpec tableSpec, final ExecutionContext exec)
             throws InvalidSettingsException {
         DataCell[] dataCells = new DataCell[tableRow.size()];
         List<Object> cells = tableRow.getDataCellObjects();
@@ -216,19 +216,19 @@ public final class ServiceTableMapper {
     }
 
     /**
-     * Converts the incoming table to a json value conforming to the {@link ServiceTable} structure.
+     * Converts the incoming table to a json value conforming to {@link ContainerTableJsonSchema}.
      *
      * @param table table to be converted to a json value
-     * @return json value representing the input table
+     * @return json value representing the input table, conforming to {@link ContainerTableJsonSchema}
      * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
      */
-    public static JsonValue toServiceTableJsonValue(final BufferedDataTable table) throws InvalidSettingsException {
+    public static JsonValue toContainerTableJsonValue(final BufferedDataTable table) throws InvalidSettingsException {
         JsonValue result = null;
         try {
-            ServiceTable serviceTable = toServiceTable(table);
+            ContainerTableJsonSchema containerTable = toContainerTable(table);
             ObjectMapper objectMapper = new ObjectMapper();
-            String serviceTableJson = objectMapper.writeValueAsString(serviceTable);
-            result = JSONUtil.parseJSONValue(serviceTableJson);
+            String containerTableJson = objectMapper.writeValueAsString(containerTable);
+            result = JSONUtil.parseJSONValue(containerTableJson);
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not parse the table to JsonValue", e);
         }
@@ -237,37 +237,37 @@ public final class ServiceTableMapper {
     }
 
     /**
-     * Converts the given {@link BufferedDataTable} to a {@link ServiceTable}.
+     * Converts the given {@link BufferedDataTable} to a {@link ContainerTableJsonSchema}.
      *
-     * @param table table to be converted to a ServiceTable
-     * @return ServiceTable
+     * @param table table to be converted to a {@link ContainerTableJsonSchema}
+     * @return ContainerTableJsonSchema of the input table
      */
-    public static ServiceTable toServiceTable(final BufferedDataTable table) {
-        return new ServiceTable(createServiceTableSpecs(table), createServiceTableData(table));
+    public static ContainerTableJsonSchema toContainerTable(final BufferedDataTable table) {
+        return new ContainerTableJsonSchema(createContainerTableSpecs(table), createContainerTableData(table));
     }
 
-    private static ServiceTableSpec createServiceTableSpecs(final BufferedDataTable table) {
+    private static ContainerTableSpec createContainerTableSpecs(final BufferedDataTable table) {
         DataTableSpec dataTableSpec = table.getDataTableSpec();
-        List<ServiceTableColumnSpec> serviceTableColumnSpecs = new ArrayList<>();
+        List<ContainerTableColumnSpec> containerTableColumnSpecs = new ArrayList<>();
         for (DataColumnSpec columnSpec : dataTableSpec) {
             String name = columnSpec.getName();
-            String type = ServiceTableValidDataTypes.parse(columnSpec.getType());
-            serviceTableColumnSpecs.add(new ServiceTableColumnSpec(name, type));
+            String type = ContainerTableValidDataTypes.parse(columnSpec.getType());
+            containerTableColumnSpecs.add(new ContainerTableColumnSpec(name, type));
         }
-        return new ServiceTableSpec(serviceTableColumnSpecs);
+        return new ContainerTableSpec(containerTableColumnSpecs);
     }
-    private static ServiceTableData createServiceTableData(final BufferedDataTable table) {
-        List<ServiceTableRow> serviceTableRows = new ArrayList<>();
+    private static ContainerTableData createContainerTableData(final BufferedDataTable table) {
+        List<ContainerTableRow> containerTableRows = new ArrayList<>();
         DataTableSpec dataTableSpec = table.getDataTableSpec();
 
         for (DataRow row : table) {
-            serviceTableRows.add(createServiceTableRow(row, dataTableSpec));
+            containerTableRows.add(createContainerTableRow(row, dataTableSpec));
         }
 
-        return new ServiceTableData(serviceTableRows);
+        return new ContainerTableData(containerTableRows);
     }
 
-    private static ServiceTableRow createServiceTableRow(final DataRow originRow, final DataTableSpec dataTableSpec) {
+    private static ContainerTableRow createContainerTableRow(final DataRow originRow, final DataTableSpec dataTableSpec) {
         List<Object> resultRow = new ArrayList<>();
         int numColumns = dataTableSpec.getNumColumns();
         for (int i = 0; i < numColumns; i++) {
@@ -279,7 +279,7 @@ public final class ServiceTableMapper {
                 resultRow.add(parse(dataCell, type));
             }
         }
-        return new ServiceTableRow(resultRow);
+        return new ContainerTableRow(resultRow);
     }
 
     private static Object parse(final DataCell dataCell, final DataType type) {
