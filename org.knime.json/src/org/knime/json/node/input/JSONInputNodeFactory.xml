@@ -2,7 +2,7 @@
 <knimeNode icon="./json-in.png" type="QuickForm"
 	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
-	<name>JSON Input</name>
+	<name>Container Input (JSON)</name>
 
 	<shortDescription>
         Specify a text in the dialog and return it as a JSON value.

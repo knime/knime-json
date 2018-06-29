@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <knimeNode icon="./json-out.png" type="QuickForm" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
-    <name>JSON Output</name>
+    <name>Container Output (JSON)</name>
     
     <shortDescription>
         Reads the content of a JSON column and makes it available to an external caller.
