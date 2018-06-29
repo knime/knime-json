@@ -46,7 +46,7 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.containertable;
+package org.knime.core.data.json.container.table;
 
 import java.util.List;
 
@@ -54,53 +54,34 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Representation of a Container Table Spec.
+ * Representation of Container Table Data containing multiple Container Table Rows.
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableSpec {
+public class ContainerTableData {
 
-    private final List<ContainerTableColumnSpec> m_columnSpecs;
+    private final List<ContainerTableRow> m_tableRows;
 
     /**
-     * Constructs a ContainerTableSpec from the given columnSpecs.
+     * Constructs a table of the given rows.
      *
-     * @param columnSpecs the column specs
+     * @param tableRows rows in the table
      */
     @JsonCreator
-    public ContainerTableSpec(final List<ContainerTableColumnSpec> columnSpecs) {
-        m_columnSpecs = columnSpecs;
+    public ContainerTableData(final List<ContainerTableRow> tableRows) {
+        m_tableRows = tableRows;
     }
 
     /**
-     * Returns the list of column specs for this table spec.
+     * Gets the rows of this table.
      *
-     * @return list of column specs
+     * @return the rows in this table
      */
     @JsonValue
-    public List<ContainerTableColumnSpec> getContainerTableColumnSpecs() {
-        return m_columnSpecs;
+    public List<ContainerTableRow> getContainerTableRows() {
+        return m_tableRows;
     }
 
-    /**
-     * Checks if a given column name/type pair is contained in this table spec.
-     *
-     * @param columnName name of the column
-     * @param columnType type of the column
-     * @return true if this table spec contains the name/type pair
-     */
-    public boolean contains(final String columnName, final String columnType) {
-        return m_columnSpecs.contains(new ContainerTableColumnSpec(columnName, columnType));
-    }
-
-    /**
-     * Returns the number of column specs in this table spec.
-     *
-     * @return the number of column specs
-     */
-    public int size() {
-        return m_columnSpecs.size();
-    }
 }

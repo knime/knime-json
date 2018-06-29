@@ -44,79 +44,60 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 9, 2018 (Tobias Urhaug): created
+ *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.core.data.json.containertable;
+package org.knime.json.node.service.input.variable;
 
-import java.io.IOException;
-
-import javax.json.JsonValue;
-
-import org.knime.core.node.util.CheckUtils;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
 
 /**
- * Defines a json schema for tables being sent to Container Input (Table) nodes
- * and received from Container Output (Table) nodes from external callers.
- * Main function is to serve as an interface between JSON and BufferedDataTables.
- * Can be serialized/deserialized to/from json with jackson.
+ * Factory for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-@JsonPropertyOrder({"table-spec", "table-data"})
-public class ContainerTableJsonSchema {
-
-    private final ContainerTableSpec m_tableSpec;
-    private final ContainerTableData m_tableData;
+public class ContainerVariableInputNodeFactory extends NodeFactory<ContainerVariableInputNodeModel> {
 
     /**
-     * Constructor for the container table.
-     *
-     * @param tableSpec the table spec for this table, not null
-     * @param tableData the table data for this table, not null
+     * {@inheritDoc}
      */
-    public ContainerTableJsonSchema(
-            @JsonProperty("table-spec") final ContainerTableSpec tableSpec,
-            @JsonProperty("table-data") final ContainerTableData tableData) {
-        m_tableSpec = CheckUtils.checkArgumentNotNull(tableSpec);
-        m_tableData = CheckUtils.checkArgumentNotNull(tableData);
+    @Override
+    public ContainerVariableInputNodeModel createNodeModel() {
+        return new ContainerVariableInputNodeModel();
     }
 
     /**
-     * Gets the table spec of this input.
-     * @return the table spec, can not be null
+     * {@inheritDoc}
      */
-    @JsonProperty("table-spec")
-    public ContainerTableSpec getContainerTableSpec() {
-        return m_tableSpec;
+    @Override
+    public int getNrNodeViews() {
+        return 0;
     }
 
     /**
-     * Gets the table data of this input.
-     * @return the table data, can not be null
+     * {@inheritDoc}
      */
-    @JsonProperty("table-data")
-    public ContainerTableData getContainerTableData() {
-        return m_tableData;
+    @Override
+    public NodeView<ContainerVariableInputNodeModel> createNodeView(final int viewIndex, final ContainerVariableInputNodeModel nodeModel) {
+        throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
     /**
-     * Checks if a json value conforms to the structure of {@link ContainerTableJsonSchema}.
-     *
-     * @param jsonValue the json value under question
-     * @return true if the supplied Json value conforms to {@link ContainerTableJsonSchema}
+     * {@inheritDoc}
      */
-    public static boolean hasContainerTableJsonSchema(final JsonValue jsonValue) {
-        try {
-            new ObjectMapper().readValue(jsonValue.toString(), ContainerTableJsonSchema.class);
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
+    @Override
+    public boolean hasDialog() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return new ContainerVariableInputNodeDialog();
     }
 
 }

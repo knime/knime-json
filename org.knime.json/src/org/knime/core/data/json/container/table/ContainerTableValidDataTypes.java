@@ -46,7 +46,7 @@
  * History
  *   Apr 5, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.containertable;
+package org.knime.core.data.json.container.table;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataType;

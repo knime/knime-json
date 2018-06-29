@@ -57,15 +57,15 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.FlowVariable;
-import org.knime.json.node.service.input.variable.ServiceVariableInput;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Class that converts flow variables to a JsonValue conforming to {@link ServiceVariableInput}.
+ * Class that converts flow variables to a JsonValue conforming to {@link ContainerVariableJsonSchema}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
@@ -73,14 +73,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ServiceVariableMapper {
 
     /**
-     * Converts a collection of flow variables to a JsonValue conforming to {@link ServiceVariableInput}.
+     * Converts a collection of flow variables to a JsonValue conforming to {@link ContainerVariableJsonSchema}.
      *
      * @param flowVariables the flow variables
      * @return a JsonValue representing the flow variables
-     * @throws InvalidSettingsException if variables cannot be mapped to {@link ServiceVariableInput}
+     * @throws InvalidSettingsException if variables cannot be mapped to {@link ContainerVariableJsonSchema}
      */
     public static JsonValue toServiceVariableJsonValue(final Collection<FlowVariable> flowVariables) throws InvalidSettingsException {
-        ServiceVariableInput serviceVariableInput = new ServiceVariableInput(createVariables(flowVariables));
+        ContainerVariableJsonSchema serviceVariableInput = new ContainerVariableJsonSchema(createVariables(flowVariables));
         try {
             String serviceTableJson = new ObjectMapper().writeValueAsString(serviceVariableInput);
             return JSONUtil.parseJSONValue(serviceTableJson);

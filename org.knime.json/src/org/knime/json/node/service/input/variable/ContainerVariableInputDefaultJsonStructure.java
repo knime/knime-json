@@ -59,12 +59,12 @@ import javax.json.JsonBuilderFactory;
 import javax.json.JsonValue;
 
 /**
- * Class that holds a hard coded prototype JSON structure for the Service Variable Input node.
+ * Class that holds a hard coded prototype JSON structure for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableInputDefaultJsonStructure {
+public class ContainerVariableInputDefaultJsonStructure {
 
     /**
      * Default string variable name.

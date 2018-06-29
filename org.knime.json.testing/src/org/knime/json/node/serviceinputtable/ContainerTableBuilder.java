@@ -52,11 +52,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.knime.core.data.json.containertable.ContainerTableColumnSpec;
-import org.knime.core.data.json.containertable.ContainerTableData;
-import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
-import org.knime.core.data.json.containertable.ContainerTableRow;
-import org.knime.core.data.json.containertable.ContainerTableSpec;
+import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
+import org.knime.core.data.json.container.table.ContainerTableData;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
+import org.knime.core.data.json.container.table.ContainerTableRow;
+import org.knime.core.data.json.container.table.ContainerTableSpec;
 
 /**
  * Builder class that simplifies setting up test fixtures using {@link ContainerTableJsonSchema}.

@@ -59,7 +59,7 @@ import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.CanceledExecutionException;

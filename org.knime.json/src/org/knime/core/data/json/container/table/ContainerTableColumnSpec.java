@@ -46,7 +46,7 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.containertable;
+package org.knime.core.data.json.container.table;
 
 import java.util.Collections;
 import java.util.Map;

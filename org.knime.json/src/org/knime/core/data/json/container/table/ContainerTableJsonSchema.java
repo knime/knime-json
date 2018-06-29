@@ -46,42 +46,77 @@
  * History
  *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.core.data.json.containertable;
+package org.knime.core.data.json.container.table;
 
-import java.util.List;
+import java.io.IOException;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import javax.json.JsonValue;
+
+import org.knime.core.node.util.CheckUtils;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Representation of Container Table Data containing multiple Container Table Rows.
+ * Defines a json schema for tables being sent to Container Input (Table) nodes
+ * and received from Container Output (Table) nodes from external callers.
+ * Main function is to serve as an interface between JSON and BufferedDataTables.
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableData {
+@JsonPropertyOrder({"table-spec", "table-data"})
+public class ContainerTableJsonSchema {
 
-    private final List<ContainerTableRow> m_tableRows;
+    private final ContainerTableSpec m_tableSpec;
+    private final ContainerTableData m_tableData;
 
     /**
-     * Constructs a table of the given rows.
+     * Constructor for the container table.
      *
-     * @param tableRows rows in the table
+     * @param tableSpec the table spec for this table, not null
+     * @param tableData the table data for this table, not null
      */
-    @JsonCreator
-    public ContainerTableData(final List<ContainerTableRow> tableRows) {
-        m_tableRows = tableRows;
+    public ContainerTableJsonSchema(
+            @JsonProperty("table-spec") final ContainerTableSpec tableSpec,
+            @JsonProperty("table-data") final ContainerTableData tableData) {
+        m_tableSpec = CheckUtils.checkArgumentNotNull(tableSpec);
+        m_tableData = CheckUtils.checkArgumentNotNull(tableData);
     }
 
     /**
-     * Gets the rows of this table.
-     *
-     * @return the rows in this table
+     * Gets the table spec of this input.
+     * @return the table spec, can not be null
      */
-    @JsonValue
-    public List<ContainerTableRow> getContainerTableRows() {
-        return m_tableRows;
+    @JsonProperty("table-spec")
+    public ContainerTableSpec getContainerTableSpec() {
+        return m_tableSpec;
+    }
+
+    /**
+     * Gets the table data of this input.
+     * @return the table data, can not be null
+     */
+    @JsonProperty("table-data")
+    public ContainerTableData getContainerTableData() {
+        return m_tableData;
+    }
+
+    /**
+     * Checks if a json value conforms to the structure of {@link ContainerTableJsonSchema}.
+     *
+     * @param jsonValue the json value under question
+     * @return true if the supplied Json value conforms to {@link ContainerTableJsonSchema}
+     */
+    public static boolean hasContainerTableJsonSchema(final JsonValue jsonValue) {
+        try {
+            new ObjectMapper().readValue(jsonValue.toString(), ContainerTableJsonSchema.class);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
 }

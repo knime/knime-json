@@ -52,8 +52,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-import org.knime.core.data.json.containertable.ContainerTableData;
-import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
+import org.knime.core.data.json.container.table.ContainerTableData;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.json.node.serviceinputtable.ContainerTableBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

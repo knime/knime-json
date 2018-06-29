@@ -58,6 +58,7 @@ import java.util.Map.Entry;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
@@ -78,22 +79,22 @@ import org.knime.json.util.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * The node model for the Service Variable Input node.
+ * The node model for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableInputNodeModel extends NodeModel implements InputNode {
+public class ContainerVariableInputNodeModel extends NodeModel implements InputNode {
 
     private final ObjectMapper m_objectMapper;
 
     private JsonValue m_externalValue;
-    private ServiceVariableInputNodeConfiguration m_configuration = new ServiceVariableInputNodeConfiguration();
+    private ContainerVariableInputNodeConfiguration m_configuration = new ContainerVariableInputNodeConfiguration();
 
     /**
      * Constructor for the node model.
      */
-    protected ServiceVariableInputNodeModel() {
+    protected ContainerVariableInputNodeModel() {
         super(
             new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL},
             new PortType[]{FlowVariablePortObject.TYPE});
@@ -118,31 +119,31 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
         if (externalJsonValue != null) {
             pushVariablesToStack(externalJsonValue.toString());
         } else if (inSpecs[0] == null) {
-            pushVariablesToStack(ServiceVariableInputDefaultJsonStructure.asString());
+            pushVariablesToStack(ContainerVariableInputDefaultJsonStructure.asString());
         }
 
         return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
     }
 
     private JsonValue getExternalVariableInput() throws InvalidSettingsException {
-        JsonValue externalServiceInput = null;
+        JsonValue externalInput = null;
         String inputFileName = m_configuration.getFileName();
         if (StringUtils.isNotEmpty(inputFileName)) {
             try {
                 File inputFile = FileUtil.getFileFromURL(new URL(inputFileName));
                 String externalJsonString= new String(Files.readAllBytes(inputFile.toPath()));
-                externalServiceInput = JSONUtil.parseJSONValue(externalJsonString);
+                externalInput = JSONUtil.parseJSONValue(externalJsonString);
             } catch (IOException  e) {
                 throw new InvalidSettingsException("Input path \"" + inputFileName + "\" could not be resolved" , e);
             }
         } else if (m_externalValue != null) {
-            externalServiceInput = m_externalValue;
+            externalInput = m_externalValue;
         }
-        return externalServiceInput;
+        return externalInput;
     }
 
     private void pushVariablesToStack(final String json) throws InvalidSettingsException {
-        ServiceVariableInput variableInput = deserializeJsonString(json);
+        ContainerVariableJsonSchema variableInput = deserializeJsonString(json);
         for (Map<String, Object> variable : variableInput.getVariables()) {
             for (Entry<String, Object> variableEntry : variable.entrySet()) {
                 String name = variableEntry.getKey();
@@ -161,9 +162,9 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
         }
     }
 
-    private ServiceVariableInput deserializeJsonString(final String json) throws InvalidSettingsException {
+    private ContainerVariableJsonSchema deserializeJsonString(final String json) throws InvalidSettingsException {
         try {
-            return m_objectMapper.readValue(json, ServiceVariableInput.class);
+            return m_objectMapper.readValue(json, ContainerVariableJsonSchema.class);
         } catch (IOException e) {
             throw new InvalidSettingsException("Error while parsing json-input: " + e.getMessage(), e);
         }
@@ -190,7 +191,7 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_configuration = new ServiceVariableInputNodeConfiguration().loadInModel(settings);
+        m_configuration = new ContainerVariableInputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -198,7 +199,7 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        new ServiceVariableInputNodeConfiguration().loadInModel(settings);
+        new ContainerVariableInputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -206,7 +207,7 @@ public class ServiceVariableInputNodeModel extends NodeModel implements InputNod
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ServiceVariableInputDefaultJsonStructure.asJsonValue();
+        JsonValue value = m_externalValue != null ? m_externalValue : ContainerVariableInputDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
                 .jsonValue(value)

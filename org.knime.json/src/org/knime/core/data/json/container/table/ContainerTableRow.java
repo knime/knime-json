@@ -44,68 +44,83 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Apr 6, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.service.input.variable;
+package org.knime.core.data.json.container.table;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-
-import javax.json.JsonValue;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Representation of the Service Variable Input containing a list of variables.
- * Is serializable/deserializable with Jackson.
- *
+ * Representation of a Container Table Row containing Data Cells of the generic type Object.
+ * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableInput {
+public class ContainerTableRow {
 
-    private final List<Map<String, Object>> m_variables;
+    private final List<Object> m_dataCells;
 
     /**
-     * Constructor for the Service Variable Input.
+     * Constructs a new data row containing the input data cells.
      *
-     * @param variables the variables in this input
+     * @param dataCells the data cells of this data row
      */
     @JsonCreator
-    public ServiceVariableInput(@JsonProperty("variables") final List<Map<String, Object>> variables) {
-        m_variables = variables;
+    public ContainerTableRow(final List<Object> dataCells) {
+        m_dataCells = dataCells;
     }
 
     /**
-     * Returns the variables in this input.
+     * Gets the data cells in this data row.
      *
-     * @return the variables
+     * @return the data cells of this table row
      */
-    @JsonProperty("variables")
-    public List<Map<String, Object>> getVariables() {
-        return m_variables;
+    @JsonValue
+    public List<Object> getDataCellObjects() {
+        return m_dataCells;
     }
 
     /**
-     * Checks if a json value conforms to the structure of {@link ServiceVariableInput}.
+     * The number of cells in this data row.
      *
-     * @param jsonValue the json value under question
-     * @return true if the supplied Json value conforms to {@link ServiceVariableInput}
+     * @return the size of this table row
      */
-    public static boolean isServiceVariablesJson(final JsonValue jsonValue) {
-        if (jsonValue.toString().equals("{}")) {
-            return false;
-        }
-        try {
-            new ObjectMapper().readValue(jsonValue.toString(), ServiceVariableInput.class);
+    public int size() {
+        return m_dataCells.size();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((m_dataCells == null) ? 0 : m_dataCells.hashCode());
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
-        } catch (IOException e) {
+        }
+        if (obj == null) {
             return false;
         }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ContainerTableRow other = (ContainerTableRow)obj;
+        return Objects.equals(m_dataCells, other.m_dataCells);
     }
 
 }

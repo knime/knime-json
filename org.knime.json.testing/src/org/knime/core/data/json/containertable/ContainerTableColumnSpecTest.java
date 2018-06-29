@@ -53,7 +53,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.knime.core.data.json.containertable.ContainerTableColumnSpec;
+import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

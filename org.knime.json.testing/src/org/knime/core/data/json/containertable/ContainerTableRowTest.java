@@ -54,7 +54,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.knime.core.data.json.containertable.ContainerTableRow;
+import org.knime.core.data.json.container.table.ContainerTableRow;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -2,7 +2,7 @@
 <knimeNode icon="./service-in.png" type="QuickForm"
 	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
-	<name>Service Variable Input</name>
+	<name>Container Input (Variable)</name>
 
 	<shortDescription>
         Injects flow variables to the workflow.
@@ -12,8 +12,8 @@
 		<intro>
 		
 			This node receives flow variables from an external caller (i.e. the <i>Call Workflow (Table Based)</i> node) and makes them available to the workflow.
- 			A configured parameter makes the <i>Service Variable Input</i> visible from the external caller and enables the external caller to send the variables to 
- 			the <i>Service Table Input</i> node.<br/>
+ 			A configured parameter makes the <i>Container Input (Variable)</i> visible from the external caller and enables the external caller to send the variables to 
+ 			the <i>Container Input (Variable)</i> node.<br/>
 			<br/>
 		
 		</intro>

@@ -44,60 +44,68 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.input.variable;
+package org.knime.core.data.json.container.variables;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import javax.json.JsonValue;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Factory for the Service Variable Input node.
+ * Json schema for flow variables sent to a Container Input (Variable) node.
+ * Is serializable/deserializable with Jackson.
+ *
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableInputNodeFactory extends NodeFactory<ServiceVariableInputNodeModel> {
+public class ContainerVariableJsonSchema {
+
+    private final List<Map<String, Object>> m_variables;
 
     /**
-     * {@inheritDoc}
+     * Constructor for the Container Variable Json Schema.
+     *
+     * @param variables the variables in this input
      */
-    @Override
-    public ServiceVariableInputNodeModel createNodeModel() {
-        return new ServiceVariableInputNodeModel();
+    @JsonCreator
+    public ContainerVariableJsonSchema(@JsonProperty("variables") final List<Map<String, Object>> variables) {
+        m_variables = variables;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the variables in this input.
+     *
+     * @return the variables
      */
-    @Override
-    public int getNrNodeViews() {
-        return 0;
+    @JsonProperty("variables")
+    public List<Map<String, Object>> getVariables() {
+        return m_variables;
     }
 
     /**
-     * {@inheritDoc}
+     * Checks if a json value conforms to the structure of {@link ContainerVariableJsonSchema}.
+     *
+     * @param jsonValue the json value under question
+     * @return true if the supplied Json value conforms to {@link ContainerVariableJsonSchema}
      */
-    @Override
-    public NodeView<ServiceVariableInputNodeModel> createNodeView(final int viewIndex, final ServiceVariableInputNodeModel nodeModel) {
-        throw new UnsupportedOperationException("No views! " + viewIndex);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new ServiceVariableInputNodeDialog();
+    public static boolean hasContainerVariablesJsonSchema(final JsonValue jsonValue) {
+        if (jsonValue.toString().equals("{}")) {
+            return false;
+        }
+        try {
+            new ObjectMapper().readValue(jsonValue.toString(), ContainerVariableJsonSchema.class);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
 }

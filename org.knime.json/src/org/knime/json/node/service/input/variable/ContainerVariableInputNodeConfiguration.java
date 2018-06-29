@@ -56,12 +56,12 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Configuration of the Service Variable Input node.
+ * Configuration of the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableInputNodeConfiguration {
+public class ContainerVariableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "variable-input";
     private static final String DEFAULT_DESCRIPTION = "";
@@ -74,7 +74,7 @@ public class ServiceVariableInputNodeConfiguration {
     /**
      * Constructs a new configuration object.
      */
-    public ServiceVariableInputNodeConfiguration() {
+    public ContainerVariableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_variableInjectedFileName = DEFAULT_FILE_NAME;
@@ -95,7 +95,7 @@ public class ServiceVariableInputNodeConfiguration {
      * @param s a description, must not be <code>null</code>
      * @return the updated configuration
      */
-    ServiceVariableInputNodeConfiguration setDescription(final String s) {
+    ContainerVariableInputNodeConfiguration setDescription(final String s) {
         m_description = s;
         return this;
     }
@@ -115,7 +115,7 @@ public class ServiceVariableInputNodeConfiguration {
      * @param value the new parameter name
      * @return the updated configuration
      */
-    ServiceVariableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    ContainerVariableInputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
         CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
@@ -146,7 +146,7 @@ public class ServiceVariableInputNodeConfiguration {
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ServiceVariableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+    ContainerVariableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description", ""));
         setFileName(settings.getString("fileName"));
@@ -159,7 +159,7 @@ public class ServiceVariableInputNodeConfiguration {
      * @param settings a node settings object
      * @return the updated configuration
      */
-    ServiceVariableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
+    ContainerVariableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
         } catch (InvalidSettingsException e) {
@@ -175,7 +175,7 @@ public class ServiceVariableInputNodeConfiguration {
      * @param settings a settings object
      * @return this object
      */
-    ServiceVariableInputNodeConfiguration save(final NodeSettingsWO settings) {
+    ContainerVariableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("fileName", m_variableInjectedFileName);

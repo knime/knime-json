@@ -54,10 +54,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.knime.core.data.json.containertable.ContainerTableData;
-import org.knime.core.data.json.containertable.ContainerTableJsonSchema;
-import org.knime.core.data.json.containertable.ContainerTableRow;
-import org.knime.core.data.json.containertable.ContainerTableSpec;
+import org.knime.core.data.json.container.table.ContainerTableData;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
+import org.knime.core.data.json.container.table.ContainerTableRow;
+import org.knime.core.data.json.container.table.ContainerTableSpec;
 import org.knime.json.node.service.input.table.ContainerTableInputDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

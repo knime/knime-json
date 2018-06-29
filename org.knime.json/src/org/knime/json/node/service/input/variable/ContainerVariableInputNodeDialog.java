@@ -68,19 +68,19 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.port.PortObjectSpec;
 
 /**
- * Node dialog for the Service Variable Input node.
+ * Node dialog for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-class ServiceVariableInputNodeDialog extends NodeDialogPane {
+class ContainerVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
 
     /**
-     * New pane for configuring the Service Variable Input node.
+     * New pane for configuring the Container Input (Variable) node.
      */
-    protected ServiceVariableInputNodeDialog() {
+    protected ContainerVariableInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 
@@ -89,7 +89,7 @@ class ServiceVariableInputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        addTab("Service Variable Input", createLayout(), false);
+        addTab("Container Input (Variable)", createLayout(), false);
     }
 
     private JPanel createLayout() {
@@ -123,7 +123,7 @@ class ServiceVariableInputNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        ServiceVariableInputNodeConfiguration config = new ServiceVariableInputNodeConfiguration();
+        ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
         config.save(settings);
@@ -134,7 +134,7 @@ class ServiceVariableInputNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
-        ServiceVariableInputNodeConfiguration config = new ServiceVariableInputNodeConfiguration().loadInDialog(settings);
+        ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
     }

@@ -57,13 +57,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.knime.json.node.service.input.variable.ServiceVariableInput;
-import org.knime.json.node.service.input.variable.ServiceVariableInputDefaultJsonStructure;
+import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
+import org.knime.json.node.service.input.variable.ContainerVariableInputDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test suite for the serialization/deserialization of a {@link ServiceVariableInput} via Jackson.
+ * Test suite for the serialization/deserialization of a {@link ContainerVariableJsonSchema} via Jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
@@ -76,13 +76,13 @@ public class ServiceVariableInputTest {
      */
     @Test
     public void testSerialize() throws Exception {
-        List<Map<String, Object>> variableList = ServiceVariableInputDefaultJsonStructure.asVariableList();
-        ServiceVariableInput serviceVariableInput = new ServiceVariableInput(variableList);
+        List<Map<String, Object>> variableList = ContainerVariableInputDefaultJsonStructure.asVariableList();
+        ContainerVariableJsonSchema serviceVariableInput = new ContainerVariableJsonSchema(variableList);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String actualJson = objectMapper.writeValueAsString(serviceVariableInput);
 
-        String expectedJson = ServiceVariableInputDefaultJsonStructure.asString();
+        String expectedJson = ContainerVariableInputDefaultJsonStructure.asString();
         assertEquals(expectedJson, actualJson);
     }
 
@@ -93,30 +93,30 @@ public class ServiceVariableInputTest {
      */
     @Test
     public void testDeserialize() throws  Exception {
-        String inputJson = ServiceVariableInputDefaultJsonStructure.asString();
+        String inputJson = ContainerVariableInputDefaultJsonStructure.asString();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        ServiceVariableInput deserializedInput = objectMapper.readValue(inputJson, ServiceVariableInput.class);
+        ContainerVariableJsonSchema deserializedInput = objectMapper.readValue(inputJson, ContainerVariableJsonSchema.class);
 
         List<Map<String, Object>> deserializedVariables = deserializedInput.getVariables();
 
         Map<String, Object> stringVariable = deserializedVariables.get(0);
         assertThat(stringVariable.entrySet(), hasSize(1));
         assertThat(stringVariable, hasEntry(//
-            ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME, //
-            ServiceVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
+            ContainerVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME, //
+            ContainerVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
 
         Map<String, Object> doubleVariable = deserializedVariables.get(1);
         assertThat(doubleVariable.entrySet(), hasSize(1));
         assertThat(doubleVariable, hasEntry(//
-            ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME, //
-            ServiceVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
+            ContainerVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME, //
+            ContainerVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
 
         Map<String, Object> intVariable = deserializedVariables.get(2);
         assertThat(intVariable.entrySet(), hasSize(1));
         assertThat(intVariable, hasEntry(//
-            ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_NAME, //
-            ServiceVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
+            ContainerVariableInputDefaultJsonStructure.INT_VARIABLE_NAME, //
+            ContainerVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
     }
 
 }
