@@ -70,7 +70,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceVariableMapper {
+public class ContainerVariableMapper {
 
     /**
      * Converts a collection of flow variables to a JsonValue conforming to {@link ContainerVariableJsonSchema}.
@@ -79,11 +79,11 @@ public class ServiceVariableMapper {
      * @return a JsonValue representing the flow variables
      * @throws InvalidSettingsException if variables cannot be mapped to {@link ContainerVariableJsonSchema}
      */
-    public static JsonValue toServiceVariableJsonValue(final Collection<FlowVariable> flowVariables) throws InvalidSettingsException {
-        ContainerVariableJsonSchema serviceVariableInput = new ContainerVariableJsonSchema(createVariables(flowVariables));
+    public static JsonValue toContainerVariableJsonValue(final Collection<FlowVariable> flowVariables) throws InvalidSettingsException {
+        ContainerVariableJsonSchema containerVariableInput = new ContainerVariableJsonSchema(createVariables(flowVariables));
         try {
-            String serviceTableJson = new ObjectMapper().writeValueAsString(serviceVariableInput);
-            return JSONUtil.parseJSONValue(serviceTableJson);
+            String containerVariableJson = new ObjectMapper().writeValueAsString(containerVariableInput);
+            return JSONUtil.parseJSONValue(containerVariableJson);
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not parse the variables to JsonValue", e);
         }
