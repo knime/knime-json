@@ -53,7 +53,7 @@
       </node>
       <node
             category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.service.output.table.ServiceTableOutputNodeFactory"
+            factory-class="org.knime.json.node.service.output.table.ContainerTableOutputNodeFactory"
             after="org.knime.json.node.service.input.variable.ServiceVariableInputNodeFactory">
       </node>
    </extension>

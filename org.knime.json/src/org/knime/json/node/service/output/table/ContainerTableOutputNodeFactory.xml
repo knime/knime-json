@@ -2,7 +2,7 @@
 <knimeNode icon="./service-out.png" type="QuickForm"
 	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
-	<name>Service Table Output</name>
+	<name>Container Output (Table)</name>
 
 	<shortDescription>
 		Reads the content of a table and makes it available to an external caller (e.g a Call Workflow node).
@@ -12,8 +12,8 @@
 		<intro>
 		
 			This node sends a KNIME table to an external caller (i.e. the <i>Call Workflow (Table Based)</i> node).
-			A configured parameter makes the <i>Service Table Output</i> visible from the external caller and enables 
-			the external caller to fetch a KNIME table from the <i>Service Table Output</i> node.<br/>
+			A configured parameter makes the <i>Container Output (Table)</i> visible from the external caller and enables 
+			the external caller to fetch a KNIME table from the <i>Container Output (Table)</i> node.<br/>
 			<br/>
 		
 			If a data table is connected to the input port, the node will simply forward this table to the output port. 

@@ -56,12 +56,12 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 
 /**
- * Configuration for the Service Table Output node.
+ * Configuration for {@link ContainerTableOutputNodeModel}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableOutputNodeConfiguration {
+public class ContainerTableOutputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
@@ -74,7 +74,7 @@ public class ServiceTableOutputNodeConfiguration {
     /**
      * Constructs a new configuration.
      */
-    public ServiceTableOutputNodeConfiguration() {
+    public ContainerTableOutputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_outputFilePath = DEFAULT_OUTPUT_FILE_PATH;
@@ -94,7 +94,7 @@ public class ServiceTableOutputNodeConfiguration {
      *
      * @param description a description, must not be <code>null</code>
      */
-    ServiceTableOutputNodeConfiguration setDescription(final String description) {
+    ContainerTableOutputNodeConfiguration setDescription(final String description) {
         m_description = description;
         return this;
     }
@@ -116,7 +116,7 @@ public class ServiceTableOutputNodeConfiguration {
      *            compatible)
      * @return the updated configuration
      */
-    ServiceTableOutputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
+    ContainerTableOutputNodeConfiguration setParameterName(final String value) throws InvalidSettingsException {
         CheckUtils.checkSetting(StringUtils.isNotEmpty(value), "parameter name must not be null or empty");
         CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(value).matches(),
             "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
@@ -142,7 +142,7 @@ public class ServiceTableOutputNodeConfiguration {
      *
      * @param outputFilePath the outputFilePath to set
      */
-    ServiceTableOutputNodeConfiguration setOutputFilePath(final String outputFilePath) {
+    ContainerTableOutputNodeConfiguration setOutputFilePath(final String outputFilePath) {
         m_outputFilePath = outputFilePath;
         return this;
     }
@@ -154,7 +154,7 @@ public class ServiceTableOutputNodeConfiguration {
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ServiceTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+    ContainerTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
@@ -167,7 +167,7 @@ public class ServiceTableOutputNodeConfiguration {
      * @param settings a node settings object
      * @return the updated configuration
      */
-    ServiceTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
+    ContainerTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
             setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
@@ -184,7 +184,7 @@ public class ServiceTableOutputNodeConfiguration {
      * @param settings a settings object
      * @return this object
      */
-    ServiceTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
+    ContainerTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("outputFilePath", m_outputFilePath);

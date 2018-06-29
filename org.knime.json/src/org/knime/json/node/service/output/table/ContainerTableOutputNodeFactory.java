@@ -53,19 +53,19 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * Factory for the Service Table Input node.
+ * Factory for the Container Output (Table) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableOutputNodeFactory extends NodeFactory<ServiceTableOutputNodeModel> {
+public class ContainerTableOutputNodeFactory extends NodeFactory<ContainerTableOutputNodeModel> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ServiceTableOutputNodeModel createNodeModel() {
-        return new ServiceTableOutputNodeModel();
+    public ContainerTableOutputNodeModel createNodeModel() {
+        return new ContainerTableOutputNodeModel();
     }
 
     /**
@@ -80,7 +80,7 @@ public class ServiceTableOutputNodeFactory extends NodeFactory<ServiceTableOutpu
      * {@inheritDoc}
      */
     @Override
-    public NodeView<ServiceTableOutputNodeModel> createNodeView(final int viewIndex, final ServiceTableOutputNodeModel nodeModel) {
+    public NodeView<ContainerTableOutputNodeModel> createNodeView(final int viewIndex, final ContainerTableOutputNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
@@ -97,7 +97,7 @@ public class ServiceTableOutputNodeFactory extends NodeFactory<ServiceTableOutpu
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new ServiceTableOutputNodeDialog();
+        return new ContainerTableOutputNodeDialog();
     }
 }
 

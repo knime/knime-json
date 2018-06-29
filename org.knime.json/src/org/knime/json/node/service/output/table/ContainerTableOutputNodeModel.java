@@ -80,22 +80,22 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * The model implementation of the service table output node.
- * Creates a json output conforming to a set schema for the incoming table
+ * The model implementation of the Container Output (Table) node.
+ * Creates a json output conforming to {@link ContainerTableJsonSchema}
  * and makes it available for a caller through the {@link OutputNode} interface.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
+public class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
-    private ServiceTableOutputNodeConfiguration m_configuration = new ServiceTableOutputNodeConfiguration();
+    private ContainerTableOutputNodeConfiguration m_configuration = new ContainerTableOutputNodeConfiguration();
     private BufferedDataTable m_table;
 
     /**
      * Constructor for the node model.
      */
-    protected ServiceTableOutputNodeModel() {
+    protected ContainerTableOutputNodeModel() {
         super(1, 1);
     }
 
@@ -200,7 +200,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDa
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        new ServiceTableOutputNodeConfiguration().loadInModel(settings);
+        new ContainerTableOutputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -208,7 +208,7 @@ public class ServiceTableOutputNodeModel extends NodeModel implements BufferedDa
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_configuration = new ServiceTableOutputNodeConfiguration().loadInModel(settings);
+        m_configuration = new ContainerTableOutputNodeConfiguration().loadInModel(settings);
     }
 
     /**

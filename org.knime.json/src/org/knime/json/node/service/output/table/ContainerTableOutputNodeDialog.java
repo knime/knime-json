@@ -68,19 +68,19 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
 
 /**
- * Dialog for the Service Table Output node.
+ * Dialog for {@link ContainerTableOutputNodeModel}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-class ServiceTableOutputNodeDialog extends NodeDialogPane {
+class ContainerTableOutputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
 
     /**
-     * New pane for configuring the Service In node.
+     * New pane for configuring the {@link ContainerTableOutputNodeModel} node.
      */
-    protected ServiceTableOutputNodeDialog() {
+    protected ContainerTableOutputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 
@@ -89,7 +89,7 @@ class ServiceTableOutputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        addTab("Service Table Input", createLayout(), false);
+        addTab("Container Output (Table)", createLayout(), false);
     }
 
     private JPanel createLayout() {
@@ -123,7 +123,7 @@ class ServiceTableOutputNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        ServiceTableOutputNodeConfiguration config = new ServiceTableOutputNodeConfiguration();
+        ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
         config.save(settings);
@@ -134,7 +134,7 @@ class ServiceTableOutputNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs) throws NotConfigurableException {
-        ServiceTableOutputNodeConfiguration config = new ServiceTableOutputNodeConfiguration().loadInDialog(settings);
+        ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
     }
