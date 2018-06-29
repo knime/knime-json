@@ -44,70 +44,107 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 20, 2018 (Tobias Urhaug): created
+ *   Apr 9, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.serviceinputtable;
+package org.knime.json.node.container;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import org.junit.Test;
+import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
 import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
-import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test suite for serializing/deserializing {@link ContainerTableInputDefaultJsonStructure}.
+ * Builder class that simplifies setting up test fixtures using {@link ContainerTableJsonSchema}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerTableDefaultJsonStructureTest {
+public class ContainerTableBuilder {
+
+    private List<ContainerTableColumnSpec> m_columnSpecs;
+    private List<ContainerTableRow> m_tableRows;
 
     /**
-     * Checks that the table spec of the default json structure is correctly deserialized.
-     *
-     * @throws Exception
+     * Constructs an empty builder.
      */
-    @Test
-    public void testDeserializeDefaultJsonStructureTableSpec() throws Exception {
-        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
-
-        ContainerTableJsonSchema serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
-
-        ContainerTableSpec tableSpec = serviceInput.getContainerTableSpec();
-        assertTrue(tableSpec.contains("column-string", "string"));
-        assertTrue(tableSpec.contains("column-int", "int"));
-        assertTrue(tableSpec.contains("column-double", "double"));
-        assertTrue(tableSpec.contains("column-long", "long"));
-        assertTrue(tableSpec.contains("column-boolean", "boolean"));
-        assertTrue(tableSpec.contains("column-localdate", "localdate"));
-        assertTrue(tableSpec.contains("column-localdatetime", "localdatetime"));
-        assertTrue(tableSpec.contains("column-zoneddatetime", "zoneddatetime"));
+    public ContainerTableBuilder() {
+        m_columnSpecs = new ArrayList<>();
+        m_tableRows = new ArrayList<>();
     }
 
     /**
-     * Checks that the table data of the default json structure is correctly deserialized.
+     * Adds a table spec to the table.
      *
-     * @throws Exception
+     * @param columnName the column name of the column spec
+     * @param columnType the column type of the column spec
+     * @return this factory
      */
-    @Test
-    public void testDeserializeDefaultJsonStructureTableData() throws Exception {
-        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
-        ObjectMapper objectMapper = new ObjectMapper();
-        ContainerTableJsonSchema serviceInput = objectMapper.readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
+    public ContainerTableBuilder withColumnSpec(final String columnName, final String columnType) {
+        m_columnSpecs.add(new ContainerTableColumnSpec(columnName, columnType));
+        return this;
+    }
 
-        ContainerTableRow firstExpectedRow = new ContainerTableRow(Arrays.asList("value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"));
-        ContainerTableRow secondExpectedRow =new ContainerTableRow(Arrays.asList("value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"));
-        ContainerTableData tableData = serviceInput.getContainerTableData();
+    /**
+     * Adds a null table spec to the service input.
+     *
+     * @return this factory
+     */
+    public ContainerTableBuilder withNullTableSpec() {
+        m_columnSpecs = null;
+        return this;
+    }
 
-        assertEquals(firstExpectedRow, tableData.getContainerTableRows().get(0));
-        assertEquals(secondExpectedRow, tableData.getContainerTableRows().get(1));
+    /**
+     * Adds table specs to the table.
+     *
+     * @param serviceInputColumnSpecs list of column specs
+     * @return this factory
+     */
+    public ContainerTableBuilder withColumnSpecs(final List<ContainerTableColumnSpec> serviceInputColumnSpecs) {
+        m_columnSpecs.addAll(serviceInputColumnSpecs);
+        return this;
+    }
+
+    /**
+     * Adds a row to the table.
+     *
+     * @param tableRow
+     * @return this factory
+     */
+    public ContainerTableBuilder withTableRow(final Object... tableRow) {
+        m_tableRows.add(new ContainerTableRow(Arrays.asList(tableRow)));
+        return this;
+    }
+
+    /**
+     * Adds a null table data to the service input.
+     *
+     * @return this factory
+     */
+    public ContainerTableBuilder withNullTableData() {
+        m_tableRows = null;
+        return this;
+    }
+
+    /**
+     * Builds a Service Input object.
+     *
+     * @return a Service Input object with the factory state
+     */
+    public ContainerTableJsonSchema build() {
+        ContainerTableSpec tableSpec = null;
+        if (m_columnSpecs != null) {
+            tableSpec = new ContainerTableSpec(m_columnSpecs);
+        }
+        ContainerTableData tableData = null;
+        if (m_tableRows != null) {
+            tableData = new ContainerTableData(m_tableRows);
+        }
+        return new ContainerTableJsonSchema(tableSpec, tableData);
     }
 
 }

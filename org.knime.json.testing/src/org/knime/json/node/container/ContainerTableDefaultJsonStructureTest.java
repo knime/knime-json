@@ -44,79 +44,70 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Apr 20, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.servicevariableinput;
+package org.knime.json.node.container;
 
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 import org.junit.Test;
-import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
-import org.knime.json.node.container.input.variable.ContainerVariableInputDefaultJsonStructure;
+import org.knime.core.data.json.container.table.ContainerTableData;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
+import org.knime.core.data.json.container.table.ContainerTableRow;
+import org.knime.core.data.json.container.table.ContainerTableSpec;
+import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test suite for the serialization/deserialization of a {@link ContainerVariableJsonSchema} via Jackson.
+ * Test suite for serializing/deserializing {@link ContainerTableInputDefaultJsonStructure}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ServiceVariableInputTest {
+public class ContainerTableDefaultJsonStructureTest {
 
     /**
-     * Checks that a ServiceVariableInput with a map of variables is correctly serialized to JSON.
+     * Checks that the table spec of the default json structure is correctly deserialized.
      *
      * @throws Exception
      */
     @Test
-    public void testSerialize() throws Exception {
-        List<Map<String, Object>> variableList = ContainerVariableInputDefaultJsonStructure.asVariableList();
-        ContainerVariableJsonSchema serviceVariableInput = new ContainerVariableJsonSchema(variableList);
+    public void testDeserializeDefaultJsonStructureTableSpec() throws Exception {
+        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String actualJson = objectMapper.writeValueAsString(serviceVariableInput);
+        ContainerTableJsonSchema serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
 
-        String expectedJson = ContainerVariableInputDefaultJsonStructure.asString();
-        assertEquals(expectedJson, actualJson);
+        ContainerTableSpec tableSpec = serviceInput.getContainerTableSpec();
+        assertTrue(tableSpec.contains("column-string", "string"));
+        assertTrue(tableSpec.contains("column-int", "int"));
+        assertTrue(tableSpec.contains("column-double", "double"));
+        assertTrue(tableSpec.contains("column-long", "long"));
+        assertTrue(tableSpec.contains("column-boolean", "boolean"));
+        assertTrue(tableSpec.contains("column-localdate", "localdate"));
+        assertTrue(tableSpec.contains("column-localdatetime", "localdatetime"));
+        assertTrue(tableSpec.contains("column-zoneddatetime", "zoneddatetime"));
     }
 
     /**
-     * Checks that a JSON representing the variables is correctly deserialized to ServiceVariableInput.
+     * Checks that the table data of the default json structure is correctly deserialized.
      *
      * @throws Exception
      */
     @Test
-    public void testDeserialize() throws  Exception {
-        String inputJson = ContainerVariableInputDefaultJsonStructure.asString();
-
+    public void testDeserializeDefaultJsonStructureTableData() throws Exception {
+        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
         ObjectMapper objectMapper = new ObjectMapper();
-        ContainerVariableJsonSchema deserializedInput = objectMapper.readValue(inputJson, ContainerVariableJsonSchema.class);
+        ContainerTableJsonSchema serviceInput = objectMapper.readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
 
-        List<Map<String, Object>> deserializedVariables = deserializedInput.getVariables();
+        ContainerTableRow firstExpectedRow = new ContainerTableRow(Arrays.asList("value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"));
+        ContainerTableRow secondExpectedRow =new ContainerTableRow(Arrays.asList("value2", 2, 2.5, 2000, false, "2018-03-28", "2018-03-28T08:30:45.111", "2018-03-28T08:30:45.111+01:00[Europe/Paris]"));
+        ContainerTableData tableData = serviceInput.getContainerTableData();
 
-        Map<String, Object> stringVariable = deserializedVariables.get(0);
-        assertThat(stringVariable.entrySet(), hasSize(1));
-        assertThat(stringVariable, hasEntry(//
-            ContainerVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME, //
-            ContainerVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
-
-        Map<String, Object> doubleVariable = deserializedVariables.get(1);
-        assertThat(doubleVariable.entrySet(), hasSize(1));
-        assertThat(doubleVariable, hasEntry(//
-            ContainerVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME, //
-            ContainerVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
-
-        Map<String, Object> intVariable = deserializedVariables.get(2);
-        assertThat(intVariable.entrySet(), hasSize(1));
-        assertThat(intVariable, hasEntry(//
-            ContainerVariableInputDefaultJsonStructure.INT_VARIABLE_NAME, //
-            ContainerVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
+        assertEquals(firstExpectedRow, tableData.getContainerTableRows().get(0));
+        assertEquals(secondExpectedRow, tableData.getContainerTableRows().get(1));
     }
 
 }

@@ -46,7 +46,7 @@
  * History
  *   May 7, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.serviceinputtable;
+package org.knime.json.node.container;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;

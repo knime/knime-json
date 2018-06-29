@@ -46,7 +46,7 @@
  * History
  *   Apr 4, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.serviceinputtable;
+package org.knime.json.node.container;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
