@@ -50,13 +50,14 @@ package org.knime.json.node.container.input.variable;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.json.JsonValue;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.CanceledExecutionException;
@@ -123,11 +124,10 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
 
     private JsonValue getExternalVariableInput() throws InvalidSettingsException {
         JsonValue externalInput = null;
-        String inputFileName = m_configuration.getFileName();
+        String inputFileName = m_configuration.getInputPathOrUrl();
         if (StringUtils.isNotEmpty(inputFileName)) {
-            try {
-                File inputFile = FileUtil.getFileFromURL(new URL(inputFileName));
-                String externalJsonString= new String(Files.readAllBytes(inputFile.toPath()));
+            try (InputStream inputStream = FileUtil.openInputStream(inputFileName)){
+                String externalJsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
                 externalInput = JSONUtil.parseJSONValue(externalJsonString);
             } catch (IOException  e) {
                 throw new InvalidSettingsException("Input path \"" + inputFileName + "\" could not be resolved" , e);

@@ -65,11 +65,11 @@ public class ContainerTableOutputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_OUTPUT_FILE_PATH = "";
+    private static final String DEFAULT_OUTPUT_PATH_OR_URL = "";
 
     private String m_parameterName;
     private String m_description;
-    private String m_outputFilePath;
+    private String m_outputPathOrUrl;
 
     /**
      * Constructs a new configuration.
@@ -77,7 +77,7 @@ public class ContainerTableOutputNodeConfiguration {
     public ContainerTableOutputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
-        m_outputFilePath = DEFAULT_OUTPUT_FILE_PATH;
+        m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
     }
 
     /**
@@ -132,18 +132,18 @@ public class ContainerTableOutputNodeConfiguration {
      *
      * @return the outputFilePath
      */
-    String getOutputFilePath() {
-        return m_outputFilePath;
+    String getOutputPathOrUrl() {
+        return m_outputPathOrUrl;
     }
 
     /**
      * Sets the output file path. This settings isn't exposed in the dialog but can be controlled by a flow variable
      * from an external caller. In case the value is empty, no file will be written.
      *
-     * @param outputFilePath the outputFilePath to set
+     * @param outputPathOrUrl the outputFilePath to set
      */
-    ContainerTableOutputNodeConfiguration setOutputFilePath(final String outputFilePath) {
-        m_outputFilePath = outputFilePath;
+    ContainerTableOutputNodeConfiguration setOutputPathOrUrl(final String outputPathOrUrl) {
+        m_outputPathOrUrl = outputPathOrUrl;
         return this;
     }
 
@@ -155,9 +155,9 @@ public class ContainerTableOutputNodeConfiguration {
      * @throws InvalidSettingsException if settings are missing or invalid
      */
     ContainerTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
-        setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
-        setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
+        setParameterName(settings.getString("parameterName"));
+        setDescription(settings.getString("description"));
+        setOutputPathOrUrl(settings.getString("outputPathOrUrl"));
         return this;
     }
 
@@ -170,10 +170,11 @@ public class ContainerTableOutputNodeConfiguration {
     ContainerTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
-            setOutputFilePath(settings.getString("outputFilePath", DEFAULT_OUTPUT_FILE_PATH));
+            setOutputPathOrUrl(settings.getString("outputFilePath", DEFAULT_OUTPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
+        setOutputPathOrUrl(settings.getString("outputPathOrUrl", DEFAULT_OUTPUT_PATH_OR_URL));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }
@@ -187,7 +188,7 @@ public class ContainerTableOutputNodeConfiguration {
     ContainerTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
-        settings.addString("outputFilePath", m_outputFilePath);
+        settings.addString("outputPathOrUrl", m_outputPathOrUrl);
         return this;
     }
 

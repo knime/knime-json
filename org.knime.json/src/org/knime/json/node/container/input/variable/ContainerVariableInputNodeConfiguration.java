@@ -65,11 +65,11 @@ public class ContainerVariableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "variable-input";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_FILE_NAME = "";
+    private static final String DEFAULT_INPUT_PATH_OR_URL = "";
 
     private String m_parameterName;
     private String m_description;
-    private String m_variableInjectedFileName;
+    private String m_inputPathOrUrl;
 
     /**
      * Constructs a new configuration object.
@@ -77,7 +77,7 @@ public class ContainerVariableInputNodeConfiguration {
     public ContainerVariableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
-        m_variableInjectedFileName = DEFAULT_FILE_NAME;
+        m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
     }
 
     /**
@@ -126,17 +126,17 @@ public class ContainerVariableInputNodeConfiguration {
     }
 
     /**
-     * @return the m_fileName
+     * @return the inputPathOrUrl
      */
-    String getFileName() {
-        return m_variableInjectedFileName;
+    String getInputPathOrUrl() {
+        return m_inputPathOrUrl;
     }
 
     /**
-     * @param fileName the fileName to set
+     * @param inputPathOrUrl the fileName to set
      */
-    void setFileName(final String fileName) {
-        m_variableInjectedFileName = fileName;
+    void setInputPathOrUrl(final String inputPathOrUrl) {
+        m_inputPathOrUrl = inputPathOrUrl;
     }
 
     /**
@@ -148,8 +148,8 @@ public class ContainerVariableInputNodeConfiguration {
      */
     ContainerVariableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
-        setDescription(settings.getString("description", ""));
-        setFileName(settings.getString("fileName"));
+        setDescription(settings.getString("description"));
+        setInputPathOrUrl(settings.getString("inputPathOrUrl"));
         return this;
     }
 
@@ -165,6 +165,7 @@ public class ContainerVariableInputNodeConfiguration {
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
         }
+        setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }
@@ -178,7 +179,7 @@ public class ContainerVariableInputNodeConfiguration {
     ContainerVariableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
-        settings.addString("fileName", m_variableInjectedFileName);
+        settings.addString("inputPathOrUrl", m_inputPathOrUrl);
         return this;
     }
 

@@ -51,9 +51,10 @@ package org.knime.json.node.container.output.table;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.json.JsonValue;
 
@@ -71,12 +72,11 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
+import org.knime.core.util.FileUtil;
 import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -111,12 +111,18 @@ public class ContainerTableOutputNodeModel extends NodeModel implements Buffered
         return inData;
     }
 
-    private void writeInputAsJsonFileIfPathPresent() throws IOException, JsonGenerationException, JsonMappingException {
-        String outputFilePath = m_configuration.getOutputFilePath();
+    private void writeInputAsJsonFileIfPathPresent() throws InvalidSettingsException {
+        String outputFilePath = m_configuration.getOutputPathOrUrl();
         if (StringUtils.isNotEmpty(outputFilePath)) {
-            Path path = Paths.get(outputFilePath);
-            try (OutputStream outputStream = Files.newOutputStream(path)) {
-                new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
+            try {
+                URL url = FileUtil.toURL(outputFilePath);
+                Path path = null;
+                path = FileUtil.resolveToPath(url);
+                try (OutputStream outputStream = Files.newOutputStream(path)) {
+                    new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
+                }
+            } catch (IOException | URISyntaxException e) {
+                throw new InvalidSettingsException("Cannot write to configured path: \"" + outputFilePath + "\"");
             }
         }
     }
