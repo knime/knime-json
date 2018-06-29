@@ -46,7 +46,7 @@
  * History
  *   Apr 3, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.service.input.table;
+package org.knime.json.node.container.input.table;
 
 import java.io.IOException;
 

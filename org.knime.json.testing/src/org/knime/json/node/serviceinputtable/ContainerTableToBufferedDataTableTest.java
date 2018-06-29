@@ -80,7 +80,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
-import org.knime.json.node.service.mappers.ContainerTableMapper;
+import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 /**
  * Test suite for converting a {@link ContainerTableJsonSchema} to a {@link BufferedDataTable}.

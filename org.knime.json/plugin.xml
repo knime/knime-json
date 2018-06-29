@@ -44,16 +44,16 @@
       </node>
       <node
             category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.service.input.table.ContainerTableInputNodeFactory">
+            factory-class="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
       </node>
       <node
             category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.service.input.variable.ContainerVariableInputNodeFactory" 
+            factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" 
             after="org.knime.json.node.service.input.table.ServiceTableInputNodeFactory">
       </node>
       <node
             category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.service.output.table.ContainerTableOutputNodeFactory"
+            factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory"
             after="org.knime.json.node.service.input.variable.ServiceVariableInputNodeFactory">
       </node>
    </extension>

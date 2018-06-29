@@ -88,7 +88,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
-import org.knime.json.node.service.mappers.ContainerTableMapper;
+import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

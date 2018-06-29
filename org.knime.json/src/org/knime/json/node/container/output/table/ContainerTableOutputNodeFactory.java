@@ -46,7 +46,7 @@
  * History
  *   May 4, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.service.output.table;
+package org.knime.json.node.container.output.table;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;

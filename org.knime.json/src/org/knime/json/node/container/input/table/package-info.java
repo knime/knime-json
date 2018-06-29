@@ -1,4 +1,4 @@
 /**
  * Input node for calling a workflow from another workflow or over a RESTful interface
  */
-package org.knime.json.node.service.input.table;
+package org.knime.json.node.container.input.table;

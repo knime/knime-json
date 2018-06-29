@@ -58,7 +58,7 @@ import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
-import org.knime.json.node.service.input.table.ContainerTableInputDefaultJsonStructure;
+import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

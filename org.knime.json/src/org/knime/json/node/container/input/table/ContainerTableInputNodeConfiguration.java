@@ -46,7 +46,7 @@
  * History
  *   Apr 03, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.service.input.table;
+package org.knime.json.node.container.input.table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;

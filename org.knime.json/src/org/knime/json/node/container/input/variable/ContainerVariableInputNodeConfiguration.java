@@ -46,7 +46,7 @@
  * History
  *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.input.variable;
+package org.knime.json.node.container.input.variable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;

@@ -46,7 +46,7 @@
  * History
  *   Jun 13, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.mappers;
+package org.knime.json.node.container.mappers;
 
 import java.io.IOException;
 import java.util.ArrayList;

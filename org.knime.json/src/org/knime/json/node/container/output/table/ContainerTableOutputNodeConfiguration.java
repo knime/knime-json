@@ -46,7 +46,7 @@
  * History
  *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.output.table;
+package org.knime.json.node.container.output.table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;

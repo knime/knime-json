@@ -46,7 +46,7 @@
  * History
  *   May 2, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.input.variable;
+package org.knime.json.node.container.input.variable;
 
 import java.util.Arrays;
 import java.util.Collections;

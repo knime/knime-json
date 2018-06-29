@@ -58,7 +58,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
-import org.knime.json.node.service.input.variable.ContainerVariableInputDefaultJsonStructure;
+import org.knime.json.node.container.input.variable.ContainerVariableInputDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

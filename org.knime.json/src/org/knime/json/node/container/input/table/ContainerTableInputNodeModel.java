@@ -44,21 +44,20 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Mar 29, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.service.input.variable;
+package org.knime.json.node.container.input.table;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
-import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
@@ -68,67 +67,72 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
-import org.knime.core.node.port.PortObject;
-import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
-import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
-import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
 import org.knime.core.util.FileUtil;
+import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
- * The node model for the Container Input (Variable) node.
+ * The model implementation of the Container Input (Table) node.
+ * Creates a KNIME table of a json input conforming to a set schema.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerVariableInputNodeModel extends NodeModel implements InputNode {
-
-    private final ObjectMapper m_objectMapper;
+public class ContainerTableInputNodeModel extends NodeModel implements InputNode {
 
     private JsonValue m_externalValue;
-    private ContainerVariableInputNodeConfiguration m_configuration = new ContainerVariableInputNodeConfiguration();
+    private ContainerTableInputNodeConfiguration m_configuration = new ContainerTableInputNodeConfiguration();
 
     /**
      * Constructor for the node model.
      */
-    protected ContainerVariableInputNodeModel() {
+    protected ContainerTableInputNodeModel() {
         super(
-            new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL},
-            new PortType[]{FlowVariablePortObject.TYPE});
-        m_objectMapper = new ObjectMapper();
+            new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
+            new PortType[]{BufferedDataTable.TYPE}
+        );
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-        return new PortObject[]{FlowVariablePortObject.INSTANCE};
+        JsonValue externalServiceInput = getExternalServiceInput();
+        if (externalServiceInput != null) {
+            return ContainerTableMapper.toBufferedDataTable(externalServiceInput, exec);
+        } else {
+            if (inData[0] != null) {
+                return inData;
+            } else {
+                return ContainerTableMapper.toBufferedDataTable(ContainerTableInputDefaultJsonStructure.asJsonValue(), exec);
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        JsonValue externalJsonValue = getExternalVariableInput();
-        if (externalJsonValue != null) {
-            pushVariablesToStack(externalJsonValue.toString());
-        } else if (inSpecs[0] == null) {
-            pushVariablesToStack(ContainerVariableInputDefaultJsonStructure.asString());
+    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        JsonValue externalServiceInput = getExternalServiceInput();
+        if (externalServiceInput != null) {
+            return new DataTableSpec[]{ContainerTableMapper.toTableSpec(externalServiceInput)};
+        } else {
+            if (inSpecs[0] != null) {
+                return inSpecs;
+            } else {
+                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(ContainerTableInputDefaultJsonStructure.asJsonValue())};
+            }
         }
-
-        return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
     }
 
-    private JsonValue getExternalVariableInput() throws InvalidSettingsException {
+    private JsonValue getExternalServiceInput() throws InvalidSettingsException {
         JsonValue externalInput = null;
         String inputFileName = m_configuration.getFileName();
-        if (StringUtils.isNotEmpty(inputFileName)) {
+        if (!StringUtils.isEmpty(inputFileName)) {
             try {
                 File inputFile = FileUtil.getFileFromURL(new URL(inputFileName));
                 String externalJsonString= new String(Files.readAllBytes(inputFile.toPath()));
@@ -140,34 +144,6 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
             externalInput = m_externalValue;
         }
         return externalInput;
-    }
-
-    private void pushVariablesToStack(final String json) throws InvalidSettingsException {
-        ContainerVariableJsonSchema variableInput = deserializeJsonString(json);
-        for (Map<String, Object> variable : variableInput.getVariables()) {
-            for (Entry<String, Object> variableEntry : variable.entrySet()) {
-                String name = variableEntry.getKey();
-                Object value = variableEntry.getValue();
-
-                if (Integer.class.equals(value.getClass())) {
-                    pushFlowVariableInt(name, (int) value);
-                } else if (Double.class.equals(value.getClass())) {
-                    pushFlowVariableDouble(name, (double) value);
-                } else if (String.class.equals(value.getClass())) {
-                    pushFlowVariableString(name, (String) value);
-                } else {
-                    throw new RuntimeException("Variable \"" + name + "\" has invalid variable class \"" + value + "\"");
-                }
-            }
-        }
-    }
-
-    private ContainerVariableJsonSchema deserializeJsonString(final String json) throws InvalidSettingsException {
-        try {
-            return m_objectMapper.readValue(json, ContainerVariableJsonSchema.class);
-        } catch (IOException e) {
-            throw new InvalidSettingsException("Error while parsing json-input: " + e.getMessage(), e);
-        }
     }
 
     /**
@@ -191,7 +167,7 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_configuration = new ContainerVariableInputNodeConfiguration().loadInModel(settings);
+        m_configuration = new ContainerTableInputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -199,7 +175,7 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        new ContainerVariableInputNodeConfiguration().loadInModel(settings);
+        new ContainerTableInputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -207,7 +183,7 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ContainerVariableInputDefaultJsonStructure.asJsonValue();
+        JsonValue value = m_externalValue != null ? m_externalValue : ContainerTableInputDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
                 .jsonValue(value)

@@ -44,28 +44,28 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Mar 29, 2018 (Tobias Urhaug): created
+ *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.input.table;
+package org.knime.json.node.container.input.variable;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * Factory for the Container Input (Table) node.
+ * Factory for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableInputNodeFactory extends NodeFactory<ContainerTableInputNodeModel> {
+public class ContainerVariableInputNodeFactory extends NodeFactory<ContainerVariableInputNodeModel> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ContainerTableInputNodeModel createNodeModel() {
-        return new ContainerTableInputNodeModel();
+    public ContainerVariableInputNodeModel createNodeModel() {
+        return new ContainerVariableInputNodeModel();
     }
 
     /**
@@ -80,7 +80,7 @@ public class ContainerTableInputNodeFactory extends NodeFactory<ContainerTableIn
      * {@inheritDoc}
      */
     @Override
-    public NodeView<ContainerTableInputNodeModel> createNodeView(final int viewIndex, final ContainerTableInputNodeModel nodeModel) {
+    public NodeView<ContainerVariableInputNodeModel> createNodeView(final int viewIndex, final ContainerVariableInputNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
@@ -97,7 +97,7 @@ public class ContainerTableInputNodeFactory extends NodeFactory<ContainerTableIn
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new ContainerTableInputNodeDialog();
+        return new ContainerVariableInputNodeDialog();
     }
-}
 
+}

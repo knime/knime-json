@@ -46,7 +46,7 @@
  * History
  *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.output.table;
+package org.knime.json.node.container.output.table;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,8 +71,8 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
-import org.knime.json.node.service.input.table.ContainerTableInputDefaultJsonStructure;
-import org.knime.json.node.service.mappers.ContainerTableMapper;
+import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
+import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.core.JsonGenerationException;

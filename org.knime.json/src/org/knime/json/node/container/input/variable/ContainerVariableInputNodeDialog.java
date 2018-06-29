@@ -44,9 +44,9 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 4, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Apr 30, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.service.output.table;
+package org.knime.json.node.container.input.variable;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -59,28 +59,28 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.port.PortObjectSpec;
 
 /**
- * Dialog for {@link ContainerTableOutputNodeModel}.
+ * Node dialog for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-class ContainerTableOutputNodeDialog extends NodeDialogPane {
+class ContainerVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
 
     /**
-     * New pane for configuring the {@link ContainerTableOutputNodeModel} node.
+     * New pane for configuring the Container Input (Variable) node.
      */
-    protected ContainerTableOutputNodeDialog() {
+    protected ContainerVariableInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 
@@ -89,7 +89,7 @@ class ContainerTableOutputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        addTab("Container Output (Table)", createLayout(), false);
+        addTab("Container Input (Variable)", createLayout(), false);
     }
 
     private JPanel createLayout() {
@@ -123,7 +123,7 @@ class ContainerTableOutputNodeDialog extends NodeDialogPane {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration();
+        ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
         config.save(settings);
@@ -133,8 +133,8 @@ class ContainerTableOutputNodeDialog extends NodeDialogPane {
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs) throws NotConfigurableException {
-        ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration().loadInDialog(settings);
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
+        ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
     }
