@@ -52,11 +52,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import javax.json.JsonValue;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -80,7 +80,7 @@ import org.knime.json.util.JSONUtil;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableInputNodeModel extends NodeModel implements InputNode {
+final class ContainerTableInputNodeModel extends NodeModel implements InputNode {
 
     private JsonValue m_externalValue;
     private ContainerTableInputNodeConfiguration m_configuration = new ContainerTableInputNodeConfiguration();
@@ -88,7 +88,7 @@ public class ContainerTableInputNodeModel extends NodeModel implements InputNode
     /**
      * Constructor for the node model.
      */
-    protected ContainerTableInputNodeModel() {
+    ContainerTableInputNodeModel() {
         super(
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
             new PortType[]{BufferedDataTable.TYPE}
@@ -132,8 +132,9 @@ public class ContainerTableInputNodeModel extends NodeModel implements InputNode
 
     private JsonValue getExternalServiceInput() throws InvalidSettingsException {
         JsonValue externalInput = null;
-        String inputFileName = m_configuration.getInputPathOrUrl();
-        if (!StringUtils.isEmpty(inputFileName)) {
+        Optional<String> inputFileNameOptional = m_configuration.getInputPathOrUrl();
+        if (inputFileNameOptional.isPresent()) {
+            String inputFileName = inputFileNameOptional.get();
             try (InputStream inputStream = FileUtil.openInputStream(inputFileName)){
                 String externalJsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
                 externalInput = JSONUtil.parseJSONValue(externalJsonString);

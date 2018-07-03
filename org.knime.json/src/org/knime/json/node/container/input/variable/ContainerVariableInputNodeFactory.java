@@ -58,7 +58,7 @@ import org.knime.core.node.NodeView;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerVariableInputNodeFactory extends NodeFactory<ContainerVariableInputNodeModel> {
+public final class ContainerVariableInputNodeFactory extends NodeFactory<ContainerVariableInputNodeModel> {
 
     /**
      * {@inheritDoc}

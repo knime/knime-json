@@ -48,6 +48,8 @@
  */
 package org.knime.json.node.container.input.table;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -64,7 +66,7 @@ final class ContainerTableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "input";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_INPUT_PATH_OR_URL = "";
+    private static final String DEFAULT_INPUT_PATH_OR_URL = null;
 
     private String m_parameterName;
     private String m_description;
@@ -124,14 +126,17 @@ final class ContainerTableInputNodeConfiguration {
     /**
      * @return the input path or url
      */
-    String getInputPathOrUrl() {
-        return m_inputPathOrUrl;
+    Optional<String> getInputPathOrUrl() {
+        return Optional.ofNullable(m_inputPathOrUrl);
     }
 
     /**
      * @param inputPathOrUrl the fileName to set
+     * @throws InvalidSettingsException on empty ("") argument
      */
-    void setInputPathOrUrl(final String inputPathOrUrl) {
+    void setInputPathOrUrl(final String inputPathOrUrl) throws InvalidSettingsException {
+        CheckUtils.checkSetting(inputPathOrUrl == null || StringUtils.isNotEmpty(inputPathOrUrl),
+                "Input path \"%s\" must be null or not empty", inputPathOrUrl);
         m_inputPathOrUrl = inputPathOrUrl;
     }
 
@@ -158,10 +163,11 @@ final class ContainerTableInputNodeConfiguration {
     ContainerTableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
+            setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
+            m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
-        setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }

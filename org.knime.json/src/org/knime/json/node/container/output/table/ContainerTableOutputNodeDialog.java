@@ -72,7 +72,7 @@ import org.knime.core.node.dialog.DialogNode;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-class ContainerTableOutputNodeDialog extends NodeDialogPane {
+final class ContainerTableOutputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
@@ -80,7 +80,7 @@ class ContainerTableOutputNodeDialog extends NodeDialogPane {
     /**
      * New pane for configuring the {@link ContainerTableOutputNodeModel} node.
      */
-    protected ContainerTableOutputNodeDialog() {
+    ContainerTableOutputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 

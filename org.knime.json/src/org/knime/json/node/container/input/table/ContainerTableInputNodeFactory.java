@@ -58,7 +58,7 @@ import org.knime.core.node.NodeView;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableInputNodeFactory extends NodeFactory<ContainerTableInputNodeModel> {
+public final class ContainerTableInputNodeFactory extends NodeFactory<ContainerTableInputNodeModel> {
 
     /**
      * {@inheritDoc}

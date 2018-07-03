@@ -72,7 +72,7 @@ import org.knime.core.node.port.PortObjectSpec;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-class ContainerVariableInputNodeDialog extends NodeDialogPane {
+final class ContainerVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
@@ -80,7 +80,7 @@ class ContainerVariableInputNodeDialog extends NodeDialogPane {
     /**
      * New pane for configuring the Container Input (Variable) node.
      */
-    protected ContainerVariableInputNodeDialog() {
+    ContainerVariableInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 

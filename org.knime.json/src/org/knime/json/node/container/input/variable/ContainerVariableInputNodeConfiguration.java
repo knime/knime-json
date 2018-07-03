@@ -48,6 +48,8 @@
  */
 package org.knime.json.node.container.input.variable;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -61,11 +63,11 @@ import org.knime.core.node.util.CheckUtils;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerVariableInputNodeConfiguration {
+final class ContainerVariableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "variable-input";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_INPUT_PATH_OR_URL = "";
+    private static final String DEFAULT_INPUT_PATH_OR_URL = null;
 
     private String m_parameterName;
     private String m_description;
@@ -74,7 +76,7 @@ public class ContainerVariableInputNodeConfiguration {
     /**
      * Constructs a new configuration object.
      */
-    public ContainerVariableInputNodeConfiguration() {
+    ContainerVariableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
@@ -128,14 +130,17 @@ public class ContainerVariableInputNodeConfiguration {
     /**
      * @return the inputPathOrUrl
      */
-    String getInputPathOrUrl() {
-        return m_inputPathOrUrl;
+    Optional<String> getInputPathOrUrl() {
+        return Optional.ofNullable(m_inputPathOrUrl);
     }
 
     /**
      * @param inputPathOrUrl the fileName to set
+     * @throws InvalidSettingsException on empty ("") argument
      */
-    void setInputPathOrUrl(final String inputPathOrUrl) {
+    void setInputPathOrUrl(final String inputPathOrUrl) throws InvalidSettingsException {
+        CheckUtils.checkSetting(inputPathOrUrl == null || StringUtils.isNotEmpty(inputPathOrUrl),
+                "Input path \"%s\" must be null or not empty", inputPathOrUrl);
         m_inputPathOrUrl = inputPathOrUrl;
     }
 
@@ -162,10 +167,11 @@ public class ContainerVariableInputNodeConfiguration {
     ContainerVariableInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
+            setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
+            m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
-        setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }

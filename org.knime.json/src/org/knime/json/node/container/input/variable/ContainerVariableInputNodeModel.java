@@ -54,11 +54,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.json.JsonValue;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -84,7 +84,7 @@ import org.knime.json.util.JSONUtil;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerVariableInputNodeModel extends NodeModel implements InputNode {
+final class ContainerVariableInputNodeModel extends NodeModel implements InputNode {
 
     private JsonValue m_externalValue;
     private ContainerVariableInputNodeConfiguration m_configuration = new ContainerVariableInputNodeConfiguration();
@@ -92,7 +92,7 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
     /**
      * Constructor for the node model.
      */
-    protected ContainerVariableInputNodeModel() {
+    ContainerVariableInputNodeModel() {
         super(
             new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL},
             new PortType[]{FlowVariablePortObject.TYPE});
@@ -124,8 +124,9 @@ public class ContainerVariableInputNodeModel extends NodeModel implements InputN
 
     private JsonValue getExternalVariableInput() throws InvalidSettingsException {
         JsonValue externalInput = null;
-        String inputFileName = m_configuration.getInputPathOrUrl();
-        if (StringUtils.isNotEmpty(inputFileName)) {
+        Optional<String> inputFileNameOptional = m_configuration.getInputPathOrUrl();
+        if (inputFileNameOptional.isPresent()) {
+            String inputFileName = inputFileNameOptional.get();
             try (InputStream inputStream = FileUtil.openInputStream(inputFileName)){
                 String externalJsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
                 externalInput = JSONUtil.parseJSONValue(externalJsonString);

@@ -48,6 +48,8 @@
  */
 package org.knime.json.node.container.output.table;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -61,11 +63,11 @@ import org.knime.core.node.util.CheckUtils;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableOutputNodeConfiguration {
+final class ContainerTableOutputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_OUTPUT_PATH_OR_URL = "";
+    private static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
 
     private String m_parameterName;
     private String m_description;
@@ -132,8 +134,8 @@ public class ContainerTableOutputNodeConfiguration {
      *
      * @return the outputFilePath
      */
-    String getOutputPathOrUrl() {
-        return m_outputPathOrUrl;
+    Optional<String> getOutputPathOrUrl() {
+        return Optional.ofNullable(m_outputPathOrUrl);
     }
 
     /**
@@ -141,8 +143,12 @@ public class ContainerTableOutputNodeConfiguration {
      * from an external caller. In case the value is empty, no file will be written.
      *
      * @param outputPathOrUrl the outputFilePath to set
+     * @throws InvalidSettingsException if argument is non-null but empty
      */
-    ContainerTableOutputNodeConfiguration setOutputPathOrUrl(final String outputPathOrUrl) {
+    ContainerTableOutputNodeConfiguration setOutputPathOrUrl(final String outputPathOrUrl)
+        throws InvalidSettingsException {
+        CheckUtils.checkSetting(outputPathOrUrl == null || StringUtils.isNotEmpty(outputPathOrUrl),
+                "Output path \"%s\" must be null or not empty", outputPathOrUrl);
         m_outputPathOrUrl = outputPathOrUrl;
         return this;
     }
@@ -171,10 +177,11 @@ public class ContainerTableOutputNodeConfiguration {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
             setOutputPathOrUrl(settings.getString("outputFilePath", DEFAULT_OUTPUT_PATH_OR_URL));
+            setOutputPathOrUrl(settings.getString("outputPathOrUrl", DEFAULT_OUTPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
+            m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
         }
-        setOutputPathOrUrl(settings.getString("outputPathOrUrl", DEFAULT_OUTPUT_PATH_OR_URL));
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         return this;
     }

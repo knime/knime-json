@@ -51,14 +51,12 @@ package org.knime.json.node.container.output.table;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URLConnection;
+import java.util.Optional;
 
 import javax.json.JsonValue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.BufferedDataTable;
@@ -87,7 +85,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
+final class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
     private ContainerTableOutputNodeConfiguration m_configuration = new ContainerTableOutputNodeConfiguration();
     private BufferedDataTable m_table;
@@ -95,7 +93,7 @@ public class ContainerTableOutputNodeModel extends NodeModel implements Buffered
     /**
      * Constructor for the node model.
      */
-    protected ContainerTableOutputNodeModel() {
+    ContainerTableOutputNodeModel() {
         super(1, 1);
     }
 
@@ -112,16 +110,16 @@ public class ContainerTableOutputNodeModel extends NodeModel implements Buffered
     }
 
     private void writeInputAsJsonFileIfPathPresent() throws InvalidSettingsException {
-        String outputFilePath = m_configuration.getOutputPathOrUrl();
-        if (StringUtils.isNotEmpty(outputFilePath)) {
+        Optional<String> outputFilePathOptional = m_configuration.getOutputPathOrUrl();
+        if (outputFilePathOptional.isPresent()) {
+            String outputFilePath = outputFilePathOptional.get();
             try {
                 URL url = FileUtil.toURL(outputFilePath);
-                Path path = null;
-                path = FileUtil.resolveToPath(url);
-                try (OutputStream outputStream = Files.newOutputStream(path)) {
+                URLConnection outputConnection = FileUtil.openOutputConnection(url, "PUT");
+                try (OutputStream outputStream = outputConnection.getOutputStream()) {
                     new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
                 }
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
                 throw new InvalidSettingsException("Cannot write to configured path: \"" + outputFilePath + "\"");
             }
         }
