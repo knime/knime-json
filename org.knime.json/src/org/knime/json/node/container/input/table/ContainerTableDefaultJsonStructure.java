@@ -64,7 +64,7 @@ import org.knime.json.util.JSONUtil;
  * @author Tobias Urhaug, Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public final class ContainerTableInputDefaultJsonStructure {
+public final class ContainerTableDefaultJsonStructure {
 
     /**
      * Creates a JsonValue object of the hard coded structure.

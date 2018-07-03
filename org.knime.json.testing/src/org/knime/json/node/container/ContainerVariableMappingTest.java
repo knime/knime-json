@@ -58,7 +58,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
-import org.knime.json.node.container.input.variable.ContainerVariableInputDefaultJsonStructure;
+import org.knime.json.node.container.input.variable.ContainerVariableDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -67,7 +67,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerVariableMapingTest {
+public class ContainerVariableMappingTest {
 
     /**
      * Checks that a ContainerVariableJsonSchema with a map of variables is correctly serialized to JSON.
@@ -76,13 +76,13 @@ public class ContainerVariableMapingTest {
      */
     @Test
     public void testSerialize() throws Exception {
-        List<Map<String, Object>> variableList = ContainerVariableInputDefaultJsonStructure.asVariableList();
+        List<Map<String, Object>> variableList = ContainerVariableDefaultJsonStructure.asVariableList();
         ContainerVariableJsonSchema containerVariableJsonSchema = new ContainerVariableJsonSchema(variableList);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String actualJson = objectMapper.writeValueAsString(containerVariableJsonSchema);
 
-        String expectedJson = ContainerVariableInputDefaultJsonStructure.asString();
+        String expectedJson = ContainerVariableDefaultJsonStructure.asString();
         assertEquals(expectedJson, actualJson);
     }
 
@@ -93,7 +93,7 @@ public class ContainerVariableMapingTest {
      */
     @Test
     public void testDeserialize() throws  Exception {
-        String inputJson = ContainerVariableInputDefaultJsonStructure.asString();
+        String inputJson = ContainerVariableDefaultJsonStructure.asString();
 
         ObjectMapper objectMapper = new ObjectMapper();
         ContainerVariableJsonSchema deserializedInput = objectMapper.readValue(inputJson, ContainerVariableJsonSchema.class);
@@ -103,20 +103,20 @@ public class ContainerVariableMapingTest {
         Map<String, Object> stringVariable = deserializedVariables.get(0);
         assertThat(stringVariable.entrySet(), hasSize(1));
         assertThat(stringVariable, hasEntry(//
-            ContainerVariableInputDefaultJsonStructure.STRING_VARIABLE_NAME, //
-            ContainerVariableInputDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
+            ContainerVariableDefaultJsonStructure.STRING_VARIABLE_NAME, //
+            ContainerVariableDefaultJsonStructure.STRING_VARIABLE_VALUE)); //
 
         Map<String, Object> doubleVariable = deserializedVariables.get(1);
         assertThat(doubleVariable.entrySet(), hasSize(1));
         assertThat(doubleVariable, hasEntry(//
-            ContainerVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_NAME, //
-            ContainerVariableInputDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
+            ContainerVariableDefaultJsonStructure.DOUBLE_VARIABLE_NAME, //
+            ContainerVariableDefaultJsonStructure.DOUBLE_VARIABLE_VALUE)); //
 
         Map<String, Object> intVariable = deserializedVariables.get(2);
         assertThat(intVariable.entrySet(), hasSize(1));
         assertThat(intVariable, hasEntry(//
-            ContainerVariableInputDefaultJsonStructure.INT_VARIABLE_NAME, //
-            ContainerVariableInputDefaultJsonStructure.INT_VARIABLE_VALUE)); //
+            ContainerVariableDefaultJsonStructure.INT_VARIABLE_NAME, //
+            ContainerVariableDefaultJsonStructure.INT_VARIABLE_VALUE)); //
     }
 
 }

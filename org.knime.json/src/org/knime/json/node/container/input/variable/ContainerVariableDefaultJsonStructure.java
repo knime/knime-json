@@ -64,7 +64,7 @@ import javax.json.JsonValue;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public final class ContainerVariableInputDefaultJsonStructure {
+public final class ContainerVariableDefaultJsonStructure {
 
     /**
      * Default string variable name.

@@ -58,12 +58,12 @@ import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
-import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
+import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test suite for serializing/deserializing {@link ContainerTableInputDefaultJsonStructure}.
+ * Test suite for serializing/deserializing {@link ContainerTableDefaultJsonStructure}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
@@ -76,7 +76,7 @@ public class ContainerTableDefaultJsonStructureTest {
      */
     @Test
     public void testDeserializeDefaultJsonStructureTableSpec() throws Exception {
-        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
+        String defaultJsonStructure = ContainerTableDefaultJsonStructure.asString();
 
         ContainerTableJsonSchema serviceInput =  new ObjectMapper().readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
 
@@ -98,7 +98,7 @@ public class ContainerTableDefaultJsonStructureTest {
      */
     @Test
     public void testDeserializeDefaultJsonStructureTableData() throws Exception {
-        String defaultJsonStructure = ContainerTableInputDefaultJsonStructure.asString();
+        String defaultJsonStructure = ContainerTableDefaultJsonStructure.asString();
         ObjectMapper objectMapper = new ObjectMapper();
         ContainerTableJsonSchema serviceInput = objectMapper.readValue(defaultJsonStructure, ContainerTableJsonSchema.class);
 

@@ -56,6 +56,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
 
 /**
  * Configuration for {@link ContainerTableOutputNodeModel}.
@@ -68,10 +69,12 @@ final class ContainerTableOutputNodeConfiguration {
     private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
+    private static final String DEFAULT_EXAMPLE_OUTPUT = ContainerTableDefaultJsonStructure.asString();
 
     private String m_parameterName;
     private String m_description;
     private String m_outputPathOrUrl;
+    private String m_exampleOutput;
 
     /**
      * Constructs a new configuration.
@@ -80,6 +83,7 @@ final class ContainerTableOutputNodeConfiguration {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
+        m_exampleOutput = DEFAULT_EXAMPLE_OUTPUT;
     }
 
     /**
@@ -154,6 +158,22 @@ final class ContainerTableOutputNodeConfiguration {
     }
 
     /**
+     * Gets the example output.
+     * @return the example output
+     */
+    String getExampleOutput() {
+        return m_exampleOutput;
+    }
+
+    /**
+     * Sets the example output.
+     * @param exampleOutput the example output to set
+     */
+    void setExampleOutput(final String exampleOutput) {
+        m_exampleOutput = exampleOutput;
+    }
+
+    /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
      * @param settings a node settings object
@@ -164,6 +184,7 @@ final class ContainerTableOutputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setOutputPathOrUrl(settings.getString("outputPathOrUrl"));
+        setExampleOutput(settings.getString("exampleOutput"));
         return this;
     }
 
@@ -176,13 +197,13 @@ final class ContainerTableOutputNodeConfiguration {
     ContainerTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
-            setOutputPathOrUrl(settings.getString("outputFilePath", DEFAULT_OUTPUT_PATH_OR_URL));
             setOutputPathOrUrl(settings.getString("outputPathOrUrl", DEFAULT_OUTPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
             m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
+        setExampleOutput(settings.getString("exampleOutput", DEFAULT_EXAMPLE_OUTPUT));
         return this;
     }
 
@@ -196,6 +217,7 @@ final class ContainerTableOutputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("outputPathOrUrl", m_outputPathOrUrl);
+        settings.addString("exampleOutput", m_exampleOutput);
         return this;
     }
 

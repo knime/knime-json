@@ -68,10 +68,12 @@ final class ContainerVariableInputNodeConfiguration {
     private static final String DEFAULT_PARAMETER_NAME = "variable-input";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
+    private static final String DEFAULT_EXAMPLE_INPUT = ContainerVariableDefaultJsonStructure.asString();
 
     private String m_parameterName;
     private String m_description;
     private String m_inputPathOrUrl;
+    private String m_exampleInput;
 
     /**
      * Constructs a new configuration object.
@@ -80,6 +82,7 @@ final class ContainerVariableInputNodeConfiguration {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
+        m_exampleInput = DEFAULT_EXAMPLE_INPUT;
     }
 
     /**
@@ -145,6 +148,22 @@ final class ContainerVariableInputNodeConfiguration {
     }
 
     /**
+     * Gets the example input.
+     * @return the example input
+     */
+    String getExampleInput() {
+        return m_exampleInput;
+    }
+
+    /**
+     * Sets the example input.
+     * @param exampleInput the example input to set
+     */
+    void setExampleInput(final String exampleInput) {
+        m_exampleInput = exampleInput;
+    }
+
+    /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
      * @param settings a node settings object
@@ -155,6 +174,7 @@ final class ContainerVariableInputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setInputPathOrUrl(settings.getString("inputPathOrUrl"));
+        setExampleInput(settings.getString("exampleInput"));
         return this;
     }
 
@@ -173,6 +193,7 @@ final class ContainerVariableInputNodeConfiguration {
             m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
+        setExampleInput(settings.getString("exampleInput", DEFAULT_EXAMPLE_INPUT));
         return this;
     }
 
@@ -186,6 +207,7 @@ final class ContainerVariableInputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("inputPathOrUrl", m_inputPathOrUrl);
+        settings.addString("exampleInput", m_exampleInput);
         return this;
     }
 

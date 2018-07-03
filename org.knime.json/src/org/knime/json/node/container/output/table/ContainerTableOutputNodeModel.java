@@ -75,7 +75,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.util.FileUtil;
-import org.knime.json.node.container.input.table.ContainerTableInputDefaultJsonStructure;
+import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
 
@@ -165,7 +165,7 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
         JsonValue jsonValue = null;
         try {
             if (m_table == null) {
-                String defaultJson = ContainerTableInputDefaultJsonStructure.asString();
+                String defaultJson = ContainerTableDefaultJsonStructure.asString();
                 jsonValue = JSONUtil.parseJSONValue(defaultJson);
             } else {
                 ContainerTableJsonSchema inputTable = ContainerTableMapper.toContainerTable(m_table);

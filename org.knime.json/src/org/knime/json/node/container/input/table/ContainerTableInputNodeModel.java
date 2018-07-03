@@ -108,7 +108,8 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
             if (inData[0] != null) {
                 return inData;
             } else {
-                return ContainerTableMapper.toBufferedDataTable(ContainerTableInputDefaultJsonStructure.asJsonValue(), exec);
+                setWarningMessage("Default table is output");
+                return ContainerTableMapper.toBufferedDataTable(ContainerTableDefaultJsonStructure.asJsonValue(), exec);
             }
         }
     }
@@ -125,7 +126,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
             if (inSpecs[0] != null) {
                 return inSpecs;
             } else {
-                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(ContainerTableInputDefaultJsonStructure.asJsonValue())};
+                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(ContainerTableDefaultJsonStructure.asJsonValue())};
             }
         }
     }
@@ -184,7 +185,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ContainerTableInputDefaultJsonStructure.asJsonValue();
+        JsonValue value = m_externalValue != null ? m_externalValue : ContainerTableDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
                 .jsonValue(value)

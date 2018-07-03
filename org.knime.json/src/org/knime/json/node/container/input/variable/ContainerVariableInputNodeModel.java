@@ -104,6 +104,10 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
     @Override
     protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
             throws Exception {
+        JsonValue externalJsonValue = getExternalVariableInput();
+        if (externalJsonValue == null && inData[0] == null) {
+            setWarningMessage("Defualt variables are output");
+        }
         return new PortObject[]{FlowVariablePortObject.INSTANCE};
     }
 
@@ -116,7 +120,7 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
         if (externalJsonValue != null) {
             pushVariablesToStack(externalJsonValue.toString());
         } else if (inSpecs[0] == null) {
-            pushVariablesToStack(ContainerVariableInputDefaultJsonStructure.asString());
+            pushVariablesToStack(ContainerVariableDefaultJsonStructure.asString());
         }
 
         return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
@@ -196,7 +200,7 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ContainerVariableInputDefaultJsonStructure.asJsonValue();
+        JsonValue value = m_externalValue != null ? m_externalValue : ContainerVariableDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
                 .jsonValue(value)
