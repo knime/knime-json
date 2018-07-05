@@ -51,12 +51,16 @@ package org.knime.json.node.container.output.table;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.BufferedDataTable;
@@ -115,14 +119,26 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
             String outputFilePath = outputFilePathOptional.get();
             try {
                 URL url = FileUtil.toURL(outputFilePath);
-                URLConnection outputConnection = FileUtil.openOutputConnection(url, "PUT");
-                try (OutputStream outputStream = outputConnection.getOutputStream()) {
-                    new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
+                if (isLocalURL(url)) {
+                    Path resolveToPath = FileUtil.resolveToPath(url);
+                    try (OutputStream outputStream = Files.newOutputStream(resolveToPath)) {
+                        new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
+                    }
+                } else {
+                    URLConnection urlConnection = FileUtil.openOutputConnection(url, "PUT");
+                    try (OutputStream outputStream = urlConnection.getOutputStream()) {
+                        new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
+                    }
                 }
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 throw new InvalidSettingsException("Cannot write to configured path: \"" + outputFilePath + "\"");
             }
         }
+    }
+
+    private static boolean isLocalURL(final URL url) {
+        return StringUtils.equalsIgnoreCase(url.getProtocol(), "knime")
+                || StringUtils.equalsIgnoreCase(url.getProtocol(), "file");
     }
 
     /**
