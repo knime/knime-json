@@ -106,7 +106,7 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
             throws Exception {
         JsonValue externalJsonValue = getExternalVariableInput();
         if (externalJsonValue == null && inData[0] == null) {
-            setWarningMessage("Defualt variables are output");
+            setWarningMessage("Default variables are output");
         }
         return new PortObject[]{FlowVariablePortObject.INSTANCE};
     }

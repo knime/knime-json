@@ -48,7 +48,10 @@
  */
 package org.knime.json.node.container.output.table;
 
+import java.io.IOException;
 import java.util.Optional;
+
+import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
@@ -57,9 +60,10 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
+import org.knime.json.util.JSONUtil;
 
 /**
- * Configuration for {@link ContainerTableOutputNodeModel}.
+ * Configuration for ContainerTableOutputNodeModel.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
@@ -69,12 +73,12 @@ final class ContainerTableOutputNodeConfiguration {
     private static final String DEFAULT_PARAMETER_NAME = "output";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
-    private static final String DEFAULT_EXAMPLE_OUTPUT = ContainerTableDefaultJsonStructure.asString();
+    private static final JsonValue DEFAULT_EXAMPLE_OUTPUT = ContainerTableDefaultJsonStructure.asJsonValue();
 
     private String m_parameterName;
     private String m_description;
     private String m_outputPathOrUrl;
-    private String m_exampleOutput;
+    private JsonValue m_exampleOutput;
 
     /**
      * Constructs a new configuration.
@@ -161,7 +165,7 @@ final class ContainerTableOutputNodeConfiguration {
      * Gets the example output.
      * @return the example output
      */
-    String getExampleOutput() {
+    JsonValue getExampleOutput() {
         return m_exampleOutput;
     }
 
@@ -169,7 +173,7 @@ final class ContainerTableOutputNodeConfiguration {
      * Sets the example output.
      * @param exampleOutput the example output to set
      */
-    void setExampleOutput(final String exampleOutput) {
+    void setExampleOutput(final JsonValue exampleOutput) {
         m_exampleOutput = exampleOutput;
     }
 
@@ -184,7 +188,13 @@ final class ContainerTableOutputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setOutputPathOrUrl(settings.getString("outputPathOrUrl"));
-        setExampleOutput(settings.getString("exampleOutput"));
+        String jsonString = settings.getString("exampleOutput");
+        try {
+            JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
+            setExampleOutput(jsonValue);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse json value \"" + jsonString + "\"", e);
+        }
         return this;
     }
 
@@ -203,7 +213,13 @@ final class ContainerTableOutputNodeConfiguration {
             m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
-        setExampleOutput(settings.getString("exampleOutput", DEFAULT_EXAMPLE_OUTPUT));
+        String jsonString = settings.getString("exampleOutput", ContainerTableDefaultJsonStructure.asString());
+        try {
+            JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
+            setExampleOutput(jsonValue);
+        } catch (IOException e) {
+            m_exampleOutput = DEFAULT_EXAMPLE_OUTPUT;
+        }
         return this;
     }
 
@@ -217,7 +233,9 @@ final class ContainerTableOutputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("outputPathOrUrl", m_outputPathOrUrl);
-        settings.addString("exampleOutput", m_exampleOutput);
+        if (m_exampleOutput != null ) {
+            settings.addString("exampleOutput", JSONUtil.toPrettyJSONString(m_exampleOutput));
+        }
         return this;
     }
 

@@ -48,7 +48,10 @@
  */
 package org.knime.json.node.container.input.table;
 
+import java.io.IOException;
 import java.util.Optional;
+
+import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
@@ -56,6 +59,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.json.util.JSONUtil;
 
 /**
  * Configuration for the Container Input (Table) node.
@@ -67,12 +71,12 @@ final class ContainerTableInputNodeConfiguration {
     private static final String DEFAULT_PARAMETER_NAME = "input";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
-    private static final String DEFAULT_EXAMPLE_INPUT = ContainerTableDefaultJsonStructure.asString();
+    private static final JsonValue DEFAULT_EXAMPLE_INPUT = ContainerTableDefaultJsonStructure.asJsonValue();
 
     private String m_parameterName;
     private String m_description;
     private String m_inputPathOrUrl;
-    private String m_exampleInput;
+    private JsonValue m_exampleInput;
 
     public ContainerTableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
@@ -147,7 +151,7 @@ final class ContainerTableInputNodeConfiguration {
      * Gets the example input.
      * @return the example input
      */
-    String getExampleInput() {
+    JsonValue getExampleInput() {
         return m_exampleInput;
     }
 
@@ -155,7 +159,7 @@ final class ContainerTableInputNodeConfiguration {
      * Sets the example input.
      * @param exampleInput the example input to set
      */
-    void setExampleInput(final String exampleInput) {
+    void setExampleInput(final JsonValue exampleInput) {
         m_exampleInput = exampleInput;
     }
 
@@ -170,7 +174,14 @@ final class ContainerTableInputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setInputPathOrUrl(settings.getString("inputPathOrUrl"));
-        setExampleInput(settings.getString("exampleInput"));
+        String jsonString = settings.getString("exampleInput");
+        try {
+            JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
+            setExampleInput(jsonValue);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse json value \"" + jsonString + "\"", e);
+        }
+
         return this;
     }
 
@@ -189,7 +200,13 @@ final class ContainerTableInputNodeConfiguration {
             m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
-        setExampleInput(settings.getString("exampleInput", DEFAULT_EXAMPLE_INPUT));
+        String jsonString = settings.getString("exampleInput", ContainerTableDefaultJsonStructure.asString());
+        try {
+            JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
+            setExampleInput(jsonValue);
+        } catch (IOException e) {
+            m_exampleInput = DEFAULT_EXAMPLE_INPUT;
+        }
         return this;
     }
 
@@ -203,7 +220,9 @@ final class ContainerTableInputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("inputPathOrUrl", m_inputPathOrUrl);
-        settings.addString("exampleInput", m_exampleInput);
+        if (m_exampleInput != null ) {
+            settings.addString("exampleInput", JSONUtil.toPrettyJSONString(m_exampleInput));
+        }
         return this;
     }
 
