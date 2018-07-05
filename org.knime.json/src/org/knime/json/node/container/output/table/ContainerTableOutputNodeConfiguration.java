@@ -54,6 +54,7 @@ import java.util.Optional;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -172,9 +173,14 @@ final class ContainerTableOutputNodeConfiguration {
     /**
      * Sets the example output.
      * @param exampleOutput the example output to set
+     * @throws InvalidSettingsException if the output does not comply with {@link ContainerTableJsonSchema}
      */
-    void setExampleOutput(final JsonValue exampleOutput) {
-        m_exampleOutput = exampleOutput;
+    void setExampleOutput(final JsonValue exampleOutput) throws InvalidSettingsException {
+        if (ContainerTableJsonSchema.hasContainerTableJsonSchema(exampleOutput)) {
+            m_exampleOutput = exampleOutput;
+        } else {
+            throw new InvalidSettingsException("Example output is malformed \"" + exampleOutput + "\"");
+        }
     }
 
     /**
@@ -193,7 +199,7 @@ final class ContainerTableOutputNodeConfiguration {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleOutput(jsonValue);
         } catch (IOException e) {
-            throw new InvalidSettingsException("Could not parse json value \"" + jsonString + "\"", e);
+            throw new InvalidSettingsException("Example output \"" + jsonString + "\" has wrong format.", e);
         }
         return this;
     }
@@ -217,7 +223,7 @@ final class ContainerTableOutputNodeConfiguration {
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleOutput(jsonValue);
-        } catch (IOException e) {
+        } catch (IOException | InvalidSettingsException e) {
             m_exampleOutput = DEFAULT_EXAMPLE_OUTPUT;
         }
         return this;

@@ -54,6 +54,7 @@ import java.util.Optional;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -158,9 +159,14 @@ final class ContainerTableInputNodeConfiguration {
     /**
      * Sets the example input.
      * @param exampleInput the example input to set
+     * @throws InvalidSettingsException if the input does not comply with {@link ContainerTableJsonSchema}
      */
-    void setExampleInput(final JsonValue exampleInput) {
-        m_exampleInput = exampleInput;
+    void setExampleInput(final JsonValue exampleInput) throws InvalidSettingsException {
+        if (ContainerTableJsonSchema.hasContainerTableJsonSchema(exampleInput)) {
+            m_exampleInput = exampleInput;
+        } else {
+            throw new InvalidSettingsException("Example input is malformed \"" + exampleInput + "\"");
+        }
     }
 
     /**
@@ -179,7 +185,7 @@ final class ContainerTableInputNodeConfiguration {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleInput(jsonValue);
         } catch (IOException e) {
-            throw new InvalidSettingsException("Could not parse json value \"" + jsonString + "\"", e);
+            throw new InvalidSettingsException("Example input \"" + jsonString + "\" has wrong format.", e);
         }
 
         return this;
@@ -204,7 +210,7 @@ final class ContainerTableInputNodeConfiguration {
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleInput(jsonValue);
-        } catch (IOException e) {
+        } catch (IOException | InvalidSettingsException e) {
             m_exampleInput = DEFAULT_EXAMPLE_INPUT;
         }
         return this;
