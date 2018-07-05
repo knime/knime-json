@@ -165,7 +165,7 @@ final class ContainerTableInputNodeConfiguration {
         if (ContainerTableJsonSchema.hasContainerTableJsonSchema(exampleInput)) {
             m_exampleInput = exampleInput;
         } else {
-            throw new InvalidSettingsException("Example input is malformed \"" + exampleInput + "\"");
+            throw new InvalidSettingsException("Example input has wrong format.");
         }
     }
 
@@ -185,7 +185,7 @@ final class ContainerTableInputNodeConfiguration {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleInput(jsonValue);
         } catch (IOException e) {
-            throw new InvalidSettingsException("Example input \"" + jsonString + "\" has wrong format.", e);
+            throw new InvalidSettingsException("Example input has wrong format.", e);
         }
 
         return this;

@@ -179,7 +179,7 @@ final class ContainerTableOutputNodeConfiguration {
         if (ContainerTableJsonSchema.hasContainerTableJsonSchema(exampleOutput)) {
             m_exampleOutput = exampleOutput;
         } else {
-            throw new InvalidSettingsException("Example output is malformed \"" + exampleOutput + "\"");
+            throw new InvalidSettingsException("Example output has wrong format.");
         }
     }
 
@@ -199,7 +199,7 @@ final class ContainerTableOutputNodeConfiguration {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleOutput(jsonValue);
         } catch (IOException e) {
-            throw new InvalidSettingsException("Example output \"" + jsonString + "\" has wrong format.", e);
+            throw new InvalidSettingsException("Example output has wrong format.", e);
         }
         return this;
     }
