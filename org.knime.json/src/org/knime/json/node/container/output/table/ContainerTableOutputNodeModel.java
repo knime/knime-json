@@ -77,7 +77,6 @@ import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.util.FileUtil;
 import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
-import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -92,7 +91,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 final class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
     private ContainerTableOutputNodeConfiguration m_configuration = new ContainerTableOutputNodeConfiguration();
-    private BufferedDataTable m_table;
+    private BufferedDataTable m_inputTable;
 
     /**
      * Constructor for the node model.
@@ -107,32 +106,49 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-        m_table = inData[0];
-        writeInputAsJsonFileIfPathPresent();
-
+        m_inputTable = inData[0];
+        validateInputTable();
+        writeOutputAsJsonFileIfDestinationPresent();
         return inData;
     }
 
-    private void writeInputAsJsonFileIfPathPresent() throws InvalidSettingsException {
-        Optional<String> outputFilePathOptional = m_configuration.getOutputPathOrUrl();
-        if (outputFilePathOptional.isPresent()) {
-            String outputFilePath = outputFilePathOptional.get();
-            try {
-                URL url = FileUtil.toURL(outputFilePath);
-                if (isLocalURL(url)) {
-                    Path resolveToPath = FileUtil.resolveToPath(url);
-                    try (OutputStream outputStream = Files.newOutputStream(resolveToPath)) {
-                        new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
-                    }
-                } else {
-                    URLConnection urlConnection = FileUtil.openOutputConnection(url, "PUT");
-                    try (OutputStream outputStream = urlConnection.getOutputStream()) {
-                        new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_table));
-                    }
+    /**
+     * This wrapper method is only introduced for improved readability in the execute method.
+     * @throws InvalidSettingsException if input table cannot be parsed to {@link ContainerTableJsonSchema}
+     */
+    private void validateInputTable() throws InvalidSettingsException {
+        getOutputContainerTable();
+    }
+
+    private JsonValue getOutputContainerTable() throws InvalidSettingsException {
+        return m_inputTable == null //
+                ? ContainerTableDefaultJsonStructure.asJsonValue() //
+                : ContainerTableMapper.toContainerTableJsonValue(m_inputTable); //
+    }
+
+    private void writeOutputAsJsonFileIfDestinationPresent() throws InvalidSettingsException {
+        Optional<String> outputPathOrUrlOptional = m_configuration.getOutputPathOrUrl();
+        if (outputPathOrUrlOptional.isPresent()) {
+            writeOutputAsJsonFile(outputPathOrUrlOptional.get());
+        }
+    }
+
+    private void writeOutputAsJsonFile(final String outputPathOrUrl) throws InvalidSettingsException {
+        try {
+            URL url = FileUtil.toURL(outputPathOrUrl);
+            if (isLocalURL(url)) {
+                Path path = FileUtil.resolveToPath(url);
+                try (OutputStream outputStream = Files.newOutputStream(path)) {
+                    new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_inputTable));
                 }
-            } catch (IOException | URISyntaxException e) {
-                throw new InvalidSettingsException("Cannot write to configured path: \"" + outputFilePath + "\"");
+            } else {
+                URLConnection urlConnection = FileUtil.openOutputConnection(url, "PUT");
+                try (OutputStream outputStream = urlConnection.getOutputStream()) {
+                    new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_inputTable));
+                }
             }
+        } catch (IOException | URISyntaxException e) {
+            throw new InvalidSettingsException("Cannot write to configured path: \"" + outputPathOrUrl + "\"");
         }
     }
 
@@ -157,24 +173,22 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
         return
             ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
-                .jsonValue(getJsonValue())
+                .jsonValue(computeExternalOutput())
                 .build();
     }
 
-    private JsonValue getJsonValue() {
-        JsonValue jsonValue = null;
+    /**
+     * Wrapper method that swallows the InvalidSettingsException thrown when computing the output container table
+     * and throws a RuntimeException instead.
+     * The method must swallow the exception for the getExternalOutput() method to comply with the method it is
+     * overriding.
+     */
+    private JsonValue computeExternalOutput() {
         try {
-            if (m_table == null) {
-                String defaultJson = ContainerTableDefaultJsonStructure.asString();
-                jsonValue = JSONUtil.parseJSONValue(defaultJson);
-            } else {
-                ContainerTableJsonSchema inputTable = ContainerTableMapper.toContainerTable(m_table);
-                jsonValue = JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(inputTable));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error while parsing JSON", e);
+            return getOutputContainerTable();
+        } catch (InvalidSettingsException e) {
+            throw new RuntimeException("Error while parsing output table", e);
         }
-        return jsonValue;
     }
 
     /**
@@ -198,13 +212,13 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
     /** {@inheritDoc} */
     @Override
     public BufferedDataTable[] getInternalTables() {
-        return new BufferedDataTable[] {m_table};
+        return new BufferedDataTable[] {m_inputTable};
     }
 
     /** {@inheritDoc} */
     @Override
     public void setInternalTables(final BufferedDataTable[] tables) {
-        m_table = tables[0];
+        m_inputTable = tables[0];
     }
 
     /**
@@ -236,7 +250,7 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
      */
     @Override
     protected void reset() {
-        m_table = null;
+        m_inputTable = null;
     }
 
 }

@@ -74,7 +74,7 @@ import org.knime.core.node.util.CheckUtils;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public abstract class ContainerTableValidDataTypes {
+public class ContainerTableValidDataTypes {
 
     private static final String STRING_NAME = "string";
     private static final String DOUBLE_NAME = "double";
@@ -138,10 +138,15 @@ public abstract class ContainerTableValidDataTypes {
      *
      * @param dataType type to be converted
      * @return string representation of the data type
+     * @throws InvalidSettingsException if dataType is not valid
      */
-    public static String parse(final DataType dataType) {
+    public static String parse(final DataType dataType) throws InvalidSettingsException {
         CheckUtils.checkArgumentNotNull(dataType);
         Class<? extends DataCell> cellClass = dataType.getCellClass();
+
+        if (cellClass == null) {
+            throw new InvalidSettingsException("The column type: \"" + dataType.getName() +"\" is not supported");
+        }
 
         if (cellClass.equals(StringCell.class)) {
             return STRING_NAME;

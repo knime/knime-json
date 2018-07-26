@@ -106,6 +106,8 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
             return ContainerTableMapper.toBufferedDataTable(externalServiceInput, exec);
         } else {
             if (inData[0] != null) {
+                // Perform mapping to validate the incoming table. Throws InvalidSettingsException if not valid.
+                ContainerTableMapper.toContainerTable(inData[0]);
                 return inData;
             } else {
                 setWarningMessage("Default table is output");

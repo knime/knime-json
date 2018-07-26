@@ -241,12 +241,13 @@ public final class ContainerTableMapper {
      *
      * @param table table to be converted to a {@link ContainerTableJsonSchema}
      * @return ContainerTableJsonSchema of the input table
+     * @throws InvalidSettingsException if the table contains column types not compatible with {@link ContainerTableJsonSchema}
      */
-    public static ContainerTableJsonSchema toContainerTable(final BufferedDataTable table) {
+    public static ContainerTableJsonSchema toContainerTable(final BufferedDataTable table) throws InvalidSettingsException {
         return new ContainerTableJsonSchema(createContainerTableSpecs(table), createContainerTableData(table));
     }
 
-    private static ContainerTableSpec createContainerTableSpecs(final BufferedDataTable table) {
+    private static ContainerTableSpec createContainerTableSpecs(final BufferedDataTable table) throws InvalidSettingsException {
         DataTableSpec dataTableSpec = table.getDataTableSpec();
         List<ContainerTableColumnSpec> containerTableColumnSpecs = new ArrayList<>();
         for (DataColumnSpec columnSpec : dataTableSpec) {
@@ -256,6 +257,7 @@ public final class ContainerTableMapper {
         }
         return new ContainerTableSpec(containerTableColumnSpecs);
     }
+
     private static ContainerTableData createContainerTableData(final BufferedDataTable table) {
         List<ContainerTableRow> containerTableRows = new ArrayList<>();
         DataTableSpec dataTableSpec = table.getDataTableSpec();
