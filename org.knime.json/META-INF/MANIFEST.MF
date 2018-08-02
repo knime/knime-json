@@ -8,6 +8,7 @@ Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Export-Package: org.knime.core.data.json,
   org.knime.core.data.json.container.table,
   org.knime.core.data.json.container.variables,
+ org.knime.json.node.container.input.credentials,
   org.knime.json.node.container.input.table,
   org.knime.json.node.container.input.variable,
   org.knime.json.node.container.mappers,

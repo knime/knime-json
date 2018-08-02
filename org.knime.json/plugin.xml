@@ -56,6 +56,10 @@
             factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory"
             after="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory">
       </node>
+      <node
+            category-path="/flowcontrol/automation"
+            factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
+      </node>
    </extension>
    <extension
            point="org.knime.workbench.repository.registeredFileExtensions">
