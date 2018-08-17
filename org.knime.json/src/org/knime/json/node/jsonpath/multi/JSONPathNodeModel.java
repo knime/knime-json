@@ -250,7 +250,13 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
         options.add(Option.DEFAULT_PATH_LEAF_TO_NULL);
         final Configuration config = jsonPathConfiguration.setOptions(options.toArray(new Option[0]));
         final MappingProvider mappingProvider = config.mappingProvider();
-        final JsonPath jsonPath = JsonPath.compile(setting.getJsonPath());
+
+        // currently, a bug in the JsonPath library requires commas in quotes to be (un)escaped manually, see
+        // - AP-10014
+        // - https://github.com/json-path/JsonPath/issues/400
+        // - https://github.com/json-path/JsonPath/issues/487
+        final JsonPath jsonPath = JsonPath.compile(JsonPathUtils.escapeCommas(setting.getJsonPath()));
+
         final OutputType returnType = setting.getReturnType();
         final boolean resultIsList = setting.isResultIsList();
         return new SingleCellFactory(true, output) {

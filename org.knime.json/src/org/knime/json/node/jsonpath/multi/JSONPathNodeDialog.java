@@ -849,6 +849,13 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
 
     private void updateWarnings() {
         String text = m_path.getText();
+
+        // currently, a bug in the JsonPath library requires commas in quotes to be (un)escaped manually, see
+        // - AP-10014
+        // - https://github.com/json-path/JsonPath/issues/400
+        // - https://github.com/json-path/JsonPath/issues/487
+        text = JsonPathUtils.escapeCommas(text);
+
         m_nonDefiniteWarning.setVisible(false);
         m_syntaxError.setText("");
         try {
@@ -983,7 +990,13 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
         int selectedRow = m_table.getSelectedRow();
         Highlighter h = m_preview.getHighlighter();
         if (selectedRow >= 0 && selectedRow < m_table.getRowCount()) {
-            String origPath = (String)m_tableModel.getValueAt(selectedRow, 1);
+
+            // currently, a bug in the JsonPath library requires commas in quotes to be (un)escaped manually, see
+            // - AP-10014
+            // - https://github.com/json-path/JsonPath/issues/400
+            // - https://github.com/json-path/JsonPath/issues/487
+            String origPath = JsonPathUtils.escapeCommas((String)m_tableModel.getValueAt(selectedRow, 1));
+
             Boolean path = (Boolean)m_tableModel.getValueAt(selectedRow, 3);
             if (path != null && path.booleanValue()) {
                 Pair<?, ?> pair = (Pair<?, ?>)m_tableModel.getValueAt(selectedRow, 0);
