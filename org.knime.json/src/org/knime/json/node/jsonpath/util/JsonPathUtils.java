@@ -50,6 +50,7 @@ package org.knime.json.node.jsonpath.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -536,5 +537,101 @@ public class JsonPathUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Escape commas in quoted parts of a JsonPath String by appending a backslash in front of each comma. See
+     * http://goessner.net/articles/JsonPath/ for the JsonPath syntax.
+     *
+     * @param jsonPath unescaped JsonPath String
+     * @return escaped JsonPath String
+     */
+    public static String escapeCommas(final String jsonPath) {
+        if (jsonPath == null) {
+            return null;
+        }
+        final int len = jsonPath.length();
+        final StringWriter writer = new StringWriter(len * 2);
+
+        /**
+         * Commas have the function of a union operator in the JsonPath syntax. Therefore, we must be careful to only
+         * escape commas while in quoted parts of the String.
+         */
+        boolean inQuote = false;
+        /**
+         * While being within quoted parts of the String, single quotes could be escaped, so we have to look for
+         * unescaped quotes to determine when the quote ends.
+         */
+        boolean inEscape = false;
+
+        for (int i = 0; i < len; i++) {
+            final char ch = jsonPath.charAt(i);
+
+            if (inEscape) {
+                inEscape = false;
+            } else {
+                switch (ch) {
+                    case ',':
+                        if (inQuote) {
+                            writer.write('\\');
+                        }
+                        break;
+                    case '\'':
+                        inQuote = !inQuote;
+                        break;
+                    case '\\':
+                        inEscape = true;
+                }
+            }
+
+            writer.write(ch);
+        }
+
+        return writer.toString();
+    }
+
+    /**
+     * Unescape commas in a String by removing a backslash in front of each comma. See
+     * http://goessner.net/articles/JsonPath/ for the JsonPath syntax.
+     *
+     * @param jsonPath escaped JsonPath String
+     * @return unescaped JsonPath String
+     */
+    public static String unescapeCommas(final String jsonPath) {
+        if (jsonPath == null) {
+            return null;
+        }
+        final int len = jsonPath.length();
+        final StringWriter writer = new StringWriter(len);
+
+        /**
+         * Escaped commas can only exist within quotes of a JsonPath String, so we do not explicitly have to check
+         * whether we are in quotes here.
+         */
+        boolean inEscape = false;
+
+        for (int i = 0; i < len; i++) {
+            final char ch = jsonPath.charAt(i);
+
+            if (inEscape) {
+                inEscape = false;
+                if (ch != ',') {
+                    writer.write('\\');
+                }
+            }
+
+            if (ch == '\\') {
+                inEscape = true;
+                continue;
+            }
+
+            writer.write(ch);
+        }
+
+        if (inEscape) {
+            writer.write('\\');
+        }
+
+        return writer.toString();
     }
 }

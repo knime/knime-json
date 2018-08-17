@@ -105,7 +105,11 @@ public class JSONToTableNodeModel extends NodeModel {
                     List<String> rawPaths = jsonPath.read(jv.getJsonValue().toString(), conf);
                     paths = new ArrayList<>(rawPaths.size());
                     for (String rawPath : rawPaths) {
-                        paths.add(new SimplePathParser.Path(rawPath));
+                        // currently, a bug in the JsonPath library requires commas in quotes to be (un)escaped manually, see
+                        // - AP-10014
+                        // - https://github.com/json-path/JsonPath/issues/400
+                        // - https://github.com/json-path/JsonPath/issues/487
+                        paths.add(new SimplePathParser.Path(JsonPathUtils.escapeCommas(rawPath)));
                     }
                 } catch (PathNotFoundException e) {
                     LOGGER.debug("Warning: " + e.getMessage(), e);
@@ -148,7 +152,13 @@ public class JSONToTableNodeModel extends NodeModel {
             for (Entry<String, OutputKind> kindEntry : kinds.entrySet()) {
                 columnSelectionContext.checkCanceled();
                 final String proposedName = proposedName(kindEntry.getKey());
-                final String realName = nameGenerator.newName(proposedName);
+
+                // currently, a bug in the JsonPath library requires commas in quotes to be (un)escaped manually, see
+                // - AP-10014
+                // - https://github.com/json-path/JsonPath/issues/400
+                // - https://github.com/json-path/JsonPath/issues/487
+                final String realName = nameGenerator.newName(JsonPathUtils.unescapeCommas(proposedName));
+
                 specs[i++] = new DataColumnSpecCreator(realName, kindEntry.getValue().getDataType()).createSpec();
                 jsonPaths.put(kindEntry.getKey(), JsonPath.compile(kindEntry.getKey()));
             }
