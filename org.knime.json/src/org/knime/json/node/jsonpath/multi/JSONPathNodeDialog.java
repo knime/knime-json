@@ -178,7 +178,7 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
                 setting.setJsonPath(path);
                 setting.setNewColumnName(suggestColumnName(path));
                 setting.setResultIsList(m_multiple);
-                Object read = JsonPath.compile(path).read(m_preview.getText());
+                Object read = JsonPath.compile(JsonPathUtils.escapeCommas(path)).read(m_preview.getText());
                 final AtomicReference<String> warning = new AtomicReference<>();
                 OutputKind kind = JsonPathUtils.kindOfJackson(JsonPathUtil.toJackson(JsonNodeFactory.instance, read), warning);
                 setting.setReturnType(kind.getType());
