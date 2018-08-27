@@ -91,7 +91,7 @@ public class ContainerCredentialsJsonSchemaTest {
         ContainerCredentialsJsonSchema credentialsJson =
             new ObjectMapper().readValue(json, ContainerCredentialsJsonSchema.class);
 
-        assertThat(credentialsJson.getIsEncrypted(), is(true));
+        assertThat(credentialsJson.isEncrypted(), is(true));
     }
 
     /**
@@ -104,7 +104,7 @@ public class ContainerCredentialsJsonSchemaTest {
 
         ContainerCredentialsJsonSchema containerCredentialsJsonSchema =
             new ContainerCredentialsBuilder()
-                .withCredential(credential)
+                .withCredentials(credential)
                 .build();
 
         String json = new ObjectMapper().writeValueAsString(containerCredentialsJsonSchema);

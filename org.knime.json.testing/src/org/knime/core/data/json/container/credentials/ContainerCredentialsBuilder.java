@@ -84,7 +84,7 @@ public class ContainerCredentialsBuilder {
      * @param credential to be added
      * @return this builder with the added credential
      */
-    public ContainerCredentialsBuilder withCredential(final ContainerCredential credential) {
+    public ContainerCredentialsBuilder withCredentials(final ContainerCredential credential) {
         m_credentials.add(credential);
         return this;
     }

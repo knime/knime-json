@@ -83,7 +83,7 @@ public class ContainerCredentialsJsonSchema {
      * @return true if the passwords are encrypted
      */
     @JsonProperty("isEncrypted")
-    public boolean getIsEncrypted() {
+    public boolean isEncrypted() {
         return m_isEncrypted;
     }
 
