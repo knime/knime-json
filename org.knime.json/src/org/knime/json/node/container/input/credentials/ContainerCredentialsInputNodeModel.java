@@ -51,7 +51,10 @@ package org.knime.json.node.container.input.credentials;
 import java.io.File;
 import java.io.IOException;
 
+import javax.json.JsonValue;
+
 import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
@@ -59,8 +62,12 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
+import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
+import org.knime.core.node.workflow.CredentialsProvider;
+import org.knime.core.node.workflow.CredentialsStore.CredentialsNode;
+import org.knime.core.node.workflow.WorkflowLoadHelper;
 
 /**
  * Node model for the Container Input (Credentials) node.
@@ -68,7 +75,11 @@ import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-public class ContainerCredentialsInputNodeModel extends NodeModel implements InputNode {
+public class ContainerCredentialsInputNodeModel extends NodeModel implements InputNode, CredentialsNode {
+
+    private JsonValue m_externalValue;
+    private ContainerCredentialsInputNodeConfiguration m_configuration = new ContainerCredentialsInputNodeConfiguration();
+
 
     /**
      * Constructor for the node model.
@@ -84,47 +95,19 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
      * {@inheritDoc}
      */
     @Override
-    public ExternalNodeData getInputData() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
+            throws Exception {
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
 
-    }
+        // TODO TU: TDD en executor med injected encrypter !?
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
+        String name;
+        String login;
+        String password;
+//        pushCredentialsFlowVariable(name, login, password);
 
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
-        // TODO Auto-generated method stub
-
+        return new PortObject[]{FlowVariablePortObject.INSTANCE};
     }
 
     /**
@@ -132,17 +115,7 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
-
+        m_configuration.save(settings);
     }
 
     /**
@@ -150,8 +123,63 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        // TODO Auto-generated method stub
+        m_configuration = new ContainerCredentialsInputNodeConfiguration().loadInModel(settings);
+    }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        new ContainerCredentialsInputNodeConfiguration().loadInModel(settings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ExternalNodeData getInputData() {
+        JsonValue value = m_externalValue != null ? m_externalValue : ContainerCredentialsDefaultJsonStructure.asJsonValue();
+        return ExternalNodeData.builder(m_configuration.getParameterName())
+                .description(m_configuration.getDescription())
+                .jsonValue(value)
+                .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
+        if (inputData.getJSONValue() == null) {
+            throw new InvalidSettingsException("No JSON input provided (is null)");
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
+        m_externalValue = inputData.getJSONValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+            throws IOException, CanceledExecutionException {
+        //No internal state.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+            throws IOException, CanceledExecutionException {
+        //No internal state.
     }
 
     /**
@@ -159,6 +187,15 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
      */
     @Override
     protected void reset() {
+        //No internal state.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void doAfterLoadFromDisc(final WorkflowLoadHelper loadHelper, final CredentialsProvider credProvider, final boolean isExecuted,
+        final boolean isInactive) {
         // TODO Auto-generated method stub
 
     }
