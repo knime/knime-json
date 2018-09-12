@@ -141,6 +141,18 @@ public final class ContainerTableMapper {
     }
 
     /**
+     * Converts a JsonValue conforming to the structure of {@link ContainerTableJsonSchema} to a {@link DataTable}.
+     *
+     * @param json json representation of a {@link ContainerTableJsonSchema}
+     * @return a DataTable[] corresponding to the json input
+     * @throws InvalidSettingsException if the json input does not conform to {@link ContainerTableJsonSchema}
+     * @since 3.7
+     */
+    public static DataTable[] toDataTable(final JsonValue json) throws InvalidSettingsException {
+        return toDataTable(asContainerTableJson(json));
+    }
+
+    /**
      * Creates a data table from the container input.
      *
      * @param containerTable input of which the table is created from
