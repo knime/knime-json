@@ -93,29 +93,29 @@ final class ContainerTableInputNodeDialog extends NodeDialogPane {
     }
 
     private JPanel createLayout() {
-        JPanel p = new JPanel(new GridBagLayout());
+        JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.insets = new Insets(5, 5, 5, 5);
-        p.add(new JLabel("Parameter Name: "), gbc);
+        panel.add(new JLabel("Parameter Name: "), gbc);
         gbc.gridx += 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
-        p.add(m_parameterNameField, gbc);
+        gbc.weighty = 0;
+        panel.add(m_parameterNameField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.weightx = 0;
-        p.add(new JLabel("Description: "), gbc);
-        JScrollPane sp = new JScrollPane(m_descriptionArea);
-        sp.setPreferredSize(m_descriptionArea.getPreferredSize());
-        sp.setMinimumSize(m_descriptionArea.getMinimumSize());
-        gbc.weightx = 1;
+        panel.add(new JLabel("Description: "), gbc);
+        JScrollPane scrollPane = new JScrollPane(m_descriptionArea);
+        scrollPane.setPreferredSize(m_descriptionArea.getPreferredSize());
+        scrollPane.setMinimumSize(m_descriptionArea.getMinimumSize());
         gbc.gridx++;
-        p.add(sp, gbc);
+        panel.add(scrollPane, gbc);
 
-        return p;
+        return panel;
     }
 
     /**
