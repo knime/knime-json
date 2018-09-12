@@ -110,8 +110,8 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
                 ContainerTableMapper.toContainerTable(inData[0]);
                 return inData;
             } else {
-                setWarningMessage("Default table is output");
-                return ContainerTableMapper.toBufferedDataTable(ContainerTableDefaultJsonStructure.asJsonValue(), exec);
+                setWarningMessage("Configured 'example input' is output");
+                return ContainerTableMapper.toBufferedDataTable(m_configuration.getExampleInput(), exec);
             }
         }
     }
@@ -128,7 +128,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
             if (inSpecs[0] != null) {
                 return inSpecs;
             } else {
-                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(ContainerTableDefaultJsonStructure.asJsonValue())};
+                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(m_configuration.getExampleInput())};
             }
         }
     }
