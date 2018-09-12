@@ -59,8 +59,10 @@ import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
+import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
+import org.knime.core.data.RowIterator;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.ContainerTable;
 import org.knime.core.data.def.DoubleCell;
@@ -305,6 +307,29 @@ public class ContainerTableToBufferedDataTableTest {
             assertDataRow(dataRow, 1, 2, 3);
         }
     }
+
+     /**
+      * Checks that a DataTable[] can be created for simple types without an ExecutionContext.
+      *
+     * @throws Exception
+     */
+    @Test
+     public void testMappingToDataTableWithoutExecutionContext() throws Exception {
+         ContainerTableJsonSchema containerTableJson = //
+             new ContainerTableBuilder()//
+                 .withColumnSpec("column-int", "int")//
+                 .withColumnSpec("column-string", "string")//
+                 .withTableRow(1, "two")//
+                 .build();//
+
+         DataTable[] dataTable = ContainerTableMapper.toDataTable(containerTableJson);
+
+         RowIterator iterator = dataTable[0].iterator();
+         assertTrue("Rows should have been created", iterator.hasNext());
+         DataRow dataRow = iterator.next();
+         assertDataRow(dataRow, 1, "two");
+     }
+
 
     private static void assertDataRow(final DataRow actualDataRow, final Object... expectedDataCells) throws InvalidSettingsException {
         assertEquals("Actual row has unexpected size" ,expectedDataCells.length, actualDataRow.getNumCells());

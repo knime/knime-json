@@ -63,6 +63,7 @@ import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
+import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
@@ -70,6 +71,7 @@ import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.container.DataContainer;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
 import org.knime.core.data.json.container.table.ContainerTableData;
@@ -139,6 +141,23 @@ public final class ContainerTableMapper {
     }
 
     /**
+     * Creates a data table from the container input.
+     *
+     * @param containerTable input of which the table is created from
+     * @return a DataTable[] from the container table input
+     * @throws InvalidSettingsException
+     * @since 3.7
+     */
+    public static DataTable[] toDataTable(final ContainerTableJsonSchema containerTable) throws InvalidSettingsException {
+        CheckUtils.checkSettingNotNull(containerTable, "Container Table cannot be null");
+        DataTableSpec tableSpec = toTableSpec(containerTable);
+        DataContainer dataContainer = new DataContainer(tableSpec);
+        addDataRows(dataContainer, containerTable, null);
+        dataContainer.close();
+        return new DataTable[]{dataContainer.getTable()};
+    }
+
+    /**
      * Creates a data table spec of the container table json.
      *
      * @param jsonInput input of which the table spec is created from
@@ -183,7 +202,7 @@ public final class ContainerTableMapper {
         return new DataTableSpec(columnSpec);
     }
 
-    private static void addDataRows(final BufferedDataContainer dataContainer, final ContainerTableJsonSchema containerTable, final ExecutionContext exec)
+    private static void addDataRows(final DataContainer dataContainer, final ContainerTableJsonSchema containerTable, final ExecutionContext exec)
             throws InvalidSettingsException {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
