@@ -48,22 +48,18 @@
  */
 package org.knime.json.node.container.input.table;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.json.JsonValue;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.knime.base.node.io.filereader.PreviewTableContentView;
 import org.knime.core.data.DataTable;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DataAwareNodeDialogPane;
@@ -73,8 +69,8 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.core.node.tableview.TableView;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
+import org.knime.json.node.container.ui.ContainerTableExampleView;
 
 /**
  * Dialog for the Container Input (Table) node.
@@ -85,10 +81,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
-    private TableView m_exampleInputView;
-    private JButton m_createExampleInputButton;
-    private BufferedDataTable m_inputTable;
-    private JsonValue m_exampleInputJson;
+    private ContainerTableExampleView m_exampleInputPanel;
 
     /**
      * New pane for configuring the Container Input (Table) node.
@@ -102,22 +95,9 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        m_createExampleInputButton = new JButton("Create example input based on input table");
-        m_createExampleInputButton.addActionListener(e -> createExampleInputFromInputTable());
-
-        PreviewTableContentView ptcv = new PreviewTableContentView();
-        m_exampleInputView = new TableView(ptcv);
+        m_exampleInputPanel = new ContainerTableExampleView("Example Input");
 
         addTab("Container Input (Table)", createLayout(), false);
-    }
-
-    private void createExampleInputFromInputTable() {
-        m_exampleInputView.setDataTable(m_inputTable);
-        try {
-            m_exampleInputJson = ContainerTableMapper.toContainerTableJsonValue(m_inputTable);
-        } catch (InvalidSettingsException e) {
-            throw new RuntimeException("Could not map input table to json", e);
-        }
     }
 
     private JPanel createLayout() {
@@ -143,18 +123,11 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         gbc.gridx++;
         panel.add(scrollPane, gbc);
 
-        JPanel exampleInputPanel = new JPanel(new BorderLayout());
-        exampleInputPanel.setBorder(
-            BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Example Input"));
-
-        exampleInputPanel.add(m_createExampleInputButton, BorderLayout.NORTH);
-        exampleInputPanel.add(m_exampleInputView, BorderLayout.CENTER);
-
         gbc.gridx = 0;
         gbc.weightx = 1;
         gbc.gridy++;
         gbc.gridwidth = 3;
-        panel.add(exampleInputPanel, gbc);
+        panel.add(m_exampleInputPanel, gbc);
 
         return panel;
     }
@@ -167,8 +140,8 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
-        if (m_exampleInputJson != null) {
-            config.setExampleInput(m_exampleInputJson);
+        if (m_exampleInputPanel.getExampleTableJson() != null) {
+            config.setExampleInput(m_exampleInputPanel.getExampleTableJson());
         }
         config.save(settings);
     }
@@ -179,7 +152,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
         loadSettings(settings, null);
-        m_createExampleInputButton.setEnabled(false);
+        m_exampleInputPanel.setCreateExampleButtonEnabled(false);
     }
 
     /**
@@ -188,16 +161,16 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final BufferedDataTable[] input) {
         loadSettings(settings, input[0]);
-        m_createExampleInputButton.setEnabled(true);
+        m_exampleInputPanel.setCreateExampleButtonEnabled(true);
     }
 
     private void loadSettings(final NodeSettingsRO settings, final BufferedDataTable inputTable) {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
-        m_inputTable = inputTable;
+        m_exampleInputPanel.setTemplateTable(inputTable);
         DataTable[] exampleInputTable = getConfiguredExampleInput(config);
-        m_exampleInputView.setDataTable(exampleInputTable[0]);
+        m_exampleInputPanel.setExampleTable(exampleInputTable[0]);
     }
 
     private static DataTable[] getConfiguredExampleInput(final ContainerTableInputNodeConfiguration config) {
