@@ -48,7 +48,9 @@
  */
 package org.knime.json.node.container.ui;
 
-import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 
 import javax.json.JsonValue;
 import javax.swing.BorderFactory;
@@ -82,17 +84,29 @@ public final class ContainerTableExampleView extends JPanel {
      * @param borderTitle the title of the border
      */
     public ContainerTableExampleView(final String borderTitle) {
+        setLayout(new GridLayout());
         m_createExampleButton = new JButton("Create example based on input table");
         m_createExampleButton.addActionListener(e -> createExampleFromTemplateTable());
 
         PreviewTableContentView ptcv = new PreviewTableContentView();
         m_exampleTableView = new TableView(ptcv);
 
-        JPanel internalPanel = new JPanel(new BorderLayout());
+        JPanel internalPanel = new JPanel(new GridBagLayout());
         internalPanel.setBorder(
             BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle));
-        internalPanel.add(m_createExampleButton, BorderLayout.NORTH);
-        internalPanel.add(m_exampleTableView, BorderLayout.CENTER);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.gridx = gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 0;
+        internalPanel.add(m_createExampleButton, gbc);
+
+        gbc.gridy++;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        internalPanel.add(m_exampleTableView, gbc);
+
         add(internalPanel);
     }
 

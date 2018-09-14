@@ -125,6 +125,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
 
         gbc.gridx = 0;
         gbc.weightx = 1;
+        gbc.weighty = 1;
         gbc.gridy++;
         gbc.gridwidth = 3;
         panel.add(m_exampleInputPanel, gbc);
