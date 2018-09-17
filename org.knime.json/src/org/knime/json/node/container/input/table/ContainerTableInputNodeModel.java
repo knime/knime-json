@@ -110,7 +110,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
                 ContainerTableMapper.toContainerTable(inData[0]);
                 return inData;
             } else {
-                setWarningMessage("Configured 'example input' is output");
+                setWarningMessage("Configured template table is output");
                 return ContainerTableMapper.toBufferedDataTable(m_configuration.getExampleInput(), exec);
             }
         }

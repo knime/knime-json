@@ -95,7 +95,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        m_exampleInputPanel = new ContainerTableExampleView("Example Input");
+        m_exampleInputPanel = new ContainerTableExampleView("Template table");
 
         addTab("Container Input (Table)", createLayout(), false);
     }

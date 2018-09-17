@@ -74,10 +74,10 @@ public final class ContainerTableExampleView extends JPanel {
 
     private static final long serialVersionUID = 6012599572331463639L;
 
-    private TableView m_exampleTableView;
-    private JButton m_createExampleButton;
+    private TableView m_templateTableView;
+    private JButton m_createTemplateButton;
     private BufferedDataTable m_templateTable;
-    private JsonValue m_exampleTableJson;
+    private JsonValue m_templateTableJson;
 
     /**
      * Constructs a new table example view.
@@ -85,35 +85,35 @@ public final class ContainerTableExampleView extends JPanel {
      */
     public ContainerTableExampleView(final String borderTitle) {
         setLayout(new GridLayout());
-        m_createExampleButton = new JButton("Create example based on input table");
-        m_createExampleButton.addActionListener(e -> createExampleFromTemplateTable());
 
         PreviewTableContentView ptcv = new PreviewTableContentView();
-        m_exampleTableView = new TableView(ptcv);
+        m_templateTableView = new TableView(ptcv);
 
         JPanel internalPanel = new JPanel(new GridBagLayout());
         internalPanel.setBorder(
             BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle));
         GridBagConstraints gbc = new GridBagConstraints();
+        m_createTemplateButton = new JButton("Set input table as template");
+        m_createTemplateButton.addActionListener(e -> createExampleFromTemplateTable());
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridx = gbc.gridy = 0;
         gbc.weightx = 1;
         gbc.weighty = 0;
-        internalPanel.add(m_createExampleButton, gbc);
+        internalPanel.add(m_createTemplateButton, gbc);
 
         gbc.gridy++;
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        internalPanel.add(m_exampleTableView, gbc);
+        internalPanel.add(m_templateTableView, gbc);
 
         add(internalPanel);
     }
 
     private void createExampleFromTemplateTable() {
-        m_exampleTableView.setDataTable(m_templateTable);
+        m_templateTableView.setDataTable(m_templateTable);
         try {
-            m_exampleTableJson = ContainerTableMapper.toContainerTableJsonValue(m_templateTable);
+            m_templateTableJson = ContainerTableMapper.toContainerTableJsonValue(m_templateTable);
         } catch (InvalidSettingsException e) {
             throw new RuntimeException("Could not map input table to json", e);
         }
@@ -124,7 +124,7 @@ public final class ContainerTableExampleView extends JPanel {
      * @param exampleTable the example table to be set
      */
     public void setExampleTable(final DataTable exampleTable) {
-        m_exampleTableView.setDataTable(exampleTable);
+        m_templateTableView.setDataTable(exampleTable);
     }
 
     /**
@@ -132,7 +132,7 @@ public final class ContainerTableExampleView extends JPanel {
      * @param enabled
      */
     public void setCreateExampleButtonEnabled(final boolean enabled) {
-        m_createExampleButton.setEnabled(enabled);
+        m_createTemplateButton.setEnabled(enabled);
     }
 
     /**
@@ -150,6 +150,6 @@ public final class ContainerTableExampleView extends JPanel {
      * @return a json representation of the new example table, null if no new example table has been set
      */
     public JsonValue getExampleTableJson() {
-        return m_exampleTableJson;
+        return m_templateTableJson;
     }
 }
