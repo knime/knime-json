@@ -48,13 +48,16 @@
  */
 package org.knime.json.node.container.ui;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 
 import javax.json.JsonValue;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.knime.base.node.io.filereader.PreviewTableContentView;
@@ -76,7 +79,9 @@ public final class ContainerTableExampleView extends JPanel {
 
     private TableView m_templateTableView;
     private JButton m_createTemplateButton;
-    private BufferedDataTable m_templateTable;
+    private JLabel m_warningLabel;
+    private BufferedDataTable m_inputTable;
+    private JsonValue m_inputTableJson;
     private JsonValue m_templateTableJson;
 
     /**
@@ -94,14 +99,25 @@ public final class ContainerTableExampleView extends JPanel {
             BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle));
         GridBagConstraints gbc = new GridBagConstraints();
         m_createTemplateButton = new JButton("Set input table as template");
-        m_createTemplateButton.addActionListener(e -> createExampleFromTemplateTable());
+        m_createTemplateButton.addActionListener(e -> setInputTableAsTemplate());
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridx = gbc.gridy = 0;
-        gbc.weightx = 1;
+        gbc.weightx = 0;
         gbc.weighty = 0;
         internalPanel.add(m_createTemplateButton, gbc);
 
+        m_warningLabel = new JLabel();
+        m_warningLabel.setForeground(Color.RED.darker());
+        gbc.ipadx = 100;
+        gbc.insets = new Insets(5,5,5,5);
+        gbc.weightx = 1;
+        gbc.gridx++;
+        internalPanel.add(m_warningLabel, gbc);
+
+        gbc.insets = new Insets(5,1,1,1);
+        gbc.gridx = 0;
         gbc.gridy++;
+        gbc.gridwidth = 2;
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
@@ -110,46 +126,74 @@ public final class ContainerTableExampleView extends JPanel {
         add(internalPanel);
     }
 
-    private void createExampleFromTemplateTable() {
-        m_templateTableView.setDataTable(m_templateTable);
+    private void setInputTableAsTemplate() {
+        m_templateTableView.setDataTable(m_inputTable);
+        m_templateTableJson = m_inputTableJson;
+        setInputAndTemplateEqualState();
+    }
+
+    /**
+     * Initializes the internal state based on an input table and a configured template table.
+     *
+     * @param inputTable the input table
+     * @param configuredTemplate the configured table
+     */
+    public void initialize(final BufferedDataTable inputTable, final JsonValue configuredTemplate) {
+        if (inputTable != null) {
+            m_inputTable = inputTable;
+            m_inputTableJson = mapToJson(inputTable);
+            setButtonEnabledStateBasedOnEquality(m_inputTableJson, configuredTemplate);
+        } else {
+            m_warningLabel.setForeground(Color.BLACK);
+            m_warningLabel.setText("No input table connected.");
+            m_createTemplateButton.setEnabled(false);
+        }
+
+        m_templateTableView.setDataTable(mapToTable(configuredTemplate));
+        m_templateTableJson = configuredTemplate;
+    }
+
+    private static JsonValue mapToJson(final BufferedDataTable table) {
         try {
-            m_templateTableJson = ContainerTableMapper.toContainerTableJsonValue(m_templateTable);
+            return ContainerTableMapper.toContainerTableJsonValue(table);
         } catch (InvalidSettingsException e) {
             throw new RuntimeException("Could not map input table to json", e);
         }
     }
 
-    /**
-     * Sets the example table that is displayed in the view.
-     * @param exampleTable the example table to be set
-     */
-    public void setExampleTable(final DataTable exampleTable) {
-        m_templateTableView.setDataTable(exampleTable);
+    private void setButtonEnabledStateBasedOnEquality(final JsonValue inputTable, final JsonValue configuredTemplate) {
+        if (inputTable.equals(configuredTemplate)) {
+            setInputAndTemplateEqualState();
+        } else {
+            m_warningLabel.setForeground(Color.RED.darker());
+            m_warningLabel.setText("The input table is different from the configured template table, "
+                + "you might want to update the template");
+            m_createTemplateButton.setEnabled(true);
+        }
+    }
+
+    private void setInputAndTemplateEqualState() {
+        m_warningLabel.setForeground(Color.BLACK);
+        m_warningLabel.setText("The input table is equal to the configured template table.");
+        m_createTemplateButton.setEnabled(false);
+    }
+
+    private static DataTable mapToTable(final JsonValue configuredTemplate) {
+        try {
+            DataTable[] configuredTable = ContainerTableMapper.toDataTable(configuredTemplate);
+            return configuredTable[0];
+        } catch (InvalidSettingsException e) {
+            throw new RuntimeException("Could not map configured template to table", e);
+        }
     }
 
     /**
-     * Sets the enabled state of the createExampleButton.
-     * @param enabled
-     */
-    public void setCreateExampleButtonEnabled(final boolean enabled) {
-        m_createTemplateButton.setEnabled(enabled);
-    }
-
-    /**
-     * Sets the table that an example input can later be created from.
+     * Returns the json representation of the table set as a new template. Null if no new template has been set.
      *
-     * @param templateTable the template table
+     * @return a json representation of the new template table, null if no new template table has been set
      */
-    public void setTemplateTable(final BufferedDataTable templateTable) {
-        m_templateTable = templateTable;
-    }
-
-    /**
-     * Returns the json representation of the table set as a new example. Null if no new example has been set.
-     *
-     * @return a json representation of the new example table, null if no new example table has been set
-     */
-    public JsonValue getExampleTableJson() {
+    public JsonValue getTemplateTableJson() {
         return m_templateTableJson;
     }
+
 }

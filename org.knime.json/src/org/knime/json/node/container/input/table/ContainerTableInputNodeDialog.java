@@ -53,14 +53,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-import javax.json.JsonValue;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.knime.core.data.DataTable;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DataAwareNodeDialogPane;
 import org.knime.core.node.InvalidSettingsException;
@@ -69,7 +67,6 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.node.container.ui.ContainerTableExampleView;
 
 /**
@@ -141,8 +138,8 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
-        if (m_exampleInputPanel.getExampleTableJson() != null) {
-            config.setExampleInput(m_exampleInputPanel.getExampleTableJson());
+        if (m_exampleInputPanel.getTemplateTableJson() != null) {
+            config.setExampleInput(m_exampleInputPanel.getTemplateTableJson());
         }
         config.save(settings);
     }
@@ -153,7 +150,6 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
         loadSettings(settings, null);
-        m_exampleInputPanel.setCreateExampleButtonEnabled(false);
     }
 
     /**
@@ -162,25 +158,13 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final BufferedDataTable[] input) {
         loadSettings(settings, input[0]);
-        m_exampleInputPanel.setCreateExampleButtonEnabled(true);
     }
 
     private void loadSettings(final NodeSettingsRO settings, final BufferedDataTable inputTable) {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
-        m_exampleInputPanel.setTemplateTable(inputTable);
-        DataTable[] exampleInputTable = getConfiguredExampleInput(config);
-        m_exampleInputPanel.setExampleTable(exampleInputTable[0]);
-    }
-
-    private static DataTable[] getConfiguredExampleInput(final ContainerTableInputNodeConfiguration config) {
-        JsonValue exampleInput = config.getExampleInput();
-        try {
-            return ContainerTableMapper.toDataTable(exampleInput);
-        } catch (InvalidSettingsException e) {
-            throw new RuntimeException("Could not map the configrued example input to a table", e);
-        }
+        m_exampleInputPanel.initialize(inputTable, config.getExampleInput());
     }
 
 }
