@@ -254,9 +254,21 @@ public final class ContainerTableMapper {
      * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
      */
     public static JsonValue toContainerTableJsonValue(final BufferedDataTable table) throws InvalidSettingsException {
+        return toContainerTableJsonValueFromDataTable(table);
+    }
+
+    /**
+     * Converts the incoming table to a json value conforming to {@link ContainerTableJsonSchema}.
+     *
+     * @param table table to be converted to a json value
+     * @return json value representing the input table, conforming to {@link ContainerTableJsonSchema}
+     * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
+     * @since 3.7
+     */
+    public static JsonValue toContainerTableJsonValueFromDataTable(final DataTable table) throws InvalidSettingsException {
         JsonValue result = null;
         try {
-            ContainerTableJsonSchema containerTable = toContainerTable(table);
+            ContainerTableJsonSchema containerTable = toContainerTableFromDataTable(table);
             ObjectMapper objectMapper = new ObjectMapper();
             String containerTableJson = objectMapper.writeValueAsString(containerTable);
             result = JSONUtil.parseJSONValue(containerTableJson);
@@ -275,10 +287,22 @@ public final class ContainerTableMapper {
      * @throws InvalidSettingsException if the table contains column types not compatible with {@link ContainerTableJsonSchema}
      */
     public static ContainerTableJsonSchema toContainerTable(final BufferedDataTable table) throws InvalidSettingsException {
+        return toContainerTableFromDataTable(table);
+    }
+
+    /**
+     * Converts the given {@link BufferedDataTable} to a {@link ContainerTableJsonSchema}.
+     *
+     * @param table table to be converted to a {@link ContainerTableJsonSchema}
+     * @return ContainerTableJsonSchema of the input table
+     * @throws InvalidSettingsException if the table contains column types not compatible with {@link ContainerTableJsonSchema}
+     * @since 3.7
+     */
+    public static ContainerTableJsonSchema toContainerTableFromDataTable(final DataTable table) throws InvalidSettingsException {
         return new ContainerTableJsonSchema(createContainerTableSpecs(table), createContainerTableData(table));
     }
 
-    private static ContainerTableSpec createContainerTableSpecs(final BufferedDataTable table) throws InvalidSettingsException {
+    private static ContainerTableSpec createContainerTableSpecs(final DataTable table) throws InvalidSettingsException {
         DataTableSpec dataTableSpec = table.getDataTableSpec();
         List<ContainerTableColumnSpec> containerTableColumnSpecs = new ArrayList<>();
         for (DataColumnSpec columnSpec : dataTableSpec) {
@@ -289,7 +313,7 @@ public final class ContainerTableMapper {
         return new ContainerTableSpec(containerTableColumnSpecs);
     }
 
-    private static ContainerTableData createContainerTableData(final BufferedDataTable table) {
+    private static ContainerTableData createContainerTableData(final DataTable table) {
         List<ContainerTableRow> containerTableRows = new ArrayList<>();
         DataTableSpec dataTableSpec = table.getDataTableSpec();
 
