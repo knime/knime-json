@@ -138,6 +138,8 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
+        config.setUseEntireTable(m_exampleInputPanel.getUseEntireTable());
+        config.setNumberOfRows(m_exampleInputPanel.getNumberOfRows());
         if (m_exampleInputPanel.getTemplateTableJson() != null) {
             config.setExampleInput(m_exampleInputPanel.getTemplateTableJson());
         }
@@ -148,7 +150,8 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
+            throws NotConfigurableException {
         loadSettings(settings, null);
     }
 
@@ -164,7 +167,13 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
-        m_exampleInputPanel.initialize(inputTable, config.getExampleInput());
+
+        m_exampleInputPanel.initialize(
+            inputTable,
+            config.getExampleInput(),
+            config.getUseEntireTable(),
+            config.getNumberOfRows()
+        );
     }
 
 }

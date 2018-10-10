@@ -73,17 +73,23 @@ final class ContainerTableInputNodeConfiguration {
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
     private static final JsonValue DEFAULT_EXAMPLE_INPUT = ContainerTableDefaultJsonStructure.asJsonValue();
+    private static final boolean DEFAULT_USE_ENTIRE_TABLE = true;
+    private static final int DEFAULT_NUMBER_OF_ROWS = 0;
 
     private String m_parameterName;
     private String m_description;
     private String m_inputPathOrUrl;
     private JsonValue m_exampleInput;
+    private boolean m_useEntireTable;
+    private int m_numberOfRows;
 
     public ContainerTableInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         m_exampleInput = DEFAULT_EXAMPLE_INPUT;
+        m_useEntireTable = DEFAULT_USE_ENTIRE_TABLE;
+        m_numberOfRows = DEFAULT_NUMBER_OF_ROWS;
     }
 
     /**
@@ -169,6 +175,40 @@ final class ContainerTableInputNodeConfiguration {
         }
     }
 
+
+    /**
+     * Gets the use entire table flag.
+     * @return the use entire table flag
+     */
+    boolean getUseEntireTable() {
+        return m_useEntireTable;
+    }
+
+    /**
+     * Sets the use entire table flag.
+     * @param useEntireTable the flag to be set
+     * @throws InvalidSettingsException if the input does not comply with {@link ContainerTableJsonSchema}
+     */
+    void setUseEntireTable(final boolean useEntireTable) {
+        m_useEntireTable = useEntireTable;
+    }
+
+    /**
+     * Gets the number of rows the template table uses.
+     * @return the number of rows the template table uses
+     */
+    int getNumberOfRows() {
+        return m_numberOfRows;
+    }
+
+    /**
+     * Sets the number of rows the template table uses.
+     * @param numberOfRows the number of rows the template table uses
+     */
+    void setNumberOfRows(final int numberOfRows) {
+        m_numberOfRows = numberOfRows;
+    }
+
     /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
@@ -180,6 +220,8 @@ final class ContainerTableInputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setInputPathOrUrl(settings.getString("inputPathOrUrl"));
+        setUseEntireTable(settings.getBoolean("useEntireTable", DEFAULT_USE_ENTIRE_TABLE));
+        setNumberOfRows(settings.getInt("numberOfRows", DEFAULT_NUMBER_OF_ROWS));
         String jsonString = settings.getString("exampleInput");
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
@@ -207,6 +249,8 @@ final class ContainerTableInputNodeConfiguration {
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         String jsonString = settings.getString("exampleInput", ContainerTableDefaultJsonStructure.asString());
+        setUseEntireTable(settings.getBoolean("useEntireTable", DEFAULT_USE_ENTIRE_TABLE));
+        setNumberOfRows(settings.getInt("numberOfRows", DEFAULT_NUMBER_OF_ROWS));
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleInput(jsonValue);
@@ -226,6 +270,8 @@ final class ContainerTableInputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("inputPathOrUrl", m_inputPathOrUrl);
+        settings.addBoolean("useEntireTable", m_useEntireTable);
+        settings.addInt("numberOfRows", m_numberOfRows);
         if (m_exampleInput != null ) {
             settings.addString("exampleInput", JSONUtil.toPrettyJSONString(m_exampleInput));
         }
@@ -237,4 +283,5 @@ final class ContainerTableInputNodeConfiguration {
     public String toString() {
         return "\"" + m_parameterName + "\"";
     }
+
 }

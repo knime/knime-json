@@ -187,10 +187,10 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ContainerTableDefaultJsonStructure.asJsonValue();
-        return ExternalNodeData.builder(m_configuration.getParameterName())
+        return ExternalNodeData
+                .builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
-                .jsonValue(value)
+                .jsonValue(m_configuration.getExampleInput())
                 .build();
     }
 

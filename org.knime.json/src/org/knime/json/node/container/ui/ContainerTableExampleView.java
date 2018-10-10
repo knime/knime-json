@@ -56,12 +56,19 @@ import java.awt.Insets;
 
 import javax.json.JsonValue;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 import org.knime.base.node.io.filereader.PreviewTableContentView;
+import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
+import org.knime.core.data.RowIterator;
+import org.knime.core.data.container.DataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.tableview.TableView;
@@ -77,10 +84,14 @@ public final class ContainerTableExampleView extends JPanel {
 
     private static final long serialVersionUID = 6012599572331463639L;
 
-    private TableView m_templateTableView;
-    private JButton m_createTemplateButton;
-    private JLabel m_warningLabel;
-    private BufferedDataTable m_inputTable;
+    private final TableView m_templateTableView;
+    private final JButton m_createTemplateButton;
+    private final JLabel m_warningLabel;
+
+    private final JRadioButton m_useEntireTable;
+    private final JRadioButton m_usePartsOfTable;
+    private final JSpinner m_numberOfRows;
+
     private JsonValue m_inputTableJson;
     private JsonValue m_templateTableJson;
 
@@ -91,9 +102,6 @@ public final class ContainerTableExampleView extends JPanel {
     public ContainerTableExampleView(final String borderTitle) {
         setLayout(new GridLayout());
 
-        PreviewTableContentView ptcv = new PreviewTableContentView();
-        m_templateTableView = new TableView(ptcv);
-
         JPanel internalPanel = new JPanel(new GridBagLayout());
         internalPanel.setBorder(
             BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), borderTitle));
@@ -101,6 +109,7 @@ public final class ContainerTableExampleView extends JPanel {
         m_createTemplateButton = new JButton("Set input table as template");
         m_createTemplateButton.addActionListener(e -> setInputTableAsTemplate());
         gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.NONE;
         gbc.gridx = gbc.gridy = 0;
         gbc.weightx = 0;
         gbc.weighty = 0;
@@ -108,12 +117,32 @@ public final class ContainerTableExampleView extends JPanel {
 
         m_warningLabel = new JLabel();
         m_warningLabel.setForeground(Color.RED.darker());
-        gbc.ipadx = 100;
         gbc.insets = new Insets(5,5,5,5);
-        gbc.weightx = 1;
         gbc.gridx++;
         internalPanel.add(m_warningLabel, gbc);
 
+        m_useEntireTable = new JRadioButton("Use entire input table");
+        m_usePartsOfTable = new JRadioButton("Use only first rows");
+        m_usePartsOfTable.addActionListener(l -> m_createTemplateButton.setEnabled(true));
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(m_useEntireTable);
+        buttonGroup.add(m_usePartsOfTable);
+
+        SpinnerNumberModel numberModel = new SpinnerNumberModel(10, 0, Integer.MAX_VALUE, 1);
+        m_numberOfRows = new JSpinner(numberModel);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        internalPanel.add(m_useEntireTable, gbc);
+
+        gbc.gridy++;
+        internalPanel.add(m_usePartsOfTable, gbc);
+
+        gbc.gridx++;
+        internalPanel.add(m_numberOfRows, gbc);
+
+        m_templateTableView = new TableView(new PreviewTableContentView());
         gbc.insets = new Insets(5,1,1,1);
         gbc.gridx = 0;
         gbc.gridy++;
@@ -127,9 +156,42 @@ public final class ContainerTableExampleView extends JPanel {
     }
 
     private void setInputTableAsTemplate() {
-        m_templateTableView.setDataTable(m_inputTable);
-        m_templateTableJson = m_inputTableJson;
+        DataTable dataTable;
+        if (m_usePartsOfTable.isSelected()) {
+            dataTable = getTrimmedDataTable();
+        } else {
+            dataTable = getDataTable();
+        }
+        m_templateTableView.setDataTable(dataTable);
+        m_templateTableJson = mapToJson(dataTable);
         setInputAndTemplateEqualState();
+    }
+
+    private DataTable getDataTable() {
+        try {
+            return ContainerTableMapper.toDataTable(m_inputTableJson)[0];
+        } catch (InvalidSettingsException e) {
+            throw new RuntimeException("Error while parsing table json to data table", e);
+        }
+    }
+
+    private DataTable getTrimmedDataTable() {
+        DataTable dataTable = getDataTable();
+        Integer nRows = (Integer) m_numberOfRows.getValue();
+        return getFirstRowsOfTable(nRows, dataTable);
+    }
+
+    private static DataTable getFirstRowsOfTable(final int nRows, final DataTable table) {
+        DataContainer container = new DataContainer(table.getDataTableSpec());
+        RowIterator iterator = table.iterator();
+        for (int i = 0; i < nRows; i++) {
+            if (iterator.hasNext()) {
+                DataRow next = iterator.next();
+                container.addRowToTable(next);
+            }
+        }
+        container.close();
+        return container.getTable();
     }
 
     /**
@@ -137,45 +199,76 @@ public final class ContainerTableExampleView extends JPanel {
      *
      * @param inputTable the input table
      * @param configuredTemplate the configured table
+     * @param useEntireTable flag if the entire table should be used as a template
+     * @param useNumberOfRows the number of rows used as template
      */
-    public void initialize(final BufferedDataTable inputTable, final JsonValue configuredTemplate) {
+    public void initialize(
+            final BufferedDataTable inputTable,
+            final JsonValue configuredTemplate,
+            final boolean useEntireTable,
+            final int useNumberOfRows) {
         if (inputTable != null) {
-            m_inputTable = inputTable;
+            m_createTemplateButton.setEnabled(true);
+            m_useEntireTable.setEnabled(true);
+            m_usePartsOfTable.setEnabled(true);
+            m_numberOfRows.setEnabled(true);
             m_inputTableJson = mapToJson(inputTable);
             setButtonEnabledStateBasedOnEquality(m_inputTableJson, configuredTemplate);
         } else {
             m_warningLabel.setForeground(Color.BLACK);
             m_warningLabel.setText("No input table connected.");
             m_createTemplateButton.setEnabled(false);
+            m_useEntireTable.setEnabled(false);
+            m_usePartsOfTable.setEnabled(false);
+            m_numberOfRows.setEnabled(false);
         }
 
         m_templateTableView.setDataTable(mapToTable(configuredTemplate));
         m_templateTableJson = configuredTemplate;
+        if (useEntireTable) {
+            m_useEntireTable.setSelected(true);
+        } else {
+            m_usePartsOfTable.setSelected(true);
+        }
+        m_numberOfRows.setValue(useNumberOfRows);
     }
 
-    private static JsonValue mapToJson(final BufferedDataTable table) {
+    private static JsonValue mapToJson(final DataTable dataTable) {
         try {
-            return ContainerTableMapper.toContainerTableJsonValue(table);
+            return ContainerTableMapper.toContainerTableJsonValueFromDataTable(dataTable);
         } catch (InvalidSettingsException e) {
             throw new RuntimeException("Could not map input table to json", e);
         }
     }
 
     private void setButtonEnabledStateBasedOnEquality(final JsonValue inputTable, final JsonValue configuredTemplate) {
-        if (inputTable.equals(configuredTemplate)) {
+        JsonValue input = inputTable;
+        if (m_usePartsOfTable.isSelected()) {
+            DataTable trimmedDataTable = getTrimmedDataTable();
+            input = mapToJson(trimmedDataTable);
+        }
+
+        if (input.equals(configuredTemplate)) {
             setInputAndTemplateEqualState();
         } else {
             m_warningLabel.setForeground(Color.RED.darker());
             m_warningLabel.setText("The input table is different from the configured template table, "
-                + "you might want to update the template");
+                    + "you might want to update the template");
             m_createTemplateButton.setEnabled(true);
         }
     }
 
     private void setInputAndTemplateEqualState() {
+        String infoMessage = "The input table is equal to the configured template table.";
+        if (m_usePartsOfTable.isSelected()) {
+            Integer nRows = (Integer) m_numberOfRows.getValue();
+            infoMessage = "The trimmed input table (first " + nRows + " rows) is equal to the configured template table";
+        }
         m_warningLabel.setForeground(Color.BLACK);
-        m_warningLabel.setText("The input table is equal to the configured template table.");
-        m_createTemplateButton.setEnabled(false);
+        m_warningLabel.setText(infoMessage);
+        if (m_useEntireTable.isSelected()) {
+            m_createTemplateButton.setEnabled(false);
+        }
     }
 
     private static DataTable mapToTable(final JsonValue configuredTemplate) {
@@ -196,4 +289,21 @@ public final class ContainerTableExampleView extends JPanel {
         return m_templateTableJson;
     }
 
+    /**
+     * Returns a flag telling if the entire table should be used as a template or not.
+     *
+     * @return a flag telling if the entire table should be used as a template or not
+     */
+    public boolean getUseEntireTable() {
+        return m_useEntireTable.isSelected();
+    }
+
+    /**
+     * Returns the number of rows that should be used of only parts of the table should be used as template.
+     *
+     * @return the number of rows to be used as template
+     */
+    public int getNumberOfRows() {
+        return (Integer) m_numberOfRows.getValue();
+    }
 }
