@@ -68,6 +68,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
+import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
 import org.knime.core.util.FileUtil;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
@@ -80,7 +81,7 @@ import org.knime.json.util.JSONUtil;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
  */
-final class ContainerTableInputNodeModel extends NodeModel implements InputNode {
+final class ContainerTableInputNodeModel extends NodeModel implements InputNode, ValueControlledNode {
 
     private JsonValue m_externalValue;
     private ContainerTableInputNodeConfiguration m_configuration = new ContainerTableInputNodeConfiguration();
@@ -228,6 +229,18 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode 
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
         //No internal state.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void saveCurrentValue(final NodeSettingsWO content) {
+        if (m_externalValue != null) {
+            String infoMessage = "The output table has been injected from an external caller";
+            content.addString("infoMessage", infoMessage);
+        }
+
     }
 
 }

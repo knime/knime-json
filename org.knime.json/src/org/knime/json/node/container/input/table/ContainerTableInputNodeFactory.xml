@@ -66,8 +66,9 @@
 			table via the REST API.
 		</inPort>
 	
-		<outPort index="0" name="The injected input table">
-			The injected table, default table if no table has been injected.
+		<outPort index="0" name="The container table">
+			The table contained in this container. A configured template table is output if no table has been injected 
+			from an external source. 			
 		</outPort>
 	</ports>
 

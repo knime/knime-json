@@ -58,14 +58,17 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DataAwareNodeDialogPane;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.NodeView;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.dialog.ValueControlledDialogPane;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.json.node.container.ui.ContainerTableExampleView;
 
@@ -74,11 +77,12 @@ import org.knime.json.node.container.ui.ContainerTableExampleView;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
+final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implements ValueControlledDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
-    private ContainerTableExampleView m_exampleInputPanel;
+    private final ContainerTableExampleView m_exampleInputPanel;
+    private final JLabel m_statusBarLabel;
 
     /**
      * New pane for configuring the Container Input (Table) node.
@@ -93,6 +97,9 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
         m_exampleInputPanel = new ContainerTableExampleView("Template table");
+
+        m_statusBarLabel = new JLabel("", NodeView.WARNING_ICON, SwingConstants.LEFT);
+        m_statusBarLabel.setVisible(false);
 
         addTab("Container Input (Table)", createLayout(), false);
     }
@@ -121,11 +128,18 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
         panel.add(scrollPane, gbc);
 
         gbc.gridx = 0;
+        gbc.gridy++;
         gbc.weightx = 1;
         gbc.weighty = 1;
-        gbc.gridy++;
         gbc.gridwidth = 3;
         panel.add(m_exampleInputPanel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        gbc.gridwidth = 1;
+        panel.add(m_statusBarLabel, gbc);
 
         return panel;
     }
@@ -174,6 +188,21 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane {
             config.getUseEntireTable(),
             config.getNumberOfRows()
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void loadCurrentValue(final NodeSettingsRO value) throws InvalidSettingsException {
+        String warningMessage = value.getString("infoMessage");
+        if (warningMessage != null) {
+            m_statusBarLabel.setText(warningMessage);
+            m_statusBarLabel.setVisible(true);
+        } else {
+            m_statusBarLabel.setText("");
+            m_statusBarLabel.setVisible(false);
+        }
     }
 
 }
