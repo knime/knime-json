@@ -38,7 +38,7 @@
          
          <option name="Template table">
          	A template table can be used to define a table structure which allows the workflow to execute properly. 
-         	The main purpose of the template table is to populate the the "example" field of the generated OpenAPI 
+         	The main purpose of the template table is to populate the "example" field of the generated OpenAPI 
          	output parameter specification, which is presented to end users for documentation purposes. It also allows 
          	downstream nodes to be configured when no external input is provided, which is helpful when adjustments to
          	the workflow are needed.
