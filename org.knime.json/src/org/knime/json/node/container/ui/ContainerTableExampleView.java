@@ -131,6 +131,8 @@ public final class ContainerTableExampleView extends JPanel {
 
         SpinnerNumberModel numberModel = new SpinnerNumberModel(10, 0, Integer.MAX_VALUE, 1);
         m_numberOfRows = new JSpinner(numberModel);
+        m_useEntireTable.addActionListener(l -> m_numberOfRows.setEnabled(false));
+        m_usePartsOfTable.addActionListener(l -> m_numberOfRows.setEnabled(true));
 
         gbc.gridx = 0;
         gbc.gridy++;
