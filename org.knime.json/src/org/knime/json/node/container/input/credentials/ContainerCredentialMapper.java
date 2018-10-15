@@ -69,7 +69,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Class that converts a JsonValue representing container credentials to {@link ContainerCredentialsJsonSchema}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 3.7
  */
 public class ContainerCredentialMapper {
 

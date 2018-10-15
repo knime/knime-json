@@ -60,7 +60,7 @@ import org.knime.json.util.JSONUtil;
  * Class that holds a hard coded prototype JSON structure for the Container Input (Credentials) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 3.7
  */
 public class ContainerCredentialsDefaultJsonStructure {
 

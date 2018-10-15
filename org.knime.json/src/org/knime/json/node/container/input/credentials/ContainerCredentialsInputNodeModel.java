@@ -73,7 +73,7 @@ import org.knime.core.node.workflow.WorkflowLoadHelper;
  * Node model for the Container Input (Credentials) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 3.7
  */
 public class ContainerCredentialsInputNodeModel extends NodeModel implements InputNode, CredentialsNode {
 

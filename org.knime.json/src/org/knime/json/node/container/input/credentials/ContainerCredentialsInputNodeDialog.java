@@ -71,7 +71,7 @@ import org.knime.core.node.dialog.DialogNode;
  * Dialog for the Container Input (Credentials) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 3.7
  */
 public class ContainerCredentialsInputNodeDialog extends NodeDialogPane {
 
