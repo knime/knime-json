@@ -56,7 +56,7 @@ import org.knime.core.node.NodeView;
  * Factory for the Container Input (Credentials) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 3.7
  */
 public final class ContainerCredentialsInputNodeFactory extends NodeFactory<ContainerCredentialsInputNodeModel> {
 
