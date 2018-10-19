@@ -101,7 +101,7 @@ public class ContainerCredentialsJsonSchema {
      * @param json the json string to be checked
      * @return true if the given string conforms to this schema
      */
-    public static boolean hasContainerCredentialJsonSchema(final String json) {
+    public static boolean hasValidSchema(final String json) {
         try {
             new ObjectMapper().readValue(json, ContainerCredentialsJsonSchema.class);
             return true;

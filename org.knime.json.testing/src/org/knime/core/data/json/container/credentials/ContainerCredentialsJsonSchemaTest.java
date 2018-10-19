@@ -139,7 +139,7 @@ public class ContainerCredentialsJsonSchemaTest {
         String json =
             "{\"isEncrypted\":true},\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
 
-        assertThat(ContainerCredentialsJsonSchema.hasContainerCredentialJsonSchema(json), is(true));
+        assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(true));
     }
 
     /**
@@ -150,7 +150,7 @@ public class ContainerCredentialsJsonSchemaTest {
         String json =
             "{\"wrong-prop-name\":true},\"credentials\":[{\"id\":\"id\"}]}";
 
-        assertThat(ContainerCredentialsJsonSchema.hasContainerCredentialJsonSchema(json), is(false));
+        assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
     }
 
 }

@@ -54,6 +54,7 @@ import java.util.Optional;
 import javax.json.JsonValue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.knime.core.data.json.container.credentials.ContainerCredentialsJsonSchema;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -166,7 +167,7 @@ final class ContainerCredentialsInputNodeConfiguration {
      * @throws InvalidSettingsException if the input does not comply with {@link ContainerVariableJsonSchema}
      */
     void setExampleInput(final JsonValue exampleInput) throws InvalidSettingsException {
-        if (ContainerVariableJsonSchema.hasContainerVariablesJsonSchema(exampleInput)) {
+        if (ContainerCredentialsJsonSchema.hasValidSchema(exampleInput.toString())) {
             m_exampleInput = exampleInput;
         } else {
             throw new InvalidSettingsException("Example input has wrong format");
