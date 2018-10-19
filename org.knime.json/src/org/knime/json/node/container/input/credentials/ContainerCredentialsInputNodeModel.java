@@ -50,9 +50,15 @@ package org.knime.json.node.container.input.credentials;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
 
 import javax.json.JsonValue;
 
+import org.apache.commons.io.IOUtils;
+import org.knime.core.data.json.container.credentials.ContainerCredential;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
@@ -63,11 +69,17 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.port.PortObject;
+import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
+import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
 import org.knime.core.node.workflow.CredentialsProvider;
 import org.knime.core.node.workflow.CredentialsStore.CredentialsNode;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
+import org.knime.core.util.FileUtil;
+import org.knime.core.util.crypto.Encrypter;
+import org.knime.core.util.crypto.IEncrypter;
+import org.knime.json.util.JSONUtil;
 
 /**
  * Node model for the Container Input (Credentials) node.
@@ -79,7 +91,6 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
 
     private JsonValue m_externalValue;
     private ContainerCredentialsInputNodeConfiguration m_configuration = new ContainerCredentialsInputNodeConfiguration();
-
 
     /**
      * Constructor for the node model.
@@ -95,19 +106,50 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
      * {@inheritDoc}
      */
     @Override
+    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
+        return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
             throws Exception {
-
-
-        // TODO TU: TDD en executor med injected encrypter !?
-
-        String name;
-        String login;
-        String password;
-//        pushCredentialsFlowVariable(name, login, password);
-
-
+        JsonValue externalInput = getExternalServiceInput();
+        if (externalInput != null) {
+            IEncrypter encrypter = new Encrypter("super-safe-3nCrypt10n-KEY");
+            List<ContainerCredential> credentials = ContainerCredentialMapper.toCredentials(externalInput, encrypter);
+            for (ContainerCredential containerCredential : credentials) {
+                pushCredentialsFlowVariable(
+                    containerCredential.getId(),
+                    containerCredential.getUser(),
+                    containerCredential.getPassword()
+                );
+            }
+        } else {
+            // TODO TU: fetch template creds from configuration
+            setWarningMessage("Template credentials are output");
+        }
         return new PortObject[]{FlowVariablePortObject.INSTANCE};
+    }
+
+    private JsonValue getExternalServiceInput() throws InvalidSettingsException {
+        JsonValue externalInput = null;
+        Optional<String> inputFileNameOptional = m_configuration.getInputPathOrUrl();
+        if (inputFileNameOptional.isPresent()) {
+            String inputFileName = inputFileNameOptional.get();
+            try (InputStream inputStream = FileUtil.openInputStream(inputFileName)){
+                String externalJsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+                externalInput = JSONUtil.parseJSONValue(externalJsonString);
+            } catch (IOException  e) {
+                throw new InvalidSettingsException("Input path \"" + inputFileName + "\" could not be resolved"
+                    + " or the input file is not valid json" , e);
+            }
+        } else if (m_externalValue != null) {
+            externalInput = m_externalValue;
+        }
+        return externalInput;
     }
 
     /**
@@ -194,8 +236,11 @@ public class ContainerCredentialsInputNodeModel extends NodeModel implements Inp
      * {@inheritDoc}
      */
     @Override
-    public void doAfterLoadFromDisc(final WorkflowLoadHelper loadHelper, final CredentialsProvider credProvider, final boolean isExecuted,
-        final boolean isInactive) {
+    public void doAfterLoadFromDisc(
+            final WorkflowLoadHelper loadHelper,
+            final CredentialsProvider credProvider,
+            final boolean isExecuted,
+            final boolean isInactive) {
         // TODO Auto-generated method stub
 
     }
