@@ -67,7 +67,7 @@ import org.knime.json.util.JSONUtil;
  * Configuration of the Container Input (Credentials) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 3.7
  */
 final class ContainerCredentialsInputNodeConfiguration {
 
