@@ -53,6 +53,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Class representing credentials for a user that can be serialized/deserialized via Jackson.
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.7
  */
 public class ContainerCredential {
 

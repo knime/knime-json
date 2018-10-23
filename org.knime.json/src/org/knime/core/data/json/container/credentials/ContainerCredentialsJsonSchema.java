@@ -51,6 +51,8 @@ package org.knime.core.data.json.container.credentials;
 import java.io.IOException;
 import java.util.List;
 
+import javax.json.JsonValue;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -60,6 +62,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Can be serialized/deserialized to/from json with jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.7
  */
 public class ContainerCredentialsJsonSchema {
 
@@ -94,6 +97,15 @@ public class ContainerCredentialsJsonSchema {
     @JsonProperty("credentials")
     public List<ContainerCredential> getCredentials() {
         return m_credentials;
+    }
+
+    /**
+     * Checks if a string conforms to the json schema outlined by this class.
+     * @param json the json string to be checked
+     * @return true if the given string conforms to this schema
+     */
+    public static boolean hasValidSchema(final JsonValue json) {
+        return hasValidSchema(json.toString());
     }
 
     /**
