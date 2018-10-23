@@ -49,10 +49,13 @@
 package org.knime.core.data.json.container.credentials;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.crypto.NoSuchPaddingException;
@@ -63,6 +66,8 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.junit.Test;
+import org.knime.core.node.workflow.Credentials;
+import org.knime.core.node.workflow.ICredentials;
 import org.knime.core.util.crypto.Encrypter;
 import org.knime.core.util.crypto.IEncrypter;
 import org.knime.json.node.container.input.credentials.ContainerCredentialMapper;
@@ -85,7 +90,8 @@ public class ContainerCredentialMapperTest {
                 .withCredentials(new ContainerCredential("id", "user", "password"))
                 .build();
 
-        List<ContainerCredential> mappedCredentials = ContainerCredentialMapper.toCredentials(jsonValue, getEncrypter());
+        List<ContainerCredential> mappedCredentials =
+                ContainerCredentialMapper.toContainerCredentials(jsonValue, getEncrypter());
 
         assertEquals(1, mappedCredentials.size());
         ContainerCredential actualCredentials = mappedCredentials.get(0);
@@ -107,7 +113,8 @@ public class ContainerCredentialMapperTest {
                 .withCredentials(new ContainerCredential("id2", "user2", "password2"))
                 .build();
 
-        List<ContainerCredential> mappedCredentials = ContainerCredentialMapper.toCredentials(jsonValue, getEncrypter());
+        List<ContainerCredential> mappedCredentials =
+                ContainerCredentialMapper.toContainerCredentials(jsonValue, getEncrypter());
 
         assertEquals(2, mappedCredentials.size());
         ContainerCredential firstCredentials = mappedCredentials.get(0);
@@ -137,7 +144,8 @@ public class ContainerCredentialMapperTest {
                 .withCredentials(new ContainerCredential("id1", "user1", encryptedPassword))
                 .build();
 
-        List<ContainerCredential> mappedCredentials = ContainerCredentialMapper.toCredentials(jsonValue, encrypter);
+        List<ContainerCredential> mappedCredentials =
+                ContainerCredentialMapper.toContainerCredentials(jsonValue, encrypter);
 
         assertEquals(1, mappedCredentials.size());
         ContainerCredential firstCredentials = mappedCredentials.get(0);
@@ -165,7 +173,8 @@ public class ContainerCredentialMapperTest {
                 .withCredentials(new ContainerCredential("id2", "user2", encryptedPassword2))
                 .build();
 
-        List<ContainerCredential> mappedCredentials = ContainerCredentialMapper.toCredentials(jsonValue, encrypter);
+        List<ContainerCredential> mappedCredentials =
+                ContainerCredentialMapper.toContainerCredentials(jsonValue, encrypter);
 
         assertEquals(2, mappedCredentials.size());
 
@@ -179,6 +188,74 @@ public class ContainerCredentialMapperTest {
         assertEquals("user2", secondCredentials.getUser());
         assertEquals("password2", secondCredentials.getPassword());
     }
+
+    /**
+     * Tests that a single credentials is encrypted and mapped to {@link ContainerCredentialsJsonSchema}.
+     * @throws Exception
+     */
+    @Test
+    public void testSingleCredentialsIsEncryptedAndMappedToJson() throws Exception {
+        Credentials credentials = new Credentials("id", "user", "password");
+        IEncrypter encrypter = getEncrypter();
+
+        ContainerCredentialsJsonSchema containerCredentials =
+                ContainerCredentialMapper.toContainerCredentialsJsonSchema(Arrays.asList(credentials), encrypter);
+
+        assertTrue(containerCredentials.isEncrypted());
+
+        List<ContainerCredential> mappedCredentials = containerCredentials.getCredentials();
+        assertEquals(1, mappedCredentials.size());
+
+        ContainerCredential containerCredential = mappedCredentials.get(0);
+        assertEquals("id", containerCredential.getId());
+        assertEquals("user", containerCredential.getUser());
+        assertEquals("password", encrypter.decrypt(containerCredential.getPassword()));
+    }
+
+    /**
+     * Tests that a multiple credentials are encrypted and mapped to {@link ContainerCredentialsJsonSchema}.
+     * @throws Exception
+     */
+    @Test
+    public void testMultipleCredentialsAreEncryptedAndMappedToJson() throws Exception {
+        Credentials credentials1 = new Credentials("id1", "user1", "password1");
+        Credentials credentials2 = new Credentials("id2", "user2", "password2");
+        List<ICredentials> credentials = Arrays.asList(credentials1, credentials2);
+        IEncrypter encrypter = getEncrypter();
+
+        ContainerCredentialsJsonSchema containerCredentials =
+                ContainerCredentialMapper.toContainerCredentialsJsonSchema(credentials, encrypter);
+
+        assertTrue(containerCredentials.isEncrypted());
+
+        List<ContainerCredential> mappedCredentials = containerCredentials.getCredentials();
+        assertEquals(2, mappedCredentials.size());
+
+        ContainerCredential containerCredential1 = mappedCredentials.get(0);
+        assertEquals("id1", containerCredential1.getId());
+        assertEquals("user1", containerCredential1.getUser());
+        assertEquals("password1", encrypter.decrypt(containerCredential1.getPassword()));
+
+        ContainerCredential containerCredential2 = mappedCredentials.get(1);
+        assertEquals("id2", containerCredential2.getId());
+        assertEquals("user2", containerCredential2.getUser());
+        assertEquals("password2", encrypter.decrypt(containerCredential2.getPassword()));
+    }
+
+     /**
+      * Tests that an empty list of credentials is mapped to {@link ContainerCredentialsJsonSchema}.
+     * @throws Exception
+     */
+    @Test
+     public void testEmptyListOfCredentials() throws Exception {
+         IEncrypter encrypter = getEncrypter();
+
+         ContainerCredentialsJsonSchema containerCredentials =
+                 ContainerCredentialMapper.toContainerCredentialsJsonSchema(Collections.emptyList(), encrypter);
+
+         List<ContainerCredential> mappedCredentials = containerCredentials.getCredentials();
+         assertEquals(0, mappedCredentials.size());
+     }
 
     private static IEncrypter getEncrypter() {
         try {

@@ -51,39 +51,70 @@ package org.knime.json.node.container.input.credentials;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.json.JsonValue;
 
 import org.knime.core.data.json.container.credentials.ContainerCredential;
 import org.knime.core.data.json.container.credentials.ContainerCredentialsJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.workflow.ICredentials;
+import org.knime.core.util.crypto.Encrypter;
 import org.knime.core.util.crypto.IEncrypter;
+import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Class that converts a JsonValue representing container credentials to {@link ContainerCredentialsJsonSchema}.
+ * Class responsible for mapping between JsonValue, {@link ContainerCredential} and
+ * {@link ContainerCredentialsJsonSchema}.
+ *
+ *
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
 public class ContainerCredentialMapper {
 
+    private static IEncrypter getEncrypter() throws InvalidSettingsException {
+        try {
+            return new Encrypter("EkHxFH6hwQjf9cm18v2f");
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeySpecException e) {
+            throw new InvalidSettingsException("Could not instantiate encrypter", e);
+        }
+    }
+
     /**
-     * Constructs a new mapper.
+     * Maps the json input to a list of {@link ContainerCredential}. If the input json is marked as encrypted,
+     * all passwords will be decrypted by an internal encrypter.
      *
      * @param json value to be mapped
-     * @param encrypter encrypter
      * @return the mapped credentials
-     * @throws InvalidSettingsException
+     * @throws InvalidSettingsException if mapping or decryption goes wrong
      */
-    public static List<ContainerCredential> toCredentials(final JsonValue json, final IEncrypter encrypter)
+    public static List<ContainerCredential> toContainerCredentials(final JsonValue json)
             throws InvalidSettingsException {
-        ContainerCredentialsJsonSchema credentials = mapToContainerCredentials(json);
+        return toContainerCredentials(json, getEncrypter());
+    }
+
+    /**
+     * Maps the json input to a list of {@link ContainerCredential}. If the input json is marked as encrypted,
+     * all passwords will be decrypted by the supplied encrypter.
+     *
+     * @param json value to be mapped
+     * @param encrypter encrypter that decrypts the passwords, if encrypted
+     * @return the mapped credentials
+     * @throws InvalidSettingsException if mapping or decryption goes wrong
+     */
+    public static List<ContainerCredential> toContainerCredentials(final JsonValue json, final IEncrypter encrypter)
+            throws InvalidSettingsException {
+        ContainerCredentialsJsonSchema credentials = mapToContainerCredentialJsonSchema(json);
         if (credentials.isEncrypted()) {
             List<ContainerCredential> decryptedCredentialsList = new ArrayList<>();
             for (ContainerCredential containerCredential : credentials.getCredentials()) {
@@ -95,12 +126,12 @@ public class ContainerCredentialMapper {
         }
     }
 
-    private static ContainerCredentialsJsonSchema mapToContainerCredentials(final JsonValue json)
+    private static ContainerCredentialsJsonSchema mapToContainerCredentialJsonSchema(final JsonValue json)
             throws InvalidSettingsException {
         try {
             return new ObjectMapper().readValue(json.toString(), ContainerCredentialsJsonSchema.class);
         } catch (IOException e) {
-            throw new InvalidSettingsException("Could not parse JsonValue to credentials", e);
+            throw new InvalidSettingsException("Could not parse json input to credentials", e);
         }
     }
 
@@ -113,6 +144,60 @@ public class ContainerCredentialMapper {
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException
                 | InvalidAlgorithmParameterException | IOException e) {
             throw new InvalidSettingsException("Could not decrypt password", e);
+        }
+    }
+
+    /**
+     * Maps the incoming list of credentials to a JsonValue conforming to {@link ContainerCredentialsJsonSchema}.
+     * Passwords are encrypted using an internal encrypter.
+     *
+     * @param credentials to be mapped
+     * @return a json value of the input credentials, conforming to {@link ContainerCredentialsJsonSchema}
+     * @throws InvalidSettingsException if mapping to json value fails
+     */
+    public static JsonValue toContainerCredentialsJsonValue(final List<ICredentials> credentials)
+            throws InvalidSettingsException {
+        try {
+            ContainerCredentialsJsonSchema jsonSchema = toContainerCredentialsJsonSchema(credentials, getEncrypter());
+            return JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(jsonSchema));
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse the credentials to json", e);
+        }
+    }
+
+    /**
+     * Maps the incoming list of credentials to {@link ContainerCredentialsJsonSchema}.
+     * Passwords are encrypted using the supplied encrypter.
+     *
+     * @param credentialsList credentials to be mapped
+     * @param encrypter the encrypter to be used for password encryption
+     * @return a ContainerCredentialsJsonSchema for the credentials list
+     * @throws InvalidSettingsException if encryption of the password fails
+     */
+    public static ContainerCredentialsJsonSchema toContainerCredentialsJsonSchema(
+            final List<ICredentials> credentialsList,
+            final IEncrypter encrypter) throws InvalidSettingsException {
+        List<ContainerCredential> containerCredentials = new ArrayList<>();
+
+        for (ICredentials credentials : credentialsList) {
+            containerCredentials.add(
+                new ContainerCredential(
+                    credentials.getName(),
+                    credentials.getLogin(),
+                    encrypt(credentials.getPassword(), encrypter)
+                )
+            );
+        }
+
+        return new ContainerCredentialsJsonSchema(true, containerCredentials);
+    }
+
+    private static String encrypt(final String password, final IEncrypter encrypter) throws InvalidSettingsException {
+        try {
+            return encrypter.encrypt(password);
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException
+                | InvalidAlgorithmParameterException e) {
+            throw new InvalidSettingsException("Could not encrypt password", e);
         }
     }
 
