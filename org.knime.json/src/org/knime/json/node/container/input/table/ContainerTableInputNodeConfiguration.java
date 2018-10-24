@@ -74,7 +74,7 @@ final class ContainerTableInputNodeConfiguration {
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
     private static final JsonValue DEFAULT_EXAMPLE_INPUT = ContainerTableDefaultJsonStructure.asJsonValue();
     private static final boolean DEFAULT_USE_ENTIRE_TABLE = true;
-    private static final int DEFAULT_NUMBER_OF_ROWS = 0;
+    private static final int DEFAULT_NUMBER_OF_ROWS = 10;
 
     private String m_parameterName;
     private String m_description;
