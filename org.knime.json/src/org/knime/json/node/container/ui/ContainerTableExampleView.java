@@ -128,11 +128,13 @@ public final class ContainerTableExampleView extends JPanel {
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(m_useEntireTable);
         buttonGroup.add(m_usePartsOfTable);
+        m_useEntireTable.setSelected(true);
 
         SpinnerNumberModel numberModel = new SpinnerNumberModel(10, 0, Integer.MAX_VALUE, 1);
         m_numberOfRows = new JSpinner(numberModel);
         m_useEntireTable.addActionListener(l -> m_numberOfRows.setEnabled(false));
         m_usePartsOfTable.addActionListener(l -> m_numberOfRows.setEnabled(true));
+        m_numberOfRows.setEnabled(false);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -213,7 +215,7 @@ public final class ContainerTableExampleView extends JPanel {
             m_createTemplateButton.setEnabled(true);
             m_useEntireTable.setEnabled(true);
             m_usePartsOfTable.setEnabled(true);
-            m_numberOfRows.setEnabled(true);
+            m_numberOfRows.setEnabled(!useEntireTable);
             m_inputTableJson = mapToJson(inputTable);
             setButtonEnabledStateBasedOnEquality(m_inputTableJson, configuredTemplate);
         } else {
