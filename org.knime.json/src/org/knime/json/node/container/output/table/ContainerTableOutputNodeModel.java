@@ -75,7 +75,6 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.util.FileUtil;
-import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -122,7 +121,7 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
 
     private JsonValue getOutputContainerTable() throws InvalidSettingsException {
         return m_inputTable == null //
-                ? ContainerTableDefaultJsonStructure.asJsonValue() //
+                ? m_configuration.getTemplateOutput() //
                 : ContainerTableMapper.toContainerTableJsonValue(m_inputTable); //
     }
 

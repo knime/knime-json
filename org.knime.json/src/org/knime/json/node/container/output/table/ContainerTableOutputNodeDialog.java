@@ -59,23 +59,25 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.knime.core.data.DataTableSpec;
+import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.DataAwareNodeDialogPane;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.port.PortObjectSpec;
+import org.knime.json.node.container.ui.ContainerTableExampleView;
 
 /**
- * Dialog for {@link ContainerTableOutputNodeModel}.
+ * Dialog for the Container Output (Table) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-final class ContainerTableOutputNodeDialog extends NodeDialogPane {
+final class ContainerTableOutputNodeDialog extends DataAwareNodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
+    private final ContainerTableExampleView m_templateOutputPanel;
 
     /**
      * New pane for configuring the {@link ContainerTableOutputNodeModel} node.
@@ -88,6 +90,8 @@ final class ContainerTableOutputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setLineWrap(true);
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
+
+        m_templateOutputPanel = new ContainerTableExampleView("Template table");
 
         addTab("Container Output (Table)", createLayout(), false);
     }
@@ -115,6 +119,13 @@ final class ContainerTableOutputNodeDialog extends NodeDialogPane {
         gbc.gridx++;
         p.add(sp, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.gridwidth = 3;
+        p.add(m_templateOutputPanel, gbc);
+
         return p;
     }
 
@@ -126,6 +137,11 @@ final class ContainerTableOutputNodeDialog extends NodeDialogPane {
         ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
+        config.setUseEntireTable(m_templateOutputPanel.getUseEntireTable());
+        config.setNumberOfRows(m_templateOutputPanel.getNumberOfRows());
+        if (m_templateOutputPanel.getTemplateTableJson() != null) {
+            config.setTemplateOutput(m_templateOutputPanel.getTemplateTableJson());
+        }
         config.save(settings);
     }
 
@@ -133,10 +149,30 @@ final class ContainerTableOutputNodeDialog extends NodeDialogPane {
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs) throws NotConfigurableException {
-        ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration().loadInDialog(settings);
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
+        loadSettings(settings, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final BufferedDataTable[] input) {
+        loadSettings(settings, input[0]);
+    }
+
+    private void loadSettings(final NodeSettingsRO settings, final BufferedDataTable inputTable) {
+        ContainerTableOutputNodeConfiguration config =
+                new ContainerTableOutputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
+
+        m_templateOutputPanel.initialize(
+            inputTable,
+            config.getTemplateOutput(),
+            config.getUseEntireTable(),
+            config.getNumberOfRows()
+        );
     }
 
 }

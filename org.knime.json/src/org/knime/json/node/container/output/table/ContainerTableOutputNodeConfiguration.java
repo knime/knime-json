@@ -75,11 +75,15 @@ final class ContainerTableOutputNodeConfiguration {
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
     private static final JsonValue DEFAULT_EXAMPLE_OUTPUT = ContainerTableDefaultJsonStructure.asJsonValue();
+    private static final boolean DEFAULT_USE_ENTIRE_TABLE = true;
+    private static final int DEFAULT_NUMBER_OF_ROWS = 10;
 
     private String m_parameterName;
     private String m_description;
     private String m_outputPathOrUrl;
     private JsonValue m_exampleOutput;
+    private boolean m_useEntireTable;
+    private int m_numberOfRows;
 
     /**
      * Constructs a new configuration.
@@ -89,6 +93,8 @@ final class ContainerTableOutputNodeConfiguration {
         m_description = DEFAULT_DESCRIPTION;
         m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
         m_exampleOutput = DEFAULT_EXAMPLE_OUTPUT;
+        m_useEntireTable = DEFAULT_USE_ENTIRE_TABLE;
+        m_numberOfRows = DEFAULT_NUMBER_OF_ROWS;
     }
 
     /**
@@ -166,7 +172,7 @@ final class ContainerTableOutputNodeConfiguration {
      * Gets the example output.
      * @return the example output
      */
-    JsonValue getExampleOutput() {
+    JsonValue getTemplateOutput() {
         return m_exampleOutput;
     }
 
@@ -175,12 +181,45 @@ final class ContainerTableOutputNodeConfiguration {
      * @param exampleOutput the example output to set
      * @throws InvalidSettingsException if the output does not comply with {@link ContainerTableJsonSchema}
      */
-    void setExampleOutput(final JsonValue exampleOutput) throws InvalidSettingsException {
+    void setTemplateOutput(final JsonValue exampleOutput) throws InvalidSettingsException {
         if (ContainerTableJsonSchema.hasContainerTableJsonSchema(exampleOutput)) {
             m_exampleOutput = exampleOutput;
         } else {
             throw new InvalidSettingsException("Example output has wrong format.");
         }
+    }
+
+    /**
+     * Gets the use entire table flag.
+     * @return the use entire table flag
+     */
+    boolean getUseEntireTable() {
+        return m_useEntireTable;
+    }
+
+    /**
+     * Sets the use entire table flag.
+     * @param useEntireTable the flag to be set
+     * @throws InvalidSettingsException if the input does not comply with {@link ContainerTableJsonSchema}
+     */
+    void setUseEntireTable(final boolean useEntireTable) {
+        m_useEntireTable = useEntireTable;
+    }
+
+    /**
+     * Gets the number of rows the template table uses.
+     * @return the number of rows the template table uses
+     */
+    int getNumberOfRows() {
+        return m_numberOfRows;
+    }
+
+    /**
+     * Sets the number of rows the template table uses.
+     * @param numberOfRows the number of rows the template table uses
+     */
+    void setNumberOfRows(final int numberOfRows) {
+        m_numberOfRows = numberOfRows;
     }
 
     /**
@@ -194,10 +233,12 @@ final class ContainerTableOutputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setOutputPathOrUrl(settings.getString("outputPathOrUrl"));
+        setUseEntireTable(settings.getBoolean("useEntireTable", DEFAULT_USE_ENTIRE_TABLE));
+        setNumberOfRows(settings.getInt("numberOfRows", DEFAULT_NUMBER_OF_ROWS));
         String jsonString = settings.getString("exampleOutput");
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
-            setExampleOutput(jsonValue);
+            setTemplateOutput(jsonValue);
         } catch (IOException e) {
             throw new InvalidSettingsException("Example output has wrong format.", e);
         }
@@ -205,7 +246,8 @@ final class ContainerTableOutputNodeConfiguration {
     }
 
     /**
-     * Loads the settings from the given node settings object. Default values will be used for missing or invalid settings.
+     * Loads the settings from the given node settings object. Default values will be used for missing or
+     * invalid settings.
      *
      * @param settings a node settings object
      * @return the updated configuration
@@ -219,10 +261,12 @@ final class ContainerTableOutputNodeConfiguration {
             m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
+        setUseEntireTable(settings.getBoolean("useEntireTable", DEFAULT_USE_ENTIRE_TABLE));
+        setNumberOfRows(settings.getInt("numberOfRows", DEFAULT_NUMBER_OF_ROWS));
         String jsonString = settings.getString("exampleOutput", ContainerTableDefaultJsonStructure.asString());
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
-            setExampleOutput(jsonValue);
+            setTemplateOutput(jsonValue);
         } catch (IOException | InvalidSettingsException e) {
             m_exampleOutput = DEFAULT_EXAMPLE_OUTPUT;
         }
@@ -239,6 +283,8 @@ final class ContainerTableOutputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("outputPathOrUrl", m_outputPathOrUrl);
+        settings.addBoolean("useEntireTable", m_useEntireTable);
+        settings.addInt("numberOfRows", m_numberOfRows);
         if (m_exampleOutput != null ) {
             settings.addString("exampleOutput", JSONUtil.toPrettyJSONString(m_exampleOutput));
         }
