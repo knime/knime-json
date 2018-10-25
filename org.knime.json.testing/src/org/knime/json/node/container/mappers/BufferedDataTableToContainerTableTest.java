@@ -46,7 +46,7 @@
  * History
  *   May 7, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container;
+package org.knime.json.node.container.mappers;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -88,7 +88,6 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
-import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -97,7 +96,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class BufferedDataTableToContainerTableTest {
+public class BufferedDataTableToContainerTableTest extends ContainerTableMapperTest {
     /**
      * Checks that an empty input table results in an empty Container Table.
      * @throws Exception

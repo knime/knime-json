@@ -46,7 +46,7 @@
  * History
  *   Apr 4, 2018 (Tobias Urhaug): created
  */
-package org.knime.json.node.container;
+package org.knime.json.node.container.mappers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -82,6 +82,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
+import org.knime.json.node.container.ContainerTableBuilder;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 /**
@@ -89,7 +90,7 @@ import org.knime.json.node.container.mappers.ContainerTableMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerTableToBufferedDataTableTest {
+public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperTest {
 
     /**
      * Checks that null is not allowed as service input.
