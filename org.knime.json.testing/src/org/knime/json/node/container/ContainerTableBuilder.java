@@ -48,15 +48,24 @@
  */
 package org.knime.json.node.container;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
 import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
 import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
+import org.knime.json.util.JSONUtil;
 
 /**
  * Builder class that simplifies setting up test fixtures using {@link ContainerTableJsonSchema}.
@@ -131,9 +140,9 @@ public class ContainerTableBuilder {
     }
 
     /**
-     * Builds a Service Input object.
+     * Builds a {@link ContainerTableJsonSchema}.
      *
-     * @return a Service Input object with the factory state
+     * @return a {@link ContainerTableJsonSchema} object with the factory state
      */
     public ContainerTableJsonSchema build() {
         ContainerTableSpec tableSpec = null;
@@ -145,6 +154,63 @@ public class ContainerTableBuilder {
             tableData = new ContainerTableData(m_tableRows);
         }
         return new ContainerTableJsonSchema(tableSpec, tableData);
+    }
+
+    /**
+     * Builds a {@link JsonValue}.
+     *
+     * @return a {@link JsonValue} object with the factory state
+     * @throws IOException if parsing to JsonValue is not succesful
+     */
+    public JsonValue buildAsJson() throws IOException {
+        JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        JsonObjectBuilder builder = factory.createObjectBuilder();
+
+        if (m_columnSpecs != null) {
+            builder.add("table-spec", createTableSpec(factory));
+        }
+
+        if (m_tableRows != null) {
+            builder.add("table-data", createTableData(factory));
+        }
+
+        return JSONUtil.parseJSONValue(builder.build().toString());
+    }
+
+    private JsonArray createTableSpec(final JsonBuilderFactory factory) {
+        JsonArrayBuilder builder = factory.createArrayBuilder();
+        for (ContainerTableColumnSpec columnSpec : m_columnSpecs) {
+            builder.add(factory.createObjectBuilder().add(columnSpec.getName(), columnSpec.getType()));
+        }
+
+        return builder.build();
+    }
+
+    private JsonValue createTableData(final JsonBuilderFactory factory) {
+        JsonArrayBuilder tableDataBuilder = factory.createArrayBuilder();
+        for (ContainerTableRow row : m_tableRows) {
+            JsonArrayBuilder rowBuilder = factory.createArrayBuilder();
+            for (Object cell : row.getDataCellObjects()) {
+                parseAndAdd(cell, rowBuilder);
+            }
+            tableDataBuilder.add(rowBuilder);
+        }
+
+        return tableDataBuilder.build();
+    }
+
+    private static void parseAndAdd(final Object cell, final JsonArrayBuilder rowBuilder) {
+        if (cell instanceof String) {
+            rowBuilder.add((String) cell);
+        } else if (cell instanceof Integer) {
+            rowBuilder.add((Integer) cell);
+        } else if (cell instanceof Double) {
+            rowBuilder.add((Double) cell);
+        } else if (cell instanceof Long) {
+            rowBuilder.add((Long) cell);
+        } else if (cell instanceof Boolean) {
+            rowBuilder.add((Boolean) cell);
+        }
     }
 
 }
