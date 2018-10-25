@@ -228,7 +228,10 @@ public final class ContainerTableMapper {
         ContainerTableData tableData = containerTable.getContainerTableData();
         for (ContainerTableRow tableRow : tableData.getContainerTableRows()) {
             dataContainer.addRowToTable(
-                new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec))
+                new DefaultRow(
+                    RowKey.createRowKey(rowKeyIndex++),
+                    getDataCells(tableRow, tableSpec, exec)
+                )
             );
         }
     }
