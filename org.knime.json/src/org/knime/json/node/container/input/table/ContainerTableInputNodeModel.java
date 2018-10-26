@@ -104,7 +104,11 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
             throws Exception {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return ContainerTableMapper.toBufferedDataTable(externalServiceInput, exec);
+            return ContainerTableMapper.toBufferedDataTable(
+                externalServiceInput,
+                m_configuration.getExampleInput(),
+                exec
+            );
         } else {
             if (inData[0] != null) {
                 // Perform mapping to validate the incoming table. Throws InvalidSettingsException if not valid.
@@ -124,7 +128,9 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            return new DataTableSpec[]{ContainerTableMapper.toTableSpec(externalServiceInput)};
+            DataTableSpec tableSpec =
+                ContainerTableMapper.toTableSpec(externalServiceInput, m_configuration.getExampleInput());
+            return new DataTableSpec[]{tableSpec};
         } else {
             if (inSpecs[0] != null) {
                 return inSpecs;
