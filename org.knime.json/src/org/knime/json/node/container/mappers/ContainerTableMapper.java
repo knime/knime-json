@@ -282,7 +282,13 @@ public final class ContainerTableMapper {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
         ContainerTableData tableData = containerTable.getContainerTableData();
+        int numColumns = tableSpec.getNumColumns();
         for (ContainerTableRow tableRow : tableData.getContainerTableRows()) {
+            int numberOfCells = tableRow.size();
+            if (numberOfCells != numColumns) {
+                throw new InvalidSettingsException("Invalid input. Template table spec defines " + numColumns + " "
+                    + "columns, but input row " + rowKeyIndex + " has " + numberOfCells + " cells.");
+            }
             dataContainer.addRowToTable(
                 new DefaultRow(
                     RowKey.createRowKey(rowKeyIndex++),
