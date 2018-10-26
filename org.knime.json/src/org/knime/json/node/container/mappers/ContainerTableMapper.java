@@ -114,10 +114,10 @@ public final class ContainerTableMapper {
     public static BufferedDataTable[] toBufferedDataTable(
             final JsonValue json,
             final ExecutionContext exec) throws InvalidSettingsException {
-        return toBufferedDataTable(asContainerTableJson(json), exec);
+        return toBufferedDataTable(toContainerTableJson(json), exec);
     }
 
-    private static ContainerTableJsonSchema asContainerTableJson(final JsonValue json) throws InvalidSettingsException {
+    private static ContainerTableJsonSchema toContainerTableJson(final JsonValue json) throws InvalidSettingsException {
         try {
             return OBJECT_MAPPER.readValue(json.toString(), ContainerTableJsonSchema.class);
         } catch (IOException e) {
@@ -140,6 +140,41 @@ public final class ContainerTableMapper {
         BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(containerTable));
         addDataRows(dataContainer, containerTable, exec);
         dataContainer.close();
+        BufferedDataTable table = dataContainer.getTable();
+        return new BufferedDataTable[]{table};
+    }
+
+    /**
+     * Creates a buffered data table of the input table. If the input table does not have a table-spec,
+     * all cells in each row of the input table are parsed according to the fall back tables table-spec.
+     *
+     * @param inputTable json representation of a table
+     * @param fallbackTable json representation of a fall back table
+     * @param exec the execution context
+     * @return a BufferedDataTable array with the mapped table
+     * @throws InvalidSettingsException if any of the json inputs are not well formed
+     * @since 3.7
+     */
+    public static BufferedDataTable[] toBufferedDataTable(
+            final JsonValue inputTable,
+            final JsonValue fallbackTable,
+            final ExecutionContext exec) throws InvalidSettingsException {
+        ContainerTableJsonSchema inputContainerTable = toContainerTableJson(inputTable);
+        ContainerTableSpec inputContainerTableSpec = inputContainerTable.getContainerTableSpec();
+
+        return inputContainerTableSpec == null
+                ? createTableBasedOnFallbackSpecs(inputContainerTable, fallbackTable, exec)
+                : toBufferedDataTable(inputContainerTable, exec);
+    }
+
+    private static BufferedDataTable[] createTableBasedOnFallbackSpecs(
+            final ContainerTableJsonSchema inputContainerTable,
+            final JsonValue fallbackTable,
+            final ExecutionContext exec) throws InvalidSettingsException {
+        DataTableSpec fallbackTableSpec = toTableSpec(toContainerTableJson(fallbackTable));
+        BufferedDataContainer dataContainer = exec.createDataContainer(fallbackTableSpec);
+        addDataRows(dataContainer, inputContainerTable, exec);
+        dataContainer.close();
         return new BufferedDataTable[]{dataContainer.getTable()};
     }
 
@@ -152,7 +187,7 @@ public final class ContainerTableMapper {
      * @since 3.7
      */
     public static DataTable[] toDataTable(final JsonValue json) throws InvalidSettingsException {
-        return toDataTable(asContainerTableJson(json));
+        return toDataTable(toContainerTableJson(json));
     }
 
     /**
@@ -181,7 +216,7 @@ public final class ContainerTableMapper {
      * @throws InvalidSettingsException
      */
     public static DataTableSpec toTableSpec(final JsonValue jsonInput) throws InvalidSettingsException {
-        return toTableSpec(asContainerTableJson(jsonInput));
+        return toTableSpec(toContainerTableJson(jsonInput));
     }
 
     /**

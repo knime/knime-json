@@ -54,6 +54,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.json.JsonValue;
+
 import org.junit.Test;
 import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
@@ -169,7 +171,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
      *
      * @throws Exception
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidSettingsException.class)
     public void testServiceInputWithNullTableSpecThrowsException() throws Exception {
         ContainerTableJsonSchema serviceInput = //
             new ContainerTableBuilder()//
@@ -323,6 +325,154 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         assertTrue("Rows should have been created", iterator.hasNext());
         DataRow dataRow = iterator.next();
         assertDataRow(dataRow, 1, "two");
+    }
+
+    /**
+    * Test that when a json input contains the table-spec object it is parsed according to that spec.
+    *
+    * @throws Exception
+    */
+   @Test
+   public void testInJsonInputWithTableSpecRowsAreParsedAccordingToTableSpec() throws Exception {
+       JsonValue inputWithoutSpecs = //
+           new ContainerTableBuilder()//
+               .withColumnSpec("column1", "int")
+               .withColumnSpec("column2", "string")
+               .withTableRow(1, "row 1")//
+               .withTableRow(2, "row 2")//
+               .buildAsJson();//
+
+       JsonValue fallbackTable =
+           new ContainerTableBuilder()
+               .withColumnSpec("column1", "boolean")
+               .withTableRow(true)//
+               .buildAsJson();
+
+       BufferedDataTable[] dataTable =
+           ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
+
+       DataTableSpec createdSpecs = dataTable[0].getSpec();
+       DataColumnSpec[] expectedColumnSpecs = //
+           DataTableSpec.createColumnSpecs(//
+               new String[]{"column1", "column2"}, //
+               new DataType[]{IntCell.TYPE, StringCell.TYPE});//
+       DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
+
+       assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
+
+       try (CloseableRowIterator iterator = dataTable[0].iterator()) {
+           assertTrue("Rows should have been created", iterator.hasNext());
+           DataRow firstRow = iterator.next();
+           assertDataRow(firstRow, 1, "row 1");
+           DataRow secondRow = iterator.next();
+           assertDataRow(secondRow, 2, "row 2");
+       }
+   }
+
+    /**
+     * Test that when a json input does not contain the table-spec object it is parsed according to a provided
+     * fall back tables spec.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testInJsonInputWithoutTableSpecRowsAreParsedAccordingToFallbackTableSpec() throws Exception {
+        JsonValue inputWithoutSpecs = //
+            new ContainerTableBuilder()//
+                .withNullTableSpec()
+                .withTableRow(1, "row 1")//
+                .withTableRow(2, "row 2")//
+                .buildAsJson();//
+
+        JsonValue fallbackTable =
+            new ContainerTableBuilder()
+                .withColumnSpec("column1", "int")
+                .withColumnSpec("column2", "string")
+                .withTableRow(123, "Should not be mapped!")//
+                .buildAsJson();
+
+        BufferedDataTable[] dataTable =
+            ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
+
+        DataTableSpec createdSpecs = dataTable[0].getSpec();
+        DataColumnSpec[] expectedColumnSpecs = //
+            DataTableSpec.createColumnSpecs(//
+                new String[]{"column1", "column2"}, //
+                new DataType[]{IntCell.TYPE, StringCell.TYPE});//
+        DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
+
+        assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
+
+        try (CloseableRowIterator iterator = dataTable[0].iterator()) {
+            assertTrue("Rows should have been created", iterator.hasNext());
+            DataRow firstRow = iterator.next();
+            assertDataRow(firstRow, 1, "row 1");
+            DataRow secondRow = iterator.next();
+            assertDataRow(secondRow, 2, "row 2");
+        }
+    }
+
+    /**
+     * Test that when a json input does not contain the table-spec object it is parsed according to a provided
+     * fall back tables spec.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCellsNotComplyingToFallbackTableSpecAreParsedAsMissingValues() throws Exception {
+        JsonValue inputWithoutSpecs =
+            new ContainerTableBuilder()
+                .withNullTableSpec()
+                .withTableRow("not an int value", "row 1")
+                .buildAsJson();
+
+        JsonValue fallbackTable =
+            new ContainerTableBuilder()
+                .withColumnSpec("column1", "int")
+                .withColumnSpec("column2", "string")
+                .withTableRow(1337, "Should not be mapped!")
+                .buildAsJson();
+
+        BufferedDataTable[] dataTable =
+            ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
+
+        DataTableSpec createdSpecs = dataTable[0].getSpec();
+        DataColumnSpec[] expectedColumnSpecs = //
+            DataTableSpec.createColumnSpecs(//
+                new String[]{"column1", "column2"}, //
+                new DataType[]{IntCell.TYPE, StringCell.TYPE} //
+            );//
+        DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
+
+        assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
+
+        try (CloseableRowIterator iterator = dataTable[0].iterator()) {
+            assertTrue("Rows should have been created", iterator.hasNext());
+            DataRow firstRow = iterator.next();
+            assertDataRow(firstRow, "missing value", "row 1");
+        }
+    }
+
+    /**
+     * Test that the fall back table must contain a table spec.
+     *
+     * @throws Exception
+     */
+    @Test(expected = InvalidSettingsException.class)
+    public void testFallBackTableWithoutTableSpecThrowsAnException() throws Exception {
+        JsonValue inputWithoutSpecs =
+            new ContainerTableBuilder()
+                .withNullTableSpec()
+                .withTableRow("row 1")
+                .buildAsJson();
+
+        JsonValue fallbackTable =
+            new ContainerTableBuilder()
+                .withNullTableSpec()
+                .withTableRow("Should not be mapped!")
+                .buildAsJson();
+
+        ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
     }
 
     private static void assertDataRow(final DataRow actualDataRow, final Object... expectedDataCells)
