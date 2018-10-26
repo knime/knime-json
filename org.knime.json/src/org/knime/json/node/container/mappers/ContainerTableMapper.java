@@ -208,6 +208,27 @@ public final class ContainerTableMapper {
         return new DataTable[]{dataContainer.getTable()};
     }
 
+
+    /**
+     * Creates a data table spec of the input. If the input does not have a table-spec, the fall back input table-spec
+     * is used.
+     *
+     * @param input json representing a table
+     * @param fallback json representing a fall back table
+     * @return DataTableSpec of the input if present, of the fall back otherwise
+     * @throws InvalidSettingsException if the mapping of either of the json inputs fails
+     * @since 3.7
+     */
+    public static DataTableSpec toTableSpec(final JsonValue input, final JsonValue fallback)
+            throws InvalidSettingsException {
+        ContainerTableJsonSchema inputTable = toContainerTableJson(input);
+        ContainerTableSpec containerTableSpec = inputTable.getContainerTableSpec();
+
+        return containerTableSpec != null
+                ? toTableSpec(inputTable)
+                : toTableSpec(toContainerTableJson(fallback));
+    }
+
     /**
      * Creates a data table spec of the container table json.
      *

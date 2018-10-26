@@ -67,6 +67,7 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.RowIterator;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.ContainerTable;
+import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
@@ -473,6 +474,66 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .buildAsJson();
 
         ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
+    }
+
+    /**
+     * Tests that the fall back is ignored when input has valid spec.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFallbackIsIgnoredWhenInputHasTableSpec() throws Exception {
+        JsonValue inputWithoutSpecs =
+            new ContainerTableBuilder()
+                .withColumnSpec("column1", "string")
+                .withColumnSpec("column2", "boolean")
+                .withColumnSpec("column3", "double")
+                .buildAsJson();
+
+        JsonValue fallbackTable =
+            new ContainerTableBuilder()
+                .withNullTableSpec()
+                .buildAsJson();
+
+        DataTableSpec createdSpecs = ContainerTableMapper.toTableSpec(inputWithoutSpecs, fallbackTable);
+        DataColumnSpec[] expectedColumnSpecs = //
+                DataTableSpec.createColumnSpecs(//
+                    new String[]{"column1", "column2", "column3"}, //
+                    new DataType[]{StringCell.TYPE, BooleanCell.TYPE, DoubleCell.TYPE} //
+                        );//
+        DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
+
+        assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
+    }
+
+    /**
+     * Tests that the fall back is used when input has no spec.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFallbackIsUsedWhenInputHasNoTableSpec() throws Exception {
+        JsonValue inputWithoutSpecs =
+            new ContainerTableBuilder()
+                .withNullTableSpec()
+                .buildAsJson();
+
+        JsonValue fallbackTable =
+            new ContainerTableBuilder()
+                .withColumnSpec("column1", "string")
+                .withColumnSpec("column2", "boolean")
+                .withColumnSpec("column3", "double")
+                .buildAsJson();
+
+        DataTableSpec createdSpecs = ContainerTableMapper.toTableSpec(inputWithoutSpecs, fallbackTable);
+        DataColumnSpec[] expectedColumnSpecs = //
+            DataTableSpec.createColumnSpecs(//
+                new String[]{"column1", "column2", "column3"}, //
+                new DataType[]{StringCell.TYPE, BooleanCell.TYPE, DoubleCell.TYPE} //
+            );//
+        DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
+
+        assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
     }
 
     private static void assertDataRow(final DataRow actualDataRow, final Object... expectedDataCells)
