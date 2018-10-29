@@ -58,6 +58,7 @@ import javax.json.JsonValue;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -91,6 +92,8 @@ public final class ContainerTableExampleView extends JPanel {
     private final JRadioButton m_useEntireTable;
     private final JRadioButton m_usePartsOfTable;
     private final JSpinner m_numberOfRows;
+    private final JCheckBox m_omitTableSpec;
+
 
     private JsonValue m_inputTableJson;
     private JsonValue m_templateTableJson;
@@ -145,6 +148,11 @@ public final class ContainerTableExampleView extends JPanel {
 
         gbc.gridx++;
         internalPanel.add(m_numberOfRows, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        m_omitTableSpec = new JCheckBox("Omit table spec in API definition");
+        internalPanel.add(m_omitTableSpec, gbc);
 
         m_templateTableView = new TableView(new PreviewTableContentView());
         gbc.insets = new Insets(5,1,1,1);
@@ -216,6 +224,7 @@ public final class ContainerTableExampleView extends JPanel {
             m_useEntireTable.setEnabled(true);
             m_usePartsOfTable.setEnabled(true);
             m_numberOfRows.setEnabled(!useEntireTable);
+            m_omitTableSpec.setEnabled(true);
             m_inputTableJson = mapToJson(inputTable);
             setButtonEnabledStateBasedOnEquality(m_inputTableJson, configuredTemplate);
         } else {
@@ -225,6 +234,7 @@ public final class ContainerTableExampleView extends JPanel {
             m_useEntireTable.setEnabled(false);
             m_usePartsOfTable.setEnabled(false);
             m_numberOfRows.setEnabled(false);
+            m_omitTableSpec.setEnabled(false);
         }
 
         m_templateTableView.setDataTable(mapToTable(configuredTemplate));
