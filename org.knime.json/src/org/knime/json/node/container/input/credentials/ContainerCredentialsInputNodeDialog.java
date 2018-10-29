@@ -73,7 +73,7 @@ import org.knime.core.node.dialog.DialogNode;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-public class ContainerCredentialsInputNodeDialog extends NodeDialogPane {
+class ContainerCredentialsInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
@@ -134,8 +134,10 @@ public class ContainerCredentialsInputNodeDialog extends NodeDialogPane {
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs) throws NotConfigurableException {
-        ContainerCredentialsInputNodeConfiguration config = new ContainerCredentialsInputNodeConfiguration().loadInDialog(settings);
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
+            throws NotConfigurableException {
+        ContainerCredentialsInputNodeConfiguration config =
+            new ContainerCredentialsInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
     }

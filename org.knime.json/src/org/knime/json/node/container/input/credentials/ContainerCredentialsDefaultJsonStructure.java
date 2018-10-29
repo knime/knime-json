@@ -62,7 +62,7 @@ import org.knime.json.util.JSONUtil;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-public class ContainerCredentialsDefaultJsonStructure {
+class ContainerCredentialsDefaultJsonStructure {
 
     /**
      * Creates a JsonValue object of the hard coded structure.

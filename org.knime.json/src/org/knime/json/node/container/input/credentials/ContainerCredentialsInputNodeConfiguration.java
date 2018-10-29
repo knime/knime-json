@@ -181,7 +181,8 @@ final class ContainerCredentialsInputNodeConfiguration {
      * @return the updated configuration
      * @throws InvalidSettingsException if settings are missing or invalid
      */
-    ContainerCredentialsInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+    ContainerCredentialsInputNodeConfiguration loadInModel(final NodeSettingsRO settings)
+            throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setInputPathOrUrl(settings.getString("inputPathOrUrl"));
@@ -196,7 +197,8 @@ final class ContainerCredentialsInputNodeConfiguration {
     }
 
     /**
-     * Loads the settings from the given node settings object. Default values will be used for missing or invalid settings.
+     * Loads the settings from the given node settings object. Default values will be used for missing or invalid
+     * settings.
      *
      * @param settings a node settings object
      * @return the updated configuration

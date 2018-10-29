@@ -85,7 +85,7 @@ import org.knime.json.util.JSONUtil;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-public class ContainerCredentialsInputNodeModel extends NodeModel implements InputNode, CredentialsNode {
+class ContainerCredentialsInputNodeModel extends NodeModel implements InputNode, CredentialsNode {
 
     private JsonValue m_externalValue;
     private ContainerCredentialsInputNodeConfiguration m_configuration =
