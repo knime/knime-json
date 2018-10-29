@@ -76,12 +76,16 @@ import org.knime.core.node.tableview.TableView;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 /**
- * A view that displays an example table and holds an internal template table that can be set as a
- * new example by clicking a button.
+ * A view that displays a configured template table and holds an internal table that can be set as a
+ * the new template by clicking a button.
+ *
+ * The view offers the possibility to use the entire internal table, or only parts of it, as the new template.
+ * When the "Use only first rows" radio button is selected, the number spinner gets enabled and allows for a number of
+ * rows to be set.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public final class ContainerTableExampleView extends JPanel {
+public final class ContainerTemplateTablePanel extends JPanel {
 
     private static final long serialVersionUID = 6012599572331463639L;
 
@@ -102,7 +106,7 @@ public final class ContainerTableExampleView extends JPanel {
      * Constructs a new table example view.
      * @param borderTitle the title of the border
      */
-    public ContainerTableExampleView(final String borderTitle) {
+    public ContainerTemplateTablePanel(final String borderTitle) {
         setLayout(new GridLayout());
 
         JPanel internalPanel = new JPanel(new GridBagLayout());

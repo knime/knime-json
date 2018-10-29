@@ -66,7 +66,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.container.ui.ContainerTableExampleView;
+import org.knime.json.node.container.ui.ContainerTemplateTablePanel;
 
 /**
  * Dialog for the Container Output (Table) node.
@@ -77,7 +77,7 @@ final class ContainerTableOutputNodeDialog extends DataAwareNodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
-    private final ContainerTableExampleView m_templateOutputPanel;
+    private final ContainerTemplateTablePanel m_templateOutputPanel;
 
     /**
      * New pane for configuring the {@link ContainerTableOutputNodeModel} node.
@@ -91,7 +91,7 @@ final class ContainerTableOutputNodeDialog extends DataAwareNodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        m_templateOutputPanel = new ContainerTableExampleView("Template table");
+        m_templateOutputPanel = new ContainerTemplateTablePanel("Template table");
 
         addTab("Container Output (Table)", createLayout(), false);
     }

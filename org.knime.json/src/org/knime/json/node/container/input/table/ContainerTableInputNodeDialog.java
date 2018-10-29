@@ -69,7 +69,7 @@ import org.knime.core.node.NodeView;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.dialog.ValueControlledDialogPane;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.json.node.container.ui.ContainerTableExampleView;
+import org.knime.json.node.container.ui.ContainerTemplateTablePanel;
 
 /**
  * Dialog for the Container Input (Table) node.
@@ -80,7 +80,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;
-    private final ContainerTableExampleView m_exampleInputPanel;
+    private final ContainerTemplateTablePanel m_templateInputPanel;
     private final JLabel m_statusBarLabel;
 
     /**
@@ -95,7 +95,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        m_exampleInputPanel = new ContainerTableExampleView("Template table");
+        m_templateInputPanel = new ContainerTemplateTablePanel("Template table");
 
         m_statusBarLabel = new JLabel("", NodeView.WARNING_ICON, SwingConstants.LEFT);
         m_statusBarLabel.setVisible(false);
@@ -131,7 +131,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.gridwidth = 3;
-        panel.add(m_exampleInputPanel, gbc);
+        panel.add(m_templateInputPanel, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -151,10 +151,10 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
-        config.setUseEntireTable(m_exampleInputPanel.getUseEntireTable());
-        config.setNumberOfRows(m_exampleInputPanel.getNumberOfRows());
-        if (m_exampleInputPanel.getTemplateTableJson() != null) {
-            config.setExampleInput(m_exampleInputPanel.getTemplateTableJson());
+        config.setUseEntireTable(m_templateInputPanel.getUseEntireTable());
+        config.setNumberOfRows(m_templateInputPanel.getNumberOfRows());
+        if (m_templateInputPanel.getTemplateTableJson() != null) {
+            config.setExampleInput(m_templateInputPanel.getTemplateTableJson());
         }
         config.save(settings);
     }
@@ -180,7 +180,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
 
-        m_exampleInputPanel.initialize(
+        m_templateInputPanel.initialize(
             inputTable,
             config.getExampleInput(),
             config.getUseEntireTable(),
