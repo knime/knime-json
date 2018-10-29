@@ -62,7 +62,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerCredentialsJsonSchemaTest {
+public final class ContainerCredentialsJsonSchemaTest {
 
     /**
      * Tests the serialization of an isEncrypted property.

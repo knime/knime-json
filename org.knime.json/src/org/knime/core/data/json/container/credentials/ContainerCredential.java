@@ -55,7 +55,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-public class ContainerCredential {
+public final class ContainerCredential {
 
     private final String m_id;
     private final String m_user;

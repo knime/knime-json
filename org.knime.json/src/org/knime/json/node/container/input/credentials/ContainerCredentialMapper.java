@@ -80,7 +80,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-public class ContainerCredentialMapper {
+public final class ContainerCredentialMapper {
 
     private static IEncrypter getEncrypter() throws InvalidSettingsException {
         try {

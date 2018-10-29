@@ -73,7 +73,7 @@ import org.knime.core.node.dialog.DialogNode;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-class ContainerCredentialsInputNodeDialog extends NodeDialogPane {
+final class ContainerCredentialsInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
     private final JTextArea m_descriptionArea;

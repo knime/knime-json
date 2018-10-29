@@ -64,7 +64,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.7
  */
-public class ContainerCredentialsJsonSchema {
+public final class ContainerCredentialsJsonSchema {
 
     private final boolean m_isEncrypted;
     private final List<ContainerCredential> m_credentials;

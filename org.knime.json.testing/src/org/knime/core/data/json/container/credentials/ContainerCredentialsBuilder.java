@@ -56,7 +56,7 @@ import java.util.List;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerCredentialsBuilder {
+public final class ContainerCredentialsBuilder {
 
     private boolean m_isEncrypted;
     private List<ContainerCredential> m_credentials;

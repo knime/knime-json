@@ -76,7 +76,7 @@ import org.knime.json.node.container.input.credentials.ContainerCredentialMapper
  * Test suite for mapping JsonValues to {@link ContainerCredentialsJsonSchema}.
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerCredentialMapperTest {
+public final class ContainerCredentialMapperTest {
 
     /**
      * Tests that a json value containing a single unencrypted credential is mapped correctly.
