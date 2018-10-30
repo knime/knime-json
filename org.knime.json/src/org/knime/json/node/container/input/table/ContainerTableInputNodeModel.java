@@ -106,7 +106,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
         if (externalServiceInput != null) {
             return ContainerTableMapper.toBufferedDataTable(
                 externalServiceInput,
-                m_configuration.getExampleInput(),
+                m_configuration.getTemplateInput(),
                 exec
             );
         } else {
@@ -116,7 +116,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
                 return inData;
             } else {
                 setWarningMessage("Configured template table is output");
-                return ContainerTableMapper.toBufferedDataTable(m_configuration.getExampleInput(), exec);
+                return ContainerTableMapper.toBufferedDataTable(m_configuration.getTemplateInput(), exec);
             }
         }
     }
@@ -129,13 +129,13 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
             DataTableSpec tableSpec =
-                ContainerTableMapper.toTableSpec(externalServiceInput, m_configuration.getExampleInput());
+                ContainerTableMapper.toTableSpec(externalServiceInput, m_configuration.getTemplateInput());
             return new DataTableSpec[]{tableSpec};
         } else {
             if (inSpecs[0] != null) {
                 return inSpecs;
             } else {
-                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(m_configuration.getExampleInput())};
+                return new DataTableSpec[]{ContainerTableMapper.toTableSpec(m_configuration.getTemplateInput())};
             }
         }
     }
@@ -197,7 +197,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
         return ExternalNodeData
                 .builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
-                .jsonValue(m_configuration.getExampleInput())
+                .jsonValue(m_configuration.getTemplateInput())
                 .build();
     }
 

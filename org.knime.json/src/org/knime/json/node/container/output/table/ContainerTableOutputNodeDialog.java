@@ -144,11 +144,7 @@ final class ContainerTableOutputNodeDialog extends DataAwareNodeDialogPane {
         ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
-        config.setUseEntireTable(m_templateOutputPanel.getUseEntireTable());
-        config.setNumberOfRows(m_templateOutputPanel.getNumberOfRows());
-        if (m_templateOutputPanel.getTemplateTableJson() != null) {
-            config.setTemplateOutput(m_templateOutputPanel.getTemplateTableJson());
-        }
+        config.setTemplateConfiguration(m_templateOutputPanel);
         config.save(settings);
     }
 
@@ -173,13 +169,7 @@ final class ContainerTableOutputNodeDialog extends DataAwareNodeDialogPane {
                 new ContainerTableOutputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
-
-        m_templateOutputPanel.initialize(
-            inputTable,
-            config.getTemplateOutput(),
-            config.getUseEntireTable(),
-            config.getNumberOfRows()
-        );
+        m_templateOutputPanel.initialize(inputTable, config.getTemplateConfiguration());
     }
 
 }

@@ -151,11 +151,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
-        config.setUseEntireTable(m_templateInputPanel.getUseEntireTable());
-        config.setNumberOfRows(m_templateInputPanel.getNumberOfRows());
-        if (m_templateInputPanel.getTemplateTableJson() != null) {
-            config.setExampleInput(m_templateInputPanel.getTemplateTableJson());
-        }
+        config.setTemplateConfiguration(m_templateInputPanel);
         config.save(settings);
     }
 
@@ -179,13 +175,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
-
-        m_templateInputPanel.initialize(
-            inputTable,
-            config.getExampleInput(),
-            config.getUseEntireTable(),
-            config.getNumberOfRows()
-        );
+        m_templateInputPanel.initialize(inputTable, config.getTemplateConfiguration());
     }
 
     /**

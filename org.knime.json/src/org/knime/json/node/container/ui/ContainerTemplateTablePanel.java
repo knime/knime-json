@@ -155,6 +155,7 @@ public final class ContainerTemplateTablePanel extends JPanel {
 
         gbc.gridx = 0;
         gbc.gridy++;
+        gbc.gridwidth = 2;
         m_omitTableSpec = new JCheckBox("Omit table spec in API definition");
         internalPanel.add(m_omitTableSpec, gbc);
 
@@ -211,34 +212,18 @@ public final class ContainerTemplateTablePanel extends JPanel {
     }
 
     /**
-     * Initializes the internal state based on an input table and a configured template table.
+     * Initializes the internal state based on an input table and a configuration.
      *
      * @param inputTable the input table
-     * @param configuredTemplate the configured table
-     * @param useEntireTable flag if the entire table should be used as a template
-     * @param useNumberOfRows the number of rows used as template
+     * @param config the configuration to initialize
      */
-    public void initialize(
-            final BufferedDataTable inputTable,
-            final JsonValue configuredTemplate,
-            final boolean useEntireTable,
-            final int useNumberOfRows) {
-        if (inputTable != null) {
-            m_createTemplateButton.setEnabled(true);
-            m_useEntireTable.setEnabled(true);
-            m_usePartsOfTable.setEnabled(true);
-            m_numberOfRows.setEnabled(!useEntireTable);
-            m_omitTableSpec.setEnabled(true);
-            m_inputTableJson = mapToJson(inputTable);
-            setButtonEnabledStateBasedOnEquality(m_inputTableJson, configuredTemplate);
+    public void initialize(final BufferedDataTable inputTable, final ContainerTemplateTableConfiguration config) {
+        boolean useEntireTable = config.getUseEntireTable();
+        JsonValue configuredTemplate = config.getTemplate();
+        if (inputTable == null) {
+            disableButtons();
         } else {
-            m_warningLabel.setForeground(Color.BLACK);
-            m_warningLabel.setText("No input table connected.");
-            m_createTemplateButton.setEnabled(false);
-            m_useEntireTable.setEnabled(false);
-            m_usePartsOfTable.setEnabled(false);
-            m_numberOfRows.setEnabled(false);
-            m_omitTableSpec.setEnabled(false);
+            enableButtonsBasedOnConfig(inputTable, useEntireTable, configuredTemplate);
         }
 
         m_templateTableView.setDataTable(mapToTable(configuredTemplate));
@@ -248,7 +233,31 @@ public final class ContainerTemplateTablePanel extends JPanel {
         } else {
             m_usePartsOfTable.setSelected(true);
         }
-        m_numberOfRows.setValue(useNumberOfRows);
+        m_numberOfRows.setValue(config.getNumberOfRows());
+        m_omitTableSpec.setSelected(config.getOmitTableSpec());
+    }
+
+    private void disableButtons() {
+        m_warningLabel.setForeground(Color.BLACK);
+        m_warningLabel.setText("No input table connected.");
+        m_createTemplateButton.setEnabled(false);
+        m_useEntireTable.setEnabled(false);
+        m_usePartsOfTable.setEnabled(false);
+        m_numberOfRows.setEnabled(false);
+        m_omitTableSpec.setEnabled(false);
+    }
+
+    private void enableButtonsBasedOnConfig(
+            final BufferedDataTable inputTable,
+            final boolean useEntireTable,
+            final JsonValue configuredTemplate) {
+        m_createTemplateButton.setEnabled(true);
+        m_useEntireTable.setEnabled(true);
+        m_usePartsOfTable.setEnabled(true);
+        m_numberOfRows.setEnabled(!useEntireTable);
+        m_omitTableSpec.setEnabled(true);
+        m_inputTableJson = mapToJson(inputTable);
+        setCreateTemplateButtonEnabledState(m_inputTableJson, configuredTemplate);
     }
 
     private static JsonValue mapToJson(final DataTable dataTable) {
@@ -259,7 +268,9 @@ public final class ContainerTemplateTablePanel extends JPanel {
         }
     }
 
-    private void setButtonEnabledStateBasedOnEquality(final JsonValue inputTable, final JsonValue configuredTemplate) {
+    private void setCreateTemplateButtonEnabledState(
+            final JsonValue inputTable,
+            final JsonValue configuredTemplate) {
         JsonValue input = inputTable;
         if (m_usePartsOfTable.isSelected()) {
             DataTable trimmedDataTable = getTrimmedDataTable();
@@ -280,7 +291,8 @@ public final class ContainerTemplateTablePanel extends JPanel {
         String infoMessage = "The input table is equal to the configured template table.";
         if (m_usePartsOfTable.isSelected()) {
             Integer nRows = (Integer) m_numberOfRows.getValue();
-            infoMessage = "The trimmed input table (first " + nRows + " rows) is equal to the configured template table";
+            infoMessage = "The trimmed input table (first " + nRows +
+                    " rows) is equal to the configured template table";
         }
         m_warningLabel.setForeground(Color.BLACK);
         m_warningLabel.setText(infoMessage);
@@ -324,4 +336,14 @@ public final class ContainerTemplateTablePanel extends JPanel {
     public int getNumberOfRows() {
         return (Integer) m_numberOfRows.getValue();
     }
+
+    /**
+     * Returns a flag telling if the table spec should be omitted or not.
+     *
+     * @return a flag telling if the table spec should be omitted or not
+     */
+    public boolean getOmitTableSpec() {
+        return m_omitTableSpec.isSelected();
+    }
+
 }
