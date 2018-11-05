@@ -119,12 +119,19 @@ final class ContainerTableOutputNodeDialog extends DataAwareNodeDialogPane {
         gbc.gridx++;
         p.add(sp, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.gridwidth = 3;
-        p.add(m_templateOutputPanel, gbc);
+        /*
+         *  Commented out as this has little value for the user before SRV-1810 is implemented.
+         *  Is tracked by 10642
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            gbc.gridwidth = 3;
+            p.add(m_templateOutputPanel, gbc);
+
+         *
+         */
 
         return p;
     }
