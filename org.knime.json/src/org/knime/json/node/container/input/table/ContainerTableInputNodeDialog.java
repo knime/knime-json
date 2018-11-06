@@ -183,7 +183,7 @@ final class ContainerTableInputNodeDialog extends DataAwareNodeDialogPane implem
      */
     @Override
     public void loadCurrentValue(final NodeSettingsRO value) throws InvalidSettingsException {
-        String warningMessage = value.getString("infoMessage");
+        String warningMessage = value.getString("infoMessage", null);
         if (warningMessage != null) {
             m_statusBarLabel.setText(warningMessage);
             m_statusBarLabel.setVisible(true);
