@@ -114,10 +114,18 @@ public final class ContainerTableMapper {
     public static BufferedDataTable[] toBufferedDataTable(
             final JsonValue json,
             final ExecutionContext exec) throws InvalidSettingsException {
-        return toBufferedDataTable(toContainerTableJson(json), exec);
+        return toBufferedDataTable(toContainerTableJsonSchema(json), exec);
     }
 
-    private static ContainerTableJsonSchema toContainerTableJson(final JsonValue json) throws InvalidSettingsException {
+    /**
+     * Maps a JsonValue to a {@link ContainerTableJsonSchema}.
+     *
+     * @param json json value to be mapped
+     * @return a {@link ContainerTableJsonSchema} of the json value, if well formed
+     * @throws InvalidSettingsException if the json value does not conform to {@link ContainerTableJsonSchema}
+     * @since 3.7
+     */
+    public static ContainerTableJsonSchema toContainerTableJsonSchema(final JsonValue json) throws InvalidSettingsException {
         try {
             return OBJECT_MAPPER.readValue(json.toString(), ContainerTableJsonSchema.class);
         } catch (IOException e) {
@@ -159,7 +167,7 @@ public final class ContainerTableMapper {
             final JsonValue inputTable,
             final JsonValue fallbackTable,
             final ExecutionContext exec) throws InvalidSettingsException {
-        ContainerTableJsonSchema inputContainerTable = toContainerTableJson(inputTable);
+        ContainerTableJsonSchema inputContainerTable = toContainerTableJsonSchema(inputTable);
         ContainerTableSpec inputContainerTableSpec = inputContainerTable.getContainerTableSpec();
 
         return inputContainerTableSpec == null
@@ -171,7 +179,7 @@ public final class ContainerTableMapper {
             final ContainerTableJsonSchema inputContainerTable,
             final JsonValue fallbackTable,
             final ExecutionContext exec) throws InvalidSettingsException {
-        DataTableSpec fallbackTableSpec = toTableSpec(toContainerTableJson(fallbackTable));
+        DataTableSpec fallbackTableSpec = toTableSpec(toContainerTableJsonSchema(fallbackTable));
         BufferedDataContainer dataContainer = exec.createDataContainer(fallbackTableSpec);
         addDataRows(dataContainer, inputContainerTable, exec);
         dataContainer.close();
@@ -187,7 +195,7 @@ public final class ContainerTableMapper {
      * @since 3.7
      */
     public static DataTable[] toDataTable(final JsonValue json) throws InvalidSettingsException {
-        return toDataTable(toContainerTableJson(json));
+        return toDataTable(toContainerTableJsonSchema(json));
     }
 
     /**
@@ -221,12 +229,12 @@ public final class ContainerTableMapper {
      */
     public static DataTableSpec toTableSpec(final JsonValue input, final JsonValue fallback)
             throws InvalidSettingsException {
-        ContainerTableJsonSchema inputTable = toContainerTableJson(input);
+        ContainerTableJsonSchema inputTable = toContainerTableJsonSchema(input);
         ContainerTableSpec containerTableSpec = inputTable.getContainerTableSpec();
 
         return containerTableSpec != null
                 ? toTableSpec(inputTable)
-                : toTableSpec(toContainerTableJson(fallback));
+                : toTableSpec(toContainerTableJsonSchema(fallback));
     }
 
     /**
@@ -237,7 +245,7 @@ public final class ContainerTableMapper {
      * @throws InvalidSettingsException
      */
     public static DataTableSpec toTableSpec(final JsonValue jsonInput) throws InvalidSettingsException {
-        return toTableSpec(toContainerTableJson(jsonInput));
+        return toTableSpec(toContainerTableJsonSchema(jsonInput));
     }
 
     /**
