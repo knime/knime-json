@@ -54,6 +54,7 @@ import javax.json.JsonValue;
 
 import org.knime.core.node.util.CheckUtils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,6 +69,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @since 3.6
  */
 @JsonPropertyOrder({"table-spec", "table-data"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContainerTableJsonSchema {
 
     private final ContainerTableSpec m_tableSpec;
