@@ -218,16 +218,10 @@ public final class ContainerTemplateTablePanel extends JPanel {
      * @param config the configuration to initialize
      */
     public void initialize(final BufferedDataTable inputTable, final ContainerTemplateTableConfiguration config) {
-        boolean useEntireTable = config.getUseEntireTable();
-        JsonValue configuredTemplate = config.getTemplate();
-        if (inputTable == null) {
-            disableButtons();
-        } else {
-            enableButtonsBasedOnConfig(inputTable, useEntireTable, configuredTemplate);
-        }
-
+        JsonValue configuredTemplate = config.getTemplateTable();
         m_templateTableView.setDataTable(mapToTable(configuredTemplate));
         m_templateTableJson = configuredTemplate;
+        boolean useEntireTable = config.getUseEntireTable();
         if (useEntireTable) {
             m_useEntireTable.setSelected(true);
         } else {
@@ -235,6 +229,12 @@ public final class ContainerTemplateTablePanel extends JPanel {
         }
         m_numberOfRows.setValue(config.getNumberOfRows());
         m_omitTableSpec.setSelected(config.getOmitTableSpec());
+
+        if (inputTable == null) {
+            disableButtons();
+        } else {
+            enableButtonsBasedOnConfig(inputTable, useEntireTable, configuredTemplate);
+        }
     }
 
     private void disableButtons() {
@@ -244,7 +244,6 @@ public final class ContainerTemplateTablePanel extends JPanel {
         m_useEntireTable.setEnabled(false);
         m_usePartsOfTable.setEnabled(false);
         m_numberOfRows.setEnabled(false);
-        m_omitTableSpec.setEnabled(false);
     }
 
     private void enableButtonsBasedOnConfig(
@@ -255,7 +254,6 @@ public final class ContainerTemplateTablePanel extends JPanel {
         m_useEntireTable.setEnabled(true);
         m_usePartsOfTable.setEnabled(true);
         m_numberOfRows.setEnabled(!useEntireTable);
-        m_omitTableSpec.setEnabled(true);
         m_inputTableJson = mapToJson(inputTable);
         setCreateTemplateButtonEnabledState(m_inputTableJson, configuredTemplate);
     }

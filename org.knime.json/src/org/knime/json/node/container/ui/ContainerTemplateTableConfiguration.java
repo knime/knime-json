@@ -57,7 +57,10 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
+import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Configuration holding all relevant configurations of {@link ContainerTemplateTablePanel}.
@@ -95,11 +98,26 @@ final public class ContainerTemplateTableConfiguration {
     }
 
     /**
-     * Gets the template.
+     * Gets the configured template. If omit table spec is set to true, the template will not include the "table-spec".
      * @return the template
      */
-    public JsonValue getTemplate() {
-        return m_template;
+    public JsonValue getExampleTemplate() {
+        return m_omitTableSpec ? createTemplateWithoutSpec() : m_template;
+    }
+
+    private JsonValue createTemplateWithoutSpec() {
+        try {
+            ContainerTableJsonSchema template = ContainerTableMapper.toContainerTableJsonSchema(m_template);
+            ContainerTableJsonSchema templateWithoutSpec =
+                new ContainerTableJsonSchema(null, template.getContainerTableData());
+            return JSONUtil.parseJSONValue(new ObjectMapper().writeValueAsString(templateWithoutSpec));
+        } catch (InvalidSettingsException e) {
+            // Should not occur as setTemplate checks for validity
+            return null;
+        } catch (IOException e) {
+            // Should not occur as template is valid and without spec should be valid
+            return null;
+        }
     }
 
     /**
@@ -113,6 +131,14 @@ final public class ContainerTemplateTableConfiguration {
         } else {
             throw new InvalidSettingsException("Template has wrong format.");
         }
+    }
+
+    /**
+     * Gets the configured template table.
+     * @return the configured template table
+     */
+    public JsonValue getTemplateTable() {
+        return m_template;
     }
 
     /**
@@ -222,4 +248,5 @@ final public class ContainerTemplateTableConfiguration {
         }
         return this;
     }
+
 }

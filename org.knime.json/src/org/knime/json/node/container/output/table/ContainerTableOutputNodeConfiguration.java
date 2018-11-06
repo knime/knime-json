@@ -162,7 +162,7 @@ final class ContainerTableOutputNodeConfiguration {
      * @return the example output
      */
     JsonValue getTemplateOutput() {
-        return m_templateConfiguration.getTemplate();
+        return m_templateConfiguration.getExampleTemplate();
     }
 
     /**

@@ -81,6 +81,7 @@ final class ContainerTableInputNodeConfiguration {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
+        m_templateConfiguration = new ContainerTemplateTableConfiguration("exampleInput");
     }
 
     /**
@@ -184,8 +185,16 @@ final class ContainerTableInputNodeConfiguration {
      *
      * @return the configured template input
      */
-    JsonValue getTemplateInput() {
-        return m_templateConfiguration.getTemplate();
+    JsonValue getExampleInput() {
+        return m_templateConfiguration.getExampleTemplate();
+    }
+
+    /**
+     * Gets the entire configured template table.
+     * @return the configured template table
+     */
+    public JsonValue getTemplateTable() {
+        return m_templateConfiguration.getTemplateTable();
     }
 
     /**
