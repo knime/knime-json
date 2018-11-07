@@ -69,7 +69,6 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
-import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.container.DataContainer;
 import org.knime.core.data.def.DefaultRow;
@@ -238,7 +237,8 @@ public final class ContainerTableMapper {
                 String cellObjectString = cellObject.toString();
                 DataCell dataCell = cellFactory.createDataCellOfType(columnType, cellObjectString);
                 if (dataCell == null) {
-                    dataCell = new MissingCell("Could not parse: \"" + cellObjectString + "\" to type: \"" + columnType + "\"");
+                    String message = "Could not parse: \"" + cellObjectString + "\" to type: \"" + columnType + "\"";
+                    throw new InvalidSettingsException(message);
                 }
                 dataCells[i] = dataCell;
             }
