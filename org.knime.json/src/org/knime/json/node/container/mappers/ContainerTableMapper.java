@@ -110,7 +110,9 @@ public final class ContainerTableMapper {
      * @return a Buffered data table corresponding to the json input
      * @throws InvalidSettingsException
      */
-    public static BufferedDataTable[] toBufferedDataTable(final JsonValue json, final ExecutionContext exec) throws InvalidSettingsException {
+    public static BufferedDataTable[] toBufferedDataTable(
+            final JsonValue json,
+            final ExecutionContext exec) throws InvalidSettingsException {
         return toBufferedDataTable(asContainerTableJson(json), exec);
     }
 
@@ -130,8 +132,9 @@ public final class ContainerTableMapper {
      * @return a BufferedDataTable[] from the container table input
      * @throws InvalidSettingsException
      */
-    public static BufferedDataTable[] toBufferedDataTable(final ContainerTableJsonSchema containerTable, final ExecutionContext exec)
-            throws InvalidSettingsException {
+    public static BufferedDataTable[] toBufferedDataTable(
+            final ContainerTableJsonSchema containerTable,
+            final ExecutionContext exec) throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(containerTable, "Container Table cannot be null");
         BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(containerTable));
         addDataRows(dataContainer, containerTable, exec);
@@ -159,7 +162,8 @@ public final class ContainerTableMapper {
      * @throws InvalidSettingsException
      * @since 3.7
      */
-    public static DataTable[] toDataTable(final ContainerTableJsonSchema containerTable) throws InvalidSettingsException {
+    public static DataTable[] toDataTable(final ContainerTableJsonSchema containerTable)
+            throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(containerTable, "Container Table cannot be null");
         DataTableSpec tableSpec = toTableSpec(containerTable);
         DataContainer dataContainer = new DataContainer(tableSpec);
@@ -186,7 +190,8 @@ public final class ContainerTableMapper {
      * @return a DataTableSpec from the container table input
      * @throws InvalidSettingsException
      */
-    public static DataTableSpec toTableSpec(final ContainerTableJsonSchema containerTable) throws InvalidSettingsException {
+    public static DataTableSpec toTableSpec(final ContainerTableJsonSchema containerTable)
+            throws InvalidSettingsException {
         ContainerTableSpec tableSpec =
             CheckUtils.checkSettingNotNull(containerTable.getContainerTableSpec(), "table spec cannot be null");
         int size = tableSpec.size();
@@ -204,8 +209,8 @@ public final class ContainerTableMapper {
                 String columnType = containerTableColumnSpec.getType();
                 columnTypes[i] = ContainerTableValidDataTypes.parse(columnType);
             } else {
-                throw new InvalidSettingsException("Columns \"" + usedColumnNamesToIndex.get(columnName) + "\" and \"" + i
-                    + "\" have equal names. Duplicate column names in input are not allowed.");
+                throw new InvalidSettingsException("Columns \"" + usedColumnNamesToIndex.get(columnName) +
+                    "\" and \"" + i + "\" have equal names. Duplicate column names in input are not allowed.");
             }
         }
 
@@ -213,18 +218,24 @@ public final class ContainerTableMapper {
         return new DataTableSpec(columnSpec);
     }
 
-    private static void addDataRows(final DataContainer dataContainer, final ContainerTableJsonSchema containerTable, final ExecutionContext exec)
-            throws InvalidSettingsException {
+    private static void addDataRows(
+            final DataContainer dataContainer,
+            final ContainerTableJsonSchema containerTable,
+            final ExecutionContext exec) throws InvalidSettingsException {
         long rowKeyIndex = 0L;
         DataTableSpec tableSpec = dataContainer.getTableSpec();
         ContainerTableData tableData = containerTable.getContainerTableData();
         for (ContainerTableRow tableRow : tableData.getContainerTableRows()) {
-            dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec)));
+            dataContainer.addRowToTable(
+                new DefaultRow(RowKey.createRowKey(rowKeyIndex++), getDataCells(tableRow, tableSpec, exec))
+            );
         }
     }
 
-    private static DataCell[] getDataCells(final ContainerTableRow tableRow, final DataTableSpec tableSpec, final ExecutionContext exec)
-            throws InvalidSettingsException {
+    private static DataCell[] getDataCells(
+            final ContainerTableRow tableRow,
+            final DataTableSpec tableSpec,
+            final ExecutionContext exec) throws InvalidSettingsException {
         DataCell[] dataCells = new DataCell[tableRow.size()];
         List<Object> cells = tableRow.getDataCellObjects();
         DataCellFactory cellFactory = new DataCellFactory(exec);
@@ -265,7 +276,8 @@ public final class ContainerTableMapper {
      * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
      * @since 3.7
      */
-    public static JsonValue toContainerTableJsonValueFromDataTable(final DataTable table) throws InvalidSettingsException {
+    public static JsonValue toContainerTableJsonValueFromDataTable(final DataTable table)
+            throws InvalidSettingsException {
         JsonValue result = null;
         try {
             ContainerTableJsonSchema containerTable = toContainerTableFromDataTable(table);
@@ -284,9 +296,11 @@ public final class ContainerTableMapper {
      *
      * @param table table to be converted to a {@link ContainerTableJsonSchema}
      * @return ContainerTableJsonSchema of the input table
-     * @throws InvalidSettingsException if the table contains column types not compatible with {@link ContainerTableJsonSchema}
+     * @throws InvalidSettingsException if the table contains column types not compatible with
+     * {@link ContainerTableJsonSchema}
      */
-    public static ContainerTableJsonSchema toContainerTable(final BufferedDataTable table) throws InvalidSettingsException {
+    public static ContainerTableJsonSchema toContainerTable(final BufferedDataTable table)
+            throws InvalidSettingsException {
         return toContainerTableFromDataTable(table);
     }
 
@@ -295,10 +309,12 @@ public final class ContainerTableMapper {
      *
      * @param table table to be converted to a {@link ContainerTableJsonSchema}
      * @return ContainerTableJsonSchema of the input table
-     * @throws InvalidSettingsException if the table contains column types not compatible with {@link ContainerTableJsonSchema}
+     * @throws InvalidSettingsException if the table contains column types not compatible with
+     * {@link ContainerTableJsonSchema}
      * @since 3.7
      */
-    public static ContainerTableJsonSchema toContainerTableFromDataTable(final DataTable table) throws InvalidSettingsException {
+    public static ContainerTableJsonSchema toContainerTableFromDataTable(final DataTable table)
+            throws InvalidSettingsException {
         return new ContainerTableJsonSchema(createContainerTableSpecs(table), createContainerTableData(table));
     }
 
@@ -324,7 +340,9 @@ public final class ContainerTableMapper {
         return new ContainerTableData(containerTableRows);
     }
 
-    private static ContainerTableRow createContainerTableRow(final DataRow originRow, final DataTableSpec dataTableSpec) {
+    private static ContainerTableRow createContainerTableRow(
+            final DataRow originRow,
+            final DataTableSpec dataTableSpec) {
         List<Object> resultRow = new ArrayList<>();
         int numColumns = dataTableSpec.getNumColumns();
         for (int i = 0; i < numColumns; i++) {
