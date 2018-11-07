@@ -38,24 +38,37 @@
          
          <option name="Template table">
          	A template table can be used to define a table structure which allows the workflow to execute properly. 
-         	The main purpose of the template table is to populate the "example" field of the generated OpenAPI 
-         	output parameter specification, which is presented to end users for documentation purposes. It also allows 
-         	downstream nodes to be configured when no external input is provided, which is helpful when adjustments to
-         	the workflow are needed.
+         	The main purpose of the template table is to populate the "InputParameters" field of the generated OpenAPI 
+         	specification, which is presented to end users for documentation purposes. When a node is executed without 
+         	receiving any external input (over REST or from the <i>Call Workflow (Table Based)</i> node) and it has no 
+         	table connected to its optional input port, the template is output. This allows downstream nodes 
+         	to be configured when no external input is present and simplifies making adjustments to the workflow.<br/>
+         	<br/>
+         	The template table also serves as a table spec when a simplified external input without table spec is 
+         	received over the REST API. When receiving an input without table spec, the input will 
+         	be parsed according to the spec defined by the template table, i.e. each input row must contain as many 
+         	cells as columns in the template table and each cell must contain a type that is compatible to the column 
+         	spec, throwing an error by any inconsistencies.
          </option>
          
          <option name="Set input table as template">
-         	By clicking this button, the input table, given one is provided, will be set as the new template table.
+         	By selecting this button, the input table, given one is provided, will be set as the new template table.
          </option>
          
          <option name="Use entire input table">
-         	When clicked, the entire input table will be set as the template.
+         	When selected, the entire input table will be set as the template.
          </option>
          
          <option name="Use only first rows">
-         	When clicked, only the first n rows are used as the template table. Can be especially useful when the input
+         	When selected, only the first n rows are used as the template table. Can be especially useful when the input
          	table serves as an example in the OpenAPI specification and you want to avoid over specifying the example
          	with too many rows. 
+         </option>
+         
+         <option name="Omit table spec in API definition">
+         	When selected, only the data part of the template table table is exposed to the OpenAPI definition, showing 
+         	a well formed simplified example input. Select this if the workflow is expected to be consumed over 
+         	REST and the caller of the workflow prefers the simplified input format.
          </option>
          
  	</fullDescription>
