@@ -78,6 +78,7 @@ import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
 import org.knime.core.data.json.container.table.ContainerTableValidDataTypes;
+import org.knime.core.data.uri.URIDataValue;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
@@ -366,6 +367,9 @@ public final class ContainerTableMapper {
             return ((LongValue) dataCell).getLongValue();
         } else if (BooleanValue.class.equals(type.getPreferredValueClass())) {
             return ((BooleanValue) dataCell).getBooleanValue();
+        } else if (URIDataValue.class.equals(type.getPreferredValueClass())){
+            URIDataValue uri = (URIDataValue) dataCell;
+            return uri.getURIContent().getURI();
         } else {
             return dataCell.toString();
         }
