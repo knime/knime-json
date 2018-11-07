@@ -247,20 +247,15 @@ public class ContainerTableToBufferedDataTableTest {
      *
      * @throws Exception
      */
-    @Test
-    public void testColumnParsesWrongDataTypeToMissingValue() throws Exception {
+    @Test(expected = InvalidSettingsException.class)
+    public void testCellWithWrongDataTypeThrowsException() throws Exception {
         ContainerTableJsonSchema serviceInput = //
             new ContainerTableBuilder()//
                 .withColumnSpec("column-int", "int")//
                 .withTableRow("Hello int column!")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
-        try (CloseableRowIterator iterator = dataTable[0].iterator()) {
-            assertTrue("First row should have been created", iterator.hasNext());
-            DataRow dataRow = iterator.next();
-            assertDataRow(dataRow, "missing value");
-        }
+        ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionContext());
     }
 
     /**
