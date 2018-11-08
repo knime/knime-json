@@ -212,9 +212,7 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
      */
     @Override
     public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        if (inputData.getJSONValue() == null) {
-            throw new InvalidSettingsException("No JSON input provided (is null)");
-        }
+        // nothing to do
     }
 
     /**
