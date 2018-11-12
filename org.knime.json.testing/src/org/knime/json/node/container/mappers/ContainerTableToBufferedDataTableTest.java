@@ -419,8 +419,8 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
      *
      * @throws Exception
      */
-    @Test
-    public void testCellsNotComplyingToFallbackTableSpecAreParsedAsMissingValues() throws Exception {
+    @Test(expected = InvalidSettingsException.class)
+    public void testCellsNotComplyingToFallbackTableSpecThrowsException() throws Exception {
         JsonValue inputWithoutSpecs =
             new ContainerTableBuilder()
                 .withNullTableSpec()
@@ -434,24 +434,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withTableRow(1337, "Should not be mapped!")
                 .buildAsJson();
 
-        BufferedDataTable[] dataTable =
-            ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
-
-        DataTableSpec createdSpecs = dataTable[0].getSpec();
-        DataColumnSpec[] expectedColumnSpecs = //
-            DataTableSpec.createColumnSpecs(//
-                new String[]{"column1", "column2"}, //
-                new DataType[]{IntCell.TYPE, StringCell.TYPE} //
-            );//
-        DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
-
-        assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
-
-        try (CloseableRowIterator iterator = dataTable[0].iterator()) {
-            assertTrue("Rows should have been created", iterator.hasNext());
-            DataRow firstRow = iterator.next();
-            assertDataRow(firstRow, "missing value", "row 1");
-        }
+        ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
     }
 
     /**
