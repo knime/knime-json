@@ -145,11 +145,7 @@ public final class ContainerTableMapper {
             final ContainerTableJsonSchema containerTable,
             final ExecutionContext exec) throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(containerTable, "Container Table cannot be null");
-        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(containerTable));
-        addDataRows(dataContainer, containerTable, exec);
-        dataContainer.close();
-        BufferedDataTable table = dataContainer.getTable();
-        return new BufferedDataTable[]{table};
+        return createTableBasedOnSpecs(containerTable, toTableSpec(containerTable), exec);
     }
 
     /**
@@ -171,17 +167,20 @@ public final class ContainerTableMapper {
         ContainerTableSpec inputContainerTableSpec = inputContainerTable.getContainerTableSpec();
 
         return inputContainerTableSpec == null
-                ? createTableBasedOnFallbackSpecs(inputContainerTable, fallbackTable, exec)
+                ? createTableBasedOnSpecs(
+                    inputContainerTable,
+                    toTableSpec(toContainerTableJsonSchema(fallbackTable)),
+                    exec
+                )
                 : toBufferedDataTable(inputContainerTable, exec);
     }
 
-    private static BufferedDataTable[] createTableBasedOnFallbackSpecs(
-            final ContainerTableJsonSchema inputContainerTable,
-            final JsonValue fallbackTable,
+    private static BufferedDataTable[] createTableBasedOnSpecs(
+            final ContainerTableJsonSchema containerTable,
+            final DataTableSpec tableSpec,
             final ExecutionContext exec) throws InvalidSettingsException {
-        DataTableSpec fallbackTableSpec = toTableSpec(toContainerTableJsonSchema(fallbackTable));
-        BufferedDataContainer dataContainer = exec.createDataContainer(fallbackTableSpec);
-        addDataRows(dataContainer, inputContainerTable, exec);
+        BufferedDataContainer dataContainer = exec.createDataContainer(tableSpec);
+        addDataRows(dataContainer, containerTable, exec);
         dataContainer.close();
         return new BufferedDataTable[]{dataContainer.getTable()};
     }
@@ -234,7 +233,7 @@ public final class ContainerTableMapper {
 
         return containerTableSpec != null
                 ? toTableSpec(inputTable)
-                : toTableSpec(toContainerTableJsonSchema(fallback));
+                : toTableSpec(fallback);
     }
 
     /**
