@@ -85,6 +85,7 @@ final class ContainerTableOutputNodeConfiguration {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
+        m_templateConfiguration = new ContainerTemplateTableConfiguration("exampleOutput");
     }
 
     /**
