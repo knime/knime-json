@@ -210,6 +210,8 @@ public class ContainerTableBuilder {
             rowBuilder.add((Long) cell);
         } else if (cell instanceof Boolean) {
             rowBuilder.add((Boolean) cell);
+        } else {
+            throw new IllegalArgumentException("The test builder can only handle primitive types");
         }
     }
 
