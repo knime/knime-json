@@ -128,7 +128,7 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         JsonValue externalServiceInput = getExternalServiceInput();
         if (externalServiceInput != null) {
-            DataTableSpec tableSpec =
+            final DataTableSpec tableSpec =
                 ContainerTableMapper.toTableSpec(externalServiceInput, m_configuration.getTemplateTable());
             return new DataTableSpec[]{tableSpec};
         } else {

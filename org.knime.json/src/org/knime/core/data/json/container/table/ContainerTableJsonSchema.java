@@ -90,7 +90,7 @@ public class ContainerTableJsonSchema {
 
     /**
      * Gets the table spec of this input.
-     * @return the table spec, can not be null
+     * @return the table spec, can be null if the optional spec is not present
      */
     @JsonProperty("table-spec")
     public ContainerTableSpec getContainerTableSpec() {
