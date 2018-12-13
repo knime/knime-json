@@ -48,7 +48,6 @@
  */
 package org.knime.json.node.container.mappers;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -57,7 +56,6 @@ import java.util.HashMap;
 import javax.json.JsonValue;
 
 import org.junit.Test;
-import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
@@ -86,6 +84,7 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 import org.knime.json.node.container.ContainerTableBuilder;
+import org.knime.json.node.container.DataRowAssert;
 
 /**
  * Test suite for converting a {@link ContainerTableJsonSchema} to a {@link BufferedDataTable}.
@@ -119,7 +118,8 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withColumnSpec("column-localdate", "localdate")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(tableWithSpec, getTestExecutionCtx());
+        ExecutionContext testExec = getTestExecutionCtx();
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(tableWithSpec, testExec);
 
         DataTableSpec createdSpecs = dataTable[0].getSpec();
         DataColumnSpec[] expectedColumnSpecs = //
@@ -201,15 +201,16 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withTableRow("value2", 432, 0.4, "2018-03-28")//
                 .build();//
 
-        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionCtx());
+        ExecutionContext testExec = getTestExecutionCtx();
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, testExec);
 
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
             DataRow firstRow = iterator.next();
-            assertDataRow(firstRow, "value1", 123, 4.5, "2018-03-27");
+            DataRowAssert.assertDataRow(testExec, firstRow, "value1", 123, 4.5, "2018-03-27");
             assertTrue("Second row should have been created", iterator.hasNext());
             DataRow secondRow = iterator.next();
-            assertDataRow(secondRow, "value2", 432, 0.4, "2018-03-28");
+            DataRowAssert.assertDataRow(testExec, secondRow, "value2", 432, 0.4, "2018-03-28");
         }
     }
 
@@ -274,11 +275,12 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withTableRow((String) null)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionCtx());
+        ExecutionContext testExec = getTestExecutionCtx();
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, testExec);
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
             DataRow dataRow = iterator.next();
-            assertDataRow(dataRow, "missing value");
+            DataRowAssert.assertDataRow(testExec, dataRow, "missing value");
         }
     }
 
@@ -297,12 +299,13 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withTableRow(1, 2, 3)//
                 .build();//
 
-        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, getTestExecutionCtx());
+        ExecutionContext testExec = getTestExecutionCtx();
+        BufferedDataTable[] dataTable = ContainerTableMapper.toBufferedDataTable(serviceInput, testExec);
 
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("Rows should have been created", iterator.hasNext());
             DataRow dataRow = iterator.next();
-            assertDataRow(dataRow, 1, 2, 3);
+            DataRowAssert.assertDataRow(testExec, dataRow, 1, 2, 3);
         }
     }
 
@@ -325,7 +328,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         RowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
         DataRow dataRow = iterator.next();
-        assertDataRow(dataRow, 1, "two");
+        DataRowAssert.assertDataRow(getTestExecutionCtx(), dataRow, 1, "two");
     }
 
     /**
@@ -349,8 +352,9 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                .withTableRow(true)//
                .buildAsJson();
 
+       ExecutionContext testExec = getTestExecutionCtx();
        BufferedDataTable[] dataTable =
-           ContainerTableMapper.toBufferedDataTable(inputWithSpecs, fallbackTable, getTestExecutionCtx());
+           ContainerTableMapper.toBufferedDataTable(inputWithSpecs, fallbackTable, testExec);
 
        DataTableSpec createdSpecs = dataTable[0].getSpec();
        DataColumnSpec[] expectedColumnSpecs = //
@@ -365,9 +369,9 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
        try (CloseableRowIterator iterator = dataTable[0].iterator()) {
            assertTrue("Rows should have been created", iterator.hasNext());
            DataRow firstRow = iterator.next();
-           assertDataRow(firstRow, 1, "row 1");
+           DataRowAssert.assertDataRow(testExec, firstRow, 1, "row 1");
            DataRow secondRow = iterator.next();
-           assertDataRow(secondRow, 2, "row 2");
+           DataRowAssert.assertDataRow(testExec, secondRow, 2, "row 2");
        }
    }
 
@@ -393,8 +397,9 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withTableRow(123, "Should not be mapped!")//
                 .buildAsJson();
 
+        ExecutionContext testExec = getTestExecutionCtx();
         BufferedDataTable[] dataTable =
-            ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
+            ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, testExec);
 
         DataTableSpec createdSpecs = dataTable[0].getSpec();
         DataColumnSpec[] expectedColumnSpecs = //
@@ -409,9 +414,9 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("Rows should have been created", iterator.hasNext());
             DataRow firstRow = iterator.next();
-            assertDataRow(firstRow, 1, "row 1");
+            DataRowAssert.assertDataRow(testExec, firstRow, 1, "row 1");
             DataRow secondRow = iterator.next();
-            assertDataRow(secondRow, 2, "row 2");
+            DataRowAssert.assertDataRow(testExec, secondRow, 2, "row 2");
         }
     }
 
@@ -519,25 +524,6 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
 
         assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
-    }
-
-    private static void assertDataRow(final DataRow actualDataRow, final Object... expectedDataCells)
-            throws InvalidSettingsException {
-        assertEquals("Actual row has unexpected size" ,expectedDataCells.length, actualDataRow.getNumCells());
-        for (int i = 0; i < expectedDataCells.length; i++) {
-            DataCell actualDataCell = actualDataRow.getCell(i);
-            Object expectedDataCellObject = expectedDataCells[i];
-
-            DataCell expectedDataCell;
-            if (expectedDataCellObject instanceof String && "missing value".equals(expectedDataCellObject)) {
-                expectedDataCell = DataType.getMissingCell();
-            } else {
-                DataCellFactory factory = new DataCellFactory(getTestExecutionCtx());
-                expectedDataCell =
-                    factory.createDataCellOfType(actualDataCell.getType(), expectedDataCellObject.toString());
-            }
-            assertEquals("Cells in column " + i + " missmatch", expectedDataCell, actualDataCell);
-        }
     }
 
     @SuppressWarnings("deprecation")
