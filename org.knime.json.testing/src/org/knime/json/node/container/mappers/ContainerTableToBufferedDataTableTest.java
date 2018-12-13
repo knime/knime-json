@@ -335,7 +335,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
     */
    @Test
    public void testInJsonInputWithTableSpecRowsAreParsedAccordingToTableSpec() throws Exception {
-       JsonValue inputWithoutSpecs = //
+       JsonValue inputWithSpecs = //
            new ContainerTableBuilder()//
                .withColumnSpec("column1", "int")
                .withColumnSpec("column2", "string")
@@ -350,13 +350,14 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                .buildAsJson();
 
        BufferedDataTable[] dataTable =
-           ContainerTableMapper.toBufferedDataTable(inputWithoutSpecs, fallbackTable, getTestExecutionCtx());
+           ContainerTableMapper.toBufferedDataTable(inputWithSpecs, fallbackTable, getTestExecutionCtx());
 
        DataTableSpec createdSpecs = dataTable[0].getSpec();
        DataColumnSpec[] expectedColumnSpecs = //
            DataTableSpec.createColumnSpecs(//
                new String[]{"column1", "column2"}, //
-               new DataType[]{IntCell.TYPE, StringCell.TYPE});//
+               new DataType[]{IntCell.TYPE, StringCell.TYPE}//
+           );//
        DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
 
        assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
@@ -399,7 +400,8 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         DataColumnSpec[] expectedColumnSpecs = //
             DataTableSpec.createColumnSpecs(//
                 new String[]{"column1", "column2"}, //
-                new DataType[]{IntCell.TYPE, StringCell.TYPE});//
+                new DataType[]{IntCell.TYPE, StringCell.TYPE}//w
+            );//
         DataTableSpec expectedTableSpecs = new DataTableSpec(expectedColumnSpecs);
 
         assertTrue(createdSpecs.equalStructure(expectedTableSpecs));
@@ -466,7 +468,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
      */
     @Test
     public void testFallbackIsIgnoredWhenInputHasTableSpec() throws Exception {
-        JsonValue inputWithoutSpecs =
+        JsonValue inputWithSpecs =
             new ContainerTableBuilder()
                 .withColumnSpec("column1", "string")
                 .withColumnSpec("column2", "boolean")
@@ -478,7 +480,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
                 .withNullTableSpec()
                 .buildAsJson();
 
-        DataTableSpec createdSpecs = ContainerTableMapper.toTableSpec(inputWithoutSpecs, fallbackTable);
+        DataTableSpec createdSpecs = ContainerTableMapper.toTableSpec(inputWithSpecs, fallbackTable);
         DataColumnSpec[] expectedColumnSpecs = //
                 DataTableSpec.createColumnSpecs(//
                     new String[]{"column1", "column2", "column3"}, //
@@ -538,6 +540,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static ExecutionContext getTestExecutionCtx() {
         @SuppressWarnings({"unchecked", "rawtypes"})
         NodeFactory<NodeModel> dummyFactory =
