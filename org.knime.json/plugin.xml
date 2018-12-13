@@ -48,6 +48,10 @@
       </node>
       <node
             category-path="/flowcontrol/automation"
+            factory-class="org.knime.json.node.container.input.row.ContainerRowInputNodeFactory">
+      </node>
+      <node
+            category-path="/flowcontrol/automation"
             factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" 
             after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
       </node>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./service-in.png" type="QuickForm"
+	xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+	<name>Container Input (Row)</name>
+
+	<shortDescription>
+	
+
+		
+    </shortDescription>
+ 
+ 	<fullDescription>
+ 		<intro>
+ 		
+ 		<!-- TODO TU: write description	 -->
+			
+ 		</intro>
+ 
+         <option name="Parameter name">
+             A name for the input parameter(preferably unique). This name is exposed in the REST interface and in the
+             <i>Call Workflow (Table Based)</i> node.
+         </option>
+ 
+         <option name="Description">
+             A description for the input parameter. The description is shown in the API specification of the REST
+             interface. 
+         </option>
+         
+         <option name="Template row">
+
+
+
+         </option>
+         
+         <option name="Set template row">
+
+
+         </option>
+         
+ 	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Any input table">
+			An optional input that can be used to configure a template row.
+		</inPort>
+	
+		<outPort index="0" name="The container table">
+			The table contained in this container. A configured template table is output if no table has been injected 
+			from an external source. 			
+		</outPort>
+	</ports>
+
+</knimeNode>
