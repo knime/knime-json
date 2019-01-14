@@ -50,12 +50,12 @@ package org.knime.json.node.reader;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
-import org.knime.base.node.util.BufferedFileReader;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -151,9 +151,9 @@ public final class JSONReaderNodeModel extends NodeModel {
             throw new IllegalStateException("The path has invalid syntax: " + m_settings.getJsonPath());
         }
         JacksonConversions jacksonConversions = JacksonConversions.getInstance();
-        try (BufferedFileReader reader = BufferedFileReader.createNewReader(content.getURI().toURL(), "UTF-8")) {
+        try (InputStream is = content.getURI().toURL().openStream()) {
             //do {
-            JSONValue jsonValue = (JSONValue)JSONCellFactory.create(reader, m_settings.isAllowComments());
+            JSONValue jsonValue = (JSONValue)JSONCellFactory.create(is, m_settings.isAllowComments());
             DataCell value;
             if (m_settings.isSelectPart()) {
                 Configuration config = Activator.getInstance().getJsonPathConfiguration();
