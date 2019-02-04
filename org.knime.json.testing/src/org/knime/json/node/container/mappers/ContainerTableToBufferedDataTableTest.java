@@ -84,7 +84,7 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 import org.knime.json.node.container.ContainerTableBuilder;
-import org.knime.json.node.container.DataRowAssert;
+import org.knime.json.node.container.DataTableAssert;
 
 /**
  * Test suite for converting a {@link ContainerTableJsonSchema} to a {@link BufferedDataTable}.
@@ -207,10 +207,10 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
             DataRow firstRow = iterator.next();
-            DataRowAssert.assertDataRow(testExec, firstRow, "value1", 123, 4.5, "2018-03-27");
+            DataTableAssert.assertDataRow(testExec, firstRow, "value1", 123, 4.5, "2018-03-27");
             assertTrue("Second row should have been created", iterator.hasNext());
             DataRow secondRow = iterator.next();
-            DataRowAssert.assertDataRow(testExec, secondRow, "value2", 432, 0.4, "2018-03-28");
+            DataTableAssert.assertDataRow(testExec, secondRow, "value2", 432, 0.4, "2018-03-28");
         }
     }
 
@@ -280,7 +280,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("First row should have been created", iterator.hasNext());
             DataRow dataRow = iterator.next();
-            DataRowAssert.assertDataRow(testExec, dataRow, "missing value");
+            DataTableAssert.assertDataRow(testExec, dataRow, "missing value");
         }
     }
 
@@ -305,7 +305,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("Rows should have been created", iterator.hasNext());
             DataRow dataRow = iterator.next();
-            DataRowAssert.assertDataRow(testExec, dataRow, 1, 2, 3);
+            DataTableAssert.assertDataRow(testExec, dataRow, 1, 2, 3);
         }
     }
 
@@ -328,7 +328,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         RowIterator iterator = dataTable[0].iterator();
         assertTrue("Rows should have been created", iterator.hasNext());
         DataRow dataRow = iterator.next();
-        DataRowAssert.assertDataRow(getTestExecutionCtx(), dataRow, 1, "two");
+        DataTableAssert.assertDataRow(getTestExecutionCtx(), dataRow, 1, "two");
     }
 
     /**
@@ -369,9 +369,9 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
        try (CloseableRowIterator iterator = dataTable[0].iterator()) {
            assertTrue("Rows should have been created", iterator.hasNext());
            DataRow firstRow = iterator.next();
-           DataRowAssert.assertDataRow(testExec, firstRow, 1, "row 1");
+           DataTableAssert.assertDataRow(testExec, firstRow, 1, "row 1");
            DataRow secondRow = iterator.next();
-           DataRowAssert.assertDataRow(testExec, secondRow, 2, "row 2");
+           DataTableAssert.assertDataRow(testExec, secondRow, 2, "row 2");
        }
    }
 
@@ -414,9 +414,9 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         try (CloseableRowIterator iterator = dataTable[0].iterator()) {
             assertTrue("Rows should have been created", iterator.hasNext());
             DataRow firstRow = iterator.next();
-            DataRowAssert.assertDataRow(testExec, firstRow, 1, "row 1");
+            DataTableAssert.assertDataRow(testExec, firstRow, 1, "row 1");
             DataRow secondRow = iterator.next();
-            DataRowAssert.assertDataRow(testExec, secondRow, 2, "row 2");
+            DataTableAssert.assertDataRow(testExec, secondRow, 2, "row 2");
         }
     }
 
