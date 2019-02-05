@@ -53,6 +53,7 @@ import static org.junit.Assert.assertEquals;
 import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
+import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.node.ExecutionContext;
 
@@ -61,7 +62,7 @@ import org.knime.core.node.ExecutionContext;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class DataRowAssert {
+public class DataTableAssert {
 
     /**
      * Asserts that a data row contains all the provided cells.
@@ -78,17 +79,49 @@ public class DataRowAssert {
         for (int i = 0; i < expectedDataCells.length; i++) {
             DataCell actualDataCell = actualDataRow.getCell(i);
             Object expectedDataCellObject = expectedDataCells[i];
-
-            DataCell expectedDataCell;
-            if (expectedDataCellObject instanceof String && "missing value".equals(expectedDataCellObject)) {
-                expectedDataCell = DataType.getMissingCell();
-            } else {
-                DataCellFactory factory = new DataCellFactory(exec);
-                expectedDataCell =
-                    factory.createDataCellOfType(actualDataCell.getType(), expectedDataCellObject.toString());
-            }
+            DataCell expectedDataCell = getExpectedDataCell(exec, actualDataCell, expectedDataCellObject);
             assertEquals("Cells in column " + i + " missmatch", expectedDataCell, actualDataCell);
         }
     }
 
+    private static DataCell getExpectedDataCell(
+            final ExecutionContext exec,
+            final DataCell actualDataCell,
+            final Object expectedDataCellObject) {
+        if (expectedDataCellObject instanceof String && "missing value".equals(expectedDataCellObject)) {
+            return DataType.getMissingCell();
+        } else {
+            DataCellFactory factory = new DataCellFactory(exec);
+            return factory.createDataCellOfType(actualDataCell.getType(), expectedDataCellObject.toString());
+        }
+    }
+
+    /**
+     * Asserts that a data table spec contains all the given names in the given order.
+     *
+     * @param dataTableSpec actual spec
+     * @param expectedNames expected names
+     */
+    public static void assertColumnNames(final DataTableSpec dataTableSpec, final String... expectedNames) {
+        String[] actualNames = dataTableSpec.getColumnNames();
+        assertEquals("The number of columns differ", actualNames.length, expectedNames.length);
+
+        for (int i = 0; i < actualNames.length; i++) {
+            assertEquals("Column names at index " + i + " should be equal", expectedNames[i], actualNames[i]);
+        }
+    }
+
+    /**
+     * Asserts that a data table spec contains all the given types in the given order.
+     *
+     * @param dataTableSpec actual spec
+     * @param expectedTypes expected types
+     */
+    public static void assertColumnTypes(final DataTableSpec dataTableSpec, final DataType... expectedTypes) {
+        assertEquals("The number of columns differ", dataTableSpec.getNumColumns(), expectedTypes.length);
+
+        for (int i = 0; i < dataTableSpec.getNumColumns(); i++) {
+            assertEquals("Unexpected type in column " + i, expectedTypes[i], dataTableSpec.getColumnSpec(i).getType());
+        }
+    }
 }
