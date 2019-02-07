@@ -50,14 +50,11 @@ package org.knime.json.node.container.input.credentials;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
 import javax.json.JsonValue;
 
-import org.apache.commons.io.IOUtils;
 import org.knime.core.data.json.container.credentials.ContainerCredential;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -76,8 +73,7 @@ import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
 import org.knime.core.node.workflow.CredentialsProvider;
 import org.knime.core.node.workflow.CredentialsStore.CredentialsNode;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
-import org.knime.core.util.FileUtil;
-import org.knime.json.util.JSONUtil;
+import org.knime.json.node.container.io.FilePathOrURLReader;
 
 /**
  * Node model for the Container Input (Credentials) node.
@@ -128,23 +124,11 @@ final class ContainerCredentialsInputNodeModel extends NodeModel implements Inpu
     }
 
     private JsonValue getExternalServiceInput() throws InvalidSettingsException {
-        Optional<String> inputFileNameOptional = m_configuration.getInputPathOrUrl();
-        if (inputFileNameOptional.isPresent()) {
-            return getInputFromFile(inputFileNameOptional.get());
-        } else if (m_externalValue != null) {
-            return m_externalValue;
+        Optional<String> inputPathOrUrl = m_configuration.getInputPathOrUrl();
+        if (inputPathOrUrl.isPresent()) {
+            return FilePathOrURLReader.resolveToJson(inputPathOrUrl.get());
         } else {
-            return null;
-        }
-    }
-
-    private static JsonValue getInputFromFile(final String inputFileName) throws InvalidSettingsException {
-        try (InputStream inputStream = FileUtil.openInputStream(inputFileName)){
-            String externalJsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-            return JSONUtil.parseJSONValue(externalJsonString);
-        } catch (IOException  e) {
-            throw new InvalidSettingsException("Input file path \"" + inputFileName + "\" could not be resolved "
-                + "or the input is not a valid json file");
+            return m_externalValue;
         }
     }
 

@@ -50,15 +50,12 @@ package org.knime.json.node.container.input.variable;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
 import javax.json.JsonValue;
 
-import org.apache.commons.io.IOUtils;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -74,9 +71,8 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
-import org.knime.core.util.FileUtil;
+import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerVariableMapper;
-import org.knime.json.util.JSONUtil;
 
 /**
  * The node model for the Container Input (Variable) node.
@@ -127,20 +123,12 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
     }
 
     private JsonValue getExternalVariableInput() throws InvalidSettingsException {
-        JsonValue externalInput = null;
-        Optional<String> inputFileNameOptional = m_configuration.getInputPathOrUrl();
-        if (inputFileNameOptional.isPresent()) {
-            String inputFileName = inputFileNameOptional.get();
-            try (InputStream inputStream = FileUtil.openInputStream(inputFileName)){
-                String externalJsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-                externalInput = JSONUtil.parseJSONValue(externalJsonString);
-            } catch (IOException  e) {
-                throw new InvalidSettingsException("Input path \"" + inputFileName + "\" could not be resolved" , e);
-            }
-        } else if (m_externalValue != null) {
-            externalInput = m_externalValue;
+        Optional<String> inputPathOrUrl = m_configuration.getInputPathOrUrl();
+        if (inputPathOrUrl.isPresent()) {
+            return FilePathOrURLReader.resolveToJson(inputPathOrUrl.get());
+        } else {
+            return m_externalValue;
         }
-        return externalInput;
     }
 
     private void pushVariablesToStack(final String json) throws InvalidSettingsException {
