@@ -101,8 +101,9 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
         if (externalServiceInput != null) {
             BufferedDataTable dataTable = ContainerRowMapper.toDataTable(externalServiceInput, exec);
             return new BufferedDataTable[] {dataTable};
+        } else {
+            return inData;
         }
-        return null;
     }
 
     /**
@@ -115,7 +116,7 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
             final DataTableSpec tableSpec = ContainerRowMapper.toTableSpec(externalInput);
             return new DataTableSpec[]{tableSpec};
         } else {
-            return null;
+            return inSpecs;
         }
     }
 
