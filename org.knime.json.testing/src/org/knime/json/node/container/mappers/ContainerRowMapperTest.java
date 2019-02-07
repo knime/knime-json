@@ -297,6 +297,32 @@ public class ContainerRowMapperTest {
         ContainerRowMapper.toDataTable(input, testExec);
     }
 
+    /**
+     * Tests that an input is correctly parsed to its spec
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDataTableSpecIsCorrectlyParsed() throws Exception {
+        JsonValue input =
+            new JsonValueBuilder()
+                .withLongObject("long-column", Long.MAX_VALUE)
+                .withBooleanObject("boolean-column", false)
+                .withStringObject("string-column", "a string")
+                .withDoubleObject("double-column", 4321.1234)
+                .build();
+
+        DataTableSpec dataTableSpec = ContainerRowMapper.toTableSpec(input);
+
+        String[] expectedColumnNames =
+            new String[]{"long-column", "boolean-column", "string-column", "double-column"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes =
+            new DataType[]{LongCell.TYPE, BooleanCell.TYPE, StringCell.TYPE, DoubleCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+    }
+
     private class JsonValueBuilder {
 
         private final JsonObjectBuilder m_builder;

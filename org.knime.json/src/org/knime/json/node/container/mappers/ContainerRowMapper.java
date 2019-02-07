@@ -51,7 +51,7 @@ package org.knime.json.node.container.mappers;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -71,12 +71,12 @@ import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataContainer;
+import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.util.CheckUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -105,46 +105,46 @@ public class ContainerRowMapper {
      * @param exec the execution context
      * @return a single row data table representing the input
      * @throws InvalidSettingsException if input is null
-     * @throws IOException if JsonValue cannot be mapped
-     * @throws JsonMappingException if JsonValue cannot be mapped
-     * @throws JsonParseException if JsonValue cannot be parsed
      */
-    public static DataTable toDataTable(final JsonValue input, final ExecutionContext exec)
-            throws InvalidSettingsException, JsonParseException, JsonMappingException, IOException {
-        if (input == null) {
-            throw new InvalidSettingsException("Can not map null to a data table");
-        }
+    public static BufferedDataTable toDataTable(final JsonValue input, final ExecutionContext exec)
+            throws InvalidSettingsException {
+        CheckUtils.checkSettingNotNull(input, "Can not map null to a data table");
 
-        Map<String, Object> jsonRow = new HashMap<>();
-        jsonRow = OBJECT_MAPPER.readValue(input.toString(), new TypeReference<Map<String, Object>>(){});
+        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(input));
+        dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), createDataCells(input, exec)));
+        dataContainer.close();
+        return dataContainer.getTable();
+    }
+
+    /**
+     * Converts a JsonValue input containing key value pairs to a data table spec, where the column names of the spec
+     * are the keys of the json input and the column types are inferred from the values of each pair.
+     *
+     * @param input json value
+     * @return a {@link DataTableSpec} of the input
+     * @throws InvalidSettingsException if the input is not well formed
+     */
+    public static DataTableSpec toTableSpec(final JsonValue input) throws InvalidSettingsException {
+        CheckUtils.checkSettingNotNull(input, "Can not map null to a data table spec");
+
+        Map<String, Object> jsonRow = parseJsonToMap(input);
 
         int numberOfColumns = jsonRow.size();
         String[] columnNames = new String[numberOfColumns];
         DataType[] columnTypes = new DataType[numberOfColumns];
-        DataCell[] dataCells = new DataCell[numberOfColumns];
 
         int i = 0;
         for (Entry<String, Object> jsonCell : jsonRow.entrySet()) {
             Object cellValue = jsonCell.getValue();
             DataType columnType = inferColumnTypeFromCellObject(cellValue);
 
-            DataCellFactory factory = new DataCellFactory(exec);
-            DataCell dataCell = factory.createDataCellOfType(columnType, cellValue.toString());
-
             columnTypes[i] = columnType;
-            dataCells[i] = dataCell;
             columnNames[i] = jsonCell.getKey();
             i++;
         }
 
         DataColumnSpec[] columnSpec = DataTableSpec.createColumnSpecs(columnNames, columnTypes);
-        DataTableSpec dataTableSpec = new DataTableSpec(columnSpec);
-
-        BufferedDataContainer dataContainer = exec.createDataContainer(dataTableSpec);
-        DefaultRow row = new DefaultRow(RowKey.createRowKey(0l), dataCells);
-        dataContainer.addRowToTable(row);
-        dataContainer.close();
-        return dataContainer.getTable();
+        return new DataTableSpec(columnSpec);
     }
 
     private static DataType inferColumnTypeFromCellObject(final Object cellValue) throws InvalidSettingsException {
@@ -168,6 +168,35 @@ public class ContainerRowMapper {
             throw new InvalidSettingsException("JSON objects are not supported");
         }
         return columnType;
+    }
+
+    private static DataCell[] createDataCells(final JsonValue input, final ExecutionContext exec)
+        throws InvalidSettingsException {
+        Map<String, Object> jsonRow = parseJsonToMap(input);
+
+        int numberOfColumns = jsonRow.size();
+        DataCell[] dataCells = new DataCell[numberOfColumns];
+
+        int i = 0;
+        for (Entry<String, Object> jsonCell : jsonRow.entrySet()) {
+            Object cellValue = jsonCell.getValue();
+            DataType columnType = inferColumnTypeFromCellObject(cellValue);
+
+            DataCellFactory factory = new DataCellFactory(exec);
+            DataCell dataCell = factory.createDataCellOfType(columnType, cellValue.toString());
+
+            dataCells[i] = dataCell;
+            i++;
+        }
+        return dataCells;
+    }
+
+    private static Map<String, Object> parseJsonToMap(final JsonValue input)throws InvalidSettingsException {
+        try {
+            return OBJECT_MAPPER.readValue(input.toString(), new TypeReference<LinkedHashMap<String, Object>>(){});
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Could not parse input to json", e);
+        }
     }
 
 }

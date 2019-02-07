@@ -50,6 +50,7 @@ package org.knime.json.node.container.input.row;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.json.JsonValue;
 
@@ -66,6 +67,8 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
+import org.knime.json.node.container.io.FilePathOrURLReader;
+import org.knime.json.node.container.mappers.ContainerRowMapper;
 
 /**
  * The model implementation of the Container Input (Row) node.
@@ -94,13 +97,12 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-
-
-        // TODO TU: Implement
-
-
+        JsonValue externalServiceInput = getExternalInput();
+        if (externalServiceInput != null) {
+            BufferedDataTable dataTable = ContainerRowMapper.toDataTable(externalServiceInput, exec);
+            return new BufferedDataTable[] {dataTable};
+        }
         return null;
-
     }
 
     /**
@@ -108,14 +110,22 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
      */
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        JsonValue externalInput = getExternalInput();
+        if (externalInput != null) {
+            final DataTableSpec tableSpec = ContainerRowMapper.toTableSpec(externalInput);
+            return new DataTableSpec[]{tableSpec};
+        } else {
+            return null;
+        }
+    }
 
-
-
-        // TODO TU: Implement
-
-
-        return null;
-
+    private JsonValue getExternalInput() throws InvalidSettingsException {
+        Optional<String> inputPathOrUrl = m_configuration.getInputPathOrUrl();
+        if (inputPathOrUrl.isPresent()) {
+            return FilePathOrURLReader.resolveToJson(inputPathOrUrl.get());
+        } else {
+            return m_externalValue;
+        }
     }
 
     /**
