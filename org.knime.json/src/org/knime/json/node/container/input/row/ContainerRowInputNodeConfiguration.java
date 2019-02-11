@@ -48,6 +48,7 @@
  */
 package org.knime.json.node.container.input.row;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import javax.json.JsonValue;
@@ -58,6 +59,8 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure;
+import org.knime.json.util.JSONUtil;
 
 /**
  * Configuration for the Container Input (Row) node.
@@ -69,18 +72,21 @@ final class ContainerRowInputNodeConfiguration {
     private static final String DEFAULT_PARAMETER_NAME = "input";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
-    private static final JsonValue DEFAULT_TEMPLATE_ROW = null; //TODO TU: implement default row
+    private static final JsonValue DEFAULT_TEMPLATE_ROW = ContainerTableDefaultJsonStructure.asJsonValue(); //TODO TU: implement default row
+    private static final boolean DEFAULT_USE_TEMPLATE_AS_SPEC = false;
 
     private String m_parameterName;
     private String m_description;
     private String m_inputPathOrUrl;
     private JsonValue m_templateRow;
+    private boolean m_useTemplateAsSpec;
 
     public ContainerRowInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         m_templateRow = DEFAULT_TEMPLATE_ROW;
+        m_useTemplateAsSpec = DEFAULT_USE_TEMPLATE_AS_SPEC;
     }
 
     /**
@@ -155,6 +161,33 @@ final class ContainerRowInputNodeConfiguration {
     }
 
     /**
+     * Sets the configured template row.
+     *
+     * @param templateRowJson the configured template
+     */
+    void setTemplateRow(final JsonValue templateRowJson) {
+        m_templateRow = templateRowJson;
+    }
+
+    /**
+     * Returns the use template row as spec flag.
+     *
+     * @return the use template row as spec flag
+     */
+    boolean getUseTemplateAsSpec() {
+        return m_useTemplateAsSpec;
+    }
+
+    /**
+     * Sets the use template row as spec flag.
+     *
+     * @param useTemplateAsSpec the value of the flag
+     */
+    void setUseTemplateAsSpec(final boolean useTemplateAsSpec) {
+        m_useTemplateAsSpec = useTemplateAsSpec;
+    }
+
+    /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
      * @param settings a node settings object
@@ -165,6 +198,16 @@ final class ContainerRowInputNodeConfiguration {
         setParameterName(settings.getString("parameterName"));
         setDescription(settings.getString("description"));
         setInputPathOrUrl(settings.getString("inputPathOrUrl"));
+        setUseTemplateAsSpec(settings.getBoolean("useTemplateAsSpec"));
+
+        String templateRowJsonString = settings.getString("templateRow");
+        try {
+            JsonValue templateRowJson = JSONUtil.parseJSONValue(templateRowJsonString);
+            setTemplateRow(templateRowJson);
+        } catch (IOException e) {
+            throw new InvalidSettingsException("Configured template row has wrong format.", e);
+        }
+
         return this;
     }
 
@@ -179,11 +222,21 @@ final class ContainerRowInputNodeConfiguration {
         try {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
             setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
+            setUseTemplateAsSpec(settings.getBoolean("useTemplateAsSpec", DEFAULT_USE_TEMPLATE_AS_SPEC));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
             m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
+
+        String jsonString = settings.getString("templateRow", DEFAULT_TEMPLATE_ROW.toString());
+        try {
+            JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
+            setTemplateRow(jsonValue);
+        } catch (IOException  e) {
+            setTemplateRow(DEFAULT_TEMPLATE_ROW);
+        }
+
         return this;
     }
 
@@ -197,6 +250,11 @@ final class ContainerRowInputNodeConfiguration {
         settings.addString("parameterName", m_parameterName);
         settings.addString("description", m_description);
         settings.addString("inputPathOrUrl", m_inputPathOrUrl);
+        settings.addBoolean("useTemplateAsSpec", m_useTemplateAsSpec);
+
+        if (m_templateRow != null) {
+            settings.addString("templateRow", JSONUtil.toPrettyJSONString(m_templateRow));
+        }
         return this;
     }
 
