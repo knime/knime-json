@@ -56,20 +56,21 @@ import java.awt.Insets;
 
 import javax.json.JsonValue;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
 import javax.swing.JTextArea;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
 import org.knime.base.node.io.filereader.PreviewTableContentView;
-import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
+import org.knime.core.data.RowIterator;
 import org.knime.core.data.container.DataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DataAwareNodeDialogPane;
@@ -77,6 +78,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NodeView;
+import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.dialog.ValueControlledDialogPane;
 import org.knime.core.node.port.PortObjectSpec;
@@ -94,10 +96,20 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     private final JTextArea m_descriptionArea;
     private final JButton m_createTemplateRowButton;
     private final JLabel m_warningLabel;
-    private final JSpinner m_useRowNumber;
-    private final JCheckBox m_useTemplateAsSpec;
     private final TableView m_templateTableView;
     private final JLabel m_statusBarLabel;
+
+    private final JRadioButton m_deriveTableSpecFromRuntime;
+    private final JRadioButton m_tableSpecAccordingToTemplate;
+
+    private final JRadioButton m_fillMissingColumnsWithMissingValues;
+    private final JRadioButton m_ignoreMissingColumnsInOutput;
+    private final JRadioButton m_failWhenColumnsAreMissing;
+
+    private final JRadioButton m_appendSuperfluousColumns;
+    private final JRadioButton m_ignoreSuperfluousColumns;
+
+    private final JCheckBox m_acceptMissingValues;
 
     private JsonValue m_inputTableJson;
     private JsonValue m_templateRowJson;
@@ -114,18 +126,26 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        m_createTemplateRowButton = new JButton("Set row as template");
+        m_deriveTableSpecFromRuntime = new JRadioButton("Derive table specification from input at 'runtime'");
+        m_tableSpecAccordingToTemplate = new JRadioButton("Table Specification according to template");
+
+        m_createTemplateRowButton = new JButton("Set first row of input as template");
         m_createTemplateRowButton.addActionListener(e -> setRowAsTemplate());
 
         m_warningLabel = new JLabel();
         m_warningLabel.setForeground(Color.RED.darker());
 
-        SpinnerNumberModel numberModel = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
-        m_useRowNumber = new JSpinner(numberModel);
+        m_templateTableView = new TableView(new PreviewTableContentView());
+        m_templateTableView.setPreferredSize(new Dimension(250, 65));
 
-        m_useTemplateAsSpec = new JCheckBox("Use template row as input specification");
+        m_fillMissingColumnsWithMissingValues = new JRadioButton("Fill with missing value");
+        m_ignoreMissingColumnsInOutput = new JRadioButton("Ignore");
+        m_failWhenColumnsAreMissing = new JRadioButton("Fail");
 
-        m_templateTableView =  new TableView(new PreviewTableContentView());
+        m_appendSuperfluousColumns = new JRadioButton("Append at the end of the table");
+        m_ignoreSuperfluousColumns = new JRadioButton("Ignore");
+
+        m_acceptMissingValues = new JCheckBox("Accept missing (null) values");
 
         m_statusBarLabel = new JLabel("", NodeView.WARNING_ICON, SwingConstants.LEFT);
         m_statusBarLabel.setVisible(false);
@@ -158,6 +178,19 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         scrollPane.setMinimumSize(m_descriptionArea.getMinimumSize());
         gbc.gridx++;
         panel.add(scrollPane, gbc);
+
+        ButtonGroup parseModeButtonGroup = new ButtonGroup();
+        parseModeButtonGroup.add(m_deriveTableSpecFromRuntime);
+        parseModeButtonGroup.add(m_tableSpecAccordingToTemplate);
+        m_deriveTableSpecFromRuntime.setSelected(true);
+
+        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panel.add(m_deriveTableSpecFromRuntime, gbc);
+
+        gbc.gridy++;
+        panel.add(m_tableSpecAccordingToTemplate, gbc);
 
         JPanel templateRowPanel = createTemplateRowPanel();
         gbc.gridwidth = 2;
@@ -194,49 +227,91 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         gbc.insets = new Insets(5, 12, 5, 5);
         templateRowPanel.add(m_warningLabel, gbc);
 
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        templateRowPanel.add(new JLabel("Use row number:"), gbc);
-
-        gbc.gridx++;
-        templateRowPanel.add(m_useRowNumber, gbc);
-
-        gbc.gridwidth = 2;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        templateRowPanel.add(m_useTemplateAsSpec, gbc);
-
         gbc.insets = new Insets(5,1,1,1);
+        gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 2;
         gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         templateRowPanel.add(m_templateTableView, gbc);
+
+        ButtonGroup missingColumnHandlingGroup = new ButtonGroup();
+        missingColumnHandlingGroup.add(m_fillMissingColumnsWithMissingValues);
+        missingColumnHandlingGroup.add(m_ignoreMissingColumnsInOutput);
+        missingColumnHandlingGroup.add(m_failWhenColumnsAreMissing);
+        m_fillMissingColumnsWithMissingValues.setSelected(true);
+
+        Box missingColumnHandling = Box.createVerticalBox();
+        missingColumnHandling.add(Box.createVerticalGlue());
+        missingColumnHandling.setBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Missing column handling"));
+
+        missingColumnHandling.add(m_fillMissingColumnsWithMissingValues);
+        missingColumnHandling.add(m_ignoreMissingColumnsInOutput);
+        missingColumnHandling.add(m_failWhenColumnsAreMissing);
+
+        gbc.gridy++;
+        templateRowPanel.add(missingColumnHandling, gbc);
+
+        ButtonGroup superfluousColumnHandlingGroup = new ButtonGroup();
+        superfluousColumnHandlingGroup.add(m_appendSuperfluousColumns);
+        superfluousColumnHandlingGroup.add(m_ignoreSuperfluousColumns);
+        m_appendSuperfluousColumns.setSelected(true);
+
+        Box superfluousColumnHandling = Box.createVerticalBox();
+        superfluousColumnHandling.add(Box.createVerticalGlue());
+        superfluousColumnHandling.setBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Superfluous column handling"));
+
+        superfluousColumnHandling.add(m_appendSuperfluousColumns);
+        superfluousColumnHandling.add(m_ignoreSuperfluousColumns);
+
+        gbc.gridy++;
+        templateRowPanel.add(superfluousColumnHandling, gbc);
+
+        Box missingValuesHandling = Box.createVerticalBox();
+        missingValuesHandling.add(Box.createVerticalGlue());
+        missingValuesHandling.setBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Missing values handling"));
+
+        missingValuesHandling.add(m_acceptMissingValues);
+
+        gbc.gridy++;
+        templateRowPanel.add(missingValuesHandling, gbc);
+
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        JPanel bottomFiller = new JPanel();
+        templateRowPanel.add(bottomFiller, gbc);
 
         return templateRowPanel;
     }
 
+    static SettingsModelString getMissingColumnHandlingStrategy() {
+        return
+            new SettingsModelString("missingColumnHandling", MissingColumnHandling.FILL_WITH_MISSING_VALUE.getName());
+    }
+
     private void setRowAsTemplate() {
-        DataTable templateRow = extractSelectedRowAsTable();
+        DataTable templateRow = getFirstRowAsATable();
         m_templateTableView.setDataTable(templateRow);
         m_templateRowJson = mapToJson(templateRow);
     }
 
-    private DataTable extractSelectedRowAsTable() {
+    private DataTable getFirstRowAsATable() {
         DataTable inputDataTable = getInputDataTable();
         DataContainer dataContainer = new DataContainer(inputDataTable.getDataTableSpec());
-        int targetRowIndex = (int) m_useRowNumber.getValue();
-        int i = 0;
-        for (DataRow dataRow : inputDataTable) {
-            if (i == targetRowIndex) {
-                dataContainer.addRowToTable(dataRow);
-                break;
-            }
-            i++;
+
+        RowIterator iterator = inputDataTable.iterator();
+        if (iterator.hasNext()) {
+            dataContainer.addRowToTable(iterator.next());
         }
+
         dataContainer.close();
         return dataContainer.getTable();
     }
@@ -257,8 +332,23 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         ContainerRowInputNodeConfiguration config = new ContainerRowInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
         config.setDescription(m_descriptionArea.getText());
-        config.setUseTemplateAsSpec(m_useTemplateAsSpec.isSelected());
+        config.setUseTemplateAsSpec(m_tableSpecAccordingToTemplate.isSelected());
         config.setTemplateRow(m_templateRowJson);
+
+        if (m_fillMissingColumnsWithMissingValues.isSelected()) {
+            config.setMissingColumnHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE);
+        } else if (m_ignoreMissingColumnsInOutput.isSelected()) {
+            config.setMissingColumnHandling(MissingColumnHandling.IGNORE);
+        } else if (m_failWhenColumnsAreMissing.isSelected()) {
+            config.setMissingColumnHandling(MissingColumnHandling.FAIL);
+        } else {
+            // Exception serves as a reminder for future devs, in case a new enum has been added without being handled
+            throw new RuntimeException("Unhandled MissingColumndHandling enum!");
+        }
+
+        config.setAppendSuperfluousColumns(m_appendSuperfluousColumns.isSelected());
+        config.setAcceptMissingValues(m_acceptMissingValues.isSelected());
+
         config.save(settings);
     }
 
@@ -282,17 +372,38 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         ContainerRowInputNodeConfiguration config = new ContainerRowInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
-        m_useTemplateAsSpec.setSelected(config.getUseTemplateAsSpec());
+        m_deriveTableSpecFromRuntime.setSelected(!config.getUseTemplateAsSpec());
+        m_tableSpecAccordingToTemplate.setSelected(config.getUseTemplateAsSpec());
 
         JsonValue configuredTemplateRow = config.getTemplateRow();
         m_templateTableView.setDataTable(mapToTable(configuredTemplateRow));
         m_templateRowJson = configuredTemplateRow;
 
+        MissingColumnHandling missingColumnHandling = config.getMissingColumnHandling();
+        if (missingColumnHandling == MissingColumnHandling.FILL_WITH_MISSING_VALUE) {
+            m_fillMissingColumnsWithMissingValues.setSelected(true);
+        } else if (missingColumnHandling == MissingColumnHandling.IGNORE) {
+            m_ignoreMissingColumnsInOutput.setSelected(true);
+        } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
+            m_failWhenColumnsAreMissing.setSelected(true);
+        } else {
+            // Exception serves as a reminder for future devs, in case a new enum has been added without being handled
+            throw new RuntimeException("Unhandled MissingColumndHandling enum!");
+        }
+
+        if (config.getAppendSuperfluousColumns()) {
+            m_appendSuperfluousColumns.setSelected(true);
+        } else {
+            m_ignoreSuperfluousColumns.setSelected(true);
+        }
+
+        m_acceptMissingValues.setSelected(config.getAcceptMissingValues());
+
         if (inputTable == null) {
             setNoInputTableState();
         } else {
             m_inputTableJson = mapToJson(inputTable);
-            setInputTablePresentState(inputTable);
+            setInputTablePresentState();
         }
     }
 
@@ -300,18 +411,11 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_warningLabel.setForeground(Color.BLACK);
         m_warningLabel.setText("No input table connected.");
         m_createTemplateRowButton.setEnabled(false);
-        m_useRowNumber.setEnabled(false);
     }
 
-    private void setInputTablePresentState(final BufferedDataTable inputTable) {
+    private void setInputTablePresentState() {
         m_warningLabel.setText("");
         m_createTemplateRowButton.setEnabled(true);
-
-        int size = (int) inputTable.size();
-        SpinnerNumberModel numberModel = new SpinnerNumberModel(0, 0, size - 1, 1);
-        m_useRowNumber.setModel(numberModel);
-        m_useRowNumber.setPreferredSize(new Dimension(100, 20));
-        m_useRowNumber.setEnabled(true);
     }
 
     private static DataTable mapToTable(final JsonValue configuredTemplateRow) {
