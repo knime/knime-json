@@ -46,23 +46,24 @@
  * History
  *   Feb 14, 2019 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container.input.row;
+package org.knime.json.node.container.mappers;
 
 /**
  * Strategy enum for how to handle missing columns in the input of the Container Input (Row) node,
  * compared to a configured template row.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 3.8
  */
 public enum MissingColumnHandling {
 
     /**
-     * Fill missing column with missing value.
+     * Fill missing columns with missing value.
      */
     FILL_WITH_MISSING_VALUE("Fill with missing value"),
 
     /**
-     * Ignore missing columns in output
+     * Ignore missing columns in output.
      */
     IGNORE("Ignore"),
 
@@ -78,13 +79,20 @@ public enum MissingColumnHandling {
     }
 
     /**
-     * @return Name of the handling strategy
+     * Returns the name of the handling strategy.
+     *
+     * @return the name of the handling strategy
      */
-    String getName() {
+    public String getName() {
         return m_name;
     }
 
-    static String[] getAllNames() {
+    /**
+     * Returns the names of all the handling strategies.
+     *
+     * @return the names of all the handling strategies
+     */
+    public static String[] getAllNames() {
         MissingColumnHandling[] allHandlings = values();
         int size = allHandlings.length;
         String[] allNames = new String[size];

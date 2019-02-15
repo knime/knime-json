@@ -84,6 +84,7 @@ import org.knime.core.node.dialog.ValueControlledDialogPane;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.tableview.TableView;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
+import org.knime.json.node.container.mappers.MissingColumnHandling;
 
 /**
  * Dialog for the Container Input (Row) node.
