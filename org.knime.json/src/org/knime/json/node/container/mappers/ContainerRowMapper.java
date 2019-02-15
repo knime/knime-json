@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -64,6 +65,7 @@ import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
@@ -111,7 +113,7 @@ public class ContainerRowMapper {
         CheckUtils.checkSettingNotNull(input, "Can not map null to a data table");
 
         BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(input));
-        dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), createDataCells(input, exec)));
+        dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), parseDataCellsBasedOnTypes(input, exec)));
         dataContainer.close();
         return dataContainer.getTable();
     }
@@ -120,7 +122,7 @@ public class ContainerRowMapper {
      * Converts a JsonValue input containing key value pairs to a data table spec, where the column names of the spec
      * are the keys of the json input and the column types are inferred from the values of each pair.
      *
-     * @param input json value
+     * @param input JsonValue representing a data table row
      * @return a {@link DataTableSpec} of the input
      * @throws InvalidSettingsException if the input is not well formed
      */
@@ -170,8 +172,8 @@ public class ContainerRowMapper {
         return columnType;
     }
 
-    private static DataCell[] createDataCells(final JsonValue input, final ExecutionContext exec)
-        throws InvalidSettingsException {
+    private static DataCell[] parseDataCellsBasedOnTypes(final JsonValue input, final ExecutionContext exec)
+            throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
 
         int numberOfColumns = jsonRow.size();
@@ -189,6 +191,99 @@ public class ContainerRowMapper {
             i++;
         }
         return dataCells;
+    }
+
+    /**
+     * Converts a JsonValue input containing key value pairs to a single row table where the key of each pair is the
+     * column name and the value the corresponding cell value. The each column in the input will be parsed according
+     * to the given row specification.
+     * <br>
+     * <br>
+     * Only simple JsonValues are allowed. JSON Arrays and JSON objects will throw InvalidSettingsException.
+     *
+     * @param input JsonValue representing a data table row
+     * @param templateRowSpec the template row specification
+     * @param missingColumnHandling the strategy for handling missing columns in the input
+     * @param exec the execution context
+     * @return a single row data table representing the input and parsed according to the row specification
+     * @throws InvalidSettingsException if input is null
+     */
+    public static BufferedDataTable toDataTable(
+            final JsonValue input,
+            final DataTableSpec templateRowSpec,
+            final MissingColumnHandling missingColumnHandling,
+            final ExecutionContext exec) throws InvalidSettingsException {
+        CheckUtils.checkSettingNotNull(input, "Can not map null to a data table");
+
+        DataTableSpec rowSpecification = toTableSpec(input, templateRowSpec, missingColumnHandling);
+        BufferedDataContainer dataContainer = exec.createDataContainer(rowSpecification);
+        DataCell[] dataCells = createDataCells(input, rowSpecification, exec);
+        dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), dataCells));
+        dataContainer.close();
+        return dataContainer.getTable();
+    }
+
+    /**
+     * Creates a {@link DataTableSpec} according to a template specification and an input.
+     *
+     * If the input does not contain all the columns specified in the template specification, the parameter
+     * MissingColumnHandling decides whether the specification should remain equal to the template specification,
+     * if the missing columns should be ignored and removed or if an error should be thrown.
+     *
+     * @param input JsonValue representing a data table row
+     * @param templateRowSpec the template row specification
+     * @param missingColumnHandling the strategy for handling missing columns in the input
+     * @return a {@link DataTableSpec} of the input
+     * @throws InvalidSettingsException if the input is not well formed
+     */
+    public static DataTableSpec toTableSpec(
+            final JsonValue input,
+            final DataTableSpec templateRowSpec,
+            final MissingColumnHandling missingColumnHandling) throws InvalidSettingsException {
+        CheckUtils.checkSettingNotNull(input, "Can not map null to a data table spec");
+
+        Map<String, Object> jsonRow = parseJsonToMap(input);
+        ColumnRearranger columnRearranger = new ColumnRearranger(templateRowSpec);
+
+        for (int i = 0; i < templateRowSpec.getNumColumns(); i++) {
+            DataColumnSpec columnSpec = templateRowSpec.getColumnSpec(i);
+            String columnName = columnSpec.getName();
+            if (!jsonRow.containsKey(columnName)) {
+                if (missingColumnHandling == MissingColumnHandling.IGNORE) {
+                    columnRearranger.remove(columnName);
+                } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
+                    throw new InvalidSettingsException("Invalid input. The input must have the exact same specification"
+                        + " as the template row.");
+                }
+            }
+        }
+
+        return columnRearranger.createSpec();
+    }
+
+    private static DataCell[] createDataCells(
+            final JsonValue input,
+            final DataTableSpec rowSpec,
+            final ExecutionContext exec)
+        throws InvalidSettingsException {
+        Map<String, Object> jsonRow = parseJsonToMap(input);
+
+        DataCellFactory factory = new DataCellFactory(exec);
+        List<DataCell> dataCellList = new ArrayList<>();
+        for (int i = 0; i < rowSpec.getNumColumns(); i++) {
+            DataColumnSpec columnSpec = rowSpec.getColumnSpec(i);
+            String columnName = columnSpec.getName();
+            if (jsonRow.containsKey(columnName)) {
+                Object jsonCell = jsonRow.get(columnName);
+                DataType columnType = columnSpec.getType();
+                dataCellList.add(factory.createDataCellOfType(columnType, jsonCell.toString()));
+            } else {
+                dataCellList.add(DataType.getMissingCell());
+            }
+        }
+
+        DataCell[] result = new DataCell[dataCellList.size()];
+        return dataCellList.toArray(result);
     }
 
     private static Map<String, Object> parseJsonToMap(final JsonValue input)throws InvalidSettingsException {

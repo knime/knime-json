@@ -71,6 +71,8 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.time.localdate.LocalDateCellFactory;
+import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
@@ -81,6 +83,7 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 import org.knime.json.node.container.DataTableAssert;
+import org.knime.json.node.container.mappers.BufferedDataTableToContainerTableTest.TestBufferedDataTableBuilder;
 import org.knime.json.util.JSONUtil;
 
 /**
@@ -321,6 +324,153 @@ public class ContainerRowMapperTest {
         DataType[] expectedColumnTypes =
             new DataType[]{LongCell.TYPE, BooleanCell.TYPE, StringCell.TYPE, DoubleCell.TYPE};
         DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+    }
+
+    /**
+     * Tests that a row is parsed according to the types of a template row.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRowIsParsedAccordingToTemplateWhenPresent() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("string-column", "local-date-column")
+                .withColumnTypes(StringCell.TYPE, LocalDateCellFactory.TYPE)
+                .withTableRow(new StringCell("template"), LocalDateCellFactory.create("1987-01-21"))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("string-column", "2018-02-01")
+                .withStringObject("local-date-column", "2018-01-31")
+                .build();
+
+        BufferedDataTable dataTable =
+            ContainerRowMapper.toDataTable(
+                input,
+                templateRow.getDataTableSpec(),
+                MissingColumnHandling.FILL_WITH_MISSING_VALUE,
+                testExec
+            );
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"string-column", "local-date-column"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, LocalDateCellFactory.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(
+                testExec,
+                row,
+                new StringCell("2018-02-01"), LocalDateCellFactory.create("2018-01-31")
+            );
+        }
+    }
+
+    /**
+     * Tests that missing columns are parsed as missing values.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMissingColumnsShouldBeReplacedByMissingValues() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("A", "B")
+                .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                .withTableRow(new StringCell("a"), new IntCell(1))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("A", "input string")
+                .build();
+
+        MissingColumnHandling missingColumnHandling = MissingColumnHandling.FILL_WITH_MISSING_VALUE;
+
+        BufferedDataTable dataTable =
+            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), missingColumnHandling, testExec);
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "B"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, IntCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, new StringCell("input string"), DataType.getMissingCell());
+        }
+    }
+
+    /**
+     * Tests that missing columns are ignored in the output.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMissingColumnsShouldBeIgnoredInOutput() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("A", "B")
+                .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                .withTableRow(new StringCell("a"), new IntCell(1))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("A", "input string")
+                .build();
+
+        MissingColumnHandling missingColumnHandling = MissingColumnHandling.IGNORE;
+
+        BufferedDataTable dataTable =
+                ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), missingColumnHandling, testExec);
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, new StringCell("input string"));
+        }
+    }
+
+    /**
+     * Tests that an exception is thrown when missing columns are expected to fail.
+     *
+     * @throws Exception
+     */
+    @Test(expected = InvalidSettingsException.class)
+    public void testMissingColumnsShouldThrowException() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("A", "B")
+                .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                .withTableRow(new StringCell("a"), new IntCell(1))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("A", "input string")
+                .build();
+
+        MissingColumnHandling missingColumnHandling = MissingColumnHandling.FAIL;
+        ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), missingColumnHandling, testExec);
     }
 
     private class JsonValueBuilder {

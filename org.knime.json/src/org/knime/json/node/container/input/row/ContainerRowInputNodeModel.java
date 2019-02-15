@@ -69,6 +69,8 @@ import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerRowMapper;
+import org.knime.json.node.container.mappers.ContainerTableMapper;
+import org.knime.json.node.container.mappers.MissingColumnHandling;
 
 /**
  * The model implementation of the Container Input (Row) node.
@@ -97,13 +99,33 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
             throws Exception {
-        JsonValue externalServiceInput = getExternalInput();
-        if (externalServiceInput != null) {
-            BufferedDataTable dataTable = ContainerRowMapper.toDataTable(externalServiceInput, exec);
-            return new BufferedDataTable[] {dataTable};
+        JsonValue externalInput = getExternalInput();
+
+        if (externalInput != null) {
+            if (m_configuration.getUseTemplateAsSpec()) {
+                BufferedDataTable[] templateRow = templateRow(exec);
+                DataTableSpec templateRowSpec = templateRow[0].getDataTableSpec();
+                MissingColumnHandling missingColumnHandling = m_configuration.getMissingColumnHandling();
+
+                BufferedDataTable dataTable =
+                    ContainerRowMapper.toDataTable(externalInput, templateRowSpec, missingColumnHandling, exec);
+
+                return new BufferedDataTable[] {dataTable};
+            } else {
+                return new BufferedDataTable[] {ContainerRowMapper.toDataTable(externalInput, exec)};
+            }
         } else {
-            return inData;
+            if (inData[0] != null) {
+                return inData;
+            } else {
+                setWarningMessage("Configured template row is output");
+                return templateRow(exec);
+            }
         }
+    }
+
+    private BufferedDataTable[] templateRow(final ExecutionContext exec) throws InvalidSettingsException {
+        return ContainerTableMapper.toBufferedDataTable(m_configuration.getTemplateRow(), exec);
     }
 
     /**
@@ -112,12 +134,26 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         JsonValue externalInput = getExternalInput();
+        DataTableSpec templateRowSpec = ContainerTableMapper.toTableSpec(m_configuration.getTemplateRow());
         if (externalInput != null) {
-            final DataTableSpec tableSpec = ContainerRowMapper.toTableSpec(externalInput);
-            return new DataTableSpec[]{tableSpec};
+            if (m_configuration.getUseTemplateAsSpec()) {
+                return new DataTableSpec[] {getTemplateTableSpec(externalInput, templateRowSpec)};
+            } else {
+                return new DataTableSpec[]{ContainerRowMapper.toTableSpec(externalInput)};
+            }
         } else {
-            return inSpecs;
+            if (inSpecs[0] != null) {
+                return inSpecs;
+            } else {
+                return new DataTableSpec[] {templateRowSpec};
+            }
         }
+    }
+
+    private DataTableSpec getTemplateTableSpec(final JsonValue externalInput, final DataTableSpec templateRowSpec)
+            throws InvalidSettingsException {
+        return
+            ContainerRowMapper.toTableSpec(externalInput, templateRowSpec, m_configuration.getMissingColumnHandling());
     }
 
     private JsonValue getExternalInput() throws InvalidSettingsException {
