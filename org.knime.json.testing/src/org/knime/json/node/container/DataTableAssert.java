@@ -74,6 +74,25 @@ public class DataTableAssert {
     public static void assertDataRow(
             final ExecutionContext exec,
             final DataRow actualDataRow,
+            final DataCell... expectedDataCells) {
+        assertEquals("Actual row has unexpected size", expectedDataCells.length, actualDataRow.getNumCells());
+        for (int i = 0; i < expectedDataCells.length; i++) {
+            DataCell actualDataCell = actualDataRow.getCell(i);
+            DataCell expectedDataCell = expectedDataCells[i];
+            assertEquals("Cells in column " + i + " missmatch", expectedDataCell, actualDataCell);
+        }
+    }
+
+    /**
+     * Asserts that a data row contains all the provided cells.
+     *
+     * @param exec execution context
+     * @param actualDataRow the actual data row
+     * @param expectedDataCells the expected cells
+     */
+    public static void assertDataRow(
+            final ExecutionContext exec,
+            final DataRow actualDataRow,
             final Object... expectedDataCells) {
         assertEquals("Actual row has unexpected size", expectedDataCells.length, actualDataRow.getNumCells());
         for (int i = 0; i < expectedDataCells.length; i++) {
