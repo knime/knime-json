@@ -123,7 +123,7 @@ public class DataTableAssert {
      */
     public static void assertColumnNames(final DataTableSpec dataTableSpec, final String... expectedNames) {
         String[] actualNames = dataTableSpec.getColumnNames();
-        assertEquals("The number of columns differ", actualNames.length, expectedNames.length);
+        assertEquals("The number of column names differ", expectedNames.length, actualNames.length);
 
         for (int i = 0; i < actualNames.length; i++) {
             assertEquals("Column names at index " + i + " should be equal", expectedNames[i], actualNames[i]);
@@ -137,7 +137,7 @@ public class DataTableAssert {
      * @param expectedTypes expected types
      */
     public static void assertColumnTypes(final DataTableSpec dataTableSpec, final DataType... expectedTypes) {
-        assertEquals("The number of columns differ", dataTableSpec.getNumColumns(), expectedTypes.length);
+        assertEquals("The number of column types differ", expectedTypes.length, dataTableSpec.getNumColumns());
 
         for (int i = 0; i < dataTableSpec.getNumColumns(); i++) {
             assertEquals("Unexpected type in column " + i, expectedTypes[i], dataTableSpec.getColumnSpec(i).getType());
