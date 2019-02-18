@@ -59,6 +59,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.json.node.container.mappers.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.MissingColumnHandling;
 import org.knime.json.util.JSONUtil;
 
@@ -67,7 +68,7 @@ import org.knime.json.util.JSONUtil;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-final class ContainerRowInputNodeConfiguration {
+final public class ContainerRowInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "input";
     private static final String DEFAULT_DESCRIPTION = "";
@@ -88,6 +89,9 @@ final class ContainerRowInputNodeConfiguration {
     private boolean m_appendSuperfluousColumns;
     private boolean m_acceptMissingValues;
 
+    /**
+     * Default constructor
+     */
     public ContainerRowInputNodeConfiguration() {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
@@ -296,6 +300,11 @@ final class ContainerRowInputNodeConfiguration {
         return "\"" + m_parameterName + "\"";
     }
 
+    /**
+     * Returns the missing column handling.
+     *
+     * @return the missing column handling
+     */
     MissingColumnHandling getMissingColumnHandling() {
         return m_missingColumnHandling;
     }
@@ -318,9 +327,15 @@ final class ContainerRowInputNodeConfiguration {
         m_missingColumnHandling = result;
     }
 
+    /**
+     * Returns the append superfluous column flag
+     *
+     * @return the append superfluous column flag
+     */
     boolean getAppendSuperfluousColumns() {
         return m_appendSuperfluousColumns;
     }
+
 
     void setAppendSuperfluousColumns(final boolean appendSuperfluousColumns) {
         m_appendSuperfluousColumns = appendSuperfluousColumns;
@@ -330,7 +345,23 @@ final class ContainerRowInputNodeConfiguration {
         m_acceptMissingValues = selected;
     }
 
+    /**
+     * Returns the accept missing values flag.
+     *
+     * @return the accept missing values flag
+     */
     boolean getAcceptMissingValues() {
         return m_acceptMissingValues;
     }
+
+    /**
+     * Creates an input handling object from the relevant properties of this configuration object.
+     *
+     * @return an input handling object
+     */
+    public ContainerRowMapperInputHandling createMapperInputHandling() {
+        return
+            new ContainerRowMapperInputHandling(m_missingColumnHandling, m_appendSuperfluousColumns, m_acceptMissingValues);
+    }
+
 }

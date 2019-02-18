@@ -61,8 +61,10 @@ import javax.json.JsonValue;
 import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataTableSpecCreator;
 import org.knime.core.data.DataType;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.container.ColumnRearranger;
@@ -203,7 +205,7 @@ public class ContainerRowMapper {
      *
      * @param input JsonValue representing a data table row
      * @param templateRowSpec the template row specification
-     * @param missingColumnHandling the strategy for handling missing columns in the input
+     * @param inputHandling the strategies for handling the input
      * @param exec the execution context
      * @return a single row data table representing the input and parsed according to the row specification
      * @throws InvalidSettingsException if input is null
@@ -211,11 +213,11 @@ public class ContainerRowMapper {
     public static BufferedDataTable toDataTable(
             final JsonValue input,
             final DataTableSpec templateRowSpec,
-            final MissingColumnHandling missingColumnHandling,
+            final ContainerRowMapperInputHandling inputHandling,
             final ExecutionContext exec) throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(input, "Can not map null to a data table");
 
-        DataTableSpec rowSpecification = toTableSpec(input, templateRowSpec, missingColumnHandling);
+        DataTableSpec rowSpecification = toTableSpec(input, templateRowSpec, inputHandling);
         BufferedDataContainer dataContainer = exec.createDataContainer(rowSpecification);
         DataCell[] dataCells = createDataCells(input, rowSpecification, exec);
         dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), dataCells));
@@ -232,21 +234,35 @@ public class ContainerRowMapper {
      *
      * @param input JsonValue representing a data table row
      * @param templateRowSpec the template row specification
-     * @param missingColumnHandling the strategy for handling missing columns in the input
+     * @param inputHandling the strategies for handling the input
      * @return a {@link DataTableSpec} of the input
      * @throws InvalidSettingsException if the input is not well formed
      */
     public static DataTableSpec toTableSpec(
             final JsonValue input,
             final DataTableSpec templateRowSpec,
-            final MissingColumnHandling missingColumnHandling) throws InvalidSettingsException {
+            final ContainerRowMapperInputHandling inputHandling) throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(input, "Can not map null to a data table spec");
 
         Map<String, Object> jsonRow = parseJsonToMap(input);
-        ColumnRearranger columnRearranger = new ColumnRearranger(templateRowSpec);
 
-        for (int i = 0; i < templateRowSpec.getNumColumns(); i++) {
-            DataColumnSpec columnSpec = templateRowSpec.getColumnSpec(i);
+        DataTableSpec result = templateRowSpec;
+        result = handleMissingColumns(result, inputHandling.missingColumnHandling(), jsonRow);
+        if (inputHandling.appendSuperfluousColumns()) {
+            result = appendSuperfluousColumns(jsonRow, result);
+        }
+
+        return result;
+    }
+
+    private static DataTableSpec handleMissingColumns(
+            final DataTableSpec spec,
+            final MissingColumnHandling missingColumnHandling,
+            final Map<String, Object> jsonRow) throws InvalidSettingsException {
+        ColumnRearranger columnRearranger = new ColumnRearranger(spec);
+
+        for (int i = 0; i < spec.getNumColumns(); i++) {
+            DataColumnSpec columnSpec = spec.getColumnSpec(i);
             String columnName = columnSpec.getName();
             if (!jsonRow.containsKey(columnName)) {
                 if (missingColumnHandling == MissingColumnHandling.IGNORE) {
@@ -259,6 +275,22 @@ public class ContainerRowMapper {
         }
 
         return columnRearranger.createSpec();
+    }
+
+    private static DataTableSpec appendSuperfluousColumns(
+            final Map<String, Object> jsonRow,
+            final DataTableSpec spec) throws InvalidSettingsException {
+        DataTableSpecCreator dataTableSpecCreator = new DataTableSpecCreator(spec);
+
+        for (Entry<String, Object> entry : jsonRow.entrySet()) {
+            String columnName = entry.getKey();
+            if (!spec.containsName(columnName)) {
+                DataColumnSpec columnSpec =
+                    new DataColumnSpecCreator(columnName, inferColumnTypeFromCellObject(entry.getValue())).createSpec();
+                dataTableSpecCreator.addColumns(columnSpec);
+            }
+        }
+        return dataTableSpecCreator.createSpec();
     }
 
     private static DataCell[] createDataCells(

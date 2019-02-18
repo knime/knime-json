@@ -348,11 +348,14 @@ public class ContainerRowMapperTest {
                 .withStringObject("local-date-column", "2018-01-31")
                 .build();
 
+        ContainerRowMapperInputHandling containerRowInputHandling =
+            new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE, false, false);
+
         BufferedDataTable dataTable =
             ContainerRowMapper.toDataTable(
                 input,
                 templateRow.getDataTableSpec(),
-                MissingColumnHandling.FILL_WITH_MISSING_VALUE,
+                containerRowInputHandling,
                 testExec
             );
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
@@ -393,10 +396,11 @@ public class ContainerRowMapperTest {
                 .withStringObject("A", "input string")
                 .build();
 
-        MissingColumnHandling missingColumnHandling = MissingColumnHandling.FILL_WITH_MISSING_VALUE;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE, false, false);
 
         BufferedDataTable dataTable =
-            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), missingColumnHandling, testExec);
+            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A", "B"};
@@ -431,10 +435,11 @@ public class ContainerRowMapperTest {
                 .withStringObject("A", "input string")
                 .build();
 
-        MissingColumnHandling missingColumnHandling = MissingColumnHandling.IGNORE;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.IGNORE, false, false);
 
         BufferedDataTable dataTable =
-                ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), missingColumnHandling, testExec);
+                ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A"};
@@ -469,8 +474,94 @@ public class ContainerRowMapperTest {
                 .withStringObject("A", "input string")
                 .build();
 
-        MissingColumnHandling missingColumnHandling = MissingColumnHandling.FAIL;
-        ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), missingColumnHandling, testExec);
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, false);
+
+        ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+    }
+
+    /**
+     * Tests that superfluous columns are appended at the end.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSuperfluousColumnsShouldBeAppendedAtTheEnd() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("A", "B")
+                .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                .withTableRow(new StringCell("a"), new IntCell(1))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("A", "input string")
+                .withStringObject("superfluous", "append me at the end!")
+                .withIntObject("B", 444)
+                .build();
+
+        boolean appendSuperfluousColumns = true;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+            new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
+
+        BufferedDataTable dataTable =
+            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "B", "superfluous"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, IntCell.TYPE, StringCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, "input string", 444, "append me at the end!");
+        }
+    }
+
+    /**
+     * Tests that superfluous columns are ignored.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSuperfluousColumnsShouldBeIgnored() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("A", "B")
+                .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                .withTableRow(new StringCell("a"), new IntCell(1))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("A", "input string")
+                .withStringObject("superfluous", "ignore me!")
+                .withIntObject("B", 444)
+                .build();
+
+        boolean appendSuperfluousColumns = false;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
+
+        BufferedDataTable dataTable =
+                ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "B"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, IntCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, "input string", 444);
+        }
     }
 
     private class JsonValueBuilder {

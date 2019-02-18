@@ -68,9 +68,9 @@ import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
 import org.knime.json.node.container.io.FilePathOrURLReader;
+import org.knime.json.node.container.mappers.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.ContainerRowMapper;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
-import org.knime.json.node.container.mappers.MissingColumnHandling;
 
 /**
  * The model implementation of the Container Input (Row) node.
@@ -105,10 +105,9 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
             if (m_configuration.getUseTemplateAsSpec()) {
                 BufferedDataTable[] templateRow = templateRow(exec);
                 DataTableSpec templateRowSpec = templateRow[0].getDataTableSpec();
-                MissingColumnHandling missingColumnHandling = m_configuration.getMissingColumnHandling();
-
+                ContainerRowMapperInputHandling containerRowInputHandling = m_configuration.createMapperInputHandling();
                 BufferedDataTable dataTable =
-                    ContainerRowMapper.toDataTable(externalInput, templateRowSpec, missingColumnHandling, exec);
+                    ContainerRowMapper.toDataTable(externalInput, templateRowSpec, containerRowInputHandling, exec);
 
                 return new BufferedDataTable[] {dataTable};
             } else {
@@ -152,8 +151,9 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
 
     private DataTableSpec getTemplateTableSpec(final JsonValue externalInput, final DataTableSpec templateRowSpec)
             throws InvalidSettingsException {
+        ContainerRowMapperInputHandling containerRowInputHandling = m_configuration.createMapperInputHandling();
         return
-            ContainerRowMapper.toTableSpec(externalInput, templateRowSpec, m_configuration.getMissingColumnHandling());
+            ContainerRowMapper.toTableSpec(externalInput, templateRowSpec, containerRowInputHandling);
     }
 
     private JsonValue getExternalInput() throws InvalidSettingsException {
