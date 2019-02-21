@@ -550,7 +550,7 @@ public class ContainerRowMapperTest {
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
 
         BufferedDataTable dataTable =
-                ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A", "B"};
@@ -562,6 +562,87 @@ public class ContainerRowMapperTest {
         for (DataRow row : dataTable) {
             DataTableAssert.assertDataRow(testExec, row, "input string", 444);
         }
+    }
+
+    /**
+     * Tests that null values in the input are accepted and cast to missing values, when that option is selected.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testNullValuesShouldBeAccepted() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+                new TestBufferedDataTableBuilder()
+                    .withColumnNames("A", "B")
+                    .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                    .withTableRow(new StringCell("a"), new IntCell(1))
+                    .build(testExec);
+
+        JsonValue input =
+                new JsonValueBuilder()
+                    .withNullObject("A")
+                    .withIntObject("B", 444)
+                    .build();
+
+        boolean acceptMissingValues = true;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, acceptMissingValues);
+
+        BufferedDataTable dataTable =
+                ContainerRowMapper.toDataTable(
+                    input,
+                    templateRow.getDataTableSpec(),
+                    containerRowInputHandling,
+                    testExec
+                );
+
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "B"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, IntCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, "missing value", 444);
+        }
+    }
+
+    /**
+     * Tests that null values in the input are not accepted and throws an exception, when that option is selected.
+     *
+     * @throws Exception
+     */
+    @Test(expected = InvalidSettingsException.class)
+    public void testNullValuesShouldFail() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+                new TestBufferedDataTableBuilder()
+                    .withColumnNames("A", "B")
+                    .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                    .withTableRow(new StringCell("a"), new IntCell(1))
+                    .build(testExec);
+
+        JsonValue input =
+                new JsonValueBuilder()
+                    .withNullObject("A")
+                    .withIntObject("B", 444)
+                    .build();
+
+        boolean acceptMissingValues = true;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, !acceptMissingValues);
+
+        ContainerRowMapper.toDataTable(
+            input,
+            templateRow.getDataTableSpec(),
+            containerRowInputHandling,
+            testExec
+        );
     }
 
     private class JsonValueBuilder {
@@ -616,6 +697,11 @@ public class ContainerRowMapperTest {
         public JsonValueBuilder withJsonPersonObject() {
             JsonObject personObject = m_builder.add("name", "Flodve").add("age", 32).build();
             m_builder.add("person", personObject);
+            return this;
+        }
+
+        JsonValueBuilder withNullObject(final String key) {
+            m_builder.addNull(key);
             return this;
         }
 

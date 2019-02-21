@@ -219,7 +219,7 @@ public class ContainerRowMapper {
 
         DataTableSpec rowSpecification = toTableSpec(input, templateRowSpec, inputHandling);
         BufferedDataContainer dataContainer = exec.createDataContainer(rowSpecification);
-        DataCell[] dataCells = createDataCells(input, rowSpecification, exec);
+        DataCell[] dataCells = createDataCells(input, rowSpecification, inputHandling, exec);
         dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), dataCells));
         dataContainer.close();
         return dataContainer.getTable();
@@ -296,6 +296,7 @@ public class ContainerRowMapper {
     private static DataCell[] createDataCells(
             final JsonValue input,
             final DataTableSpec rowSpec,
+            final ContainerRowMapperInputHandling inputHandling,
             final ExecutionContext exec)
         throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
@@ -306,9 +307,8 @@ public class ContainerRowMapper {
             DataColumnSpec columnSpec = rowSpec.getColumnSpec(i);
             String columnName = columnSpec.getName();
             if (jsonRow.containsKey(columnName)) {
-                Object jsonCell = jsonRow.get(columnName);
                 DataType columnType = columnSpec.getType();
-                dataCellList.add(factory.createDataCellOfType(columnType, jsonCell.toString()));
+                dataCellList.add(parseDataCell(jsonRow.get(columnName), factory, columnType, inputHandling));
             } else {
                 dataCellList.add(DataType.getMissingCell());
             }
@@ -316,6 +316,23 @@ public class ContainerRowMapper {
 
         DataCell[] result = new DataCell[dataCellList.size()];
         return dataCellList.toArray(result);
+    }
+
+    private static DataCell parseDataCell(
+            final Object jsonCell,
+            final DataCellFactory factory,
+            final DataType columnType,
+            final ContainerRowMapperInputHandling inputHandling) throws InvalidSettingsException {
+        if (jsonCell == null) {
+            if (inputHandling.acceptMissingValues()) {
+                return DataType.getMissingCell();
+            } else {
+                throw new InvalidSettingsException(
+                    "Invalid input, the node has been configured to not accept null values in the input");
+            }
+        } else {
+            return factory.createDataCellOfType(columnType, jsonCell.toString());
+        }
     }
 
     private static Map<String, Object> parseJsonToMap(final JsonValue input)throws InvalidSettingsException {
