@@ -80,6 +80,7 @@ import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -114,8 +115,10 @@ public class ContainerRowMapper {
             throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(input, "Can not map null to a data table");
 
-        BufferedDataContainer dataContainer = exec.createDataContainer(toTableSpec(input));
-        dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), parseDataCellsBasedOnTypes(input, exec)));
+        DataTableSpec rowSpecification = toTableSpec(input);
+        BufferedDataContainer dataContainer = exec.createDataContainer(rowSpecification);
+        DataCell[] dataCells = createDataCells(input, rowSpecification, exec);
+        dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), dataCells));
         dataContainer.close();
         return dataContainer.getTable();
     }
@@ -169,30 +172,50 @@ public class ContainerRowMapper {
         } else if (cellValue instanceof BigInteger){
             throw new InvalidSettingsException("Numeric integer values larger than 2^64 are not supported");
         } else if (cellValue instanceof Map) {
-            throw new InvalidSettingsException("JSON objects are not supported");
+            // this indicates that the cell has a json object structure and should be parsed as a json string
+            columnType = StringCell.TYPE;
         }
         return columnType;
     }
 
-    private static DataCell[] parseDataCellsBasedOnTypes(final JsonValue input, final ExecutionContext exec)
-            throws InvalidSettingsException {
+    private static DataCell[] createDataCells(
+            final JsonValue input,
+            final DataTableSpec rowSpec,
+            final ExecutionContext exec) throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
 
-        int numberOfColumns = jsonRow.size();
-        DataCell[] dataCells = new DataCell[numberOfColumns];
-
-        int i = 0;
-        for (Entry<String, Object> jsonCell : jsonRow.entrySet()) {
-            Object cellValue = jsonCell.getValue();
-            DataType columnType = inferColumnTypeFromCellObject(cellValue);
-
-            DataCellFactory factory = new DataCellFactory(exec);
-            DataCell dataCell = factory.createDataCellOfType(columnType, cellValue.toString());
-
-            dataCells[i] = dataCell;
-            i++;
+        DataCellFactory factory = new DataCellFactory(exec);
+        List<DataCell> dataCells = new ArrayList<>();
+        for (int i = 0; i < rowSpec.getNumColumns(); i++) {
+            DataColumnSpec columnSpec = rowSpec.getColumnSpec(i);
+            String columnName = columnSpec.getName();
+            if (jsonRow.containsKey(columnName)) {
+                DataType columnType = columnSpec.getType();
+                Object jsonCell = jsonRow.get(columnName);
+                String stringCell = getStringRepresentation(jsonCell);
+                DataCell dataCell = factory.createDataCellOfType(columnType, stringCell);
+                dataCells.add(dataCell);
+            } else {
+                dataCells.add(DataType.getMissingCell());
+            }
         }
-        return dataCells;
+
+        DataCell[] result = new DataCell[dataCells.size()];
+        return dataCells.toArray(result);
+    }
+
+    private static String getStringRepresentation(final Object jsonCell) throws InvalidSettingsException {
+        String result = jsonCell.toString();
+        if (jsonCell instanceof Map) { // checks if the cell is a json object and can be parsed to its string value
+            @SuppressWarnings("unchecked")
+            Map<String, Object> jsonMap = (Map<String, Object>) jsonCell;
+            try {
+                result = OBJECT_MAPPER.writeValueAsString(jsonMap);
+            } catch (JsonProcessingException e) {
+                throw new InvalidSettingsException("An error occured while parsing the input", e);
+            }
+        }
+        return result;
     }
 
     /**
@@ -297,8 +320,7 @@ public class ContainerRowMapper {
             final JsonValue input,
             final DataTableSpec rowSpec,
             final ContainerRowMapperInputHandling inputHandling,
-            final ExecutionContext exec)
-        throws InvalidSettingsException {
+            final ExecutionContext exec) throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
 
         DataCellFactory factory = new DataCellFactory(exec);
@@ -331,7 +353,8 @@ public class ContainerRowMapper {
                     "Invalid input, the node has been configured to not accept null values in the input");
             }
         } else {
-            return factory.createDataCellOfType(columnType, jsonCell.toString());
+            String stringCell = getStringRepresentation(jsonCell);
+            return factory.createDataCellOfType(columnType, stringCell);
         }
     }
 

@@ -288,16 +288,33 @@ public class ContainerRowMapperTest {
     }
 
     /**
-     * Tests input containing an array throws an exception.
+     * Tests input containing a json object parses its string representation.
      *
      * @throws Exception
      */
-    @Test(expected = InvalidSettingsException.class)
-    public void testObjectValueIsMappedToItsStringRepresentation() throws Exception {
-        JsonValue input = new JsonValueBuilder().withJsonPersonObject().build();
+    @Test
+    public void testJsonObjectValueIsMappedToItsStringRepresentation() throws Exception {
+        JsonValue input =
+                new JsonValueBuilder()
+                    .withStringObject("string", "abc")
+                    .withJsonPersonObject()
+                    .withBooleanObject("boolean", true)
+                    .build();
 
         ExecutionContext testExec = getTestExecutionCtx();
-        ContainerRowMapper.toDataTable(input, testExec);
+        BufferedDataTable dataTable = ContainerRowMapper.toDataTable(input, testExec);
+
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"string", "person", "boolean"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, StringCell.TYPE, BooleanCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, "abc", "{\"name\":\"Flodve\",\"age\":32}", true);
+        }
     }
 
     /**
@@ -648,12 +665,13 @@ public class ContainerRowMapperTest {
     private class JsonValueBuilder {
 
         private final JsonObjectBuilder m_builder;
+        private final JsonBuilderFactory m_factory;
         private final JsonArrayBuilder m_arrayBuilder;
 
         JsonValueBuilder() {
-            JsonBuilderFactory factory = Json.createBuilderFactory(null);
-            m_builder = factory.createObjectBuilder();
-            m_arrayBuilder = factory.createArrayBuilder();
+            m_factory = Json.createBuilderFactory(null);
+            m_builder = m_factory.createObjectBuilder();
+            m_arrayBuilder = m_factory.createArrayBuilder();
         }
 
         JsonValueBuilder withStringObject(final String key, final String value) {
@@ -695,7 +713,8 @@ public class ContainerRowMapperTest {
         }
 
         public JsonValueBuilder withJsonPersonObject() {
-            JsonObject personObject = m_builder.add("name", "Flodve").add("age", 32).build();
+            JsonObjectBuilder personBuilder = m_factory.createObjectBuilder();
+            JsonObject personObject = personBuilder.add("name", "Flodve").add("age", 32).build();
             m_builder.add("person", personObject);
             return this;
         }
