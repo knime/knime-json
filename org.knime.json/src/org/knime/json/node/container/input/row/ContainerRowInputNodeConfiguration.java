@@ -77,8 +77,8 @@ final public class ContainerRowInputNodeConfiguration {
     private static final boolean DEFAULT_USE_TEMPLATE_AS_SPEC = false;
     private static final MissingColumnHandling DEFAULT_MISSING_COLUMN_HANDLING =
             MissingColumnHandling.FILL_WITH_MISSING_VALUE;
-    private static final boolean DEFAULT_APPEND_SUPERFLUOUS_COLUMNS = false;
-    private static final boolean DEFAULT_ACCEPT_MISSING_VALUES = false;
+    private static final boolean DEFAULT_APPEND_SUPERFLUOUS_COLUMNS = true;
+    private static final boolean DEFAULT_ACCEPT_MISSING_VALUES = true;
 
     private String m_parameterName;
     private String m_description;
