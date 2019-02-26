@@ -332,7 +332,15 @@ public class ContainerRowMapper {
             String columnName = columnSpec.getName();
             if (jsonRow.containsKey(columnName)) {
                 DataType columnType = columnSpec.getType();
-                dataCellList.add(parseDataCell(jsonRow.get(columnName), factory, columnType, inputHandling));
+                Object jsonCell = jsonRow.get(columnName);
+                DataCell parsedDataCell = parseDataCell(jsonCell, factory, columnType, inputHandling);
+                if (parsedDataCell == null) {
+                    throw new InvalidSettingsException(
+                        "The value '" + jsonCell + "' of column '" + columnName + "' cannot be parsed to the expected '"
+                        + columnType + "' type"
+                    );
+                }
+                dataCellList.add(parsedDataCell);
             } else {
                 dataCellList.add(DataType.getMissingCell());
             }
