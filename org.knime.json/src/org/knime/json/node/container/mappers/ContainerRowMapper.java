@@ -291,8 +291,10 @@ public class ContainerRowMapper {
                 if (missingColumnHandling == MissingColumnHandling.IGNORE) {
                     columnRearranger.remove(columnName);
                 } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
-                    throw new InvalidSettingsException("Invalid input. The input must have the exact same specification"
-                        + " as the template row.");
+                    throw new InvalidSettingsException(
+                        "The injected row does not contain all the columns specified in the template."
+                        + "\nThe node is configured to fail on missing columns."
+                    );
                 }
             }
         }
@@ -350,7 +352,9 @@ public class ContainerRowMapper {
                 return DataType.getMissingCell();
             } else {
                 throw new InvalidSettingsException(
-                    "Invalid input, the node has been configured to not accept null values in the input");
+                    "The injected row contains null values."
+                    + "\nThe node is configured to not accept null in input."
+                );
             }
         } else {
             String stringCell = getStringRepresentation(jsonCell);

@@ -68,8 +68,8 @@ import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
 import org.knime.json.node.container.io.FilePathOrURLReader;
-import org.knime.json.node.container.mappers.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.ContainerRowMapper;
+import org.knime.json.node.container.mappers.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 
 /**
@@ -251,7 +251,7 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
     @Override
     public void saveCurrentValue(final NodeSettingsWO content) {
         if (m_externalValue != null) {
-            String infoMessage = "The output table has been injected from an external caller";
+            String infoMessage = "The output row has been injected from an external caller";
             content.addString("infoMessage", infoMessage);
         }
     }
