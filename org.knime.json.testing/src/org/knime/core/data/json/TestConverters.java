@@ -67,7 +67,7 @@ import org.knime.core.data.convert.datacell.JavaToDataCellConverterRegistry;
 import org.knime.core.data.convert.java.DataCellToJavaConverter;
 import org.knime.core.data.convert.java.DataCellToJavaConverterFactory;
 import org.knime.core.data.convert.java.DataCellToJavaConverterRegistry;
-import org.knime.core.data.filestore.FileStoreFactory;
+import org.knime.core.node.ExecutionContext;
 
 /**
  * Test whether the {@link DataCellToJavaConverterFactory} and {@link JavaToDataCellConverterFactory} have been created
@@ -90,7 +90,7 @@ public class TestConverters {
             .getInstance().getConverterFactories(JsonObject.class, JSONCell.TYPE).stream().findFirst();
         assertTrue(factory.isPresent());
 
-        final JavaToDataCellConverter<JsonObject> converter = factory.get().create((FileStoreFactory)null);
+        final JavaToDataCellConverter<JsonObject> converter = factory.get().create((ExecutionContext)null);
         assertNotNull(converter);
 
         final DataCell cell = converter.convert(obj);
