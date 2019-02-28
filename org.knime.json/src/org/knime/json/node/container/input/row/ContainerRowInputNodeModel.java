@@ -55,6 +55,8 @@ import java.util.Optional;
 import javax.json.JsonValue;
 
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.container.CloseableRowIterator;
+import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -114,13 +116,28 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
                 return new BufferedDataTable[] {ContainerRowMapper.toDataTable(externalInput, exec)};
             }
         } else {
-            if (inData[0] != null) {
-                return inData;
+            BufferedDataTable inputTable = inData[0];
+            if (inputTable != null) {
+                BufferedDataTable firstRowTable = createTableFromFirstRow(exec, inputTable);
+                return new BufferedDataTable[] {firstRowTable};
             } else {
                 setWarningMessage("Configured template row is output");
                 return templateRow(exec);
             }
         }
+    }
+
+    private static BufferedDataTable createTableFromFirstRow(
+            final ExecutionContext exec,
+            final BufferedDataTable inputTable) {
+        BufferedDataContainer dataContainer = exec.createDataContainer(inputTable.getDataTableSpec());
+        try (CloseableRowIterator iterator = inputTable.iterator()) {
+            if (iterator.hasNext()) {
+                dataContainer.addRowToTable(iterator.next());
+            }
+        }
+        dataContainer.close();
+        return dataContainer.getTable();
     }
 
     private BufferedDataTable[] templateRow(final ExecutionContext exec) throws InvalidSettingsException {
