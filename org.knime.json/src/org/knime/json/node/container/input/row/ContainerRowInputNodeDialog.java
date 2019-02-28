@@ -104,7 +104,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     private final JRadioButton m_validateInputAgainstTemplate;
 
     private final JRadioButton m_fillMissingColumnsWithMissingValues;
-    private final JRadioButton m_ignoreMissingColumnsInOutput;
+    private final JRadioButton m_removeMissingColumnsInOutput;
     private final JRadioButton m_failWhenColumnsAreMissing;
 
     private final JRadioButton m_appendUnknownColumns;
@@ -143,7 +143,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_templateTableView.setPreferredSize(new Dimension(250, 65));
 
         m_fillMissingColumnsWithMissingValues = new JRadioButton("Fill with missing value");
-        m_ignoreMissingColumnsInOutput = new JRadioButton("Ignore");
+        m_removeMissingColumnsInOutput = new JRadioButton("Remove");
         m_failWhenColumnsAreMissing = new JRadioButton("Fail");
 
         m_appendUnknownColumns = new JRadioButton("Append at the end of the table");
@@ -163,7 +163,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_createTemplateRowButton.setEnabled(enabled && m_inputTableJson != null);
         m_templateTableView.setEnabled(enabled);
         m_fillMissingColumnsWithMissingValues.setEnabled(enabled);
-        m_ignoreMissingColumnsInOutput.setEnabled(enabled);
+        m_removeMissingColumnsInOutput.setEnabled(enabled);
         m_failWhenColumnsAreMissing.setEnabled(enabled);
         m_appendUnknownColumns.setEnabled(enabled);
         m_ignoreUnknownColumns.setEnabled(enabled);
@@ -254,11 +254,17 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         templateRowPanel.add(m_templateTableView, gbc);
 
         gbc.gridy++;
-        templateRowPanel.add(new JLabel("Input validation:"), gbc);
+        templateRowPanel.add(new JLabel("Data validation:"), gbc);
+
+        gbc.gridy++;
+        templateRowPanel.add(m_acceptMissingValues, gbc);
+
+        gbc.gridy++;
+        templateRowPanel.add(new JLabel("Column validation:"), gbc);
 
         ButtonGroup missingColumnHandlingGroup = new ButtonGroup();
         missingColumnHandlingGroup.add(m_fillMissingColumnsWithMissingValues);
-        missingColumnHandlingGroup.add(m_ignoreMissingColumnsInOutput);
+        missingColumnHandlingGroup.add(m_removeMissingColumnsInOutput);
         missingColumnHandlingGroup.add(m_failWhenColumnsAreMissing);
         m_fillMissingColumnsWithMissingValues.setSelected(true);
 
@@ -269,7 +275,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
                 BorderFactory.createEtchedBorder(), "Missing columns"));
 
         missingColumnHandling.add(m_fillMissingColumnsWithMissingValues);
-        missingColumnHandling.add(m_ignoreMissingColumnsInOutput);
+        missingColumnHandling.add(m_removeMissingColumnsInOutput);
         missingColumnHandling.add(m_failWhenColumnsAreMissing);
 
         gbc.gridy++;
@@ -291,9 +297,6 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
 
         gbc.gridy++;
         templateRowPanel.add(unknownColumnHandling, gbc);
-
-        gbc.gridy++;
-        templateRowPanel.add(m_acceptMissingValues, gbc);
 
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 1;
@@ -349,7 +352,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
 
         if (m_fillMissingColumnsWithMissingValues.isSelected()) {
             config.setMissingColumnHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE);
-        } else if (m_ignoreMissingColumnsInOutput.isSelected()) {
+        } else if (m_removeMissingColumnsInOutput.isSelected()) {
             config.setMissingColumnHandling(MissingColumnHandling.IGNORE);
         } else if (m_failWhenColumnsAreMissing.isSelected()) {
             config.setMissingColumnHandling(MissingColumnHandling.FAIL);
@@ -401,7 +404,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         if (missingColumnHandling == MissingColumnHandling.FILL_WITH_MISSING_VALUE) {
             m_fillMissingColumnsWithMissingValues.setSelected(true);
         } else if (missingColumnHandling == MissingColumnHandling.IGNORE) {
-            m_ignoreMissingColumnsInOutput.setSelected(true);
+            m_removeMissingColumnsInOutput.setSelected(true);
         } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
             m_failWhenColumnsAreMissing.setSelected(true);
         } else {

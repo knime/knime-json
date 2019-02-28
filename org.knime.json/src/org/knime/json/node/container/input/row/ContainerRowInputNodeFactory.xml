@@ -10,9 +10,10 @@
      
  	<fullDescription>
  		<intro>
-	 		This node receives a JSON value representing a row from an external caller 
-	 		(i.e. the Call Local/Remote Workflow (Row Based) nodes or via REST) and makes it available at the output 
-	 		port.
+	 		This node receives a row from an external caller 
+			(i.e. the Call Local/Remote Workflow (Row Based) nodes or via REST) and makes it available at the output 
+	 		port. Rows are represented in the input as simple key/value maps where the keys are the column names and 
+	 		the corresponding values are the row cells. 
 	 		A configured parameter makes the Container Input (Row) visible to the external caller.
 	 		<br/>
 	 		<br/>
@@ -62,9 +63,18 @@
          <option name="Set first row of input as template">
 			Takes the first row from the table provided by the optional input port and sets it as the template.
          </option>
+
+         <option name="Data validation">
+             A set of options that allows the validation of the data in the input to be adjusted.
+         </option>
          
-         <option name="Input validation">
-             A set of options that allows the input validation to be adjusted.
+         <option name="Accept missing values">
+         	When selected, missing values in the input will be translated to missing values in the output. 
+         	If not selected, missing values in the input will cause the node to fail.
+         </option>
+
+         <option name="Column validation">
+             A set of options that allows the validation of columns in the input to be adjusted.
          </option>
          
          <option name="Missing columns">
@@ -88,11 +98,6 @@
        		<i>Append at the end of the table</i> - appends all unknown columns at the end of the output row
          	<br/>
        		<i>Ignore</i> - ignores all unknown columns in the output row
-         </option>
-         
-         <option name="Accept missing values">
-         	When selected, missing values in the input will be translated to missing values in the output. 
-         	If not selected, missing values in the input will cause the node to fail.
          </option>
          
  	</fullDescription>

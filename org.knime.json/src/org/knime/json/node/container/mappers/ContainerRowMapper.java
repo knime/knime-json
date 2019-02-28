@@ -360,8 +360,8 @@ public class ContainerRowMapper {
                 return DataType.getMissingCell();
             } else {
                 throw new InvalidSettingsException(
-                    "The injected row contains null values."
-                    + "\nThe node is configured to not accept null in input."
+                    "The injected row contains missing values."
+                    + "\nThe node is configured to not accept missing values in the input."
                 );
             }
         } else {
@@ -374,7 +374,11 @@ public class ContainerRowMapper {
         try {
             return OBJECT_MAPPER.readValue(input.toString(), new TypeReference<LinkedHashMap<String, Object>>(){});
         } catch (IOException e) {
-            throw new InvalidSettingsException("Could not parse input to json", e);
+            throw new InvalidSettingsException(
+                "Error when parsing input. The input must have a simple map format "
+                + "(only key/value pairs) and lists are not allowed."
+                , e
+            );
         }
     }
 
