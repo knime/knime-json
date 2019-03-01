@@ -61,6 +61,7 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
+import org.knime.json.node.container.mappers.rowinputhandling.MissingValuesHandling;
 import org.knime.json.util.JSONUtil;
 
 /**
@@ -75,19 +76,19 @@ final public class ContainerRowInputNodeConfiguration {
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
     private static final JsonValue DEFAULT_TEMPLATE_ROW = ContainerRowDefaultJsonStructure.asJsonValue();
     private static final boolean DEFAULT_USE_TEMPLATE_AS_SPEC = false;
+    private static final MissingValuesHandling DEFAULT_MISSING_VALUES_HANDLING = MissingValuesHandling.ACCEPT;
     private static final MissingColumnHandling DEFAULT_MISSING_COLUMN_HANDLING =
             MissingColumnHandling.FILL_WITH_MISSING_VALUE;
-    private static final boolean DEFAULT_APPEND_SUPERFLUOUS_COLUMNS = true;
-    private static final boolean DEFAULT_ACCEPT_MISSING_VALUES = true;
+    private static final boolean DEFAULT_APPEND_UNKNOWN_COLUMNS = true;
 
     private String m_parameterName;
     private String m_description;
     private String m_inputPathOrUrl;
     private JsonValue m_templateRow;
     private boolean m_useTemplateAsSpec;
+    private MissingValuesHandling m_missingValuesHandling;
     private MissingColumnHandling m_missingColumnHandling;
-    private boolean m_appendSuperfluousColumns;
-    private boolean m_acceptMissingValues;
+    private boolean m_appendUnkownColumns;
 
     /**
      * Default constructor
@@ -98,9 +99,9 @@ final public class ContainerRowInputNodeConfiguration {
         m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         m_templateRow = DEFAULT_TEMPLATE_ROW;
         m_useTemplateAsSpec = DEFAULT_USE_TEMPLATE_AS_SPEC;
+        m_missingValuesHandling = DEFAULT_MISSING_VALUES_HANDLING;
         m_missingColumnHandling = DEFAULT_MISSING_COLUMN_HANDLING;
-        m_appendSuperfluousColumns = DEFAULT_APPEND_SUPERFLUOUS_COLUMNS;
-        m_acceptMissingValues = DEFAULT_ACCEPT_MISSING_VALUES;
+        m_appendUnkownColumns = DEFAULT_APPEND_UNKNOWN_COLUMNS;
     }
 
     /**
@@ -223,11 +224,13 @@ final public class ContainerRowInputNodeConfiguration {
             throw new InvalidSettingsException("Configured template row has wrong format.", e);
         }
 
+        String missingValuesHandling = settings.getString("missingValuesHandling");
+        setMissingValuesHandling(missingValuesHandling);
+
         String missingColumnHandling = settings.getString("missingColumnHandling");
         setMissingColumnHandling(missingColumnHandling);
 
-        setAppendSuperfluousColumns(settings.getBoolean("appendSuperfluousColumns"));
-        setAcceptMissingValues(settings.getBoolean("acceptMissingValues"));
+        setAppendUnknownColumns(settings.getBoolean("appendSuperfluousColumns"));
 
         return this;
     }
@@ -247,13 +250,16 @@ final public class ContainerRowInputNodeConfiguration {
             setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
             setUseTemplateAsSpec(settings.getBoolean("useTemplateAsSpec", DEFAULT_USE_TEMPLATE_AS_SPEC));
 
+            String missingValuesHandling = settings.getString(
+                "missingValuesHandling", DEFAULT_MISSING_VALUES_HANDLING.getName());
+            setMissingValuesHandling(missingValuesHandling);
+
             String missingColumnHandling = settings.getString(
                 "missingColumnHandling", DEFAULT_MISSING_COLUMN_HANDLING.getName());
             setMissingColumnHandling(missingColumnHandling);
 
-            setAppendSuperfluousColumns(
-                settings.getBoolean("appendSuperfluousColumns", DEFAULT_APPEND_SUPERFLUOUS_COLUMNS));
-            setAcceptMissingValues(settings.getBoolean("acceptMissingValues", DEFAULT_ACCEPT_MISSING_VALUES));
+            setAppendUnknownColumns(
+                settings.getBoolean("appendSuperfluousColumns", DEFAULT_APPEND_UNKNOWN_COLUMNS));
 
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
@@ -287,9 +293,9 @@ final public class ContainerRowInputNodeConfiguration {
             settings.addString("templateRow", JSONUtil.toPrettyJSONString(m_templateRow));
         }
 
+        settings.addString("missingValuesHandling", m_missingValuesHandling.getName());
         settings.addString("missingColumnHandling", m_missingColumnHandling.getName());
-        settings.addBoolean("appendSuperfluousColumns", m_appendSuperfluousColumns);
-        settings.addBoolean("acceptMissingValues", m_acceptMissingValues);
+        settings.addBoolean("appendSuperfluousColumns", m_appendUnkownColumns);
 
         return this;
     }
@@ -300,11 +306,6 @@ final public class ContainerRowInputNodeConfiguration {
         return "\"" + m_parameterName + "\"";
     }
 
-    /**
-     * Returns the missing column handling.
-     *
-     * @return the missing column handling
-     */
     MissingColumnHandling getMissingColumnHandling() {
         return m_missingColumnHandling;
     }
@@ -322,36 +323,40 @@ final public class ContainerRowInputNodeConfiguration {
         }
 
         if (result == null) {
-            throw new InvalidSettingsException("The input '" + missingColumnHandling +"' is not a valid.");
+            throw new InvalidSettingsException("'" + missingColumnHandling +"' is not a missing columns handling.");
         }
         m_missingColumnHandling = result;
     }
 
-    /**
-     * Returns the append superfluous column flag
-     *
-     * @return the append superfluous column flag
-     */
-    boolean getAppendSuperfluousColumns() {
-        return m_appendSuperfluousColumns;
+    MissingValuesHandling getMissingValuesHandling() {
+        return m_missingValuesHandling;
+    }
+
+    void setMissingValuesHandling(final MissingValuesHandling missingValuesHandling) throws InvalidSettingsException {
+        m_missingValuesHandling = missingValuesHandling;
+    }
+
+    void setMissingValuesHandling(final String missingValuesHandling) throws InvalidSettingsException {
+        MissingValuesHandling result = null;
+        for (MissingValuesHandling handling : MissingValuesHandling.values()) {
+            if (handling.getName().equals(missingValuesHandling)) {
+                result = handling;
+            }
+        }
+
+        if (result == null) {
+            throw new InvalidSettingsException("'" + missingValuesHandling +"' is not a missing values handling.");
+        }
+        m_missingValuesHandling = result;
+    }
+
+    boolean getAppendUnknownColumns() {
+        return m_appendUnkownColumns;
     }
 
 
-    void setAppendSuperfluousColumns(final boolean appendSuperfluousColumns) {
-        m_appendSuperfluousColumns = appendSuperfluousColumns;
-    }
-
-    void setAcceptMissingValues(final boolean selected) {
-        m_acceptMissingValues = selected;
-    }
-
-    /**
-     * Returns the accept missing values flag.
-     *
-     * @return the accept missing values flag
-     */
-    boolean getAcceptMissingValues() {
-        return m_acceptMissingValues;
+    void setAppendUnknownColumns(final boolean appendSuperfluousColumns) {
+        m_appendUnkownColumns = appendSuperfluousColumns;
     }
 
     /**
@@ -361,7 +366,11 @@ final public class ContainerRowInputNodeConfiguration {
      */
     public ContainerRowMapperInputHandling createMapperInputHandling() {
         return
-            new ContainerRowMapperInputHandling(m_missingColumnHandling, m_appendSuperfluousColumns, m_acceptMissingValues);
+            new ContainerRowMapperInputHandling(
+                m_missingColumnHandling,
+                m_appendUnkownColumns,
+                m_missingValuesHandling
+            );
     }
 
 }

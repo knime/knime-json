@@ -86,6 +86,7 @@ import org.knime.json.node.container.DataTableAssert;
 import org.knime.json.node.container.mappers.BufferedDataTableToContainerTableTest.TestBufferedDataTableBuilder;
 import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
+import org.knime.json.node.container.mappers.rowinputhandling.MissingValuesHandling;
 import org.knime.json.util.JSONUtil;
 
 /**
@@ -368,7 +369,11 @@ public class ContainerRowMapperTest {
                 .build();
 
         ContainerRowMapperInputHandling containerRowInputHandling =
-            new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE, false, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FILL_WITH_MISSING_VALUE,
+                    false,
+                    MissingValuesHandling.ACCEPT
+                );
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -411,7 +416,11 @@ public class ContainerRowMapperTest {
                 .build();
 
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE, false, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FILL_WITH_MISSING_VALUE,
+                    false,
+                    MissingValuesHandling.ACCEPT
+                );
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -450,7 +459,11 @@ public class ContainerRowMapperTest {
                 .build();
 
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_DEFAULT_VALUE, false, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FILL_WITH_DEFAULT_VALUE,
+                    false,
+                    MissingValuesHandling.ACCEPT
+                );
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -492,7 +505,11 @@ public class ContainerRowMapperTest {
                 .build();
 
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.IGNORE, false, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.REMOVE,
+                    false,
+                    MissingValuesHandling.ACCEPT
+                );
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -531,7 +548,11 @@ public class ContainerRowMapperTest {
                 .build();
 
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FAIL,
+                    false,
+                    MissingValuesHandling.ACCEPT
+                );
 
         ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
     }
@@ -561,7 +582,11 @@ public class ContainerRowMapperTest {
 
         boolean appendSuperfluousColumns = true;
         ContainerRowMapperInputHandling containerRowInputHandling =
-            new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FAIL,
+                    appendSuperfluousColumns,
+                    MissingValuesHandling.ACCEPT
+                );
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -603,7 +628,11 @@ public class ContainerRowMapperTest {
 
         boolean appendSuperfluousColumns = false;
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FAIL,
+                    appendSuperfluousColumns,
+                    MissingValuesHandling.ACCEPT
+                );
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -642,9 +671,8 @@ public class ContainerRowMapperTest {
                     .withIntObject("B", 444)
                     .build();
 
-        boolean acceptMissingValues = true;
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, acceptMissingValues);
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, MissingValuesHandling.ACCEPT);
 
         BufferedDataTable dataTable =
                 ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
@@ -684,9 +712,8 @@ public class ContainerRowMapperTest {
                     .withIntObject("B", 444)
                     .build();
 
-        boolean acceptMissingValues = true;
         ContainerRowMapperInputHandling containerRowInputHandling =
-                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, !acceptMissingValues);
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, MissingValuesHandling.FAIL);
 
         ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
     }

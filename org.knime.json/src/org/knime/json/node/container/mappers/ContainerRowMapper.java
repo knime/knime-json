@@ -86,6 +86,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
+import org.knime.json.node.container.mappers.rowinputhandling.MissingValuesHandling;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -295,7 +296,7 @@ public class ContainerRowMapper {
             DataColumnSpec columnSpec = spec.getColumnSpec(i);
             String columnName = columnSpec.getName();
             if (!jsonRow.containsKey(columnName)) {
-                if (missingColumnHandling == MissingColumnHandling.IGNORE) {
+                if (missingColumnHandling == MissingColumnHandling.REMOVE) {
                     columnRearranger.remove(columnName);
                 } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
                     throw new InvalidSettingsException(
@@ -366,7 +367,7 @@ public class ContainerRowMapper {
             final DataType columnType,
             final ContainerRowMapperInputHandling inputHandling) throws InvalidSettingsException {
         if (jsonCell == null) {
-            if (inputHandling.acceptMissingValues()) {
+            if (inputHandling.missingValuesHandling() == MissingValuesHandling.ACCEPT) {
                 return DataType.getMissingCell();
             } else {
                 throw new InvalidSettingsException(

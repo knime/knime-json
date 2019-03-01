@@ -60,7 +60,7 @@ public class ContainerRowMapperInputHandling {
 
     private final MissingColumnHandling m_missingColumnHandling;
     private final boolean m_appendSuperfluousColumns;
-    private final boolean m_acceptMissingValues;
+    private final MissingValuesHandling m_missingValuesHandling;
 
     /**
      * Constructing an input handling parameter object from the parameters.
@@ -72,10 +72,10 @@ public class ContainerRowMapperInputHandling {
     public ContainerRowMapperInputHandling(
             final MissingColumnHandling missingColumnHandling,
             final boolean appendSuperfluousColumns,
-            final boolean acceptMissingValues) {
+            final MissingValuesHandling acceptMissingValues) {
         m_missingColumnHandling = missingColumnHandling;
         m_appendSuperfluousColumns = appendSuperfluousColumns;
-        m_acceptMissingValues = acceptMissingValues;
+        m_missingValuesHandling = acceptMissingValues;
     }
 
     /**
@@ -97,12 +97,12 @@ public class ContainerRowMapperInputHandling {
     }
 
     /**
-     * Returns the accept missing values flag.
+     * Returns the missing values handling.
      *
-     * @return the accept missing values flag
+     * @return the missing values handling
      */
-    public boolean acceptMissingValues() {
-        return m_acceptMissingValues;
+    public MissingValuesHandling missingValuesHandling() {
+        return m_missingValuesHandling;
     }
 
 }
