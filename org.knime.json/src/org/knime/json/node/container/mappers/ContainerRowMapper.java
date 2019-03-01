@@ -329,10 +329,11 @@ public class ContainerRowMapper {
     private static DataCell[] createDataCells(
             final JsonValue input,
             final DataTableSpec rowSpec,
-            final BufferedDataTable templateRow,
+            final BufferedDataTable templateTable,
             final ContainerRowMapperInputHandling inputHandling,
             final ExecutionContext exec) throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
+
 
         DataCellFactory factory = new DataCellFactory(exec);
         List<DataCell> dataCellList = new ArrayList<>();
@@ -342,17 +343,23 @@ public class ContainerRowMapper {
             if (jsonRow.containsKey(columnName)) {
                 DataType columnType = columnSpec.getType();
                 Object jsonCell = jsonRow.get(columnName);
-                DataCell parsedDataCell = parseDataCell(jsonCell, factory, columnType, inputHandling);
-                if (parsedDataCell == null) {
-                    throw new InvalidSettingsException(
-                        "The value '" + jsonCell + "' of column '" + columnName + "' cannot be parsed to the expected '"
-                        + columnType + "' type"
-                    );
-                }
+                DataCell parsedDataCell =
+                        parseDataCell(
+                            jsonCell,
+                            factory,
+                            columnType,
+                            columnName,
+                            templateTable,
+                            inputHandling.missingValuesHandling()
+                        );
                 dataCellList.add(parsedDataCell);
             } else {
                 DataCell dataCell =
-                        createDataCellForMissingColumn(templateRow, inputHandling.missingColumnHandling(), columnName);
+                        createDataCellForMissingColumn(
+                            templateTable,
+                            inputHandling.missingColumnHandling(),
+                            columnName
+                        );
                 dataCellList.add(dataCell);
             }
         }
@@ -365,10 +372,15 @@ public class ContainerRowMapper {
             final Object jsonCell,
             final DataCellFactory factory,
             final DataType columnType,
-            final ContainerRowMapperInputHandling inputHandling) throws InvalidSettingsException {
+            final String columnName,
+            final BufferedDataTable templateTable,
+            final MissingValuesHandling missingValuesHandling) throws InvalidSettingsException {
+        DataCell result = null;
         if (jsonCell == null) {
-            if (inputHandling.missingValuesHandling() == MissingValuesHandling.ACCEPT) {
-                return DataType.getMissingCell();
+            if (missingValuesHandling == MissingValuesHandling.ACCEPT) {
+                result = DataType.getMissingCell();
+            } else if (missingValuesHandling == MissingValuesHandling.FILL_WITH_DEFAULT) {
+                result = getDataCellByColumnName(templateTable, columnName);
             } else {
                 throw new InvalidSettingsException(
                     "The injected row contains missing values."
@@ -377,25 +389,40 @@ public class ContainerRowMapper {
             }
         } else {
             String stringCell = getStringRepresentation(jsonCell);
-            return factory.createDataCellOfType(columnType, stringCell);
+            result = factory.createDataCellOfType(columnType, stringCell);
         }
+
+        if (result == null) {
+            throw new InvalidSettingsException(
+                "The value '" + jsonCell + "' of column '" + columnName + "' cannot be parsed to the expected '"
+                + columnType + "' type"
+            );
+        }
+
+        return result;
     }
 
     private static DataCell createDataCellForMissingColumn(
-            final BufferedDataTable templateRow,
+            final BufferedDataTable templateTable,
             final MissingColumnHandling missingColumnHandling,
             final String columnName) {
         DataCell result = null;
         if (missingColumnHandling == FILL_WITH_MISSING_VALUE) {
             result = DataType.getMissingCell();
         } else if (missingColumnHandling == FILL_WITH_DEFAULT_VALUE) {
-            DataTableSpec templateRowSpec = templateRow.getDataTableSpec();
-            int columnIndex = templateRowSpec.findColumnIndex(columnName);
-            try (CloseableRowIterator iterator = templateRow.iterator()) {
-                if (iterator.hasNext()) {
-                    DataRow row = iterator.next();
-                    result = row.getCell(columnIndex);
-                }
+            result = getDataCellByColumnName(templateTable, columnName);
+        }
+        return result;
+    }
+
+    private static DataCell getDataCellByColumnName(final BufferedDataTable templateTable, final String columnName) {
+        DataCell result = null;
+        DataTableSpec templateRowSpec = templateTable.getDataTableSpec();
+        int columnIndex = templateRowSpec.findColumnIndex(columnName);
+        try (CloseableRowIterator iterator = templateTable.iterator()) {
+            if (iterator.hasNext()) {
+                DataRow row = iterator.next();
+                result = row.getCell(columnIndex);
             }
         }
         return result;

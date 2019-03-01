@@ -655,7 +655,7 @@ public class ContainerRowMapperTest {
      * @throws Exception
      */
     @Test
-    public void testNullValuesShouldBeAccepted() throws Exception {
+    public void testMissingValuesShouldBeAccepted() throws Exception {
         ExecutionContext testExec = getTestExecutionCtx();
 
         BufferedDataTable templateRow =
@@ -691,12 +691,57 @@ public class ContainerRowMapperTest {
     }
 
     /**
+     * Tests that null values in the input are accepted and cast to missing values, when that option is selected.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMissingValuesShouldBeReplacedByDefault() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+                new TestBufferedDataTableBuilder()
+                    .withColumnNames("A", "B")
+                    .withColumnTypes(StringCell.TYPE, IntCell.TYPE)
+                    .withTableRow(new StringCell("default"), new IntCell(1))
+                    .build(testExec);
+
+        JsonValue input =
+                new JsonValueBuilder()
+                    .withNullObject("A")
+                    .withIntObject("B", 444)
+                    .build();
+
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FAIL,
+                    false,
+                    MissingValuesHandling.FILL_WITH_DEFAULT
+                );
+
+        BufferedDataTable dataTable =
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
+
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "B"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, IntCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(testExec, row, "default", 444);
+        }
+    }
+
+    /**
      * Tests that null values in the input are not accepted and throws an exception, when that option is selected.
      *
      * @throws Exception
      */
     @Test(expected = InvalidSettingsException.class)
-    public void testNullValuesShouldFail() throws Exception {
+    public void testMissingValuesShouldFail() throws Exception {
         ExecutionContext testExec = getTestExecutionCtx();
 
         BufferedDataTable templateRow =
