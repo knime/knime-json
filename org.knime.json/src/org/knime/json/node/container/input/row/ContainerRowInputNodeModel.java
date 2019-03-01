@@ -105,11 +105,10 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
 
         if (externalInput != null) {
             if (m_configuration.getUseTemplateAsSpec()) {
-                BufferedDataTable[] templateRow = templateRow(exec);
-                DataTableSpec templateRowSpec = templateRow[0].getDataTableSpec();
+                BufferedDataTable templateRow = templateRow(exec);
                 ContainerRowMapperInputHandling containerRowInputHandling = m_configuration.createMapperInputHandling();
                 BufferedDataTable dataTable =
-                    ContainerRowMapper.toDataTable(externalInput, templateRowSpec, containerRowInputHandling, exec);
+                    ContainerRowMapper.toDataTable(externalInput, templateRow, containerRowInputHandling, exec);
 
                 return new BufferedDataTable[] {dataTable};
             } else {
@@ -122,7 +121,7 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
                 return new BufferedDataTable[] {firstRowTable};
             } else {
                 setWarningMessage("Configured template row is output");
-                return templateRow(exec);
+                return new BufferedDataTable[] {templateRow(exec)};
             }
         }
     }
@@ -140,8 +139,8 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
         return dataContainer.getTable();
     }
 
-    private BufferedDataTable[] templateRow(final ExecutionContext exec) throws InvalidSettingsException {
-        return ContainerTableMapper.toBufferedDataTable(m_configuration.getTemplateRow(), exec);
+    private BufferedDataTable templateRow(final ExecutionContext exec) throws InvalidSettingsException {
+        return ContainerTableMapper.toBufferedDataTable(m_configuration.getTemplateRow(), exec)[0];
     }
 
     /**

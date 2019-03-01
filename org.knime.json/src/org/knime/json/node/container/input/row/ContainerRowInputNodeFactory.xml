@@ -85,7 +85,10 @@
           	 <i>Fill with missing value</i> - the missing columns will be present in the output row with missing 
        		 values
 		     <br/>
-             <i>Ignore</i> - the missing columns are ignored and not present in the output row 
+          	 <i>Fill with default value</i> - the missing columns will be present in the output row with the default
+       		 values as defined in the template row
+		     <br/>
+             <i>Remove</i> - the missing columns are removed and not present in the output row 
 		     <br/>
              <i>Fail</i> - the node fails on any missing columns
          </option>

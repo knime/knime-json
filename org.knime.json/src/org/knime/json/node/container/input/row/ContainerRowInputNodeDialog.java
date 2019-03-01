@@ -104,6 +104,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     private final JRadioButton m_validateInputAgainstTemplate;
 
     private final JRadioButton m_fillMissingColumnsWithMissingValues;
+    private final JRadioButton m_fillMissingColumnsWithDefaultValues;
     private final JRadioButton m_removeMissingColumnsInOutput;
     private final JRadioButton m_failWhenColumnsAreMissing;
 
@@ -143,6 +144,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_templateTableView.setPreferredSize(new Dimension(250, 65));
 
         m_fillMissingColumnsWithMissingValues = new JRadioButton("Fill with missing value");
+        m_fillMissingColumnsWithDefaultValues = new JRadioButton("Fill with default value");
         m_removeMissingColumnsInOutput = new JRadioButton("Remove");
         m_failWhenColumnsAreMissing = new JRadioButton("Fail");
 
@@ -163,6 +165,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_createTemplateRowButton.setEnabled(enabled && m_inputTableJson != null);
         m_templateTableView.setEnabled(enabled);
         m_fillMissingColumnsWithMissingValues.setEnabled(enabled);
+        m_fillMissingColumnsWithDefaultValues.setEnabled(enabled);
         m_removeMissingColumnsInOutput.setEnabled(enabled);
         m_failWhenColumnsAreMissing.setEnabled(enabled);
         m_appendUnknownColumns.setEnabled(enabled);
@@ -264,6 +267,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
 
         ButtonGroup missingColumnHandlingGroup = new ButtonGroup();
         missingColumnHandlingGroup.add(m_fillMissingColumnsWithMissingValues);
+        missingColumnHandlingGroup.add(m_fillMissingColumnsWithDefaultValues);
         missingColumnHandlingGroup.add(m_removeMissingColumnsInOutput);
         missingColumnHandlingGroup.add(m_failWhenColumnsAreMissing);
         m_fillMissingColumnsWithMissingValues.setSelected(true);
@@ -275,6 +279,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
                 BorderFactory.createEtchedBorder(), "Missing columns"));
 
         missingColumnHandling.add(m_fillMissingColumnsWithMissingValues);
+        missingColumnHandling.add(m_fillMissingColumnsWithDefaultValues);
         missingColumnHandling.add(m_removeMissingColumnsInOutput);
         missingColumnHandling.add(m_failWhenColumnsAreMissing);
 
@@ -352,6 +357,8 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
 
         if (m_fillMissingColumnsWithMissingValues.isSelected()) {
             config.setMissingColumnHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE);
+        } else if (m_fillMissingColumnsWithDefaultValues.isSelected()) {
+            config.setMissingColumnHandling(MissingColumnHandling.FILL_WITH_DEFAULT_VALUE);
         } else if (m_removeMissingColumnsInOutput.isSelected()) {
             config.setMissingColumnHandling(MissingColumnHandling.IGNORE);
         } else if (m_failWhenColumnsAreMissing.isSelected()) {
@@ -403,6 +410,8 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         MissingColumnHandling missingColumnHandling = config.getMissingColumnHandling();
         if (missingColumnHandling == MissingColumnHandling.FILL_WITH_MISSING_VALUE) {
             m_fillMissingColumnsWithMissingValues.setSelected(true);
+        } else if (missingColumnHandling == MissingColumnHandling.FILL_WITH_DEFAULT_VALUE) {
+            m_fillMissingColumnsWithDefaultValues.setSelected(true);
         } else if (missingColumnHandling == MissingColumnHandling.IGNORE) {
             m_removeMissingColumnsInOutput.setSelected(true);
         } else if (missingColumnHandling == MissingColumnHandling.FAIL) {

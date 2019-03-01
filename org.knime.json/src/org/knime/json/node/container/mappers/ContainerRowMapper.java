@@ -48,6 +48,9 @@
  */
 package org.knime.json.node.container.mappers;
 
+import static org.knime.json.node.container.mappers.MissingColumnHandling.FILL_WITH_DEFAULT_VALUE;
+import static org.knime.json.node.container.mappers.MissingColumnHandling.FILL_WITH_MISSING_VALUE;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -62,11 +65,13 @@ import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
+import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataTableSpecCreator;
 import org.knime.core.data.DataType;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DefaultRow;
@@ -227,7 +232,7 @@ public class ContainerRowMapper {
      * Only simple JsonValues are allowed. JSON Arrays and JSON objects will throw InvalidSettingsException.
      *
      * @param input JsonValue representing a data table row
-     * @param templateRowSpec the template row specification
+     * @param templateRow the template row
      * @param inputHandling the strategies for handling the input
      * @param exec the execution context
      * @return a single row data table representing the input and parsed according to the row specification
@@ -235,14 +240,14 @@ public class ContainerRowMapper {
      */
     public static BufferedDataTable toDataTable(
             final JsonValue input,
-            final DataTableSpec templateRowSpec,
+            final BufferedDataTable templateRow,
             final ContainerRowMapperInputHandling inputHandling,
             final ExecutionContext exec) throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(input, "Can not map null to a data table");
 
-        DataTableSpec rowSpecification = toTableSpec(input, templateRowSpec, inputHandling);
+        DataTableSpec rowSpecification = toTableSpec(input, templateRow.getDataTableSpec(), inputHandling);
         BufferedDataContainer dataContainer = exec.createDataContainer(rowSpecification);
-        DataCell[] dataCells = createDataCells(input, rowSpecification, inputHandling, exec);
+        DataCell[] dataCells = createDataCells(input, rowSpecification, templateRow, inputHandling, exec);
         dataContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0l), dataCells));
         dataContainer.close();
         return dataContainer.getTable();
@@ -321,6 +326,7 @@ public class ContainerRowMapper {
     private static DataCell[] createDataCells(
             final JsonValue input,
             final DataTableSpec rowSpec,
+            final BufferedDataTable templateRow,
             final ContainerRowMapperInputHandling inputHandling,
             final ExecutionContext exec) throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
@@ -342,7 +348,9 @@ public class ContainerRowMapper {
                 }
                 dataCellList.add(parsedDataCell);
             } else {
-                dataCellList.add(DataType.getMissingCell());
+                DataCell dataCell =
+                        createDataCellForMissingColumn(templateRow, inputHandling.missingColumnHandling(), columnName);
+                dataCellList.add(dataCell);
             }
         }
 
@@ -368,6 +376,26 @@ public class ContainerRowMapper {
             String stringCell = getStringRepresentation(jsonCell);
             return factory.createDataCellOfType(columnType, stringCell);
         }
+    }
+
+    private static DataCell createDataCellForMissingColumn(
+            final BufferedDataTable templateRow,
+            final MissingColumnHandling missingColumnHandling,
+            final String columnName) {
+        DataCell result = null;
+        if (missingColumnHandling == FILL_WITH_MISSING_VALUE) {
+            result = DataType.getMissingCell();
+        } else if (missingColumnHandling == FILL_WITH_DEFAULT_VALUE) {
+            DataTableSpec templateRowSpec = templateRow.getDataTableSpec();
+            int columnIndex = templateRowSpec.findColumnIndex(columnName);
+            try (CloseableRowIterator iterator = templateRow.iterator()) {
+                if (iterator.hasNext()) {
+                    DataRow row = iterator.next();
+                    result = row.getCell(columnIndex);
+                }
+            }
+        }
+        return result;
     }
 
     private static Map<String, Object> parseJsonToMap(final JsonValue input)throws InvalidSettingsException {

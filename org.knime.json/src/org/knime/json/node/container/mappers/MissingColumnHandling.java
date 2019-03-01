@@ -62,6 +62,12 @@ public enum MissingColumnHandling {
      */
     FILL_WITH_MISSING_VALUE("Fill with missing value"),
 
+
+    /**
+     * Fill missing columns with default value.
+     */
+    FILL_WITH_DEFAULT_VALUE("Fill with default value"),
+
     /**
      * Ignore missing columns in output.
      */
@@ -85,23 +91,6 @@ public enum MissingColumnHandling {
      */
     public String getName() {
         return m_name;
-    }
-
-    /**
-     * Returns the names of all the handling strategies.
-     *
-     * @return the names of all the handling strategies
-     */
-    public static String[] getAllNames() {
-        MissingColumnHandling[] allHandlings = values();
-        int size = allHandlings.length;
-        String[] allNames = new String[size];
-
-        for (int i = 0; i < size; i++) {
-            allNames[i] = allHandlings[i].getName();
-        }
-
-        return allNames;
     }
 
 }

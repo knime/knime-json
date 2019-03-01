@@ -369,12 +369,7 @@ public class ContainerRowMapperTest {
             new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE, false, false);
 
         BufferedDataTable dataTable =
-            ContainerRowMapper.toDataTable(
-                input,
-                templateRow.getDataTableSpec(),
-                containerRowInputHandling,
-                testExec
-            );
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"string-column", "local-date-column"};
@@ -417,7 +412,7 @@ public class ContainerRowMapperTest {
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_MISSING_VALUE, false, false);
 
         BufferedDataTable dataTable =
-            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A", "B"};
@@ -428,6 +423,48 @@ public class ContainerRowMapperTest {
 
         for (DataRow row : dataTable) {
             DataTableAssert.assertDataRow(testExec, row, new StringCell("input string"), DataType.getMissingCell());
+        }
+    }
+
+    /**
+     * Tests that missing columns are replaced with default values, as defined in the template row.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMissingColumnsShouldBeReplacedByDefaultValues() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("A", "B")
+                .withColumnTypes(StringCell.TYPE, StringCell.TYPE)
+                .withTableRow(new StringCell("a"), new StringCell("template value"))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("A", "input string")
+                .build();
+
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(MissingColumnHandling.FILL_WITH_DEFAULT_VALUE, false, false);
+
+        BufferedDataTable dataTable =
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
+
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "B"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, StringCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(
+                testExec, row, new StringCell("input string"), new StringCell("template value")
+            );
         }
     }
 
@@ -456,7 +493,7 @@ public class ContainerRowMapperTest {
                 new ContainerRowMapperInputHandling(MissingColumnHandling.IGNORE, false, false);
 
         BufferedDataTable dataTable =
-                ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A"};
@@ -494,7 +531,7 @@ public class ContainerRowMapperTest {
         ContainerRowMapperInputHandling containerRowInputHandling =
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, false);
 
-        ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+        ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
     }
 
     /**
@@ -525,7 +562,7 @@ public class ContainerRowMapperTest {
             new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
 
         BufferedDataTable dataTable =
-            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A", "B", "superfluous"};
@@ -567,7 +604,7 @@ public class ContainerRowMapperTest {
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, appendSuperfluousColumns, false);
 
         BufferedDataTable dataTable =
-            ContainerRowMapper.toDataTable(input, templateRow.getDataTableSpec(), containerRowInputHandling, testExec);
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
         String[] expectedColumnNames = new String[]{"A", "B"};
@@ -608,12 +645,7 @@ public class ContainerRowMapperTest {
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, acceptMissingValues);
 
         BufferedDataTable dataTable =
-                ContainerRowMapper.toDataTable(
-                    input,
-                    templateRow.getDataTableSpec(),
-                    containerRowInputHandling,
-                    testExec
-                );
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
 
         DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
 
@@ -654,12 +686,7 @@ public class ContainerRowMapperTest {
         ContainerRowMapperInputHandling containerRowInputHandling =
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, !acceptMissingValues);
 
-        ContainerRowMapper.toDataTable(
-            input,
-            templateRow.getDataTableSpec(),
-            containerRowInputHandling,
-            testExec
-        );
+        ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
     }
 
     private class JsonValueBuilder {
