@@ -46,7 +46,9 @@
  * History
  *   Feb 15, 2019 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container.mappers;
+package org.knime.json.node.container.mappers.rowinputhandling;
+
+import org.knime.json.node.container.mappers.ContainerRowMapper;
 
 /**
  * Parameter object for the {@link ContainerRowMapper}.
@@ -86,11 +88,11 @@ public class ContainerRowMapperInputHandling {
     }
 
     /**
-     * Returns the append superfluous column flag
+     * Returns the append unknown column flag
      *
-     * @return the append superfluous column flag
+     * @return the append unknown column flag
      */
-    public boolean appendSuperfluousColumns() {
+    public boolean appendUnknownColumns() {
         return m_appendSuperfluousColumns;
     }
 

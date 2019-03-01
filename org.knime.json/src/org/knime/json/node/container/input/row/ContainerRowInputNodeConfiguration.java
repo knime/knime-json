@@ -59,8 +59,8 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.CheckUtils;
-import org.knime.json.node.container.mappers.ContainerRowMapperInputHandling;
-import org.knime.json.node.container.mappers.MissingColumnHandling;
+import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
+import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
 import org.knime.json.util.JSONUtil;
 
 /**

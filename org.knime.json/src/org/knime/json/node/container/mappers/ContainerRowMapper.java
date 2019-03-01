@@ -48,8 +48,8 @@
  */
 package org.knime.json.node.container.mappers;
 
-import static org.knime.json.node.container.mappers.MissingColumnHandling.FILL_WITH_DEFAULT_VALUE;
-import static org.knime.json.node.container.mappers.MissingColumnHandling.FILL_WITH_MISSING_VALUE;
+import static org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling.FILL_WITH_DEFAULT_VALUE;
+import static org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling.FILL_WITH_MISSING_VALUE;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -84,6 +84,8 @@ import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
+import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -276,7 +278,7 @@ public class ContainerRowMapper {
 
         DataTableSpec result = templateRowSpec;
         result = handleMissingColumns(result, inputHandling.missingColumnHandling(), jsonRow);
-        if (inputHandling.appendSuperfluousColumns()) {
+        if (inputHandling.appendUnknownColumns()) {
             result = appendSuperfluousColumns(jsonRow, result);
         }
 

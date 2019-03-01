@@ -71,8 +71,8 @@ import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerRowMapper;
-import org.knime.json.node.container.mappers.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
+import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
 
 /**
  * The model implementation of the Container Input (Row) node.

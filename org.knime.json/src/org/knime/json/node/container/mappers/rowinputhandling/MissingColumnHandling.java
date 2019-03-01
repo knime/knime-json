@@ -46,7 +46,7 @@
  * History
  *   Feb 14, 2019 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container.mappers;
+package org.knime.json.node.container.mappers.rowinputhandling;
 
 /**
  * Strategy enum for how to handle missing columns in the input of the Container Input (Row) node,
