@@ -163,8 +163,11 @@ public class ContainerRowMapper {
     }
 
     private static DataType inferColumnTypeFromCellObject(final Object cellValue) throws InvalidSettingsException {
-        DataType columnType = null;
+        if (cellValue == null) {
+            return StringCell.TYPE;
+        }
 
+        DataType columnType = null;
         if (cellValue instanceof Double) {
             columnType = DoubleCell.TYPE;
         } else if (cellValue instanceof String) {
@@ -200,9 +203,13 @@ public class ContainerRowMapper {
             if (jsonRow.containsKey(columnName)) {
                 DataType columnType = columnSpec.getType();
                 Object jsonCell = jsonRow.get(columnName);
-                String stringCell = getStringRepresentation(jsonCell);
-                DataCell dataCell = factory.createDataCellOfType(columnType, stringCell);
-                dataCells.add(dataCell);
+                if (jsonCell == null) {
+                    dataCells.add(DataType.getMissingCell());
+                } else {
+                    String stringCell = getStringRepresentation(jsonCell);
+                    DataCell dataCell = factory.createDataCellOfType(columnType, stringCell);
+                    dataCells.add(dataCell);
+                }
             } else {
                 dataCells.add(DataType.getMissingCell());
             }
