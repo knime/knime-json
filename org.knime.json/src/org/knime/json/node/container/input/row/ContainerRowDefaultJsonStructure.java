@@ -61,7 +61,7 @@ import org.knime.json.util.JSONUtil;
 /**
  * Class that holds a hard coded prototype JSON structure for the Container input/output nodes.
  *
- * @author Tobias Urhaug, Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.8
  */
 public final class ContainerRowDefaultJsonStructure {
@@ -110,7 +110,18 @@ public final class ContainerRowDefaultJsonStructure {
     private static JsonArray createDataTable(final JsonBuilderFactory factory) {
         return
             factory.createArrayBuilder()
-                .add(createRow(factory, "value1", 1, 1.5, 1000, true, "2018-03-27", "2018-03-27T08:30:45.111", "2018-03-27T08:30:45.111+01:00[Europe/Paris]"))
+                .add(
+                    createRow(
+                        factory,
+                        "value1",
+                        1,
+                        1.5,
+                        1000,
+                        true,
+                        "2018-03-27",
+                        "2018-03-27T08:30:45.111",
+                        "2018-03-27T08:30:45.111+01:00[Europe/Paris]")
+                    )
                 .build();
     }
 

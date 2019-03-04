@@ -459,17 +459,17 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         MissingColumnHandling missingColumnHandling = config.getMissingColumnHandling();
         switch (missingColumnHandling) {
             case FILL_WITH_MISSING_VALUE
-            : m_fillMissingColumnsWithMissingValues.setSelected(true);
-            break;
+                : m_fillMissingColumnsWithMissingValues.setSelected(true);
+                break;
             case FILL_WITH_DEFAULT_VALUE
-            : m_fillMissingColumnsWithDefaultValues.setSelected(true);
-            break;
+                : m_fillMissingColumnsWithDefaultValues.setSelected(true);
+                break;
             case REMOVE
-            : m_removeMissingColumnsInOutput.setSelected(true);
-            break;
+                : m_removeMissingColumnsInOutput.setSelected(true);
+                break;
             case FAIL
-            : m_failWhenColumnsAreMissing.setSelected(true);
-            break;
+                : m_failWhenColumnsAreMissing.setSelected(true);
+                break;
             default : {
                 // Exception serves as a reminder in case a new enum has been added without being handled
                 throw new RuntimeException("Unhandled MissingColumndHandling enum!");

@@ -58,7 +58,7 @@ import org.knime.core.data.DataType;
 import org.knime.core.node.ExecutionContext;
 
 /**
- * Helper class for asserting that a data row contains a given sett of cells.
+ * Helper class for asserting that a data row contains a given set of cells.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */

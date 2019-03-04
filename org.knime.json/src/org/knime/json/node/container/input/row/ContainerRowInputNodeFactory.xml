@@ -26,7 +26,7 @@
  		</intro>
  
          <option name="Parameter name">
-             A name for the input parameter(preferably unique). This name is exposed in the REST interface and in the
+             A name for the input parameter (preferably unique). This name is exposed in the REST interface and in the
              <i>Call Local/Remote Workflow (Row Based)</i> nodes.
          </option>
  
@@ -43,8 +43,8 @@
          
          <option name="Require input to match template row specification">
          	 Only accepts input that match the template row specification. The input has to contain an object 
-		     (key/value pair) for each of the columns in the template, where the key is identical to the columns name 
-		     and the value can be parsed to the columns type. The input columns can be of any order, but will be output 
+		     (key/value pair) for each of the columns in the template, where the key is identical to the column's name 
+		     and the value can be parsed to the column's type. The input columns can be of any order, but will be output 
 		     in the same order as in the template.
 		     <br/>
 		     <br/>
@@ -66,13 +66,21 @@
 
          <option name="Data validation">
              A set of options that allows the validation of the data in the input to be adjusted.
+         	 <br/>
          </option>
-         
-         <option name="Accept missing values">
-         	When selected, missing values in the input will be translated to missing values in the output. 
-         	If not selected, missing values in the input will cause the node to fail.
+             
+         <option name="Missing values">
+           	 	<i>Accept missing values - </i>
+    	     	the missing values in the input row will be filled with missing values.
+           	 	<br/>
+				<i>Fill with default value - </i>
+				the missing values in the input row will be filled with the values defined in the 
+				template row.
+           	 	<br/>
+				<i>Fail - </i>
+				missing values in the input row will cause the node to fail.
          </option>
-
+             
          <option name="Column validation">
              A set of options that allows the validation of columns in the input to be adjusted.
          </option>
