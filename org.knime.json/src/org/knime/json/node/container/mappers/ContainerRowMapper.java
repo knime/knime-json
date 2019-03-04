@@ -185,7 +185,10 @@ public class ContainerRowMapper {
         } else if (cellValue instanceof Map) {
             // this indicates that the cell has a json object structure and should be parsed as a json string
             columnType = StringCell.TYPE;
+        } else {
+            throw new InvalidSettingsException("The type of input cell '" + cellValue + "' could not be infered.");
         }
+
         return columnType;
     }
 
