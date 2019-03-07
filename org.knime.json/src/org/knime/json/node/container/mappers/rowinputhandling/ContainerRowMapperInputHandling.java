@@ -59,22 +59,22 @@ import org.knime.json.node.container.mappers.ContainerRowMapper;
 public class ContainerRowMapperInputHandling {
 
     private final MissingColumnHandling m_missingColumnHandling;
-    private final boolean m_appendSuperfluousColumns;
+    private final boolean m_appendUnknownColumns;
     private final MissingValuesHandling m_missingValuesHandling;
 
     /**
      * Constructing an input handling parameter object from the parameters.
      *
      * @param missingColumnHandling
-     * @param appendSuperfluousColumns
+     * @param appendUnknownColumns
      * @param acceptMissingValues
      */
     public ContainerRowMapperInputHandling(
             final MissingColumnHandling missingColumnHandling,
-            final boolean appendSuperfluousColumns,
+            final boolean appendUnknownColumns,
             final MissingValuesHandling acceptMissingValues) {
         m_missingColumnHandling = missingColumnHandling;
-        m_appendSuperfluousColumns = appendSuperfluousColumns;
+        m_appendUnknownColumns = appendUnknownColumns;
         m_missingValuesHandling = acceptMissingValues;
     }
 
@@ -93,7 +93,7 @@ public class ContainerRowMapperInputHandling {
      * @return the append unknown column flag
      */
     public boolean appendUnknownColumns() {
-        return m_appendSuperfluousColumns;
+        return m_appendUnknownColumns;
     }
 
     /**

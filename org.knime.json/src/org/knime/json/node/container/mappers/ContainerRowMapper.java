@@ -363,7 +363,7 @@ public class ContainerRowMapper {
                             inputHandling.missingValuesHandling()
                         );
                 dataCellList.add(parsedDataCell);
-            } else {
+            } else { // missing columns handling
                 DataCell dataCell =
                         createDataCellForMissingColumn(
                             templateTable,
@@ -390,7 +390,14 @@ public class ContainerRowMapper {
             if (missingValuesHandling == MissingValuesHandling.ACCEPT) {
                 result = DataType.getMissingCell();
             } else if (missingValuesHandling == MissingValuesHandling.FILL_WITH_DEFAULT) {
-                result = getDataCellByColumnName(templateTable, columnName);
+                DataTableSpec dataTableSpec = templateTable.getDataTableSpec();
+                int columnIndex = dataTableSpec.findColumnIndex(columnName);
+                if (columnIndex == -1) {
+                     //This means we are parsing a null data cell in an unknown column which there's no default for
+                     result =  DataType.getMissingCell();
+                } else {
+                    result = getDataCellByColumnName(templateTable, columnName);
+                }
             } else {
                 throw new InvalidSettingsException(
                     "The injected row contains missing values."
