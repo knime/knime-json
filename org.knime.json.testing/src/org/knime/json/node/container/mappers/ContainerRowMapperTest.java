@@ -558,12 +558,12 @@ public class ContainerRowMapperTest {
     }
 
     /**
-     * Tests that superfluous columns are appended at the end.
+     * Tests that unknown columns are appended at the end.
      *
      * @throws Exception
      */
     @Test
-    public void testSuperfluousColumnsShouldBeAppendedAtTheEnd() throws Exception {
+    public void testUnknownColumnsShouldBeAppendedAtTheEnd() throws Exception {
         ExecutionContext testExec = getTestExecutionCtx();
 
         BufferedDataTable templateRow =
@@ -580,11 +580,11 @@ public class ContainerRowMapperTest {
                 .withIntObject("B", 444)
                 .build();
 
-        boolean appendSuperfluousColumns = true;
+        boolean appendUnknownColumns = true;
         ContainerRowMapperInputHandling containerRowInputHandling =
                 new ContainerRowMapperInputHandling(
                     MissingColumnHandling.FAIL,
-                    appendSuperfluousColumns,
+                    appendUnknownColumns,
                     MissingValuesHandling.ACCEPT
                 );
 
@@ -604,12 +604,12 @@ public class ContainerRowMapperTest {
     }
 
     /**
-     * Tests that superfluous columns are ignored.
+     * Tests that unknown columns are ignored.
      *
      * @throws Exception
      */
     @Test
-    public void testSuperfluousColumnsShouldBeIgnored() throws Exception {
+    public void testUnknownColumnsShouldBeIgnored() throws Exception {
         ExecutionContext testExec = getTestExecutionCtx();
 
         BufferedDataTable templateRow =
@@ -626,11 +626,11 @@ public class ContainerRowMapperTest {
                 .withIntObject("B", 444)
                 .build();
 
-        boolean appendSuperfluousColumns = false;
+        boolean appendUnknownColumns = false;
         ContainerRowMapperInputHandling containerRowInputHandling =
                 new ContainerRowMapperInputHandling(
                     MissingColumnHandling.FAIL,
-                    appendSuperfluousColumns,
+                    appendUnknownColumns,
                     MissingValuesHandling.ACCEPT
                 );
 
@@ -761,6 +761,65 @@ public class ContainerRowMapperTest {
                 new ContainerRowMapperInputHandling(MissingColumnHandling.FAIL, false, MissingValuesHandling.FAIL);
 
         ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
+    }
+
+    /**
+     * Test for a bug reported in AP-11430
+     *
+     * This is a bug that occurs when the {@link MissingValuesHandling} has been set to 'fill with default values',
+     * the unknown columns handling has been set to 'Append at the end of the table' and the input contains an unknown
+     * column with a missing value.
+     *
+     * In this case the missing value has no default and should remain missing.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMissingValuesInUnknownColumns() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+                new TestBufferedDataTableBuilder()
+                    .withColumnNames("A", "Known missing value")
+                    .withColumnTypes(StringCell.TYPE, StringCell.TYPE)
+                    .withTableRow(new StringCell("a"), new StringCell("template value"))
+                    .build(testExec);
+
+        JsonValue input =
+                new JsonValueBuilder()
+                    .withStringObject("A", "input")
+                    .withNullObject("Known missing value")
+                    .withNullObject("Uknown missing value")
+                    .build();
+
+        boolean appendUnknownColumns = true;
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FILL_WITH_MISSING_VALUE,
+                    appendUnknownColumns,
+                    MissingValuesHandling.FILL_WITH_DEFAULT
+                );
+
+        BufferedDataTable dataTable =
+                ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
+
+        DataTableSpec dataTableSpec = dataTable.getDataTableSpec();
+
+        String[] expectedColumnNames = new String[]{"A", "Known missing value", "Uknown missing value"};
+        DataTableAssert.assertColumnNames(dataTableSpec, expectedColumnNames);
+
+        DataType[] expectedColumnTypes = new DataType[]{StringCell.TYPE, StringCell.TYPE, StringCell.TYPE};
+        DataTableAssert.assertColumnTypes(dataTableSpec, expectedColumnTypes);
+
+        for (DataRow row : dataTable) {
+            DataTableAssert.assertDataRow(
+                testExec,
+                row,
+                new StringCell("input"),
+                new StringCell("template value"),
+                DataType.getMissingCell()
+            );
+        }
     }
 
     private class JsonValueBuilder {
