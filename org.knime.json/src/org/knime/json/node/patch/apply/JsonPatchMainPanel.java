@@ -60,12 +60,12 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
 import org.knime.base.node.util.JSnippetPanel;
 import org.knime.base.node.util.JavaScriptingCompletionProvider;
-import org.knime.base.node.util.KnimeSyntaxTextArea;
 import org.knime.base.node.util.ManipulatorProvider;
 import org.knime.core.node.NodeLogger;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.FromManipulator;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.RemoveManipulator;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.ValueManipulator;
+import org.knime.rsyntaxtextarea.KnimeSyntaxTextArea;
 
 /**
  * The main panel (manipulators, columns, flow variables and the editor) of the JSON Patch Apply node dialog.
