@@ -2,99 +2,63 @@
 <?eclipse version="3.4"?><plugin>
 
    <!-- This is an example for providing an own category--> 
-      <extension
-         point="org.knime.workbench.repository.categories">
-      <category
-            description="Category containing my nodes"
-            icon="icons/16x16/category_json.png"
-            level-id="json"
-            name="JSON"
-            path="/struct-data"/>
+      <extension point="org.knime.workbench.repository.categories">
+      <category description="Category containing my nodes" icon="icons/16x16/category_json.png" level-id="json" name="JSON" path="/struct-data"/>
    </extension>
 
    <extension point="org.knime.workbench.repository.nodes">
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.reader.JSONReaderNodeFactory" />
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory"  after="org.knime.json.node.reader.JSONReaderNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.fromstring.StringToJSONNodeFactory"  after="org.knime.json.node.writer.JSONWriterNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.fromtable.TableToJsonNodeFactory"  after="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.totable.JSONToTableNodeFactory"  after="org.knime.json.node.fromtable.TableToJsonNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.tojson.ColumnsToJsonNodeFactory"  after="org.knime.json.node.totable.JSONToTableNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.fromxml.XMLToJSONNodeFactory"  after="org.knime.json.node.tojson.ColumnsToJsonNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.toxml.JSONToXMLNodeFactory"  after="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.multi.JSONPathNodeFactory"  after="org.knime.json.node.toxml.JSONToXMLNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.dict.JSONPathDictNodeFactory"  after="org.knime.json.node.jsonpath.multi.JSONPathNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.combine.column.ColumnCombineJsonNodeFactory"  after="org.knime.json.node.jsonpath.dict.JSONPathDictNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.combine.row.RowCombineJsonNodeFactory"  after="org.knime.json.node.combine.column.ColumnCombineJsonNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.combine.row.CombineAndWriteJsonNodeFactory"  after="org.knime.json.node.combine.row.RowCombineJsonNodeFactory"/>
+      <node category-path="/struct-data/json" factory-class="org.knime.json.node.reader.JSONReaderNodeFactory"/>
+      <node after="org.knime.json.node.reader.JSONReaderNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory"/>
+      <node after="org.knime.json.node.writer.JSONWriterNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
+      <node after="org.knime.json.node.fromstring.StringToJSONNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.fromtable.TableToJsonNodeFactory"/>
+      <node after="org.knime.json.node.fromtable.TableToJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.totable.JSONToTableNodeFactory"/>
+      <node after="org.knime.json.node.totable.JSONToTableNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.tojson.ColumnsToJsonNodeFactory"/>
+      <node after="org.knime.json.node.tojson.ColumnsToJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>
+      <node after="org.knime.json.node.fromxml.XMLToJSONNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.toxml.JSONToXMLNodeFactory"/>
+      <node after="org.knime.json.node.toxml.JSONToXMLNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.multi.JSONPathNodeFactory"/>
+      <node after="org.knime.json.node.jsonpath.multi.JSONPathNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.dict.JSONPathDictNodeFactory"/>
+      <node after="org.knime.json.node.jsonpath.dict.JSONPathDictNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.combine.column.ColumnCombineJsonNodeFactory"/>
+      <node after="org.knime.json.node.combine.column.ColumnCombineJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.combine.row.RowCombineJsonNodeFactory"/>
+      <node after="org.knime.json.node.combine.row.RowCombineJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.combine.row.CombineAndWriteJsonNodeFactory"/>
       <!--deprecated <node category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.JSONPathNodeFactory"  after="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>-->
       <!--never released node category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpointer.JSONPointerNodeFactory"  after="org.knime.json.node.jsonpath.JSONPathNodeFactory"/-->
       <!--node category-path="/struct-data/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"  after="org.knime.json.node.jsonpointer.JSONPointerNodeFactory"/-->
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"  after="org.knime.json.node.combine.row.CombineAndWriteJsonNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory"  after="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory"  after="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" />
-      <node
-            category-path="/struct-data/json"
-            factory-class="org.knime.json.node.input.JSONInputNodeFactory"
-            >
+      <node after="org.knime.json.node.combine.row.CombineAndWriteJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"/>
+      <node after="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory"/>
+      <node after="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory"/>
+      <node category-path="/struct-data/json" factory-class="org.knime.json.node.input.JSONInputNodeFactory">
       </node>
-      <node
-            category-path="/struct-data/json"
-            factory-class="org.knime.json.node.output.JSONOutputNodeFactory"
-            >
+      <node category-path="/struct-data/json" factory-class="org.knime.json.node.output.JSONOutputNodeFactory">
       </node>
-      <node
-            category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
+      <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
       </node>
-      <node
-            category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.container.input.row.ContainerRowInputNodeFactory">
+      <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.row.ContainerRowInputNodeFactory">
       </node>
-      <node
-            category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" 
-            after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
+      <node after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory" category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory">
       </node>
-      <node
-            category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory"
-            after="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory">
+      <node after="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory">
       </node>
-      <node
-            category-path="/flowcontrol/automation"
-            factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
+      <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
       </node>
-   </extension>
-   <extension
-           point="org.knime.workbench.repository.registeredFileExtensions">
-      <FileExtensionMapping
-              NodeFactory="org.knime.json.node.reader.JSONReaderNodeFactory">
+   	  <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory" id="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory"/>
+</extension>
+   <extension point="org.knime.workbench.repository.registeredFileExtensions">
+      <FileExtensionMapping NodeFactory="org.knime.json.node.reader.JSONReaderNodeFactory">
          <FileExtension extension=".json"/>
          <FileExtension extension=".json.gz"/>
       </FileExtensionMapping>
    </extension>
-   <extension
-         point="org.knime.core.DataValueRenderer">
-      <dataValue
-            valueClass="org.knime.core.data.json.JSONValue">
-         <renderer
-               rendererFactoryClass="org.knime.core.data.json.JSONValueRenderer$Factory"
-               suggestAsDefault="true">
+   <extension point="org.knime.core.DataValueRenderer">
+      <dataValue valueClass="org.knime.core.data.json.JSONValue">
+         <renderer rendererFactoryClass="org.knime.core.data.json.JSONValueRenderer$Factory" suggestAsDefault="true">
          </renderer>
       </dataValue>
    </extension>
-   <extension
-         point="org.knime.core.DataType">
-      <DataType
-            cellClass="org.knime.core.data.json.JSONCell"
-            factoryClass="org.knime.core.data.json.JSONCellFactory">
-         <serializer
-               cellClass="org.knime.core.data.json.JSONCell"
-               serializerClass="org.knime.core.data.json.JSONCell$JSONSerializer">
+   <extension point="org.knime.core.DataType">
+      <DataType cellClass="org.knime.core.data.json.JSONCell" factoryClass="org.knime.core.data.json.JSONCellFactory">
+         <serializer cellClass="org.knime.core.data.json.JSONCell" serializerClass="org.knime.core.data.json.JSONCell$JSONSerializer">
          </serializer>
-         <serializer
-               cellClass="org.knime.core.data.json.JSONBlobCell"
-               serializerClass="org.knime.core.data.json.JSONBlobCell$JSONSerializer">
+         <serializer cellClass="org.knime.core.data.json.JSONBlobCell" serializerClass="org.knime.core.data.json.JSONBlobCell$JSONSerializer">
          </serializer>
       </DataType>
    </extension>
