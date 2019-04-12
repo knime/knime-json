@@ -84,9 +84,10 @@ import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 import org.knime.json.node.container.DataTableAssert;
 import org.knime.json.node.container.mappers.BufferedDataTableToContainerTableTest.TestBufferedDataTableBuilder;
-import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
-import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
-import org.knime.json.node.container.mappers.rowinputhandling.MissingValuesHandling;
+import org.knime.json.node.container.mappers.row.ContainerRowMapper;
+import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMapperInputHandling;
+import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
+import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
 import org.knime.json.util.JSONUtil;
 
 /**

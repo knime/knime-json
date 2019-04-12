@@ -46,10 +46,10 @@
  * History
  *   Dec 13, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container.mappers;
+package org.knime.json.node.container.mappers.row;
 
-import static org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling.FILL_WITH_DEFAULT_VALUE;
-import static org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling.FILL_WITH_MISSING_VALUE;
+import static org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling.FILL_WITH_DEFAULT_VALUE;
+import static org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling.FILL_WITH_MISSING_VALUE;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -84,9 +84,9 @@ import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.util.CheckUtils;
-import org.knime.json.node.container.mappers.rowinputhandling.ContainerRowMapperInputHandling;
-import org.knime.json.node.container.mappers.rowinputhandling.MissingColumnHandling;
-import org.knime.json.node.container.mappers.rowinputhandling.MissingValuesHandling;
+import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMapperInputHandling;
+import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
+import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

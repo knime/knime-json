@@ -44,53 +44,65 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Feb 14, 2019 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
+ *   Feb 15, 2019 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container.mappers.rowinputhandling;
+package org.knime.json.node.container.mappers.row.inputhandling;
+
+import org.knime.json.node.container.mappers.row.ContainerRowMapper;
 
 /**
- * Strategy enum for how to handle missing columns in the input of the Container Input (Row) node,
- * compared to a configured template row.
+ * Parameter object for the {@link ContainerRowMapper}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.8
  */
-public enum MissingColumnHandling {
+public class ContainerRowMapperInputHandling {
+
+    private final MissingColumnHandling m_missingColumnHandling;
+    private final boolean m_appendUnknownColumns;
+    private final MissingValuesHandling m_missingValuesHandling;
 
     /**
-     * Fill missing columns with missing value.
+     * Constructing an input handling parameter object from the parameters.
+     *
+     * @param missingColumnHandling
+     * @param appendUnknownColumns
+     * @param acceptMissingValues
      */
-    FILL_WITH_MISSING_VALUE("Fill with missing value"),
-
-
-    /**
-     * Fill missing columns with default value.
-     */
-    FILL_WITH_DEFAULT_VALUE("Fill with default value"),
-
-    /**
-     * Remove missing columns in output.
-     */
-    REMOVE("Remove"),
-
-    /**
-     * Fail when a column is missing.
-     */
-    FAIL("Fail");
-
-    private final String m_name;
-
-    MissingColumnHandling(final String name) {
-        m_name = name;
+    public ContainerRowMapperInputHandling(
+            final MissingColumnHandling missingColumnHandling,
+            final boolean appendUnknownColumns,
+            final MissingValuesHandling acceptMissingValues) {
+        m_missingColumnHandling = missingColumnHandling;
+        m_appendUnknownColumns = appendUnknownColumns;
+        m_missingValuesHandling = acceptMissingValues;
     }
 
     /**
-     * Returns the name of the handling strategy.
+     * Returns the missing column handling.
      *
-     * @return the name of the handling strategy
+     * @return the missing column handling
      */
-    public String getName() {
-        return m_name;
+    public MissingColumnHandling missingColumnHandling() {
+        return m_missingColumnHandling;
+    }
+
+    /**
+     * Returns the append unknown column flag
+     *
+     * @return the append unknown column flag
+     */
+    public boolean appendUnknownColumns() {
+        return m_appendUnknownColumns;
+    }
+
+    /**
+     * Returns the missing values handling.
+     *
+     * @return the missing values handling
+     */
+    public MissingValuesHandling missingValuesHandling() {
+        return m_missingValuesHandling;
     }
 
 }
