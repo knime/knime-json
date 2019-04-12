@@ -395,6 +395,38 @@ public class ContainerRowMapperTest {
     }
 
     /**
+     * Tests that a row containing a value not conforming to the default spec throws an error.
+     *
+     * @throws Exception
+     */
+    @Test (expected = InvalidSettingsException.class)
+    public void testInputContainingValueNotParsableToTemplateFails() throws Exception {
+        ExecutionContext testExec = getTestExecutionCtx();
+
+        BufferedDataTable templateRow =
+            new TestBufferedDataTableBuilder()
+                .withColumnNames("local-date-column")
+                .withColumnTypes(LocalDateCellFactory.TYPE)
+                .withTableRow(LocalDateCellFactory.create("1987-01-21"))
+                .build(testExec);
+
+        JsonValue input =
+            new JsonValueBuilder()
+                .withStringObject("local-date-column", "Not a local date!")
+                .build();
+
+        ContainerRowMapperInputHandling containerRowInputHandling =
+                new ContainerRowMapperInputHandling(
+                    MissingColumnHandling.FILL_WITH_MISSING_VALUE,
+                    false,
+                    MissingValuesHandling.ACCEPT
+                );
+
+        ContainerRowMapper.toDataTable(input, templateRow, containerRowInputHandling, testExec);
+    }
+
+
+    /**
      * Tests that missing columns are parsed as missing values.
      *
      * @throws Exception

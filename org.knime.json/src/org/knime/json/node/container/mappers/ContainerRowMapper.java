@@ -117,7 +117,7 @@ public class ContainerRowMapper {
      * @param input JsonValue representing a data table row
      * @param exec the execution context
      * @return a single row data table representing the input
-     * @throws InvalidSettingsException if input is null
+     * @throws InvalidSettingsException if input is null or contains JSON arrays or objects
      */
     public static BufferedDataTable toDataTable(final JsonValue input, final ExecutionContext exec)
             throws InvalidSettingsException {
@@ -233,13 +233,14 @@ public class ContainerRowMapper {
                 throw new InvalidSettingsException("An error occured while parsing the input", e);
             }
         }
+
         return result;
     }
 
     /**
      * Converts a JsonValue input containing key value pairs to a single row table where the key of each pair is the
-     * column name and the value the corresponding cell value. The each column in the input will be parsed according
-     * to the given row specification.
+     * column name and the value is the corresponding cell value. Each value of a column will be be parsed according
+     * to the given template row specification if compatible, otherwise an exception will be thrown.
      * <br>
      * <br>
      * Only simple JsonValues are allowed. JSON Arrays and JSON objects will throw InvalidSettingsException.
@@ -249,7 +250,7 @@ public class ContainerRowMapper {
      * @param inputHandling the strategies for handling the input
      * @param exec the execution context
      * @return a single row data table representing the input and parsed according to the row specification
-     * @throws InvalidSettingsException if input is null
+     * @throws InvalidSettingsException if input is null or contains JSON arrays or objects
      */
     public static BufferedDataTable toDataTable(
             final JsonValue input,
@@ -286,11 +287,10 @@ public class ContainerRowMapper {
         CheckUtils.checkSettingNotNull(input, "Can not map null to a data table spec");
 
         Map<String, Object> jsonRow = parseJsonToMap(input);
-
         DataTableSpec result = templateRowSpec;
         result = handleMissingColumns(result, inputHandling.missingColumnHandling(), jsonRow);
         if (inputHandling.appendUnknownColumns()) {
-            result = appendSuperfluousColumns(jsonRow, result);
+            result = appendSuperfluousColumns(result, jsonRow);
         }
 
         return result;
@@ -301,7 +301,6 @@ public class ContainerRowMapper {
             final MissingColumnHandling missingColumnHandling,
             final Map<String, Object> jsonRow) throws InvalidSettingsException {
         ColumnRearranger columnRearranger = new ColumnRearranger(spec);
-
         for (int i = 0; i < spec.getNumColumns(); i++) {
             DataColumnSpec columnSpec = spec.getColumnSpec(i);
             String columnName = columnSpec.getName();
@@ -321,8 +320,8 @@ public class ContainerRowMapper {
     }
 
     private static DataTableSpec appendSuperfluousColumns(
-            final Map<String, Object> jsonRow,
-            final DataTableSpec spec) throws InvalidSettingsException {
+            final DataTableSpec spec,
+            final Map<String, Object> jsonRow) throws InvalidSettingsException {
         DataTableSpecCreator dataTableSpecCreator = new DataTableSpecCreator(spec);
 
         for (Entry<String, Object> entry : jsonRow.entrySet()) {
@@ -385,34 +384,42 @@ public class ContainerRowMapper {
             final String columnName,
             final BufferedDataTable templateTable,
             final MissingValuesHandling missingValuesHandling) throws InvalidSettingsException {
-        DataCell result = null;
         if (jsonCell == null) {
-            if (missingValuesHandling == MissingValuesHandling.ACCEPT) {
-                result = DataType.getMissingCell();
-            } else if (missingValuesHandling == MissingValuesHandling.FILL_WITH_DEFAULT) {
-                DataTableSpec dataTableSpec = templateTable.getDataTableSpec();
-                int columnIndex = dataTableSpec.findColumnIndex(columnName);
-                if (columnIndex == -1) {
-                     //This means we are parsing a null data cell in an unknown column which there's no default for
-                     result =  DataType.getMissingCell();
-                } else {
-                    result = getDataCellByColumnName(templateTable, columnName);
-                }
-            } else {
-                throw new InvalidSettingsException(
-                    "The injected row contains missing values."
-                    + "\nThe node is configured to not accept missing values in the input."
-                );
-            }
+            return handleMissingDataCell(columnName, templateTable, missingValuesHandling);
         } else {
             String stringCell = getStringRepresentation(jsonCell);
-            result = factory.createDataCellOfType(columnType, stringCell);
+            DataCell result = factory.createDataCellOfType(columnType, stringCell);
+            if (result == null) {
+                throw new InvalidSettingsException(
+                    "The value '" + jsonCell + "' of column '" + columnName + "' cannot be parsed to the expected '"
+                    + columnType + "' type"
+                );
+            } else {
+                return result;
+            }
         }
+    }
 
-        if (result == null) {
+    private static DataCell handleMissingDataCell(
+            final String columnName,
+            final BufferedDataTable templateTable,
+            final MissingValuesHandling missingValuesHandling) throws InvalidSettingsException {
+        DataCell result = null;
+        if (missingValuesHandling == MissingValuesHandling.ACCEPT) {
+            result = DataType.getMissingCell();
+        } else if (missingValuesHandling == MissingValuesHandling.FILL_WITH_DEFAULT) {
+            DataTableSpec dataTableSpec = templateTable.getDataTableSpec();
+            int columnIndex = dataTableSpec.findColumnIndex(columnName);
+            if (columnIndex == -1) {
+                 //This means we are parsing a null data cell in an unknown column which there's no default for
+                 result =  DataType.getMissingCell();
+            } else {
+                result = getDataCellByColumnName(templateTable, columnName);
+            }
+        } else {
             throw new InvalidSettingsException(
-                "The value '" + jsonCell + "' of column '" + columnName + "' cannot be parsed to the expected '"
-                + columnType + "' type"
+                "The injected row contains missing values."
+                + "\nThe node is configured to not accept missing values in the input."
             );
         }
 
@@ -423,13 +430,13 @@ public class ContainerRowMapper {
             final BufferedDataTable templateTable,
             final MissingColumnHandling missingColumnHandling,
             final String columnName) {
-        DataCell result = null;
         if (missingColumnHandling == FILL_WITH_MISSING_VALUE) {
-            result = DataType.getMissingCell();
+            return DataType.getMissingCell();
         } else if (missingColumnHandling == FILL_WITH_DEFAULT_VALUE) {
-            result = getDataCellByColumnName(templateTable, columnName);
+            return getDataCellByColumnName(templateTable, columnName);
+        } else {
+            return null;
         }
-        return result;
     }
 
     private static DataCell getDataCellByColumnName(final BufferedDataTable templateTable, final String columnName) {
