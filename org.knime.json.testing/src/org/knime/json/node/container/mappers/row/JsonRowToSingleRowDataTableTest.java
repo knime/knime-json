@@ -46,18 +46,11 @@
  * History
  *   Dec 13, 2018 (Tobias Urhaug, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.json.node.container.mappers;
+package org.knime.json.node.container.mappers.row;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.junit.Test;
@@ -65,7 +58,6 @@ import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
-import org.knime.core.data.container.ContainerTable;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -73,29 +65,20 @@ import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.BufferedDataTable;
-import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.Node;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeModel;
-import org.knime.core.node.port.PortType;
-import org.knime.core.node.workflow.SingleNodeContainer;
-import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 import org.knime.json.node.container.DataTableAssert;
 import org.knime.json.node.container.mappers.BufferedDataTableToContainerTableTest.TestBufferedDataTableBuilder;
-import org.knime.json.node.container.mappers.row.ContainerRowMapper;
 import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
-import org.knime.json.util.JSONUtil;
 
 /**
  * Tests suite for mapping {@link JsonValue} representing a single row of data to a single row {@link DataTable}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerRowMapperTest {
+public class JsonRowToSingleRowDataTableTest extends ContainerRowMapperTest {
 
     /**
      * Tests that a null input throws an exception.
@@ -853,83 +836,6 @@ public class ContainerRowMapperTest {
                 DataType.getMissingCell()
             );
         }
-    }
-
-    private class JsonValueBuilder {
-
-        private final JsonObjectBuilder m_builder;
-        private final JsonBuilderFactory m_factory;
-        private final JsonArrayBuilder m_arrayBuilder;
-
-        JsonValueBuilder() {
-            m_factory = Json.createBuilderFactory(null);
-            m_builder = m_factory.createObjectBuilder();
-            m_arrayBuilder = m_factory.createArrayBuilder();
-        }
-
-        JsonValueBuilder withStringObject(final String key, final String value) {
-            m_builder.add(key, value);
-            return this;
-        }
-
-        JsonValueBuilder withDoubleObject(final String key, final double value) {
-            m_builder.add(key, value);
-            return this;
-        }
-
-        JsonValueBuilder withIntObject(final String key, final int value) {
-            m_builder.add(key, value);
-            return this;
-        }
-
-        JsonValueBuilder withLongObject(final String key, final long value) {
-            m_builder.add(key, value);
-            return this;
-        }
-
-        JsonValueBuilder withBooleanObject(final String key, final boolean value) {
-            m_builder.add(key, value);
-            return this;
-        }
-
-        JsonValueBuilder withStringArrayObject(final String key, final String... values) {
-            for (String value : values) {
-                m_arrayBuilder.add(value);
-            }
-            m_builder.add(key, m_arrayBuilder);
-            return this;
-        }
-
-        JsonValueBuilder withBigIntegerObject(final String key, final BigInteger value) {
-            m_builder.add(key, value);
-            return this;
-        }
-
-        public JsonValueBuilder withJsonPersonObject() {
-            JsonObjectBuilder personBuilder = m_factory.createObjectBuilder();
-            JsonObject personObject = personBuilder.add("name", "Flodve").add("age", 32).build();
-            m_builder.add("person", personObject);
-            return this;
-        }
-
-        JsonValueBuilder withNullObject(final String key) {
-            m_builder.addNull(key);
-            return this;
-        }
-
-        JsonValue build() throws IOException {
-            return JSONUtil.parseJSONValue(m_builder.build().toString());
-        }
-
-    }
-
-    @SuppressWarnings("deprecation")
-    private static ExecutionContext getTestExecutionCtx() {
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        NodeFactory<NodeModel> dummyFactory =
-            (NodeFactory)new VirtualParallelizedChunkPortObjectInNodeFactory(new PortType[0]);
-        return new ExecutionContext(new DefaultNodeProgressMonitor(), new Node(dummyFactory),
-            SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<Integer, ContainerTable>());
     }
 
 }
