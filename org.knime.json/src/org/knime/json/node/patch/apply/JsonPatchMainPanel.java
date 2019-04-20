@@ -53,8 +53,6 @@ import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 
-import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
@@ -76,7 +74,6 @@ import org.knime.rsyntaxtextarea.KnimeSyntaxTextArea;
 class JsonPatchMainPanel extends JSnippetPanel {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JsonPatchMainPanel.class);
 
-    private KnimeSyntaxTextArea m_textEditor;
 
     /**
      * Constucts the main panel.
@@ -96,7 +93,6 @@ class JsonPatchMainPanel extends JSnippetPanel {
                 return Collections.singleton(JsonPatchManipulator.JSON_PATCH_CATEGORY);
             }
         }, new JavaScriptingCompletionProvider());
-        m_textEditor.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
     }
 
     /**
@@ -104,25 +100,14 @@ class JsonPatchMainPanel extends JSnippetPanel {
      */
     @Override
     protected JComponent createEditorComponent() {
-        m_textEditor = new KnimeSyntaxTextArea(20, 60);
-        final RSyntaxTextArea textArea = m_textEditor;
-        // An AutoCompletion acts as a "middle-man" between a text component
-        // and a CompletionProvider. It manages any options associated with
-        // the auto-completion (the popup trigger key, whether to display a
-        // documentation window along with completion choices, etc.). Unlike
-        // CompletionProviders, instances of AutoCompletion cannot be shared
-        // among multiple text components.
-        AutoCompletion ac = new AutoCompletion(getCompletionProvider());
-        ac.setShowDescWindow(true);
+        final RTextScrollPane scrollPane = (RTextScrollPane)super.createEditorComponent();
 
-        ac.install(textArea);
-        setExpEdit(textArea);
-        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        scrollPane.setLineNumbersEnabled(true);
+        scrollPane.setIconRowHeaderEnabled(true);
 
-        RTextScrollPane textScrollPane = new RTextScrollPane(textArea);
-        textScrollPane.setLineNumbersEnabled(true);
-        textScrollPane.setIconRowHeaderEnabled(true);
-        return textScrollPane;
+        getTextEditor().setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+
+        return scrollPane;
     }
 
     /**
@@ -131,27 +116,31 @@ class JsonPatchMainPanel extends JSnippetPanel {
     @Override
     protected void onSelectionInManipulatorList(final Object selected) {
         if (selected instanceof JsonPatchManipulator) {
-            JsonPatchManipulator patch = (JsonPatchManipulator)selected;
-            if (m_textEditor.getText().trim().isEmpty()) {
-                m_textEditor.setText("[\n]\n");
-                m_textEditor.setCaretPosition("[\n".length());
+            final JsonPatchManipulator patch = (JsonPatchManipulator)selected;
+            final KnimeSyntaxTextArea textEditor = getTextEditor();
+
+            if (textEditor.getText().trim().isEmpty()) {
+                textEditor.setText("[\n]\n");
+                textEditor.setCaretPosition("[\n".length());
             }
-            final int afterFirstBracket = m_textEditor.getText().indexOf('[') + 1;
-            if (m_textEditor.getCaretPosition() <= afterFirstBracket) {
-                m_textEditor.setCaretPosition(afterFirstBracket);
+            final int afterFirstBracket = textEditor.getText().indexOf('[') + 1;
+            if (textEditor.getCaretPosition() <= afterFirstBracket) {
+                textEditor.setCaretPosition(afterFirstBracket);
             }
-            int caretPosition = m_textEditor.getCaretPosition();
-            boolean isLast = true, isFirst = true;
+
+            final int caretPosition = textEditor.getCaretPosition();
+            boolean isLast = true;
+            boolean isFirst = true;
             try {
-                isFirst = m_textEditor.getText().indexOf(',') < 0
-                    || m_textEditor.getCaretPosition() < m_textEditor.getText().indexOf(',') + 1;
-                isLast = m_textEditor.getText(caretPosition, m_textEditor.getText().length() - caretPosition).trim()
+                isFirst = textEditor.getText().indexOf(',') < 0
+                    || textEditor.getCaretPosition() < textEditor.getText().indexOf(',') + 1;
+                isLast = textEditor.getText(caretPosition, textEditor.getText().length() - caretPosition).trim()
                     .startsWith("]");
             } catch (final BadLocationException e) {
                 LOGGER.coding("Not fatal error, but should not happen, requires no action.", e);
             }
-            String selectedString = m_textEditor.getSelectedText();
-            boolean selectionIsPath = selectedIsPath(selectedString);
+            String selectedString = textEditor.getSelectedText();
+            final boolean selectionIsPath = selectedIsPath(selectedString);
             if (selectionIsPath) {
                 selectedString = fixQuotes(selectedString);
             }
@@ -187,11 +176,10 @@ class JsonPatchMainPanel extends JSnippetPanel {
             } else {
                 textToInsert += ",\n";
             }
-            int origPosition = m_textEditor.getCaretPosition();
-            m_textEditor.replaceSelection(textToInsert);
-            m_textEditor.setCaretPosition(origPosition + position);
-            m_textEditor.requestFocus();
-
+            final int origPosition = textEditor.getCaretPosition();
+            textEditor.replaceSelection(textToInsert);
+            textEditor.setCaretPosition(origPosition + position);
+            textEditor.requestFocus();
         } else {
             super.onSelectionInManipulatorList(selected);
         }
@@ -219,12 +207,5 @@ class JsonPatchMainPanel extends JSnippetPanel {
 
     private static boolean selectedIsPath(final String selection) {
         return selection != null && (selection.startsWith("\"/") || selection.startsWith("/"));
-    }
-
-    /**
-     * @return the textEditor
-     */
-    public KnimeSyntaxTextArea getTextEditor() {
-        return m_textEditor;
     }
 }

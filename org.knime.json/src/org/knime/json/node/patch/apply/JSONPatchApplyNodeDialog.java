@@ -129,6 +129,7 @@ public final class JSONPatchApplyNodeDialog extends RemoveOrAddColumnDialog<JSON
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
         super.loadSettingsFrom(settings, specs);
+        m_mainControl.installAutoCompletion();
         m_patchType.setSelectedItem(getSettings().getPatchType());
         m_mainControl.update(getSettings().getJsonPatch(), (DataTableSpec)specs[0], getAvailableFlowVariables());
         m_keepOriginal.setSelected(getSettings().isKeepOriginalWhenTestFails());
