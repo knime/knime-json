@@ -50,17 +50,11 @@ package org.knime.json.node.container.output.table;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import javax.json.JsonValue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.BufferedDataTable;
@@ -74,10 +68,8 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
-import org.knime.core.util.FileUtil;
+import org.knime.json.node.container.io.FilePathOrURLWriter;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The model implementation of the Container Output (Table) node.
@@ -128,32 +120,15 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
     private void writeOutputAsJsonFileIfDestinationPresent() throws InvalidSettingsException {
         Optional<String> outputPathOrUrlOptional = m_configuration.getOutputPathOrUrl();
         if (outputPathOrUrlOptional.isPresent()) {
-            writeOutputAsJsonFile(outputPathOrUrlOptional.get());
-        }
-    }
-
-    private void writeOutputAsJsonFile(final String outputPathOrUrl) throws InvalidSettingsException {
-        try {
-            URL url = FileUtil.toURL(outputPathOrUrl);
-            if (isLocalURL(url)) {
-                Path path = FileUtil.resolveToPath(url);
-                try (OutputStream outputStream = Files.newOutputStream(path)) {
-                    new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_inputTable));
-                }
-            } else {
-                URLConnection urlConnection = FileUtil.openOutputConnection(url, "PUT");
-                try (OutputStream outputStream = urlConnection.getOutputStream()) {
-                    new ObjectMapper().writeValue(outputStream, ContainerTableMapper.toContainerTable(m_inputTable));
-                }
+            String outputPathOrUrl = outputPathOrUrlOptional.get();
+            try {
+                FilePathOrURLWriter.writeAsJson(outputPathOrUrl, ContainerTableMapper.toContainerTable(m_inputTable));
+            } catch (IOException e) {
+                throw new InvalidSettingsException("Error when writing the table as json file ", e);
+            } catch (URISyntaxException e) {
+                throw new InvalidSettingsException("The path or URL '" + outputPathOrUrl + "' is invalid", e);
             }
-        } catch (IOException | URISyntaxException e) {
-            throw new InvalidSettingsException("Cannot write to configured path: \"" + outputPathOrUrl + "\"");
         }
-    }
-
-    private static boolean isLocalURL(final URL url) {
-        return StringUtils.equalsIgnoreCase(url.getProtocol(), "knime")
-                || StringUtils.equalsIgnoreCase(url.getProtocol(), "file");
     }
 
     /**
