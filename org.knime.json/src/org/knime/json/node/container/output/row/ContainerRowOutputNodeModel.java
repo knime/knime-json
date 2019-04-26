@@ -22,6 +22,8 @@ import org.knime.core.node.NodeSettingsWO;
  */
 public class ContainerRowOutputNodeModel extends NodeModel {
 
+    private ContainerRowOutputNodeConfiguration m_configuration;
+
     /**
      * Constructor for the node model.
      */
@@ -52,7 +54,7 @@ public class ContainerRowOutputNodeModel extends NodeModel {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
-         // TODO: implement
+         m_configuration.save(settings);
     }
 
     /**
@@ -61,7 +63,7 @@ public class ContainerRowOutputNodeModel extends NodeModel {
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
             throws InvalidSettingsException {
-        // TODO: implement
+        m_configuration = new ContainerRowOutputNodeConfiguration().loadInModel(settings);
     }
 
     /**
@@ -70,7 +72,7 @@ public class ContainerRowOutputNodeModel extends NodeModel {
     @Override
     protected void validateSettings(final NodeSettingsRO settings)
             throws InvalidSettingsException {
-        // TODO: implementb
+        new ContainerRowOutputNodeConfiguration().loadInModel(settings);
     }
 
     /**
