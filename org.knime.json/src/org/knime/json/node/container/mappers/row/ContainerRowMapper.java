@@ -62,6 +62,7 @@ import java.util.Map.Entry;
 import javax.json.JsonValue;
 
 import org.knime.base.node.io.filereader.DataCellFactory;
+import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -70,6 +71,9 @@ import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataTableSpecCreator;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DoubleValue;
+import org.knime.core.data.IntValue;
+import org.knime.core.data.LongValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.ColumnRearranger;
@@ -87,6 +91,7 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
+import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -109,8 +114,7 @@ public class ContainerRowMapper {
     /**
      * Converts a JsonValue input containing key value pairs to a single row table where the key of each pair is the
      * column name and the value the corresponding cell value. Each column gets its type inferred from the cell value,
-     * where only the primitive types String, Boolean, Integer, Long and Double are valid.
-     * <br>
+     * where only the primitive types String, Boolean, Integer, Long and Double are valid. <br>
      * <br>
      * Only simple JsonValues are allowed. JSON Arrays and JSON objects will throw InvalidSettingsException.
      *
@@ -180,7 +184,7 @@ public class ContainerRowMapper {
             columnType = LongCell.TYPE;
         } else if (cellValue instanceof ArrayList) {
             throw new InvalidSettingsException("JSON arrays are not supported");
-        } else if (cellValue instanceof BigInteger){
+        } else if (cellValue instanceof BigInteger) {
             throw new InvalidSettingsException("Numeric integer values larger than 2^64 are not supported");
         } else if (cellValue instanceof Map) {
             // this indicates that the cell has a json object structure and should be parsed as a json string
@@ -226,7 +230,7 @@ public class ContainerRowMapper {
         String result = jsonCell.toString();
         if (jsonCell instanceof Map) { // checks if the cell is a json object and can be parsed to its string value
             @SuppressWarnings("unchecked")
-            Map<String, Object> jsonMap = (Map<String, Object>) jsonCell;
+            Map<String, Object> jsonMap = (Map<String, Object>)jsonCell;
             try {
                 result = OBJECT_MAPPER.writeValueAsString(jsonMap);
             } catch (JsonProcessingException e) {
@@ -239,9 +243,8 @@ public class ContainerRowMapper {
 
     /**
      * Converts a JsonValue input containing key value pairs to a single row table where the key of each pair is the
-     * column name and the value is the corresponding cell value. Each value of a column will be be parsed according
-     * to the given template row specification if compatible, otherwise an exception will be thrown.
-     * <br>
+     * column name and the value is the corresponding cell value. Each value of a column will be be parsed according to
+     * the given template row specification if compatible, otherwise an exception will be thrown. <br>
      * <br>
      * Only simple JsonValues are allowed. JSON Arrays and JSON objects will throw InvalidSettingsException.
      *
@@ -271,8 +274,8 @@ public class ContainerRowMapper {
      * Creates a {@link DataTableSpec} according to a template specification and an input.
      *
      * If the input does not contain all the columns specified in the template specification, the parameter
-     * MissingColumnHandling decides whether the specification should remain equal to the template specification,
-     * if the missing columns should be ignored and removed or if an error should be thrown.
+     * MissingColumnHandling decides whether the specification should remain equal to the template specification, if the
+     * missing columns should be ignored and removed or if an error should be thrown.
      *
      * @param input JsonValue representing a data table row
      * @param templateRowSpec the template row specification
@@ -310,8 +313,7 @@ public class ContainerRowMapper {
                 } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
                     throw new InvalidSettingsException(
                         "The injected row does not contain all the columns specified in the template."
-                        + "\nThe node is configured to fail on missing columns."
-                    );
+                            + "\nThe node is configured to fail on missing columns.");
                 }
             }
         }
@@ -319,9 +321,8 @@ public class ContainerRowMapper {
         return columnRearranger.createSpec();
     }
 
-    private static DataTableSpec appendSuperfluousColumns(
-            final DataTableSpec spec,
-            final Map<String, Object> jsonRow) throws InvalidSettingsException {
+    private static DataTableSpec appendSuperfluousColumns(final DataTableSpec spec, final Map<String, Object> jsonRow)
+            throws InvalidSettingsException {
         DataTableSpecCreator dataTableSpecCreator = new DataTableSpecCreator(spec);
 
         for (Entry<String, Object> entry : jsonRow.entrySet()) {
@@ -343,7 +344,6 @@ public class ContainerRowMapper {
             final ExecutionContext exec) throws InvalidSettingsException {
         Map<String, Object> jsonRow = parseJsonToMap(input);
 
-
         DataCellFactory factory = new DataCellFactory(exec);
         List<DataCell> dataCellList = new ArrayList<>();
         for (int i = 0; i < rowSpec.getNumColumns(); i++) {
@@ -364,11 +364,7 @@ public class ContainerRowMapper {
                 dataCellList.add(parsedDataCell);
             } else { // missing columns handling
                 DataCell dataCell =
-                        createDataCellForMissingColumn(
-                            templateTable,
-                            inputHandling.missingColumnHandling(),
-                            columnName
-                        );
+                    createDataCellForMissingColumn(templateTable, inputHandling.missingColumnHandling(), columnName);
                 dataCellList.add(dataCell);
             }
         }
@@ -390,10 +386,8 @@ public class ContainerRowMapper {
             String stringCell = getStringRepresentation(jsonCell);
             DataCell result = factory.createDataCellOfType(columnType, stringCell);
             if (result == null) {
-                throw new InvalidSettingsException(
-                    "The value '" + jsonCell + "' of column '" + columnName + "' cannot be parsed to the expected '"
-                    + columnType + "' type"
-                );
+                throw new InvalidSettingsException("The value '" + jsonCell + "' of column '" + columnName
+                    + "' cannot be parsed to the expected '" + columnType + "' type");
             } else {
                 return result;
             }
@@ -411,16 +405,14 @@ public class ContainerRowMapper {
             DataTableSpec dataTableSpec = templateTable.getDataTableSpec();
             int columnIndex = dataTableSpec.findColumnIndex(columnName);
             if (columnIndex == -1) {
-                 //This means we are parsing a null data cell in an unknown column which there's no default for
-                 result =  DataType.getMissingCell();
+                //This means we are parsing a null data cell in an unknown column which there's no default for
+                result = DataType.getMissingCell();
             } else {
                 result = getDataCellByColumnName(templateTable, columnName);
             }
         } else {
-            throw new InvalidSettingsException(
-                "The injected row contains missing values."
-                + "\nThe node is configured to not accept missing values in the input."
-            );
+            throw new InvalidSettingsException("The injected row contains missing values."
+                + "\nThe node is configured to not accept missing values in the input.");
         }
 
         return result;
@@ -452,16 +444,69 @@ public class ContainerRowMapper {
         return result;
     }
 
-    private static Map<String, Object> parseJsonToMap(final JsonValue input)throws InvalidSettingsException {
+    private static Map<String, Object> parseJsonToMap(final JsonValue input) throws InvalidSettingsException {
         try {
-            return OBJECT_MAPPER.readValue(input.toString(), new TypeReference<LinkedHashMap<String, Object>>(){});
+            return OBJECT_MAPPER.readValue(input.toString(), new TypeReference<LinkedHashMap<String, Object>>() {});
         } catch (IOException e) {
-            throw new InvalidSettingsException(
-                "Error when parsing input. The input must have a simple map format "
-                + "(only key/value pairs) and lists are not allowed."
-                , e
-            );
+            throw new InvalidSettingsException("Error when parsing input. The input must have a simple map format "
+                + "(only key/value pairs) and lists are not allowed.", e);
         }
+    }
+
+    /**
+     * Maps a {@link BufferedDataTable} to a simple json representation of its first row.
+     *
+     * Each column name is mapped to the key of a json object and the first cell of the corresponding column is mapped
+     * to the value of the same json object. Primitive types are preserved, all complex types are mapped to their
+     * string representation.
+     *
+     * @param input the table to be mapped
+     * @return a json representation of the first row of the input table
+     * @throws IOException if json mapping fails
+     */
+    public static JsonValue firstRowToJsonValue(final BufferedDataTable input) throws IOException {
+        CheckUtils.checkArgumentNotNull(input);
+
+        Map<String, Object> rowMap = new LinkedHashMap<>();
+        DataRow firstRow = firstRow(input);
+        if (firstRow != null) {
+            String[] columnNames = input.getDataTableSpec().getColumnNames();
+            for (int i = 0; i < firstRow.getNumCells(); i++) {
+                DataCell dataCell = firstRow.getCell(i);
+                rowMap.put(columnNames[i], asObject(dataCell));
+            }
+        }
+
+        String rowString = new ObjectMapper().writeValueAsString(rowMap);
+        return JSONUtil.parseJSONValue(rowString);
+    }
+
+    private static DataRow firstRow(final BufferedDataTable input) {
+        DataRow firstRow = null;
+        try (CloseableRowIterator iterator = input.iterator()) {
+            if (iterator.hasNext()) {
+                firstRow = iterator.next();
+            }
+        }
+        return firstRow;
+    }
+
+    private static Object asObject(final DataCell dataCell) {
+        Object cellObject;
+        if (dataCell.isMissing()) {
+            cellObject = null;
+        } else if (dataCell.getType().getCellClass().equals(IntCell.class)) {
+            cellObject = ((IntValue) dataCell).getIntValue();
+        } else if (dataCell.getType().getCellClass().equals(DoubleCell.class)) {
+            cellObject = ((DoubleValue) dataCell).getDoubleValue();
+        } else if (dataCell.getType().getCellClass().equals(LongCell.class)) {
+            cellObject = ((LongValue) dataCell).getLongValue();
+        } else if (dataCell.getType().getCellClass().equals(BooleanCell.class)) {
+            cellObject = ((BooleanValue) dataCell).getBooleanValue();
+        } else {
+            cellObject = dataCell.toString();
+        }
+        return cellObject;
     }
 
 }
