@@ -50,7 +50,6 @@ package org.knime.json.node.jsonpath.multi;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -101,7 +100,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter;
@@ -361,28 +359,31 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
         for (OutputType outputType : OutputType.values()) {
             outputComboBox.addItem(outputType);
         }
-        final TableColumn colName = new TableColumn(0, 20, new TableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(final JTable table, final Object value,
-                final boolean isSelected, final boolean hasFocus, final int row, final int column) {
-                String text = (String)((Pair<?, ?>)value).getFirst();
-                OutputType outputType = (OutputType)((Pair<?, ?>)value).getSecond();
-                JLabel ret =
-                    new JLabel(text, outputType == null ? DataType.getMissingCell().getType().getIcon() :
-                        outputType.getIcon(), SwingConstants.HORIZONTAL);
-                //                ret.setOpaque(true);
-                JPanel res = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
-                res.add(ret);
-                if (isSelected) {
-                    res.setForeground(table.getSelectionForeground());
-                    res.setBackground(table.getSelectionBackground());
-                } else {
-                    res.setForeground(table.getForeground());
-                    res.setBackground(table.getBackground());
-                }
-
-                return res;
+        final TableColumn colName = new TableColumn(0, 20, (table, value, isSelected, hasFocus, row, column) -> {
+            // fixes AP-11201 (seems a Mac thing only - on Windows/Linux this method is not called with null)
+            if (value == null) {
+                return null;
             }
+
+            @SuppressWarnings("unchecked")
+            final Pair<String, OutputType> pValue = (Pair<String, OutputType>)value;
+            final String text = pValue.getFirst();
+            final OutputType outputType = pValue.getSecond();
+            final JLabel ret =
+                new JLabel(text, outputType == null ? DataType.getMissingCell().getType().getIcon() :
+                    outputType.getIcon(), SwingConstants.HORIZONTAL);
+            //                ret.setOpaque(true);
+            final JPanel res = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+            res.add(ret);
+            if (isSelected) {
+                res.setForeground(table.getSelectionForeground());
+                res.setBackground(table.getSelectionBackground());
+            } else {
+                res.setForeground(table.getForeground());
+                res.setBackground(table.getBackground());
+            }
+
+            return res;
         }, new DefaultCellEditor(outputComboBox)), jsonPath = new TableColumn(1, 25), isPaths =
             new TableColumn(3, 40, new BooleanCellRenderer("Return paths instead of value"), new DefaultCellEditor(
                 checkBox)), resultIsList =
