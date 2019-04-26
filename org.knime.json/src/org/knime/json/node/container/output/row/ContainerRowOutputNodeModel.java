@@ -2,8 +2,14 @@ package org.knime.json.node.container.output.row;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Optional;
+
+import javax.json.JsonValue;
 
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.container.CloseableRowIterator;
+import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -12,6 +18,10 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.dialog.ExternalNodeData;
+import org.knime.core.node.dialog.OutputNode;
+import org.knime.json.node.container.io.FilePathOrURLWriter;
+import org.knime.json.node.container.mappers.row.ContainerRowMapper;
 
 /**
  * This is the model implementation of ContainerRowOutput.
@@ -20,9 +30,10 @@ import org.knime.core.node.NodeSettingsWO;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-public class ContainerRowOutputNodeModel extends NodeModel {
+public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode {
 
-    private ContainerRowOutputNodeConfiguration m_configuration;
+    private ContainerRowOutputNodeConfiguration m_configuration = new ContainerRowOutputNodeConfiguration();
+    private JsonValue m_outputRow;
 
     /**
      * Constructor for the node model.
@@ -35,9 +46,37 @@ public class ContainerRowOutputNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
-            final ExecutionContext exec) throws Exception {
-        return new BufferedDataTable[]{};
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
+            throws Exception {
+        m_outputRow = ContainerRowMapper.firstRowToJsonValue(inData[0]);
+        writeOutputAsJsonFileIfDestinationPresent();
+        return new BufferedDataTable[]{ createTableFromFirstRow(exec, inData[0]) };
+    }
+
+    private void writeOutputAsJsonFileIfDestinationPresent() throws InvalidSettingsException {
+        Optional<String> outputPathOrUrlOptional = m_configuration.getOutputPathOrUrl();
+        if (outputPathOrUrlOptional.isPresent()) {
+            String outputPathOrUrl = outputPathOrUrlOptional.get();
+            try {
+                FilePathOrURLWriter.writeAsJson(outputPathOrUrl, m_outputRow);
+            } catch (IOException e) {
+                throw new InvalidSettingsException("Error when writing the table as json file ", e);
+            } catch (URISyntaxException e) {
+                throw new InvalidSettingsException("The path or URL '" + outputPathOrUrl + "' is invalid", e);
+            }
+        }
+    }
+
+    private static BufferedDataTable createTableFromFirstRow(final ExecutionContext exec,
+        final BufferedDataTable inputTable) {
+        BufferedDataContainer dataContainer = exec.createDataContainer(inputTable.getDataTableSpec());
+        try (CloseableRowIterator iterator = inputTable.iterator()) {
+            if (iterator.hasNext()) {
+                dataContainer.addRowToTable(iterator.next());
+            }
+        }
+        dataContainer.close();
+        return dataContainer.getTable();
     }
 
     /**
@@ -46,7 +85,19 @@ public class ContainerRowOutputNodeModel extends NodeModel {
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
             throws InvalidSettingsException {
-        return new DataTableSpec[]{null};
+        return inSpecs;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ExternalNodeData getExternalOutput() {
+        return
+            ExternalNodeData.builder(m_configuration.getParameterName())
+                .description(m_configuration.getDescription())
+                .jsonValue(m_outputRow)
+                .build();
     }
 
     /**
