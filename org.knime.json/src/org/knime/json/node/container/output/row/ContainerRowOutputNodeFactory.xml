@@ -6,34 +6,39 @@
 	<name>Container Output (Row)</name>
 
 	<shortDescription>
-
+		Reads the content of a table and makes its first row available to an external caller (e.g a Call Local/Remote 
+		Workflow (Row Based) node).
 	</shortDescription>
 
 	<fullDescription>
-		<intro>Insert long description here...</intro>
+		<intro>
+			Reads the first row of an input table and makes it available to an external caller (i.e. the <i>Call 
+			Local/Remote Workflow (Row Based)</i> nodes or an application consuming the workflow as a KNIME server web 
+			service). A configured parameter enables the external caller to fetch the row from the <i>Container Output 
+			(Row)</i> node.<br/>
+			<br/>
+		
+			If a data table is connected to the input port, the node will simply forward the first row of this table to 
+			the output port.
+		</intro>
 
 
-		<option name="short name of first option (like in the dialog)">description of first option</option>
-		<option name="short name of second option (like in the dialog)">description of second option</option>
-		<!-- possibly more options that can also be grouped by tabs -->
-		<!-- <tab name="Standard Options"> <option name="short name of first option 
-			(like in the dialog)">description of first option</option> <option name="short 
-			name of second option (like in the dialog)">description of second option</option> 
-			</tab> <tab name="Advanced Options"> <option name="short name of first advanced 
-			option (like in the dialog)">description of first advanced option</option> 
-			</tab> -->
+		<option name="Parameter name">
+			A name for the output parameter (preferably unique). This name is exposed in the REST interface
+		</option>
+		<option name="Description">
+			A description of the output parameter. The description is shown in the API specification of the REST
+            interface. 
+		</option>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="In-Port name">Description of first input port...
+		<inPort index="0" name="Any input table">
+			The table which defines the output of the workflow. Only the first row is made available to external 
+			callers.
 		</inPort>
-		<!-- possibly more input ports here -->
-		<outPort index="0" name="Out-Port name">Description of first output port...
+		<outPort index="0" name="First row of the input table forwarded">
+			The first row of the input table is directly forwarded to the output port.
 		</outPort>
-		<!-- possibly more output ports here -->
 	</ports>
-	<views>
-		<view index="0" name="name of first view">Description of first view...</view>
-		<!--view index="1" name="name of second view">Description of second view...</view -->
-	</views>
 </knimeNode>
