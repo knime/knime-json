@@ -40,7 +40,8 @@
       </node>
       <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
       </node>
-   	  <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory" id="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory"/>
+   	  <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory">
+   	  </node>
 </extension>
    <extension point="org.knime.workbench.repository.registeredFileExtensions">
       <FileExtensionMapping NodeFactory="org.knime.json.node.reader.JSONReaderNodeFactory">

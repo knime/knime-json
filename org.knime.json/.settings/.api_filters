@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component id="org.knime.json" version="2">
+    <resource path="src/org/knime/json/node/container/output/row/ContainerRowOutputNodeModel.java" type="org.knime.json.node.container.output.row.ContainerRowOutputNodeModel">
+        <filter id="574619656">
+            <message_arguments>
+                <message_argument value="OutputNode"/>
+                <message_argument value="ContainerRowOutputNodeModel"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/output/table/ContainerTableOutputNodeModel.java" type="org.knime.json.node.container.output.table.ContainerTableOutputNodeModel">
+        <filter id="574619656">
+            <message_arguments>
+                <message_argument value="OutputNode"/>
+                <message_argument value="ContainerTableOutputNodeModel"/>
+            </message_arguments>
+        </filter>
+    </resource>
+</component>

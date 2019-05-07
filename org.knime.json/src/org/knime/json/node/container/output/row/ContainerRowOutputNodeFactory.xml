@@ -6,7 +6,7 @@
 	<name>Container Output (Row)</name>
 
 	<shortDescription>
-		Reads the content of a table and makes its first row available to an external caller (e.g a Call Local/Remote 
+		Reads the content of a table and makes its first row available to an external caller (e.g. a Call Local/Remote 
 		Workflow (Row Based) node).
 	</shortDescription>
 
@@ -24,7 +24,7 @@
 
 
 		<option name="Parameter name">
-			A name for the output parameter (preferably unique). This name is exposed in the REST interface
+			A name for the output parameter (preferably unique). This name is exposed in the REST interface.
 		</option>
 		<option name="Description">
 			A description of the output parameter. The description is shown in the API specification of the REST
