@@ -74,6 +74,7 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
+import org.knime.core.data.RowIterator;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.ColumnRearranger;
@@ -464,7 +465,7 @@ public class ContainerRowMapper {
      * @return a json representation of the first row of the input table
      * @throws IOException if json mapping fails
      */
-    public static JsonValue firstRowToJsonValue(final BufferedDataTable input) throws IOException {
+    public static JsonValue firstRowToJsonValue(final DataTable input) throws IOException {
         CheckUtils.checkArgumentNotNull(input);
 
         Map<String, Object> rowMap = new LinkedHashMap<>();
@@ -481,12 +482,11 @@ public class ContainerRowMapper {
         return JSONUtil.parseJSONValue(rowString);
     }
 
-    private static DataRow firstRow(final BufferedDataTable input) {
+    private static DataRow firstRow(final DataTable input) {
         DataRow firstRow = null;
-        try (CloseableRowIterator iterator = input.iterator()) {
-            if (iterator.hasNext()) {
-                firstRow = iterator.next();
-            }
+        RowIterator iterator = input.iterator();
+        if (iterator.hasNext()) {
+            firstRow = iterator.next();
         }
         return firstRow;
     }

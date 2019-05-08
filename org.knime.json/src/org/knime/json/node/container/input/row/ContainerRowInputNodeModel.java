@@ -54,6 +54,7 @@ import java.util.Optional;
 
 import javax.json.JsonValue;
 
+import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.node.BufferedDataContainer;
@@ -168,8 +169,7 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
     private DataTableSpec getTemplateTableSpec(final JsonValue externalInput, final DataTableSpec templateRowSpec)
             throws InvalidSettingsException {
         ContainerRowMapperInputHandling containerRowInputHandling = m_configuration.createMapperInputHandling();
-        return
-            ContainerRowMapper.toTableSpec(externalInput, templateRowSpec, containerRowInputHandling);
+        return ContainerRowMapper.toTableSpec(externalInput, templateRowSpec, containerRowInputHandling);
     }
 
     private JsonValue getExternalInput() throws InvalidSettingsException {
@@ -218,11 +218,25 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
      */
     @Override
     public ExternalNodeData getInputData() {
+        JsonValue templateRow = getTemplateRowAsSimpleJson();
         return ExternalNodeData
                 .builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
-                .jsonValue(m_configuration.getTemplateRow())
+                .jsonValue(templateRow)
                 .build();
+    }
+
+    private JsonValue getTemplateRowAsSimpleJson() {
+        JsonValue templateRow = null;
+        try {
+            DataTable templateRowAsDataTable = ContainerTableMapper.toDataTable(m_configuration.getTemplateRow())[0];
+            templateRow = ContainerRowMapper.firstRowToJsonValue(templateRowAsDataTable);
+        } catch (InvalidSettingsException e) {
+            throw new RuntimeException("The configured template row must conform to the ContainerTableJsonSchema", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Error when parsing the configured template to json", e);
+        }
+        return templateRow;
     }
 
     /**
