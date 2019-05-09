@@ -488,6 +488,9 @@ public class ContainerRowMapper {
         if (iterator.hasNext()) {
             firstRow = iterator.next();
         }
+        if (iterator instanceof CloseableRowIterator) {
+            ((CloseableRowIterator) iterator).close();
+        }
         return firstRow;
     }
 
