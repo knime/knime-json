@@ -309,8 +309,35 @@ public class DataTableToJsonRowTest extends ContainerRowMapperTest {
         JsonValue expectedJson =
                 new JsonValueBuilder()
                     .withStringObject("local-date", "2019-03-03")
-                    .withStringObject("json", jsonDataCell.toString())
+                    .withJsonValueObject("json", jsonCell)
                     .build();
+
+        assertEquals(expectedJson, jsonValueRow);
+    }
+
+    /**
+     * Tests that json is mapped to its primitive value and not a string.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testJsonIsMappedToItsValue() throws Exception {
+        JsonValue jsonCell =
+                new JsonValueBuilder()
+                    .withStringObject("hello", "test!")
+                    .withJsonPersonObject()
+                    .build();
+        DataCell jsonDataCell = JSONCellFactory.create(jsonCell);
+
+        BufferedDataTable simpleTable =
+                new TestBufferedDataTableBuilder()
+                    .withColumnNames("json-column")
+                    .withColumnTypes(JSONCell.TYPE)
+                    .withTableRow(jsonDataCell)
+                    .build(getTestExecutionCtx());
+
+        JsonValue jsonValueRow = ContainerRowMapper.firstRowToJsonValue(simpleTable);
+        JsonValue expectedJson = new JsonValueBuilder().withJsonValueObject("json-column", jsonCell).build();
 
         assertEquals(expectedJson, jsonValueRow);
     }

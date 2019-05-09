@@ -143,7 +143,12 @@ abstract class ContainerRowMapperTest {
             return this;
         }
 
-        public JsonValueBuilder withJsonPersonObject() {
+        JsonValueBuilder withJsonValueObject(final String key, final JsonValue value) {
+            m_builder.add(key, value);
+            return this;
+        }
+
+        JsonValueBuilder withJsonPersonObject() {
             JsonObjectBuilder personBuilder = m_factory.createObjectBuilder();
             JsonObject personObject = personBuilder.add("name", "Flodve").add("age", 32).build();
             m_builder.add("person", personObject);

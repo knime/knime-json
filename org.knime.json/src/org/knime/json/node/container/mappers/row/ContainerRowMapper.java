@@ -84,6 +84,7 @@ import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.LongCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.ExecutionContext;
@@ -494,7 +495,7 @@ public class ContainerRowMapper {
         return firstRow;
     }
 
-    private static Object asObject(final DataCell dataCell) {
+    private static Object asObject(final DataCell dataCell) throws IOException {
         Object cellObject;
         if (dataCell.isMissing()) {
             cellObject = null;
@@ -506,6 +507,9 @@ public class ContainerRowMapper {
             cellObject = ((LongValue) dataCell).getLongValue();
         } else if (dataCell.getType().getCellClass().equals(BooleanCell.class)) {
             cellObject = ((BooleanValue) dataCell).getBooleanValue();
+        } else if (dataCell.getType().getCellClass().equals(JSONCell.class)) {
+            JsonValue jsonValue = ((JSONCell) dataCell).getJsonValue();
+            cellObject = new ObjectMapper().readTree(jsonValue.toString());
         } else {
             cellObject = dataCell.toString();
         }
