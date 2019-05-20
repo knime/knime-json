@@ -93,10 +93,11 @@ public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode
      */
     @Override
     public ExternalNodeData getExternalOutput() {
+        JsonValue jsonValue = m_outputRow != null ? m_outputRow : JsonValue.NULL;
         return
             ExternalNodeData.builder(m_configuration.getParameterName())
                 .description(m_configuration.getDescription())
-                .jsonValue(m_outputRow)
+                .jsonValue(jsonValue)
                 .build();
     }
 
