@@ -146,11 +146,11 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         m_templateTableView.setPreferredSize(new Dimension(250, 65));
 
         m_acceptsMissingValues = new JRadioButton("Accept");
-        m_fillMissingValuesWithDefault = new JRadioButton("Fill with default value");
+        m_fillMissingValuesWithDefault = new JRadioButton("Fill with template value");
         m_failOnMissingValues = new JRadioButton("Fail");
 
         m_fillMissingColumnsWithMissingValues = new JRadioButton("Fill with missing value");
-        m_fillMissingColumnsWithDefaultValues = new JRadioButton("Fill with default value");
+        m_fillMissingColumnsWithDefaultValues = new JRadioButton("Fill with template value");
         m_removeMissingColumnsInOutput = new JRadioButton("Remove");
         m_failWhenColumnsAreMissing = new JRadioButton("Fail");
 
@@ -259,15 +259,34 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         gbc.insets = new Insets(5,1,1,1);
         gbc.gridx = 0;
         gbc.gridy++;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 3;
         gbc.weightx = 1;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
         templateRowPanel.add(m_templateTableView, gbc);
 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 0;
+        gbc.gridwidth = 1;
         gbc.gridy++;
-        templateRowPanel.add(new JLabel("Data validation:"), gbc);
+        templateRowPanel.add(createMissingValuesHandlingGroup(), gbc);
 
+        gbc.gridx++;
+        templateRowPanel.add(createMissingColumnsHandlingGroup(), gbc);
+
+        gbc.gridx++;
+        templateRowPanel.add(createUnknownColumnHandlingGroup(), gbc);
+
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        JPanel bottomFiller = new JPanel();
+        templateRowPanel.add(bottomFiller, gbc);
+
+        return templateRowPanel;
+    }
+
+    private Box createMissingValuesHandlingGroup() {
         ButtonGroup missingValuesHandlingGroup = new ButtonGroup();
         missingValuesHandlingGroup.add(m_acceptsMissingValues);
         missingValuesHandlingGroup.add(m_fillMissingValuesWithDefault);
@@ -277,19 +296,15 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         Box missingValuesHandling = Box.createVerticalBox();
         missingValuesHandling.add(Box.createVerticalGlue());
         missingValuesHandling.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Missing values"));
+            BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Missing values"));
 
         missingValuesHandling.add(m_acceptsMissingValues);
         missingValuesHandling.add(m_fillMissingValuesWithDefault);
         missingValuesHandling.add(m_failOnMissingValues);
+        return missingValuesHandling;
+    }
 
-        gbc.gridy++;
-        templateRowPanel.add(missingValuesHandling, gbc);
-
-        gbc.gridy++;
-        templateRowPanel.add(new JLabel("Column validation:"), gbc);
-
+    private Box createMissingColumnsHandlingGroup() {
         ButtonGroup missingColumnHandlingGroup = new ButtonGroup();
         missingColumnHandlingGroup.add(m_fillMissingColumnsWithMissingValues);
         missingColumnHandlingGroup.add(m_fillMissingColumnsWithDefaultValues);
@@ -300,17 +315,16 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         Box missingColumnHandling = Box.createVerticalBox();
         missingColumnHandling.add(Box.createVerticalGlue());
         missingColumnHandling.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Missing columns"));
+            BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Missing columns"));
 
         missingColumnHandling.add(m_fillMissingColumnsWithMissingValues);
         missingColumnHandling.add(m_fillMissingColumnsWithDefaultValues);
         missingColumnHandling.add(m_removeMissingColumnsInOutput);
         missingColumnHandling.add(m_failWhenColumnsAreMissing);
+        return missingColumnHandling;
+    }
 
-        gbc.gridy++;
-        templateRowPanel.add(missingColumnHandling, gbc);
-
+    private Box createUnknownColumnHandlingGroup() {
         ButtonGroup unknownColumnHandlingGroup = new ButtonGroup();
         unknownColumnHandlingGroup.add(m_appendUnknownColumns);
         unknownColumnHandlingGroup.add(m_ignoreUnknownColumns);
@@ -319,22 +333,11 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         Box unknownColumnHandling = Box.createVerticalBox();
         unknownColumnHandling.add(Box.createVerticalGlue());
         unknownColumnHandling.setBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Unknown columns"));
+            BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Unknown columns"));
 
         unknownColumnHandling.add(m_appendUnknownColumns);
         unknownColumnHandling.add(m_ignoreUnknownColumns);
-
-        gbc.gridy++;
-        templateRowPanel.add(unknownColumnHandling, gbc);
-
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        JPanel bottomFiller = new JPanel();
-        templateRowPanel.add(bottomFiller, gbc);
-
-        return templateRowPanel;
+        return unknownColumnHandling;
     }
 
     static SettingsModelString getMissingColumnHandlingStrategy() {
@@ -483,6 +486,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         }
 
         if (inputTable == null) {
+            m_inputTableJson = null;
             setNoInputTableState();
         } else {
             m_inputTableJson = mapToJson(inputTable);
@@ -498,7 +502,6 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
 
     private void setInputTablePresentState() {
         m_warningLabel.setText("");
-        m_createTemplateRowButton.setEnabled(true);
     }
 
     private static DataTable mapToTable(final JsonValue configuredTemplateRow) {

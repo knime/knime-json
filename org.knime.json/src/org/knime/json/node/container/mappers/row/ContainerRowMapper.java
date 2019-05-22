@@ -314,8 +314,8 @@ public class ContainerRowMapper {
                     columnRearranger.remove(columnName);
                 } else if (missingColumnHandling == MissingColumnHandling.FAIL) {
                     throw new InvalidSettingsException(
-                        "The injected row does not contain all the columns specified in the template."
-                            + "\nThe node is configured to fail on missing columns.");
+                        "The injected row does not contain all the columns specified in the template. "
+                            + "The node is configured to fail on missing columns.");
                 }
             }
         }
@@ -413,8 +413,8 @@ public class ContainerRowMapper {
                 result = getDataCellByColumnName(templateTable, columnName);
             }
         } else {
-            throw new InvalidSettingsException("The injected row contains missing values."
-                + "\nThe node is configured to not accept missing values in the input.");
+            throw new InvalidSettingsException("The injected row contains missing values. "
+                + "The node is configured to not accept missing values in the input.");
         }
 
         return result;

@@ -71,7 +71,7 @@ import org.knime.json.util.JSONUtil;
  */
 final public class ContainerRowInputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "input";
+    private static final String DEFAULT_PARAMETER_NAME = "row-input";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
     private static final JsonValue DEFAULT_TEMPLATE_ROW = ContainerRowDefaultJsonStructure.asJsonValue();

@@ -17,9 +17,9 @@
 	 		A configured parameter makes the Container Input (Row) visible to the external caller.
 	 		<br/>
 	 		<br/>
-			If a data table is connected to the optional input port, the node will simply forward the table to the 
-			output port unless a row is supplied via an external caller, in which case the supplied row will be 
-			available at the output port.
+			If a data table is connected to the optional input port, the node will simply forward the first row of the 
+			table to the output port unless a row is supplied via an external caller, in which case the supplied row 
+			will be available at the output port.
 			<br/>
 			<br/>
 			If no input is given, a configured template row is output.		
@@ -42,18 +42,18 @@
          </option>
          
          <option name="Require input to match template row specification">
-         	 Only accepts input that match the template row specification. The input has to contain an object 
+         	 Only accepts input that matches the template row specification. The input has to contain an object 
 		     (key/value pair) for each of the columns in the template, where the key is identical to the column's name 
 		     and the value can be parsed to the column's type. The input columns can be of any order, but will be output 
 		     in the same order as in the template.
 		     <br/>
 		     <br/>
-		     The input validation can be adjusted via the input validation options.
+		     The input validation can be adjusted via a set of input validation options.
          </option>
          
          <option name="Template row">
-		     The reference row that external input is required to match. Defines the expected column names and types of 
-		     the input and the order of the output.
+		     The reference row which the external input is required to match. Defines the expected column names and 
+		     types of the input and the order of the output.
 		     <br/>
 		     <br/>
 		     The template row populates the "InputParameters" field of the generated API specification, which is 
@@ -61,28 +61,19 @@
          </option>
 
          <option name="Set first row of input as template">
-			Takes the first row from the table provided by the optional input port and sets it as the template.
-         </option>
-
-         <option name="Data validation">
-             A set of options that allows the validation of the data in the input to be adjusted.
-         	 <br/>
+			 Takes the first row from the table provided by the optional input port and sets it as the template.
          </option>
              
          <option name="Missing values">
-           	 	<i>Accept missing values - </i>
-    	     	the missing values in the input row will be filled with missing values.
-           	 	<br/>
-				<i>Fill with default value - </i>
-				the missing values in the input row will be filled with the values defined in the 
-				template row.
-           	 	<br/>
-				<i>Fail - </i>
-				missing values in the input row will cause the node to fail.
-         </option>
-             
-         <option name="Column validation">
-             A set of options that allows the validation of columns in the input to be adjusted.
+             <i>Accept missing values - </i>
+    	     the missing values in the input row will be filled with missing values.
+           	 <br/>
+			 <i>Fill with template values - </i>
+			 the missing values in the input row will be filled with the corresponding values defined in the 
+			 template row.
+           	 <br/>
+			 <i>Fail - </i>
+			 missing values in the input row will cause the node to fail.
          </option>
          
          <option name="Missing columns">
@@ -93,8 +84,8 @@
           	 <i>Fill with missing value</i> - the missing columns will be present in the output row with missing 
        		 values
 		     <br/>
-          	 <i>Fill with default value</i> - the missing columns will be present in the output row with the default
-       		 values as defined in the template row
+          	 <i>Fill with template value</i> - the missing columns will be present in the output row with the 
+          	 corresponding template values defined in the template row
 		     <br/>
              <i>Remove</i> - the missing columns are removed and not present in the output row 
 		     <br/>
@@ -118,7 +109,7 @@
 			An optional input that can be used to configure a template row.
 		</inPort>
 	
-		<outPort index="0" name="The container table">
+		<outPort index="0" name="The container row">
 			The row contained in this container. A configured template row is output if no row has been injected 
 			from an external source.	
 		</outPort>

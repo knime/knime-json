@@ -49,17 +49,20 @@
 package org.knime.json.node.container.input.row;
 
 import java.io.IOException;
+import java.util.Collections;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
 import javax.json.JsonValue;
 
+import org.knime.core.data.json.container.table.ContainerTableData;
+import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
+import org.knime.core.data.json.container.table.ContainerTableSpec;
 import org.knime.json.util.JSONUtil;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
- * Class that holds a hard coded prototype JSON structure for the Container input/output nodes.
+ * Class that creates an empty JSON structure for the Container input/output (Row) nodes.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.8
@@ -67,81 +70,24 @@ import org.knime.json.util.JSONUtil;
 public final class ContainerRowDefaultJsonStructure {
 
     /**
-     * Creates a JsonValue object of the hard coded structure.
+     * Creates a JsonValue object of the empty structure.
      *
      * @return a JsonValue of the structure
      */
     public static JsonValue asJsonValue() {
         try {
-            return JSONUtil.parseJSONValue(asString());
+            return JSONUtil.parseJSONValue(emptyContainerTable());
         } catch (IOException e) {
             return null;
         }
     }
 
-    /**
-     * Returns the string representation of the JSON structure.
-     * @return the string representation of the JSON structure
-     */
-    public static String asString() {
-        JsonBuilderFactory factory = Json.createBuilderFactory(null);
-        return
-            factory.createObjectBuilder()
-                .add("table-spec",  createTableSpec(factory))
-                .add("table-data", createDataTable(factory))
-                .build()
-                .toString();
-    }
+    private static String emptyContainerTable() throws JsonProcessingException {
+        ContainerTableSpec tableSpec = new ContainerTableSpec(Collections.emptyList());
+        ContainerTableData tableData = new ContainerTableData(Collections.emptyList());
+        ContainerTableJsonSchema emptyContainerTable = new ContainerTableJsonSchema(tableSpec, tableData);
 
-    private static JsonArray createTableSpec(final JsonBuilderFactory factory) {
-        return
-            factory.createArrayBuilder()
-                .add(factory.createObjectBuilder().add("column-string", "string"))
-                .add(factory.createObjectBuilder().add("column-int", "int"))
-                .add(factory.createObjectBuilder().add("column-double", "double"))
-                .add(factory.createObjectBuilder().add("column-long", "long"))
-                .add(factory.createObjectBuilder().add("column-boolean", "boolean"))
-                .add(factory.createObjectBuilder().add("column-localdate", "localdate"))
-                .add(factory.createObjectBuilder().add("column-localdatetime", "localdatetime"))
-                .add(factory.createObjectBuilder().add("column-zoneddatetime", "zoneddatetime"))
-                .build();
-    }
-
-    private static JsonArray createDataTable(final JsonBuilderFactory factory) {
-        return
-            factory.createArrayBuilder()
-                .add(
-                    createRow(
-                        factory,
-                        "value1",
-                        1,
-                        1.5,
-                        1000,
-                        true,
-                        "2018-03-27",
-                        "2018-03-27T08:30:45.111",
-                        "2018-03-27T08:30:45.111+01:00[Europe/Paris]")
-                    )
-                .build();
-    }
-
-    private static JsonArray createRow(final JsonBuilderFactory factory, final Object... cells) {
-        JsonArrayBuilder arrayBuilder = factory.createArrayBuilder();
-        for (Object cell : cells) {
-            if (cell instanceof String) {
-                arrayBuilder.add((String) cell);
-            } else if (cell instanceof Integer) {
-                arrayBuilder.add((Integer) cell);
-            } else if (cell instanceof Double) {
-                arrayBuilder.add((Double) cell);
-            } else if (cell instanceof Long) {
-                arrayBuilder.add((Long) cell);
-            } else if (cell instanceof Boolean) {
-                arrayBuilder.add((Boolean) cell);
-            }
-        }
-
-        return arrayBuilder.build();
+        return new ObjectMapper().writeValueAsString(emptyContainerTable);
     }
 
 }
