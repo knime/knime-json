@@ -65,7 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Class that creates an empty JSON structure for the Container input/output (Row) nodes.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.8
+ * @since 4.0
  */
 public final class ContainerRowDefaultJsonStructure {
 

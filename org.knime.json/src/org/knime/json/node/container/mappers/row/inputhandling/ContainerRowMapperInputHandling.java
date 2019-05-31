@@ -54,7 +54,7 @@ import org.knime.json.node.container.mappers.row.ContainerRowMapper;
  * Parameter object for the {@link ContainerRowMapper}.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.8
+ * @since 4.0
  */
 public class ContainerRowMapperInputHandling {
 

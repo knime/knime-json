@@ -103,7 +103,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Class that converts simple {@link JsonValue} to {@link DataTable} and vice versa.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.8
+ * @since 4.0
  */
 public class ContainerRowMapper {
 

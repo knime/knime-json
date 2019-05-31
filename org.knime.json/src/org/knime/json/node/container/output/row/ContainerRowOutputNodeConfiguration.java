@@ -61,7 +61,7 @@ import org.knime.core.node.util.CheckUtils;
  * Configuration for the Container Output (Row) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.8
+ * @since 4.0
  */
 final class ContainerRowOutputNodeConfiguration {
 

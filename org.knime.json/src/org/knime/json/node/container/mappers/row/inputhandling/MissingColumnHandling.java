@@ -53,7 +53,7 @@ package org.knime.json.node.container.mappers.row.inputhandling;
  * compared to a configured template row.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.8
+ * @since 4.0
  */
 public enum MissingColumnHandling {
 
