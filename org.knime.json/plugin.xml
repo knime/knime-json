@@ -30,17 +30,17 @@
       </node>
       <node category-path="/struct-data/json" factory-class="org.knime.json.node.output.JSONOutputNodeFactory">
       </node>
-      <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
+      <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
       </node>
-      <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.row.ContainerRowInputNodeFactory">
+      <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.row.ContainerRowInputNodeFactory">
       </node>
-      <node after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory" category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory">
+      <node after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory">
       </node>
-      <node after="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory">
+      <node after="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory">
       </node>
-      <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
+      <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
       </node>
-   	  <node category-path="/flowcontrol/automation" factory-class="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory">
+   	  <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory">
    	  </node>
 </extension>
    <extension point="org.knime.workbench.repository.registeredFileExtensions">
