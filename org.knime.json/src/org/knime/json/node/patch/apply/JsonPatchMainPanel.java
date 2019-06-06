@@ -53,6 +53,7 @@ import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
@@ -105,9 +106,17 @@ class JsonPatchMainPanel extends JSnippetPanel {
         scrollPane.setLineNumbersEnabled(true);
         scrollPane.setIconRowHeaderEnabled(true);
 
-        getTextEditor().setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
-
         return scrollPane;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected RSyntaxTextArea createTextArea() {
+        final RSyntaxTextArea textArea = new KnimeSyntaxTextArea(20, 60);
+        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        return textArea;
     }
 
     /**
@@ -117,7 +126,7 @@ class JsonPatchMainPanel extends JSnippetPanel {
     protected void onSelectionInManipulatorList(final Object selected) {
         if (selected instanceof JsonPatchManipulator) {
             final JsonPatchManipulator patch = (JsonPatchManipulator)selected;
-            final KnimeSyntaxTextArea textEditor = getTextEditor();
+            final RSyntaxTextArea textEditor = getTextEditor();
 
             if (textEditor.getText().trim().isEmpty()) {
                 textEditor.setText("[\n]\n");
