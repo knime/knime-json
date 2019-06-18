@@ -289,6 +289,8 @@ public class JSONPathNodeModel extends SimpleStreamableFunctionNodeModel {
                         for (Object v : values) {
                             if (v != null) {
                                 cells.add(new StringCell(v.toString()));
+                            } else {
+                                cells.add(DataType.getMissingCell());
                             }
                         }
                         return CollectionCellFactory.createListCell(cells);
