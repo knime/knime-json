@@ -25,6 +25,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.json.JsonValue;
 import javax.swing.JButton;
@@ -39,6 +41,7 @@ import javax.swing.border.Border;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.BufferedDataTable;
@@ -70,10 +73,13 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
     private final RSyntaxTextArea m_input;
 
-    private JsonValue m_exampleJsonFromInput = null;
+    /**
+     * Maps all json column names of the input to their JsonValues
+     */
+    private final Map<String, JsonValue> m_exampleValues;
 
-    @SuppressWarnings("unchecked")
     JSONOutputNodeDialog() {
+        m_exampleValues = new HashMap<>();
         m_columnSelectionPanel = new ColumnSelectionPanel((Border)null, JSONValue.class);
 
         m_parameterNameField = new JFormattedTextField();
@@ -93,7 +99,9 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         m_fillFromInput.setEnabled(false);
         m_fillFromInput.setToolTipText("This function requires input data to be present.");
         m_fillFromInput.addActionListener(e -> {
-            m_input.setText(JSONUtil.toPrettyJSONString(m_exampleJsonFromInput));
+            m_input.setText(
+                JSONUtil.toPrettyJSONString(m_exampleValues.get(m_columnSelectionPanel.getSelectedColumn()))
+            );
         });
 
         addTab("JSON Output", createLayout());
@@ -193,12 +201,23 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
     protected void loadSettingsFrom(final NodeSettingsRO settings, final BufferedDataTable[] input)
         throws NotConfigurableException {
         final JSONOutputConfiguration config = loadConfig(settings, input[0].getSpec());
-
-        m_exampleJsonFromInput =
-            JSONOutputNodeModel.readIntoJsonValue(input[0], false, config.isKeepOneRowTablesSimple());
+        fillExampleValuesMap(input[0], config);
         m_fillFromInput.setEnabled(true);
-        m_fillFromInput.setToolTipText("Set the example json from input data.");
+        m_fillFromInput.setToolTipText("Set the example json from the selected column.");
         m_descriptionArea.setText(config.getDescription());
+    }
+
+    private void fillExampleValuesMap(final BufferedDataTable input, final JSONOutputConfiguration config) {
+        DataTableSpec dataTableSpec = input.getDataTableSpec();
+        for (int i = 0; i < dataTableSpec.getNumColumns(); i++) {
+            DataColumnSpec columnSpec = dataTableSpec.getColumnSpec(i);
+            if (columnSpec.getType().isCompatible(JSONValue.class)) {
+                m_exampleValues.put(
+                    columnSpec.getName(),
+                    JSONOutputNodeModel.readIntoJsonValue(input, false, config.isKeepOneRowTablesSimple(), i)
+                );
+            }
+        }
     }
 
     JSONOutputConfiguration loadConfig(final NodeSettingsRO settings, final DataTableSpec spec) throws NotConfigurableException {

@@ -89,11 +89,30 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
      *
      * @param table The table to read from
      * @param allowStaleState TODO
-     * @param keepOneRowTablesSimple if <code>true</code>, the top-level array will be ommitted for single row tables.
+     * @param keepOneRowTablesSimple if <code>true</code>, the top-level array will be omitted for single row tables.
      * @return A json value containing the data of the table.
      */
-    static JsonValue readIntoJsonValue(final BufferedDataTable table, final boolean allowStaleState,
-        final boolean keepOneRowTablesSimple) {
+    static JsonValue readIntoJsonValue(
+            final BufferedDataTable table,
+            final boolean allowStaleState,
+            final boolean keepOneRowTablesSimple) {
+        return readIntoJsonValue(table, allowStaleState, keepOneRowTablesSimple, 0);
+    }
+
+    /**
+     * Read a table into a {@link JsonValue}.
+     *
+     * @param table The table to read from
+     * @param allowStaleState TODO
+     * @param keepOneRowTablesSimple if <code>true</code>, the top-level array will be omitted for single row tables.
+     * @param columnIndex the column to read
+     * @return A json value containing the data of the table.
+     */
+    static JsonValue readIntoJsonValue(
+            final BufferedDataTable table,
+            final boolean allowStaleState,
+            final boolean keepOneRowTablesSimple,
+            final int columnIndex) {
         CheckUtils.checkState(allowStaleState || table != null, "No table set, JSON output node must be executed");
         if (table == null) {
             return Json.createArrayBuilder().build();
@@ -104,7 +123,7 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
         try (CloseableRowIterator it = allowStaleState ? table.iteratorFailProve() : table.iterator()) {
             while (it.hasNext()) {
                 DataRow r = it.next();
-                DataCell cell = r.getCell(0);
+                DataCell cell = r.getCell(columnIndex);
                 if (cell.isMissing()) {
                     arrayBuilder.addNull();
                 } else {
