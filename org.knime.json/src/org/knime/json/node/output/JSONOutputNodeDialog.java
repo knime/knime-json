@@ -27,6 +27,7 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.json.JsonValue;
 import javax.swing.JButton;
@@ -76,7 +77,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
     /**
      * Maps all json column names of the input to their JsonValues
      */
-    private final Map<String, JsonValue> m_exampleValues;
+    private final Map<String, Supplier<JsonValue>> m_exampleValues;
 
     JSONOutputNodeDialog() {
         m_exampleValues = new HashMap<>();
@@ -100,7 +101,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         m_fillFromInput.setToolTipText("This function requires input data to be present.");
         m_fillFromInput.addActionListener(e -> {
             m_input.setText(
-                JSONUtil.toPrettyJSONString(m_exampleValues.get(m_columnSelectionPanel.getSelectedColumn()))
+                JSONUtil.toPrettyJSONString(m_exampleValues.get(m_columnSelectionPanel.getSelectedColumn()).get())
             );
         });
 
@@ -210,11 +211,12 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
     private void fillExampleValuesMap(final BufferedDataTable input, final JSONOutputConfiguration config) {
         DataTableSpec dataTableSpec = input.getDataTableSpec();
         for (int i = 0; i < dataTableSpec.getNumColumns(); i++) {
+            final int finalI = i;
             DataColumnSpec columnSpec = dataTableSpec.getColumnSpec(i);
             if (columnSpec.getType().isCompatible(JSONValue.class)) {
                 m_exampleValues.put(
                     columnSpec.getName(),
-                    JSONOutputNodeModel.readIntoJsonValue(input, false, config.isKeepOneRowTablesSimple(), i)
+                    () -> JSONOutputNodeModel.readIntoJsonValue(input, false, config.isKeepOneRowTablesSimple(), finalI)
                 );
             }
         }
