@@ -189,12 +189,14 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
     }
 
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs) throws NotConfigurableException {
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
+        throws NotConfigurableException {
         loadConfig(settings, specs[0]);
     }
 
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
+        throws NotConfigurableException {
         loadSettingsFrom(settings, new DataTableSpec[]{(DataTableSpec)specs[0]});
     }
 
@@ -222,7 +224,8 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         }
     }
 
-    JSONOutputConfiguration loadConfig(final NodeSettingsRO settings, final DataTableSpec spec) throws NotConfigurableException {
+    JSONOutputConfiguration loadConfig(final NodeSettingsRO settings, final DataTableSpec spec)
+        throws NotConfigurableException {
         final JSONOutputConfiguration config = new JSONOutputConfiguration().loadInDialog(settings, spec);
 
         m_columnSelectionPanel.update(spec, config.getJsonColumnName(), false, true);
