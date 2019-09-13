@@ -247,6 +247,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
      * {@inheritDoc}
      * @since 3.0
      */
+    @DataCellFactoryMethod(name = "String")
     @Override
     public DataCell createCell(final String input) {
         try {
@@ -269,6 +270,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
      * {@inheritDoc}
      * @since 3.0
      */
+    @DataCellFactoryMethod(name = "Reader")
     @Override
     public DataCell createCell(final Reader input) throws ParseException, IOException {
         return create(input, false);
@@ -278,6 +280,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
      * {@inheritDoc}
      * @since 3.0
      */
+    @DataCellFactoryMethod(name = "InputStream")
     @Override
     public DataCell createCell(final InputStream input) throws IOException {
         return create(input, false);
