@@ -70,7 +70,7 @@ import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.RowKey;
-import org.knime.core.data.container.ContainerTable;
+import org.knime.core.data.container.CloseableTable;
 import org.knime.core.data.container.DataContainer;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
@@ -187,41 +187,33 @@ public final class ContainerTableMapper {
     }
 
     /**
-     * This method is susceptible to resource leaks, since it returns a table that blocks system resources. Make sure to
-     * {@link ContainerTable#clear() clear} the returned table after use to dispose underlying resources once the table
-     * is no longer needed.
-     * <p>
-     * Converts a JsonValue conforming to the structure of {@link ContainerTableJsonSchema} to a {@link ContainerTable}.
+     * Converts a JsonValue conforming to the structure of {@link ContainerTableJsonSchema} to a {@link CloseableTable}.
      *
      * @param json json representation of a {@link ContainerTableJsonSchema}
-     * @return a ContainerTable[] corresponding to the json input
+     * @return a CloseableTable[] corresponding to the json input
      * @throws InvalidSettingsException if the json input does not conform to {@link ContainerTableJsonSchema}
      * @since 4.2
      */
-    public static ContainerTable[] toDataTable(final JsonValue json) throws InvalidSettingsException {
+    public static CloseableTable[] toDataTable(final JsonValue json) throws InvalidSettingsException {
         return toDataTable(toContainerTableJsonSchema(json));
     }
 
     /**
-     * This method is susceptible to resource leaks, since it returns a table that blocks system resources. Make sure to
-     * {@link ContainerTable#clear() clear} the returned table after use to dispose underlying resources once the table
-     * is no longer needed.
-     * <p>
-     * Creates a container table from the container input.
+     * Creates a data table from the container input.
      *
      * @param containerTable input of which the table is created from
-     * @return a ContainerTable[] from the container table input
+     * @return a CloseableTable[] from the container table input
      * @throws InvalidSettingsException
      * @since 4.2
      */
-    public static ContainerTable[] toDataTable(final ContainerTableJsonSchema containerTable)
+    public static CloseableTable[] toDataTable(final ContainerTableJsonSchema containerTable)
             throws InvalidSettingsException {
         CheckUtils.checkSettingNotNull(containerTable, "Container Table cannot be null");
         DataTableSpec tableSpec = toTableSpec(containerTable);
         DataContainer dataContainer = new DataContainer(tableSpec);
         addDataRows(dataContainer, containerTable, null);
         dataContainer.close();
-        return new ContainerTable[]{(ContainerTable)dataContainer.getTable()};
+        return new CloseableTable[]{dataContainer.getCloseableTable()};
     }
 
 

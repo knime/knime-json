@@ -56,7 +56,7 @@ import javax.json.JsonValue;
 
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.CloseableRowIterator;
-import org.knime.core.data.container.ContainerTable;
+import org.knime.core.data.container.CloseableTable;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -228,11 +228,9 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
 
     private JsonValue getTemplateRowAsSimpleJson() {
         JsonValue templateRow = null;
-        try {
-            final ContainerTable templateRowAsDataTable =
-                ContainerTableMapper.toDataTable(m_configuration.getTemplateRow())[0];
+        try (final CloseableTable templateRowAsDataTable =
+            ContainerTableMapper.toDataTable(m_configuration.getTemplateRow())[0]) {
             templateRow = ContainerRowMapper.firstRowToJsonValue(templateRowAsDataTable);
-            templateRowAsDataTable.clear();
         } catch (InvalidSettingsException e) {
             throw new RuntimeException("The configured template row must conform to the ContainerTableJsonSchema", e);
         } catch (IOException e) {
