@@ -7,9 +7,29 @@
     </shortDescription>
     
     <fullDescription>
-        <intro><p><a href="http://goessner.net/articles/JsonPath/">JSONPath</a> is a similar to XPath alternative for JSON.</p><p>
-        The result can be a single value or a list of multiple values (when the path is indefinite). In case there are multiple results and the selected output type cannot handle it (not a list of the selected type, or a JSON) the execution will fail. If the result cannot be represented in the selected type, missing value will be returned.</p><p>
-        There are two notations, dot-notation:<tt>$.book[1].title</tt> and bracket-notation: <tt>$['book'][1]['title']</tt> (indexing starts from <tt>0</tt>, negative indices are relative to the last element).</p>
+        <intro>
+        	<p>
+				<a href="http://goessner.net/articles/JsonPath/">JSONPath</a>
+				is a query language for JSON, similar to XPath for XML.
+			</p>
+			<p>
+				The result of a simple query (also called definite JSONPath) is a
+				single value. The result of a collection query (also called
+				indefinite JSONPath) is a list of multiple values. Results of
+				JSONPath queries are converted to the selected KNIME type. If the
+				result is a list and the selected KNIME type is not compatible, the
+				execution will fail. If the result cannot be converted to the
+				selected KNIME type, a missing value will be returned.
+			</p>
+			<p>
+				JSONPath queries can be automatically generated via the node configuration
+				dialog. To create a simple query, select a single value from the
+				JSON-Cell Preview window and click "Add single query". To create a
+				collection query, select a value that is part of a list of values
+				from the JSON-Cell Preview window and click "Add collection query".
+				Alternatively, you can write your own JSONPath query by clicking the
+				"Add JSONPath" button.
+			</p>
         Example input:
 <pre>
 {"book": [
@@ -22,7 +42,7 @@
 ]}
 </pre>
         <p>
-Example results:<br/>
+Example JSONPath queries and evaluation results:<br/>
 <b>$.book[0]</b><br/><tt>{"year": 1999,
    "title": "Timeline",
    "author": "Michael Crichton"}</tt> (<i>JSON</i> or <i>String</i> single value)<br/>
@@ -38,7 +58,7 @@ The default path (<tt>$..*</tt>) will select all possible subparts (excluding th
 </ul> which are valid JSONPaths for the input JSON value.
 </p><p>The filters <tt>?(expr)</tt>can be used to select contents with specific properties, for example <tt>$..book[?(@.publisher)]</tt> selects the books that specify their publisher (<tt>@</tt> refers to the actual element).
         </p><p>
-        It uses the <a href="https://github.com/json-path/JsonPath">jayway</a>/<a href="https://code.google.com/p/json-path/">JsonPath</a> implementation.</p>
+        The JSON Path node uses the <a href="https://github.com/json-path/JsonPath">Jayway JSONPath</a> implementation.</p>
         </intro>
         
         <tab name="Settings">
