@@ -56,6 +56,7 @@ import org.knime.core.node.NodeView;
  * Factory for the Container Input (Row) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 4.2
  */
 public final class ContainerRowInputNodeFactory extends NodeFactory<ContainerRowInputNodeModel> {
 

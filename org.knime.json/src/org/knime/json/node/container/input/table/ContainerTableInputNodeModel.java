@@ -75,9 +75,9 @@ import org.knime.json.node.container.mappers.ContainerTableMapper;
  * Creates a KNIME table of a json input conforming to a set schema.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 4.2
  */
-final class ContainerTableInputNodeModel extends NodeModel implements InputNode, ValueControlledNode {
+public final class ContainerTableInputNodeModel extends NodeModel implements InputNode, ValueControlledNode {
 
     private JsonValue m_externalValue;
     private ContainerTableInputNodeConfiguration m_configuration = new ContainerTableInputNodeConfiguration();
@@ -90,6 +90,16 @@ final class ContainerTableInputNodeModel extends NodeModel implements InputNode,
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
             new PortType[]{BufferedDataTable.TYPE}
         );
+    }
+
+    /**
+     * Injects the 'parameter name' settings.
+     *
+     * @param parameterName
+     * @throws InvalidSettingsException if setting validation failed
+     */
+    public void setParameterName(final String parameterName) throws InvalidSettingsException {
+        m_configuration.setParameterName(parameterName);
     }
 
     /**

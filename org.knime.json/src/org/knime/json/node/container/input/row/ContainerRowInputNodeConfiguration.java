@@ -69,7 +69,7 @@ import org.knime.json.util.JSONUtil;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  */
-final public class ContainerRowInputNodeConfiguration {
+final class ContainerRowInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "row-input";
     private static final String DEFAULT_DESCRIPTION = "";

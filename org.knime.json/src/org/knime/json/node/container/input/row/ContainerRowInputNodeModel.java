@@ -80,8 +80,9 @@ import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMappe
  * Creates a single row KNIME table of a json input.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 4.2
  */
-final class ContainerRowInputNodeModel extends NodeModel implements InputNode, ValueControlledNode {
+public final class ContainerRowInputNodeModel extends NodeModel implements InputNode, ValueControlledNode {
 
     private JsonValue m_externalValue;
     private ContainerRowInputNodeConfiguration m_configuration = new ContainerRowInputNodeConfiguration();
@@ -94,6 +95,16 @@ final class ContainerRowInputNodeModel extends NodeModel implements InputNode, V
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
             new PortType[]{BufferedDataTable.TYPE}
         );
+    }
+
+    /**
+     * Injects the 'parameter name' settings.
+     *
+     * @param parameterName
+     * @throws InvalidSettingsException if setting validation failed
+     */
+    public void setParameterName(final String parameterName) throws InvalidSettingsException {
+        m_configuration.setParameterName(parameterName);
     }
 
     /**

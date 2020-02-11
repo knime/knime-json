@@ -29,6 +29,7 @@ import org.knime.json.node.container.mappers.row.ContainerRowMapper;
  * Creates a simple json representation of the first row of the input table and makes it available to external callers.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 4.2
  */
 public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode {
 
@@ -40,6 +41,16 @@ public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode
      */
     protected ContainerRowOutputNodeModel() {
         super(1, 1);
+    }
+
+    /**
+     * Injects the 'parameter name' settings.
+     *
+     * @param parameterName
+     * @throws InvalidSettingsException if setting validation failed
+     */
+    public void setParameterName(final String parameterName) throws InvalidSettingsException {
+        m_configuration.setParameterName(parameterName);
     }
 
     /**

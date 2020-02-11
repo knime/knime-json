@@ -8,6 +8,7 @@ import org.knime.core.node.NodeView;
  * <code>NodeFactory</code> for the "ContainerRowOutput" Node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @since 4.2
  */
 public class ContainerRowOutputNodeFactory
         extends NodeFactory<ContainerRowOutputNodeModel> {

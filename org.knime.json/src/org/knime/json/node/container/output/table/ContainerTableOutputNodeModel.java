@@ -77,9 +77,9 @@ import org.knime.json.node.container.mappers.ContainerTableMapper;
  * and makes it available for a caller through the {@link OutputNode} interface.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @since 3.6
+ * @since 4.2
  */
-final class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
+public final class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
     private ContainerTableOutputNodeConfiguration m_configuration = new ContainerTableOutputNodeConfiguration();
     private BufferedDataTable m_inputTable;
@@ -89,6 +89,16 @@ final class ContainerTableOutputNodeModel extends NodeModel implements BufferedD
      */
     ContainerTableOutputNodeModel() {
         super(1, 1);
+    }
+
+    /**
+     * Injects the 'parameter name' settings.
+     *
+     * @param parameterName
+     * @throws InvalidSettingsException if setting validation failed
+     */
+    public void setParameterName(final String parameterName) throws InvalidSettingsException {
+        m_configuration.setParameterName(parameterName);
     }
 
     /**
