@@ -346,13 +346,12 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     }
 
     private void setRowAsTemplate() {
-        DataTable templateRow = getFirstRowAsATable();
+        DataTable templateRow = getFirstRowAsATable(getInputDataTable());
         m_templateTableView.setDataTable(templateRow);
         m_templateRowJson = mapToJson(templateRow);
     }
 
-    private DataTable getFirstRowAsATable() {
-        DataTable inputDataTable = getInputDataTable();
+    static DataTable getFirstRowAsATable(final DataTable inputDataTable) {
         DataContainer dataContainer = new DataContainer(inputDataTable.getDataTableSpec());
 
         RowIterator iterator = inputDataTable.iterator();

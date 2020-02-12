@@ -48,12 +48,15 @@
  */
 package org.knime.json.node.container.input.row;
 
+import static org.knime.json.node.container.input.row.ContainerRowInputNodeDialog.getFirstRowAsATable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
 import javax.json.JsonValue;
 
+import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.container.CloseableTable;
@@ -84,6 +87,28 @@ import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMappe
  */
 public final class ContainerRowInputNodeModel extends NodeModel implements InputNode, ValueControlledNode {
 
+    /**
+     * Helper to save the node's configuration pre-configured with some values to a nodes settings object.
+     *
+     * @param settings
+     * @param parameterName
+     * @param table table to get the first row from to be set as template, can be <code>null</code> if not available
+     * @throws InvalidSettingsException
+     * @throws IOException
+     */
+    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName,
+        final DataTable table) throws InvalidSettingsException, IOException {
+        ContainerRowInputNodeConfiguration config = new ContainerRowInputNodeConfiguration();
+        config.setParameterName(parameterName);
+        if (table != null) {
+            JsonValue jsonRow = ContainerTableMapper
+                .toContainerTableJsonValueFromDataTable(getFirstRowAsATable(table));
+            config.setTemplateRow(jsonRow);
+            config.setUseTemplateAsSpec(true);
+        }
+        config.save(settings);
+    }
+
     private JsonValue m_externalValue;
     private ContainerRowInputNodeConfiguration m_configuration = new ContainerRowInputNodeConfiguration();
 
@@ -95,16 +120,6 @@ public final class ContainerRowInputNodeModel extends NodeModel implements Input
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
             new PortType[]{BufferedDataTable.TYPE}
         );
-    }
-
-    /**
-     * Injects the 'parameter name' settings.
-     *
-     * @param parameterName
-     * @throws InvalidSettingsException if setting validation failed
-     */
-    public void setParameterName(final String parameterName) throws InvalidSettingsException {
-        m_configuration.setParameterName(parameterName);
     }
 
     /**

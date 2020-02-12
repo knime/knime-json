@@ -54,6 +54,7 @@ import java.util.Optional;
 
 import javax.json.JsonValue;
 
+import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -83,6 +84,26 @@ public final class ContainerTableInputNodeModel extends NodeModel implements Inp
     private ContainerTableInputNodeConfiguration m_configuration = new ContainerTableInputNodeConfiguration();
 
     /**
+     * Helper to save the node's configuration pre-configured with some values to a nodes settings object.
+     *
+     * @param settings
+     * @param parameterName
+     * @param table a example table to be set as template, can be <code>null</code> if not available
+     * @throws InvalidSettingsException
+     */
+    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName,
+        final DataTable table) throws InvalidSettingsException {
+        ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
+        config.setParameterName(parameterName);
+        if (table != null) {
+            config.getTemplateConfiguration()
+                .setTemplate(ContainerTableMapper.toContainerTableJsonValueFromDataTable(table));
+            config.getTemplateConfiguration().setUseEntireTable(true);
+        }
+        config.save(settings);
+    }
+
+    /**
      * Constructor for the node model.
      */
     ContainerTableInputNodeModel() {
@@ -90,16 +111,6 @@ public final class ContainerTableInputNodeModel extends NodeModel implements Inp
             new PortType[]{BufferedDataTable.TYPE_OPTIONAL},
             new PortType[]{BufferedDataTable.TYPE}
         );
-    }
-
-    /**
-     * Injects the 'parameter name' settings.
-     *
-     * @param parameterName
-     * @throws InvalidSettingsException if setting validation failed
-     */
-    public void setParameterName(final String parameterName) throws InvalidSettingsException {
-        m_configuration.setParameterName(parameterName);
     }
 
     /**

@@ -81,6 +81,20 @@ import org.knime.json.node.container.mappers.ContainerTableMapper;
  */
 public final class ContainerTableOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
 
+    /**
+     * Helper to save the node's configuration pre-configured with some values to a nodes settings object.
+     *
+     * @param settings
+     * @param parameterName
+     * @throws InvalidSettingsException
+     */
+    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName)
+        throws InvalidSettingsException {
+        ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration();
+        config.setParameterName(parameterName);
+        config.save(settings);
+    }
+
     private ContainerTableOutputNodeConfiguration m_configuration = new ContainerTableOutputNodeConfiguration();
     private BufferedDataTable m_inputTable;
 
@@ -89,16 +103,6 @@ public final class ContainerTableOutputNodeModel extends NodeModel implements Bu
      */
     ContainerTableOutputNodeModel() {
         super(1, 1);
-    }
-
-    /**
-     * Injects the 'parameter name' settings.
-     *
-     * @param parameterName
-     * @throws InvalidSettingsException if setting validation failed
-     */
-    public void setParameterName(final String parameterName) throws InvalidSettingsException {
-        m_configuration.setParameterName(parameterName);
     }
 
     /**

@@ -33,6 +33,21 @@ import org.knime.json.node.container.mappers.row.ContainerRowMapper;
  */
 public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode {
 
+    /**
+     * Helper to save the node's configuration pre-configured with some values to a nodes settings object.
+     *
+     * @param settings
+     * @param parameterName
+     * @throws InvalidSettingsException
+     */
+    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName)
+        throws InvalidSettingsException {
+        ContainerRowOutputNodeConfiguration config = new ContainerRowOutputNodeConfiguration();
+        config.setParameterName(parameterName);
+        config.save(settings);
+    }
+
+
     private ContainerRowOutputNodeConfiguration m_configuration = new ContainerRowOutputNodeConfiguration();
     private JsonValue m_outputRow;
 
@@ -41,16 +56,6 @@ public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode
      */
     protected ContainerRowOutputNodeModel() {
         super(1, 1);
-    }
-
-    /**
-     * Injects the 'parameter name' settings.
-     *
-     * @param parameterName
-     * @throws InvalidSettingsException if setting validation failed
-     */
-    public void setParameterName(final String parameterName) throws InvalidSettingsException {
-        m_configuration.setParameterName(parameterName);
     }
 
     /**
