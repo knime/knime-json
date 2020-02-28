@@ -13,11 +13,11 @@
 
 	<groupId>org.knime</groupId>
 	<artifactId>knime-json</artifactId>
-    <version>${revision}${changelist}</version>
+	<version>${revision}${changelist}</version>
 	<packaging>pom</packaging>
 
     <properties>
-        <revision>4.1.0</revision>
+        <revision>4.2.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
         <feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
@@ -27,6 +27,7 @@
 		<module>org.knime.json</module>
 		<module>org.knime.features.json</module>
 		<module>org.knime.update.json</module>
+		<module>org.knime.json.tests</module>
 	</modules>
 
 	<repositories>

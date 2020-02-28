@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature id="org.knime.features.json" version="0.0.0"/>
-   <feature id="org.knime.features.json.source" version="0.0.0"/>
+   <feature id="org.knime.features.json" version="0.0.0">
+       <category name="knime-json"/>
+   </feature>
+   <feature id="org.knime.features.json.source" version="0.0.0">
+       <category name="knime-json"/>
+   </feature>
 </site>
