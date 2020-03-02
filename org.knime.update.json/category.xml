@@ -6,4 +6,10 @@
    <feature id="org.knime.features.json.source" version="0.0.0">
        <category name="knime-json"/>
    </feature>
+   <bundle id="org.knime.json.tests" version="0.0.0">
+       <category name="knime-json"/>
+   </bundle>
+   <category-def name="knime-json" label="Build artifacts from knime-json">
+       <description>Build artifacts from knime-json</description>
+   </category-def>   
 </site>
