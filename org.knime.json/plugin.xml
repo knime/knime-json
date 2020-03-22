@@ -20,9 +20,8 @@
       <node after="org.knime.json.node.jsonpath.dict.JSONPathDictNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.combine.column.ColumnCombineJsonNodeFactory"/>
       <node after="org.knime.json.node.combine.column.ColumnCombineJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.combine.row.RowCombineJsonNodeFactory"/>
       <node after="org.knime.json.node.combine.row.RowCombineJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.combine.row.CombineAndWriteJsonNodeFactory"/>
-      <!--deprecated <node category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.JSONPathNodeFactory"  after="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>-->
+      <node deprecated="true" category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpath.JSONPathNodeFactory"  after="org.knime.json.node.fromxml.XMLToJSONNodeFactory"/>-->
       <!--never released node category-path="/struct-data/json" factory-class="org.knime.json.node.jsonpointer.JSONPointerNodeFactory"  after="org.knime.json.node.jsonpath.JSONPathNodeFactory"/-->
-      <!--node category-path="/struct-data/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"  after="org.knime.json.node.jsonpointer.JSONPointerNodeFactory"/-->
       <node after="org.knime.json.node.combine.row.CombineAndWriteJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory"/>
       <node after="org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory"/>
       <node after="org.knime.json.node.schema.check.JSONSchemaCheckNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.patch.create.JSONPatchCreateNodeFactory"/>
