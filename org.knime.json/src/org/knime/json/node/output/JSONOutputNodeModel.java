@@ -140,7 +140,8 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
     }
 
     JsonValue getViewJSONObject() {
-        return readIntoJsonValue(m_table, true, m_configuration.isKeepOneRowTablesSimple());
+        return m_configuration != null ? readIntoJsonValue(m_table, true, m_configuration.isKeepOneRowTablesSimple())
+            : null;
     }
 
     /** {@inheritDoc} */

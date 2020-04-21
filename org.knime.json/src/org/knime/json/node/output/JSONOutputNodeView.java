@@ -66,6 +66,8 @@ final class JSONOutputNodeView extends NodeView<JSONOutputNodeModel> {
     @Override
     protected void modelChanged() {
         JsonValue viewJSONValue = getNodeModel().getViewJSONObject();
-        m_rSyntaxTextArea.setText(JSONUtil.toPrettyJSONString(viewJSONValue));
+        if (viewJSONValue != null) {
+            m_rSyntaxTextArea.setText(JSONUtil.toPrettyJSONString(viewJSONValue));
+        }
     }
 }
