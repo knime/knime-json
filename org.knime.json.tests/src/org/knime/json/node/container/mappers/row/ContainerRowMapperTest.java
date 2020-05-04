@@ -59,7 +59,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.knime.core.data.container.ContainerTable;
 import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.Node;
@@ -85,7 +84,7 @@ abstract class ContainerRowMapperTest {
         NodeFactory<NodeModel> dummyFactory =
             (NodeFactory)new VirtualParallelizedChunkPortObjectInNodeFactory(new PortType[0]);
         return new ExecutionContext(new DefaultNodeProgressMonitor(), new Node(dummyFactory),
-            SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<Integer, ContainerTable>());
+            SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<>());
     }
 
     /**

@@ -64,7 +64,6 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.RowIterator;
 import org.knime.core.data.container.CloseableRowIterator;
-import org.knime.core.data.container.ContainerTable;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -532,7 +531,7 @@ public class ContainerTableToBufferedDataTableTest extends ContainerTableMapperT
         NodeFactory<NodeModel> dummyFactory =
             (NodeFactory)new VirtualParallelizedChunkPortObjectInNodeFactory(new PortType[0]);
         return new ExecutionContext(new DefaultNodeProgressMonitor(), new Node(dummyFactory),
-            SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<Integer, ContainerTable>());
+            SingleNodeContainer.MemoryPolicy.CacheOnDisc, new HashMap<>());
     }
 
 }
