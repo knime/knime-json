@@ -65,6 +65,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.streamable.simple.SimpleStreamableFunctionNodeModel;
+import org.knime.core.node.util.CheckUtils;
 
 /**
  * This {@link NodeModel} abstraction handles the case of a single column change or add using a {@link ColumnRearranger}
@@ -198,10 +199,11 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     protected ColumnRearranger createColumnRearranger(final DataTableSpec inSpecs) throws InvalidSettingsException {
         ColumnRearranger ret = new ColumnRearranger(inSpecs);
         String input = m_settings.getInputColumnName();
-        if (input == null || !inSpecs.containsName(input)) {
+        if (input == null) {
             input = handleNonSetColumn(inSpecs).getName();
         }
         final int inputIndex = inSpecs.findColumnIndex(input);
+        CheckUtils.checkSetting(inputIndex >= 0, "Selected input column \"%s\" not available", input);
         final int[] otherIndices = findOtherIndices(inSpecs);
         String newColumnName = m_settings.getNewColumnName();
         if (m_settings instanceof ReplaceColumnSettings) {
