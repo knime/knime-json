@@ -17,7 +17,7 @@ try {
 
     workflowTests.runTests(
         dependencies: [
-            repositories: ['knime-json', 'knime-xml', 'knime-filehandling', 'knime-jep', 'knime-productivity-oss'],
+            repositories: ['knime-json', 'knime-xml', 'knime-filehandling', 'knime-jep', 'knime-productivity-oss', 'knime-reporting'],
             ius: ['org.knime.json.tests']
         ]
     )
