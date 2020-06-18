@@ -7,7 +7,7 @@
     </shortDescription>
     
     <fullDescription>
-        <intro>Converts the String values to JSON values. <tt>null</tt> is not supported as the only input, other valid JSON values are converted.</intro>
+        <intro>Converts the String values to JSON values.</intro>
         
         <option name="Input column">Column containing JSON as a String</option>
         <option name="Replace">Replace input column, keep its name</option>

@@ -124,14 +124,4 @@ public class TestJSONCellFactory {
     public void testInfinity() throws IOException {
         JSONCellFactory.create("Infinity", false);
     }
-
-    /**
-     * {@code null} is not supported by our implementation, probably should be represented as missing value?
-     *
-     * @throws IOException
-     */
-    @Test(expected = NullPointerException.class)
-    public void testNull() throws IOException {
-        JSONCellFactory.create("null", false);
-    }
 }

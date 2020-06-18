@@ -86,18 +86,6 @@ public class TestJSONCell {
     }
 
     /**
-     * Nulls are not supported for deserialization either.
-     *
-     * @throws IOException
-     */
-    @Test(expected = NullPointerException.class)
-    public void testNull() throws IOException {
-        DataCellSerializer<DataCell> serializer = DataTypeRegistry.getInstance().getSerializer(JSONCell.class)
-                .orElseThrow(() -> new IllegalStateException("No serializer for JSONCell found"));
-        serializer.deserialize(new DataCellDataInputImplementation("null"));
-    }
-
-    /**
      * @param input
      * @return
      */
