@@ -58,6 +58,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 
 /**
@@ -99,6 +100,12 @@ public final class JacksonConversionsImpl extends JacksonConversions {
      */
     @Override
     public JsonValue toJSR353(final TreeNode input) {
-        return m_mapper.convertValue(input, JsonValue.class);
+        if (input instanceof NullNode) {
+            // Workaround for changed behaviour in Jackson 2.11. The ObjectMapper now creates a JsonValue.NULL_VALUE
+            // but we want null which was the previous behaviour.
+            return null;
+        } else {
+            return m_mapper.convertValue(input, JsonValue.class);
+        }
     }
 }
