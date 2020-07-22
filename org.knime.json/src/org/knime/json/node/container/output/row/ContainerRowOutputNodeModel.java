@@ -38,12 +38,15 @@ public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode
      *
      * @param settings
      * @param parameterName
+     * @param isUseAlwaysFullyQualifiedParameterName If true, use fully-qualified names as parameter name (added as part
+     *            of AP-14686)
      * @throws InvalidSettingsException
      */
-    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName)
-        throws InvalidSettingsException {
+    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName,
+        final boolean isUseAlwaysFullyQualifiedParameterName) throws InvalidSettingsException {
         ContainerRowOutputNodeConfiguration config = new ContainerRowOutputNodeConfiguration();
         config.setParameterName(parameterName);
+        config.setUseFQNParamName(isUseAlwaysFullyQualifiedParameterName);
         config.save(settings);
     }
 
@@ -115,6 +118,15 @@ public class ContainerRowOutputNodeModel extends NodeModel implements OutputNode
                 .description(m_configuration.getDescription())
                 .jsonValue(jsonValue)
                 .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 4.2
+     */
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
     }
 
     /**

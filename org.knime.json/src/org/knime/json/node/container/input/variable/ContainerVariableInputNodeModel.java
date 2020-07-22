@@ -211,6 +211,11 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
         m_externalValue = inputData.getJSONValue();
     }
 
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
+    }
+
     /**
      * {@inheritDoc}
      */

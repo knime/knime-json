@@ -93,13 +93,17 @@ public final class ContainerRowInputNodeModel extends NodeModel implements Input
      * @param settings
      * @param parameterName
      * @param table table to get the first row from to be set as template, can be <code>null</code> if not available
+     * @param isUseAlwaysFullyQualifiedParameterName If true, use fully-qualified names as parameter name (added as part
+     *            of AP-14686)
      * @throws InvalidSettingsException
      * @throws IOException
      */
     public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName,
-        final DataTable table) throws InvalidSettingsException, IOException {
+        final boolean isUseAlwaysFullyQualifiedParameterName, final DataTable table)
+        throws InvalidSettingsException, IOException {
         ContainerRowInputNodeConfiguration config = new ContainerRowInputNodeConfiguration();
         config.setParameterName(parameterName);
+        config.setUseFQNParamName(isUseAlwaysFullyQualifiedParameterName);
         if (table != null) {
             JsonValue jsonRow = ContainerTableMapper
                 .toContainerTableJsonValueFromDataTable(getFirstRowAsATable(table));
@@ -281,6 +285,15 @@ public final class ContainerRowInputNodeModel extends NodeModel implements Input
     @Override
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
         m_externalValue = inputData.getJSONValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 4.2
+     */
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
     }
 
     /**

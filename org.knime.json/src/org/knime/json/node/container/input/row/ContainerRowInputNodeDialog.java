@@ -59,6 +59,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -94,6 +95,7 @@ import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHand
 final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implements ValueControlledDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
+    private final JCheckBox m_useFQParamNameChecker;
     private final JTextArea m_descriptionArea;
     private final JButton m_createTemplateRowButton;
     private final JLabel m_warningLabel;
@@ -124,6 +126,10 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     ContainerRowInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
+
+        m_useFQParamNameChecker = new JCheckBox("Use fully qualified name in REST representation");
+        m_useFQParamNameChecker.setToolTipText(
+            "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.");
 
         m_descriptionArea = new JTextArea(1, 20);
         m_descriptionArea.setLineWrap(true);
@@ -196,6 +202,11 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
         gbc.weightx = 1.0;
         gbc.weighty = 0;
         panel.add(m_parameterNameField, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        panel.add(m_useFQParamNameChecker, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -378,6 +389,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         ContainerRowInputNodeConfiguration config = new ContainerRowInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
+        config.setUseFQNParamName(m_useFQParamNameChecker.isSelected());
         config.setDescription(m_descriptionArea.getText());
         config.setUseTemplateAsSpec(m_validateInputAgainstTemplate.isSelected());
         config.setTemplateRow(m_templateRowJson);
@@ -427,6 +439,7 @@ final class ContainerRowInputNodeDialog extends DataAwareNodeDialogPane implemen
     private void loadSettings(final NodeSettingsRO settings, final BufferedDataTable inputTable) {
         ContainerRowInputNodeConfiguration config = new ContainerRowInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
+        m_useFQParamNameChecker.setSelected(config.isUseFQNParamName());
         m_descriptionArea.setText(config.getDescription());
 
         if (config.getUseTemplateAsSpec()) {

@@ -53,6 +53,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -75,6 +76,7 @@ import org.knime.core.node.port.PortObjectSpec;
 final class ContainerVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
+    private final JCheckBox m_useFQParamNameChecker;
     private final JTextArea m_descriptionArea;
 
     /**
@@ -83,6 +85,10 @@ final class ContainerVariableInputNodeDialog extends NodeDialogPane {
     ContainerVariableInputNodeDialog() {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
+
+        m_useFQParamNameChecker = new JCheckBox("Use fully qualified name in REST representation");
+        m_useFQParamNameChecker.setToolTipText(
+            "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.");
 
         m_descriptionArea = new JTextArea(1, 20);
         m_descriptionArea.setLineWrap(true);
@@ -103,6 +109,11 @@ final class ContainerVariableInputNodeDialog extends NodeDialogPane {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         p.add(m_parameterNameField, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        p.add(m_useFQParamNameChecker, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -125,6 +136,7 @@ final class ContainerVariableInputNodeDialog extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration();
         config.setParameterName(m_parameterNameField.getText());
+        config.setUseFQNParamName(m_useFQParamNameChecker.isSelected());
         config.setDescription(m_descriptionArea.getText());
         config.save(settings);
     }
@@ -136,6 +148,7 @@ final class ContainerVariableInputNodeDialog extends NodeDialogPane {
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
         ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
+        m_useFQParamNameChecker.setSelected(config.isUseFQNParamName());
         m_descriptionArea.setText(config.getDescription());
     }
 

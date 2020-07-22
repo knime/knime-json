@@ -59,6 +59,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.json.util.JSONUtil;
@@ -71,6 +72,7 @@ import org.knime.json.util.JSONUtil;
 final class JSONInputNodeConfiguration {
     private JsonValue m_value = JsonProvider.provider().createObjectBuilder().build();
     private String m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONInputNodeModel.class);
+    private boolean m_useFQNParamName = false; // added in 4.3
     private String m_description = "";
 
 
@@ -146,6 +148,20 @@ final class JSONInputNodeConfiguration {
         return this;
     }
 
+    /** Get value as per {@link #setUseFQNParamName(boolean)}.
+     * @return the useFQNParamName
+     */
+    boolean isUseFQNParamName() {
+        return m_useFQNParamName;
+    }
+
+    /** Sets property as per {@link InputNode#isUseAlwaysFullyQualifiedParameterName()}.
+     * @param useFQNParamName the useFQNParamName to set
+     */
+    void setUseFQNParamName(final boolean useFQNParamName) {
+        m_useFQNParamName = useFQNParamName;
+    }
+
     /**
      * Loads the settings from the given node settings object. Loading will fail if settings are missing or invalid.
      *
@@ -157,6 +173,7 @@ final class JSONInputNodeConfiguration {
         setParameterName(settings.getString("parameterName"), true);
         setValue(settings.getString("json"));
         setDescription(settings.getString("description", "")); // added in 3.5
+        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", true)); // added in 4.3
         return this;
     }
 
@@ -179,6 +196,7 @@ final class JSONInputNodeConfiguration {
             m_value = JsonProvider.provider().createObjectBuilder().build();
         }
 
+        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", false)); // added in 4.3
         setDescription(settings.getString("description", ""));
         return this;
     }
@@ -191,6 +209,7 @@ final class JSONInputNodeConfiguration {
      */
     JSONInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
+        settings.addBoolean("useFullyQualifiedName", m_useFQNParamName); // added in 4.3
         settings.addString("json", m_value.toString());
         settings.addString("description", m_description);
         return this;

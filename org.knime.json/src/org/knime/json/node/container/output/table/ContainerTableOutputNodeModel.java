@@ -86,12 +86,15 @@ public final class ContainerTableOutputNodeModel extends NodeModel implements Bu
      *
      * @param settings
      * @param parameterName
+     * @param isUseAlwaysFullyQualifiedParameterName If true, use fully-qualified names as parameter name (added as part
+     *            of AP-14686)
      * @throws InvalidSettingsException
      */
-    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName)
-        throws InvalidSettingsException {
+    public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName,
+        final boolean isUseAlwaysFullyQualifiedParameterName) throws InvalidSettingsException {
         ContainerTableOutputNodeConfiguration config = new ContainerTableOutputNodeConfiguration();
         config.setParameterName(parameterName);
+        config.setUseFQNParamName(isUseAlwaysFullyQualifiedParameterName);
         config.save(settings);
     }
 
@@ -163,6 +166,15 @@ public final class ContainerTableOutputNodeModel extends NodeModel implements Bu
                 .description(m_configuration.getDescription())
                 .jsonValue(computeExternalOutput())
                 .build();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 4.2
+     */
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
     }
 
     /**
