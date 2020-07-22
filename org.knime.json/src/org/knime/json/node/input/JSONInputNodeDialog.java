@@ -53,6 +53,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -82,6 +83,8 @@ final class JSONInputNodeDialog extends NodeDialogPane {
 
     private final JTextArea m_descriptionArea;
 
+    private final JCheckBox m_useFQParamNameChecker;
+
     private final RSyntaxTextArea m_input;
 
     /**
@@ -100,6 +103,10 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
+        m_useFQParamNameChecker = new JCheckBox("Use fully qualified name in REST representation");
+        m_useFQParamNameChecker.setToolTipText(
+            "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.");
+
         addTab("JSON", createLayout(), false);
     }
 
@@ -115,6 +122,11 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         gbc.weightx = 1.0;
         p.add(m_parameterNameField, gbc);
 
+        gbc.gridx = 1;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        p.add(m_useFQParamNameChecker, gbc);
+
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.weightx = 0;
@@ -125,7 +137,6 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         gbc.weightx = 1;
         gbc.gridx++;
         p.add(sp, gbc);
-
 
         gbc.gridx = 0;
         gbc.gridy += 1;
@@ -143,6 +154,7 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         config.setParameterName(m_parameterNameField.getText(), false);
         config.setValue(m_input.getText());
         config.setDescription(m_descriptionArea.getText());
+        config.setUseFQNParamName(m_useFQParamNameChecker.isSelected());
         config.save(settings);
     }
 
@@ -155,6 +167,7 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         JSONInputNodeConfiguration config = new JSONInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_descriptionArea.setText(config.getDescription());
+        m_useFQParamNameChecker.setSelected(config.isUseFQNParamName());
         m_input.setText(JSONUtil.toPrettyJSONString(config.getValue()));
     }
 }

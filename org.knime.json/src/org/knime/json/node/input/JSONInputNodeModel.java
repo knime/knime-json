@@ -192,4 +192,9 @@ final class JSONInputNodeModel extends NodeModel implements InputNode {
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
         m_externalValue = inputData.getJSONValue();
     }
+
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
+    }
 }

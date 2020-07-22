@@ -33,6 +33,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.json.util.JSONUtil;
@@ -44,6 +45,7 @@ import org.knime.json.util.JSONUtil;
  */
 final class JSONOutputConfiguration {
     private String m_parameterName;
+    private boolean m_useFQNParamName = false; // added in 4.3
     private String m_jsonColumnName;
     private boolean m_keepOneRowTablesSimple;
     private JsonValue m_exampleJson;
@@ -125,6 +127,20 @@ final class JSONOutputConfiguration {
         return this;
     }
 
+    /** Get value as per {@link #setUseFQNParamName(boolean)}.
+     * @return the useFQNParamName
+     */
+    boolean isUseFQNParamName() {
+        return m_useFQNParamName;
+    }
+
+    /** Sets property as per {@link InputNode#isUseAlwaysFullyQualifiedParameterName()}.
+     * @param useFQNParamName the useFQNParamName to set
+     */
+    void setUseFQNParamName(final boolean useFQNParamName) {
+        m_useFQNParamName = useFQNParamName;
+    }
+
     /**
      * Sets the name of the column containing the JSON object.
      *
@@ -169,6 +185,7 @@ final class JSONOutputConfiguration {
      */
     JSONOutputConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"), true);
+        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", true)); // added in 4.3
         setJsonColumnName(settings.getString("jsonColumnName"));
         setKeepOneRowTablesSimple(settings.getBoolean("keepOneRowTablesSimple"));
 
@@ -195,6 +212,8 @@ final class JSONOutputConfiguration {
         } catch (InvalidSettingsException e) {
             m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONOutputNodeModel.class);
         }
+        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", false)); // added in 4.3
+
         String firstJSONCol = null;
         for (DataColumnSpec col : inSpec) {
             if (col.getType().isCompatible(JSONValue.class)) {
@@ -229,6 +248,7 @@ final class JSONOutputConfiguration {
      */
     JSONOutputConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
+        settings.addBoolean("useFullyQualifiedName", m_useFQNParamName); // added in 4.3
         settings.addString("jsonColumnName", m_jsonColumnName);
         settings.addBoolean("keepOneRowTablesSimple", m_keepOneRowTablesSimple);
 

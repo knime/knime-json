@@ -1,32 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <component id="org.knime.json" version="2">
-    <resource path="src/org/knime/json/node/container/mappers/ContainerTableMapper.java" type="org.knime.json.node.container.mappers.ContainerTableMapper">
+    <resource path="src/org/knime/json/node/container/input/row/ContainerRowInputNodeModel.java" type="org.knime.json.node.container.input.row.ContainerRowInputNodeModel">
         <filter id="338792546">
             <message_arguments>
-                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
-                <message_argument value="toDataTable(ContainerTableJsonSchema)"/>
+                <message_argument value="org.knime.json.node.container.input.row.ContainerRowInputNodeModel"/>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String, DataTable)"/>
             </message_arguments>
         </filter>
+        <filter id="1143996420">
+            <message_arguments>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String, boolean, DataTable)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/input/table/ContainerTableInputNodeModel.java" type="org.knime.json.node.container.input.table.ContainerTableInputNodeModel">
         <filter id="338792546">
             <message_arguments>
-                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
-                <message_argument value="toDataTable(JsonValue)"/>
+                <message_argument value="org.knime.json.node.container.input.table.ContainerTableInputNodeModel"/>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String, DataTable)"/>
+            </message_arguments>
+        </filter>
+        <filter id="1143996420">
+            <message_arguments>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String, boolean, DataTable)"/>
             </message_arguments>
         </filter>
     </resource>
     <resource path="src/org/knime/json/node/container/output/row/ContainerRowOutputNodeModel.java" type="org.knime.json.node.container.output.row.ContainerRowOutputNodeModel">
-        <filter id="574619656">
+        <filter id="338792546">
             <message_arguments>
-                <message_argument value="OutputNode"/>
-                <message_argument value="ContainerRowOutputNodeModel"/>
+                <message_argument value="org.knime.json.node.container.output.row.ContainerRowOutputNodeModel"/>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String)"/>
+            </message_arguments>
+        </filter>
+        <filter id="1143996420">
+            <message_arguments>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String, boolean)"/>
             </message_arguments>
         </filter>
     </resource>
     <resource path="src/org/knime/json/node/container/output/table/ContainerTableOutputNodeModel.java" type="org.knime.json.node.container.output.table.ContainerTableOutputNodeModel">
-        <filter id="574619656">
+        <filter id="338792546">
             <message_arguments>
-                <message_argument value="OutputNode"/>
-                <message_argument value="ContainerTableOutputNodeModel"/>
+                <message_argument value="org.knime.json.node.container.output.table.ContainerTableOutputNodeModel"/>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String)"/>
+            </message_arguments>
+        </filter>
+        <filter id="1143996420">
+            <message_arguments>
+                <message_argument value="saveConfigAsNodeSettings(NodeSettingsWO, String, boolean)"/>
             </message_arguments>
         </filter>
     </resource>

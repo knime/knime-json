@@ -223,4 +223,9 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
         builder.description(m_configuration.getDescription());
         return builder.build();
     }
+
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
+    }
 }

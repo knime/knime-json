@@ -194,6 +194,11 @@ final class ContainerCredentialsInputNodeModel extends NodeModel implements Inpu
         m_externalValue = inputData.getJSONValue();
     }
 
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
+    }
+
     /**
      * {@inheritDoc}
      */

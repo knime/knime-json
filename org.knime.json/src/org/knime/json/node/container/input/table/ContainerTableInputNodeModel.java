@@ -88,13 +88,16 @@ public final class ContainerTableInputNodeModel extends NodeModel implements Inp
      *
      * @param settings
      * @param parameterName
+     * @param isUseAlwaysFullyQualifiedParameterName If true, use fully-qualified names as parameter name (added as part
+     *            of AP-14686)
      * @param table a example table to be set as template, can be <code>null</code> if not available
      * @throws InvalidSettingsException
      */
     public static void saveConfigAsNodeSettings(final NodeSettingsWO settings, final String parameterName,
-        final DataTable table) throws InvalidSettingsException {
+        final boolean isUseAlwaysFullyQualifiedParameterName, final DataTable table) throws InvalidSettingsException {
         ContainerTableInputNodeConfiguration config = new ContainerTableInputNodeConfiguration();
         config.setParameterName(parameterName);
+        config.setUseFQNParamName(isUseAlwaysFullyQualifiedParameterName);
         if (table != null) {
             config.getTemplateConfiguration()
                 .setTemplate(ContainerTableMapper.toContainerTableJsonValueFromDataTable(table));
@@ -224,6 +227,15 @@ public final class ContainerTableInputNodeModel extends NodeModel implements Inp
     @Override
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
         m_externalValue = inputData.getJSONValue();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 4.3
+     */
+    @Override
+    public boolean isUseAlwaysFullyQualifiedParameterName() {
+        return m_configuration.isUseFQNParamName();
     }
 
     /**

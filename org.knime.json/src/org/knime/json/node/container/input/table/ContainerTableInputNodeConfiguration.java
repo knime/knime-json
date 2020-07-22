@@ -57,6 +57,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
+import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.container.ui.ContainerTemplateTableConfiguration;
 import org.knime.json.node.container.ui.ContainerTemplateTablePanel;
@@ -73,6 +74,7 @@ final class ContainerTableInputNodeConfiguration {
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
 
     private String m_parameterName;
+    private boolean m_useFQNParamName = false; // added in 4.3
     private String m_description;
     private String m_inputPathOrUrl;
     private ContainerTemplateTableConfiguration m_templateConfiguration;
@@ -127,6 +129,20 @@ final class ContainerTableInputNodeConfiguration {
             value, DialogNode.PARAMETER_NAME_PATTERN.pattern());
         m_parameterName = value;
         return this;
+    }
+
+    /** Get value as per {@link #setUseFQNParamName(boolean)}.
+     * @return the useFQNParamName
+     */
+    boolean isUseFQNParamName() {
+        return m_useFQNParamName;
+    }
+
+    /** Sets property as per {@link InputNode#isUseAlwaysFullyQualifiedParameterName()}.
+     * @param useFQNParamName the useFQNParamName to set
+     */
+    void setUseFQNParamName(final boolean useFQNParamName) {
+        m_useFQNParamName = useFQNParamName;
     }
 
     /**
@@ -206,6 +222,7 @@ final class ContainerTableInputNodeConfiguration {
      */
     ContainerTableInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setParameterName(settings.getString("parameterName"));
+        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", true)); // added in 4.3
         setDescription(settings.getString("description"));
         setInputPathOrUrl(settings.getString("inputPathOrUrl"));
         setTemplateConfiguration(new ContainerTemplateTableConfiguration("exampleInput").loadInModel(settings));
@@ -227,6 +244,7 @@ final class ContainerTableInputNodeConfiguration {
             m_parameterName = DEFAULT_PARAMETER_NAME;
             m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
+        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", false)); // added in 4.3
         setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
         setTemplateConfiguration(new ContainerTemplateTableConfiguration("exampleInput").loadInDialog(settings));
         return this;
@@ -240,6 +258,7 @@ final class ContainerTableInputNodeConfiguration {
      */
     ContainerTableInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString("parameterName", m_parameterName);
+        settings.addBoolean("useFullyQualifiedName", m_useFQNParamName); // added in 4.3
         settings.addString("description", m_description);
         settings.addString("inputPathOrUrl", m_inputPathOrUrl);
         m_templateConfiguration.save(settings);

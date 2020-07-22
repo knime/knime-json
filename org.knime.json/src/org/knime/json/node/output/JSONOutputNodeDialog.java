@@ -66,6 +66,8 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
 
+    private final JCheckBox m_useFQParamNameChecker;
+
     private final JTextArea m_descriptionArea;
 
     private final JCheckBox m_keepOneRowTablesSimpleChecker;
@@ -85,6 +87,10 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
+
+        m_useFQParamNameChecker = new JCheckBox("Use fully qualified name in REST representation");
+        m_useFQParamNameChecker.setToolTipText(
+            "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.");
 
         m_keepOneRowTablesSimpleChecker = new JCheckBox("Keep single-row tables simple");
 
@@ -120,6 +126,11 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(m_parameterNameField, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        panel.add(m_useFQParamNameChecker, gbc);
 
         gbc.gridx = 0;
         gbc.gridy += 1;
@@ -173,6 +184,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         JSONOutputConfiguration config = new JSONOutputConfiguration();
         config.setJsonColumnName(m_columnSelectionPanel.getSelectedColumn());
         config.setParameterName(m_parameterNameField.getText(), false);
+        config.setUseFQNParamName(m_useFQParamNameChecker.isSelected());
         config.setKeepOneRowTablesSimple(m_keepOneRowTablesSimpleChecker.isSelected());
 
         final String exampleJsonString = m_input.getText();
@@ -230,6 +242,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
 
         m_columnSelectionPanel.update(spec, config.getJsonColumnName(), false, true);
         m_parameterNameField.setText(config.getParameterName());
+        m_useFQParamNameChecker.setSelected(config.isUseFQNParamName());
         m_keepOneRowTablesSimpleChecker.setSelected(config.isKeepOneRowTablesSimple());
 
         final JsonValue exampleJson = config.getExampleJson();
