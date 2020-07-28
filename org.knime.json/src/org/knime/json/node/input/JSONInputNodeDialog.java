@@ -103,7 +103,7 @@ final class JSONInputNodeDialog extends NodeDialogPane {
         m_descriptionArea.setPreferredSize(new Dimension(100, 50));
         m_descriptionArea.setMinimumSize(new Dimension(100, 30));
 
-        m_useFQParamNameChecker = new JCheckBox("Use fully qualified name in REST representation");
+        m_useFQParamNameChecker = new JCheckBox("Append unique ID to parameter name");
         m_useFQParamNameChecker.setToolTipText(
             "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.");
 
