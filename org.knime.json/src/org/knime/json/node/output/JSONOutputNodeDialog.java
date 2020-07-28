@@ -88,7 +88,7 @@ final class JSONOutputNodeDialog extends DataAwareNodeDialogPane {
         m_parameterNameField = new JFormattedTextField();
         m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
 
-        m_useFQParamNameChecker = new JCheckBox("Use fully qualified name in REST representation");
+        m_useFQParamNameChecker = new JCheckBox("Append unique ID to parameter name");
         m_useFQParamNameChecker.setToolTipText(
             "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.");
 
