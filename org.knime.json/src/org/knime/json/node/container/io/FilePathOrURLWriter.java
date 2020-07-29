@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -85,8 +84,7 @@ public class FilePathOrURLWriter {
                 new ObjectMapper().writeValue(outputStream, value);
             }
         } else {
-            URLConnection urlConnection = FileUtil.openOutputConnection(url, "PUT");
-            try (OutputStream outputStream = urlConnection.getOutputStream()) {
+            try (OutputStream outputStream = FileUtil.openOutputStream(url, "PUT")) {
                 new ObjectMapper().writeValue(outputStream, value);
             }
         }
