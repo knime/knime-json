@@ -417,7 +417,7 @@ public final class JSONWriterNodeModel extends NodeModel {
     }
 
     private static final OutputStream openConnection(final URL url) throws IOException {
-        return FileUtil.openOutputConnection(url, "PUT").getOutputStream();
+        return FileUtil.openOutputStream(url, "PUT");
     }
 
     /**

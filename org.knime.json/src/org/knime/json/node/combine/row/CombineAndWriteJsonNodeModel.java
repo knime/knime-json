@@ -68,7 +68,8 @@ class CombineAndWriteJsonNodeModel extends NodeModel {
             }
             stream = new BufferedOutputStream(Files.newOutputStream(outputPath));
         } else {
-            stream = new BufferedOutputStream(FileUtil.openOutputConnection(outputUrl, "PUT").getOutputStream());
+            stream =
+                new BufferedOutputStream(FileUtil.openOutputStream(outputUrl, "PUT"));
         }
         final String[] keys = m_settings.getKeys(), values = m_settings.getValues();
         try {
