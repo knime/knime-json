@@ -226,6 +226,9 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
 
     @Override
     public boolean isUseAlwaysFullyQualifiedParameterName() {
-        return m_configuration.isUseFQNParamName();
+        if (m_configuration != null) {
+            return m_configuration.isUseFQNParamName();
+        }
+        return true;
     }
 }
