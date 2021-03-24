@@ -25,6 +25,7 @@
 		<module>org.knime.features.json</module>
 		<module>org.knime.update.json</module>
 		<module>org.knime.json.tests</module>
+		<module>org.knime.json.filehandling </module>
 	</modules>
 
 	<repositories>

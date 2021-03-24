@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./jsonreader.png" type="Source"
+	xmlns='http://knime.org/node/v4.1'
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v4.1 http://knime.org/node/v4.1.xsd">
+	<name>JSON Reader (new)</name>
+
+	<shortDescription>
+		Reads .json files to JSON values.
+	</shortDescription>
+
+	<fullDescription>
+		<intro>Reads the .json file and parses it as JSON value.</intro>
+
+		<option name="Location">The path/URL to the file to read (supports remote
+			and .json.gz files too)</option>
+		<option name="Output column name">Name of the output column</option>
+		<option name="Select with JSONPath">Select a part of the read JSON if checked</option>
+		<option name="JSONPath">
+			The part to select from the input JSON. Using
+			<a href="http://goessner.net/articles/JsonPath/">JSONPath</a>
+			preferably with a single result. (For multiple results new rows will
+			be created from them.)
+		</option>
+		<option name="Fail if path not found">If checked, execution will fail if no such part
+			found. If unchecked and not found, the result will be a missing
+			value.</option>
+		<option name="Allow comments in json files">
+			When selected,
+			<tt>/*</tt>
+			...
+			<tt>*/</tt>
+			and the line comments
+			<tt>//</tt>
+			,
+			<tt>#</tt>
+			are interpreted as comments and get ignored instead of causing errors
+		</option>
+		<!-- possibly more options that can also be grouped by tabs -->
+		<!-- <tab name="Standard Options"> <option name="short name of first option 
+			(like in the dialog)">description of first option</option> <option name="short 
+			name of second option (like in the dialog)">description of second option</option> 
+			</tab> <tab name="Advanced Options"> <option name="short name of first advanced 
+			option (like in the dialog)">description of first advanced option</option> 
+			</tab> -->
+	</fullDescription>
+
+	<ports>
+		<dynInPort group-identifier="File System Connection"
+			insert-before="0" name="File system connection">The file system connection.
+		</dynInPort>
+		<outPort index="0" name="JSON table">Table with the read JSON values
+		</outPort>
+	</ports>
+</knimeNode>
