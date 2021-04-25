@@ -4,7 +4,7 @@
    <!-- This is an example for providing an own category--> 
       
    <extension point="org.knime.workbench.repository.nodes">
-      <node category-path="/struct-data/json" factory-class="org.knime.json.filehandling.reader.JSONReaderNodeFactory"/>
+      <node category-path="/struct-data/json" factory-class="org.knime.json.node.filehandling.reader.JSONReaderNodeFactory"/>
    
 </extension>
    

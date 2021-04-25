@@ -50,7 +50,7 @@
    </extension>
    <extension point="org.knime.core.DataValueRenderer">
       <dataValue valueClass="org.knime.core.data.json.JSONValue">
-         <renderer rendererFactoryClass="org.knime.core.data.json.JSONValueRenderer$Factory" suggestAsDefault="true">
+         <renderer rendererFactoryClass="org.knime.core.data.json.JSONValueRenderer2$Factory" suggestAsDefault="true">
          </renderer>
       </dataValue>
    </extension>
