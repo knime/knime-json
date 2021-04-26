@@ -85,7 +85,15 @@ enum JSONReaderMultiTableReadConfigSerializer
 
     private static final String ALLOW_COMMENTS = "allow.comments";
 
-   @Override
+    private static final String USE_PATH = "use.path";
+
+    private static final String JSON_PATH = "json.path";
+
+    private static final String FAIL_IF_NOT_FOUND = "fail.if.not.found";
+
+    private static final String DEFAULT_JSON_PATH = "$";
+
+    @Override
     public ConfigID createFromSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         return new NodeSettingsConfigID(settings.getNodeSettings(KEY));
     }
@@ -125,7 +133,9 @@ enum JSONReaderMultiTableReadConfigSerializer
         jsonReaderCfg.setColumnName(settings.getString(COLUMN_NAME, DEFAULT_COLUMN_NAME));
         jsonReaderCfg.setJsonReadMode(JSONReadMode.valueOf(settings.getString(READ_MODE, JSONReadMode.LEGACY.name())));
         jsonReaderCfg.setAllowComments(settings.getBoolean(ALLOW_COMMENTS, false));
-
+        jsonReaderCfg.setFailIfNotFound(settings.getBoolean(FAIL_IF_NOT_FOUND, false));
+        jsonReaderCfg.setJSONPath(settings.getString(JSON_PATH, DEFAULT_JSON_PATH));
+        jsonReaderCfg.setUseJSONPath(settings.getBoolean(USE_PATH, false));
     }
 
     @Override
@@ -150,13 +160,15 @@ enum JSONReaderMultiTableReadConfigSerializer
         jsonReaderCfg.setColumnName(settings.getString(COLUMN_NAME));
         jsonReaderCfg.setJsonReadMode(JSONReadMode.valueOf(settings.getString(READ_MODE)));
         jsonReaderCfg.setAllowComments(settings.getBoolean(ALLOW_COMMENTS));
-
+        jsonReaderCfg.setFailIfNotFound(settings.getBoolean(FAIL_IF_NOT_FOUND));
+        jsonReaderCfg.setJSONPath(settings.getString(JSON_PATH));
+        jsonReaderCfg.setUseJSONPath(settings.getBoolean(USE_PATH));
     }
 
     @Override
     public void saveInModel(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
         saveSettingsTab(config, SettingsUtils.getOrAdd(settings, SettingsUtils.CFG_SETTINGS_TAB));
-       }
+    }
 
     private static void saveSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
         final TableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
@@ -165,9 +177,12 @@ enum JSONReaderMultiTableReadConfigSerializer
         settings.addString(COLUMN_NAME, jsonReaderCfg.getColumnName());
         settings.addString(READ_MODE, jsonReaderCfg.getJsonReadMode().name());
         settings.addBoolean(ALLOW_COMMENTS, jsonReaderCfg.allowComments());
+        settings.addBoolean(USE_PATH, jsonReaderCfg.useJSONPath());
+        settings.addBoolean(FAIL_IF_NOT_FOUND, jsonReaderCfg.failIfNotFound());
+        settings.addString(JSON_PATH, jsonReaderCfg.getJSONPath());
     }
 
-   @Override
+    @Override
     public void saveInDialog(final JSONMultiTableReadConfig config, final NodeSettingsWO settings)
         throws InvalidSettingsException {
         saveInModel(config, settings);
@@ -177,7 +192,7 @@ enum JSONReaderMultiTableReadConfigSerializer
     public void validate(final JSONMultiTableReadConfig config, final NodeSettingsRO settings)
         throws InvalidSettingsException {
         validateSettingsTab(settings.getNodeSettings(SettingsUtils.CFG_SETTINGS_TAB));
-        }
+    }
 
     /**
      * @param nodeSettings
@@ -186,5 +201,8 @@ enum JSONReaderMultiTableReadConfigSerializer
         settings.getString(COLUMN_NAME);
         settings.getString(READ_MODE);
         settings.getBoolean(ALLOW_COMMENTS);
+        settings.getBoolean(FAIL_IF_NOT_FOUND);
+        settings.getBoolean(USE_PATH);
+        settings.getString(JSON_PATH);
     }
 }

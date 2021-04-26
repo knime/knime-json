@@ -104,11 +104,11 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
                     throw new NumberFormatException("Size < 0" + newSize);
                 }
                 size = newSize * multiplier;
-                NodeLogger.getLogger(JSONCellFactory.class).debug(
-                    "Setting min blob size for JSON cells to " + size + " bytes");
+                NodeLogger.getLogger(JSONCellFactory.class)
+                    .debug("Setting min blob size for JSON cells to " + size + " bytes");
             } catch (NumberFormatException e) {
-                NodeLogger.getLogger(JSONCellFactory.class).warn(
-                    "Unable to parse property " + envVar + ", using default", e);
+                NodeLogger.getLogger(JSONCellFactory.class)
+                    .warn("Unable to parse property " + envVar + ", using default", e);
             }
         }
         MIN_BLOB_SIZE_IN_BYTES = size;
@@ -244,7 +244,30 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
     }
 
     /**
+     * @since 4.4
+     * Factory method to create {@link DataCell} representing a String. This method is a speedup to avoid
+     * unnecessary multiple parsing of JSON. This String must be a valid JSON (ideally from a parser). The
+     * returned cell is either of type {@link JSONCell} (for small documents) or {@link JSONBlobCell} (otherwise,
+     * default threshold is {@value #DEF_MIN_BLOB_SIZE_IN_BYTES} bytes or larger).
+     *
+     * @param json String representation of JSON that doesn't require to be validated
+     * @return DataCell representing the JSON
+     * @throws IOException
+     *
+     */
+
+    public static DataCell create(final String json) throws IOException {
+        JSONCellContent content = new JSONCellContent(json, false);
+        if (json.length() >= MIN_BLOB_SIZE_IN_BYTES) {
+           return new JSONBlobCell(content);
+        } else {
+            return new JSONCell(content);
+        }
+    }
+
+    /**
      * {@inheritDoc}
+     *
      * @since 3.0
      */
     @DataCellFactoryMethod(name = "String")
@@ -259,6 +282,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
 
     /**
      * {@inheritDoc}
+     *
      * @since 3.0
      */
     @Override
@@ -268,6 +292,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
 
     /**
      * {@inheritDoc}
+     *
      * @since 3.0
      */
     @DataCellFactoryMethod(name = "Reader")
@@ -278,6 +303,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
 
     /**
      * {@inheritDoc}
+     *
      * @since 3.0
      */
     @DataCellFactoryMethod(name = "InputStream")

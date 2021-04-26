@@ -60,11 +60,9 @@ import java.util.stream.Stream;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -101,15 +99,15 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
     private final SettingsModelReaderFileChooser m_fileChooser;
 
-    private final JRadioButton m_legacyMode;
+    //    private final JRadioButton m_legacyMode;
 
-    private final JRadioButton m_streamingMode;
+    //    private final JRadioButton m_streamingMode;
 
     private final JPanel m_jsonModeCardLayout;
 
     private final JPanel m_legacyModePanel;
 
-    private final JPanel m_streamModePanel;
+    //    private final JPanel m_streamModePanel;
 
     private final JLabel m_warningLabel;
 
@@ -128,7 +126,8 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      * @param productionPathProvider
      * @param allowsMultipleFiles
      */
-    protected JSONReaderNodeDialog(final SettingsModelReaderFileChooser fileChooser, final JSONMultiTableReadConfig config,
+    protected JSONReaderNodeDialog(final SettingsModelReaderFileChooser fileChooser,
+        final JSONMultiTableReadConfig config,
         final MultiTableReadFactory<Path, JSONReaderConfig, DataType> multiReader,
         final ProductionPathProvider<DataType> productionPathProvider) {
         super(multiReader, productionPathProvider, true);
@@ -144,24 +143,24 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
         m_sourceFilePanel = new DialogComponentReaderFileChooser(fileChooserModel, "source_chooser", sourceFvm);
 
-        final ButtonGroup readModeBtnGrp = new ButtonGroup();
-        m_legacyMode = new JRadioButton(JSONReadMode.LEGACY.getText());
-        readModeBtnGrp.add(m_legacyMode);
-        m_streamingMode = new JRadioButton(JSONReadMode.STREAMING.getText());
-        readModeBtnGrp.add(m_streamingMode);
+        //        final ButtonGroup readModeBtnGrp = new ButtonGroup();
+        //        m_legacyMode = new JRadioButton(JSONReadMode.LEGACY.getText());
+        //        readModeBtnGrp.add(m_legacyMode);
+        //        m_streamingMode = new JRadioButton(JSONReadMode.STREAMING.getText());
+        //        readModeBtnGrp.add(m_streamingMode);
 
         m_warningLabel = new JLabel("");
         m_selectPart = new JCheckBox("Select with JSONPath");
         m_failIfNotFound = new JCheckBox("Fail if path not found");
-        m_failIfNotFound
-            .setToolTipText("When unchecked and path do not match input, " + "missing value will be generated.");
+        m_failIfNotFound.setToolTipText("When unchecked and path do not match input, missing value will be generated.");
         m_allowComments = new JCheckBox("Allow comments in JSON files");
         m_allowComments.setToolTipText("/*...*/, // or #");
 
         m_legacyModePanel = makeLegacyModePanel();
-        m_streamModePanel = makeStreamingModePanel();
+        //        m_streamModePanel = makeStreamingModePanel();
         m_jsonModeCardLayout = makeReadModeCardLayout();
-
+        m_selectPart.addChangeListener(l -> handleUsePath());
+        m_selectPart.doClick();
         registerPreviewChangeListeners();
         createDialogPanels();
     }
@@ -189,24 +188,31 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
         m_sourceFilePanel.getModel().addChangeListener(changeListener);
 
-        m_legacyMode.addActionListener(l -> handleReadModeUpdate());
-        m_streamingMode.addActionListener(l -> handleReadModeUpdate());
+        //        m_legacyMode.addActionListener(l -> handleReadModeUpdate());
+        //        m_streamingMode.addActionListener(l -> handleReadModeUpdate());
         m_columnName.getDocument().addDocumentListener(documentListener);
         m_allowComments.addActionListener(actionListener);
-
+        m_selectPart.addActionListener(actionListener);
+        m_jsonPath.getDocument().addDocumentListener(documentListener);
+        m_failIfNotFound.addActionListener(actionListener);
     }
 
+    private void handleUsePath() {
+        m_failIfNotFound.setEnabled(m_selectPart.isSelected());
+        m_jsonPath.setEnabled(m_selectPart.isSelected());
+        // Jsurfer doesn't support JSON comments
+        m_allowComments.setEnabled(!m_selectPart.isSelected());
+    }
 
     private void createDialogPanels() {
         addTab("Settings", createSettingsPanel());
     }
 
-
     private JPanel createSettingsPanel() {
         final JPanel panel = new JPanel(new GridBagLayout());
         GBCBuilder gbc = createGBCBuilder().fillHorizontal().setWeightX(1).anchorPageStart();
         panel.add(createSourcePanel(), gbc.build());
-        panel.add(createReadModePanel(), gbc.incY().build());
+        //        panel.add(createReadModePanel(), gbc.incY().build());
         gbc.incY();
         panel.add(m_jsonModeCardLayout, gbc.build());
         gbc.incY();
@@ -215,34 +221,31 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         return panel;
     }
 
-    /**
-     * @return
-     */
-    private JPanel createReadModePanel() {
-        final JPanel readModePanel = new JPanel(new GridBagLayout());
-        GBCBuilder gbc = createGBCBuilder().fillHorizontal();
-        readModePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Read Mode"));
-        readModePanel.add(m_legacyMode, gbc.build());
-        gbc.incY();
-        readModePanel.add(m_streamingMode, gbc.build());
-        return readModePanel;
-    }
+    //    private JPanel createReadModePanel() {
+    //        final JPanel readModePanel = new JPanel(new GridBagLayout());
+    //        GBCBuilder gbc = createGBCBuilder().fillHorizontal();
+    //        readModePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Read Mode"));
+    //        readModePanel.add(m_legacyMode, gbc.build());
+    //        gbc.incY();
+    //        readModePanel.add(m_streamingMode, gbc.build());
+    //        return readModePanel;
+    //    }
 
     private JPanel makeReadModeCardLayout() {
         final JPanel panel = new JPanel(new CardLayout());
         panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Reader options:"));
         panel.add(m_legacyModePanel, JSONReadMode.LEGACY.name());
-        panel.add(m_streamModePanel, JSONReadMode.STREAMING.name());
+        //        panel.add(m_streamModePanel, JSONReadMode.STREAMING.name());
         return panel;
     }
 
-    private void handleReadModeUpdate() {
-        final CardLayout cl = (CardLayout)(m_jsonModeCardLayout.getLayout());
-        final String readMode = m_legacyMode.isSelected() ? JSONReadMode.LEGACY.name() : JSONReadMode.STREAMING.name();
-        cl.show(m_jsonModeCardLayout, readMode);
-        configChanged();
-        //TODO : which one is better get from config or button ?
-    }
+    //    private void handleReadModeUpdate() {
+    //        final CardLayout cl = (CardLayout)(m_jsonModeCardLayout.getLayout());
+    //        final String readMode = m_legacyMode.isSelected() ? JSONReadMode.LEGACY.name() : JSONReadMode.STREAMING.name();
+    //        cl.show(m_jsonModeCardLayout, readMode);
+    //        configChanged();
+    //        //TODO : which one is better get from config or button ?
+    //    }
 
     private JPanel makeLegacyModePanel() {
 
@@ -261,6 +264,25 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         gbc.gridx = 1;
         gbc.weightx = 1;
         optionsPanel.add(m_columnName, gbc);
+
+        gbc.gridy++;
+
+        gbc.gridx = 1;
+        optionsPanel.add(m_selectPart, gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        optionsPanel.add(new JLabel("JSONPath"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        optionsPanel.add(m_jsonPath, gbc);
+        gbc.gridy++;
+        optionsPanel.add(m_warningLabel, gbc);
+        gbc.gridy++;
+
+        gbc.weightx = 1;
+        optionsPanel.add(m_failIfNotFound, gbc);
+        gbc.gridy++;
 
         gbc.gridy++;
         optionsPanel.add(m_allowComments, gbc);
@@ -308,7 +330,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         return new GBCBuilder().resetPos().fillHorizontal().anchorFirstLineStart();
     }
 
-   @Override
+    @Override
     protected ReadPathAccessor createReadPathAccessor() {
         return m_fileChooser.createReadPathAccessor();
     }
@@ -322,10 +344,13 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
         m_config.loadInDialog(settings, specs);
 
-        m_legacyMode.setSelected(jsonReaderConfig.getJsonReadMode() == JSONReadMode.LEGACY);
-        m_streamingMode.setSelected(jsonReaderConfig.getJsonReadMode() == JSONReadMode.STREAMING);
+        //        m_legacyMode.setSelected(jsonReaderConfig.getJsonReadMode() == JSONReadMode.LEGACY);
+        //        m_streamingMode.setSelected(jsonReaderConfig.getJsonReadMode() == JSONReadMode.STREAMING);
         m_allowComments.setSelected(jsonReaderConfig.allowComments());
         m_columnName.setText(jsonReaderConfig.getColumnName());
+        m_selectPart.setSelected(jsonReaderConfig.useJSONPath());
+        m_jsonPath.setText(jsonReaderConfig.getJSONPath());
+        m_failIfNotFound.setSelected(jsonReaderConfig.failIfNotFound());
         return m_config;
     }
 
@@ -338,17 +363,18 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         config.setJsonReadMode(getJsonReadMode());
         config.setAllowComments(m_allowComments.isSelected());
         config.setColumnName(m_columnName.getText());
+        config.setJSONPath(m_jsonPath.getText());
+        config.setUseJSONPath(m_selectPart.isSelected());
+        config.setFailIfNotFound(m_failIfNotFound.isSelected());
     }
 
-    /**
-     * @return JSONReadMode
-     */
     private JSONReadMode getJsonReadMode() {
-        if (m_legacyMode.isSelected()) {
-            return JSONReadMode.LEGACY;
-        } else {
-            return JSONReadMode.STREAMING;
-        }
+        //        if (m_legacyMode.isSelected()) {
+        return JSONReadMode.LEGACY;
+        //        }
+        //        else {
+        //            return JSONReadMode.STREAMING;
+        //        }
     }
 
     @Override
@@ -370,7 +396,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         config.setColumnHeaderIdx(0);
     }
 
-   @Override
+    @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_sourceFilePanel.saveSettingsTo(SettingsUtils.getOrAdd(settings, SettingsUtils.CFG_SETTINGS_TAB));
         saveTableReadSettings(m_config.getTableReadConfig());
