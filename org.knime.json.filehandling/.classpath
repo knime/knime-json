@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.7.2.jar" sourcepath="lib/src/antlr4-runtime-4.7.2-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.knime.json.filehandling/lib/javadoc/antlr4-runtime-4.7.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/jsurfer-core-1.6.0.jar" sourcepath="lib/src/jsurfer-core-1.6.0-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.knime.json.filehandling/lib/javadoc/jsurfer-core-1.6.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/jsurfer-jackson-1.6.0.jar" sourcepath="lib/src/jsurfer-jackson-1.6.0-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.knime.json.filehandling/lib/javadoc/jsurfer-jackson-1.6.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>

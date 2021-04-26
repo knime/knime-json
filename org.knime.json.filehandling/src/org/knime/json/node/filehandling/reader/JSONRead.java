@@ -53,9 +53,16 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.OptionalLong;
 
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.jsfr.json.JsonSurfer;
+import org.jsfr.json.JsonSurferJackson;
+import org.jsfr.json.compiler.JsonPathCompiler;
+import org.jsfr.json.path.JsonPath;
+import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.node.NodeLogger;
@@ -93,6 +100,16 @@ public class JSONRead implements Read<Path, DataValue> {
 
     private long m_linesRead;
 
+    private final boolean m_useJSONPath;
+
+    private final String m_JSONPath;
+
+    private final JsonSurfer m_surfer = JsonSurferJackson.INSTANCE;
+
+    private Iterator<Object> m_iterator;
+
+    private final boolean m_failIfNotFound;
+
     /**
      * Constructor.
      *
@@ -110,21 +127,83 @@ public class JSONRead implements Read<Path, DataValue> {
         m_compressionAwareStream = new CompressionAwareCountingInputStream(path);
 
         final String charSetName = null; // TODO: maybe needed in future config.getReaderSpecificConfig().getCharSetName();
-        final Charset charset = charSetName == null ? Charset.defaultCharset() : Charset.forName(charSetName);
+        final Charset charset = charSetName == null ? Charset.forName("UTF-8") : Charset.forName(charSetName);
         m_reader = BomEncodingUtils.createBufferedReader(m_compressionAwareStream, charset);
-        m_allowComments = config.getReaderSpecificConfig().allowComments();
+        m_allowComments = m_jsonReaderConfig.allowComments();
+        m_useJSONPath = m_jsonReaderConfig.useJSONPath();
+        m_JSONPath = m_jsonReaderConfig.getJSONPath();
+        m_failIfNotFound = m_jsonReaderConfig.failIfNotFound();
         m_linesRead = 0;
         m_maxRows = m_config.getMaxRows();
     }
 
     @Override
     public RandomAccessible<DataValue> next() throws IOException {
-        RandomAccessible<DataValue> nextRow;
         m_linesRead++;
+        if (m_useJSONPath) {
+            return readWithJSONPath();
+        } else {
+            return readFileToJSONCell();
+        }
+    }
+
+    /**
+     * @return
+     * @throws IOException
+     */
+    private RandomAccessible<DataValue> readWithJSONPath() throws IOException {
+        if (m_linesRead == 1) {
+            try {
+                JsonPath p = JsonPathCompiler.compile(m_JSONPath);
+                m_iterator = m_surfer.iterator(m_compressionAwareStream, JsonPathCompiler.compile(m_JSONPath));
+                //                  m_iterator = m_surfer.iterator(m_reader, JsonPathCompiler.compile(m_JSONPath));
+            }
+            // Invalid JSON Path
+            catch (ParseCancellationException e) {
+                return handleJSONPathError(e);
+            }
+            // Nothing in JSON Path
+            if (m_iterator == null || !m_iterator.hasNext()) {
+                return handleJSONPathError(null);
+            }
+        }
+        if (m_iterator != null && m_iterator.hasNext()) {
+            return createRandomAccessible(JSONCellFactory.create(m_iterator.next().toString()));
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Reads entire JSON File as a single cell
+     *
+     * @return a {@link RandomAccessible}
+     * @throws IOException
+     */
+    private RandomAccessible<DataValue> readFileToJSONCell() throws IOException {
         if (m_linesRead > 1) {
             return null;
         } else {
             return createRandomAccessible(JSONCellFactory.create(m_reader, m_allowComments));
+        }
+    }
+
+    /**
+     *
+     * @param e RuntimeException in parsing
+     * @return a {@link RandomAccessible}
+     * @throws {@link RuntimeException} on invalid JSON Path, {@link NullPointerException} on nothing found for the JSON
+     *             Path if {@link #m_failIfNotFound} is set
+     */
+    private RandomAccessible<DataValue> handleJSONPathError(final RuntimeException e) {
+        if (m_failIfNotFound) {
+            if (e != null) {
+                throw new RuntimeException("Invalid JSON Path " + m_JSONPath, e);
+            } else {
+                throw new NullPointerException("Nothing found for JSON Path " + m_JSONPath);
+            }
+        } else {
+            return createRandomAccessible(DataType.getMissingCell());
         }
     }
 
