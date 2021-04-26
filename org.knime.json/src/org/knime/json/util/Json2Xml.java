@@ -49,8 +49,9 @@
 package org.knime.json.util;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -64,7 +65,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.xmlbeans.impl.util.Base64;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.util.ErrorHandling;
 import org.w3c.dom.Comment;
@@ -917,7 +917,7 @@ public class Json2Xml {
                     Double.toString(node.asDouble()), doc, types);
             } else if (node.isBinary()) {
                 return createElementWithContent(m_settings.m_binary, elementName, JsonPrimitiveTypes.BINARY,
-                    new String(Base64.encode(node.binaryValue()), Charset.forName("UTF-8")), doc, types);
+                    new String(Base64.getEncoder().encode(node.binaryValue()), StandardCharsets.UTF_8), doc, types);
             } else if (node.isTextual()) {
                 return createElementWithContent(m_settings.m_text, elementName, JsonPrimitiveTypes.TEXT,
                     node.textValue(), doc, types);
