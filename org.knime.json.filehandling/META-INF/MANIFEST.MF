@@ -22,3 +22,4 @@ Bundle-ClassPath: lib/jsurfer-core-1.6.0.jar,
  lib/jsurfer-jackson-1.6.0.jar,
  lib/antlr4-runtime-4.7.2.jar,
  .
+Automatic-Module-Name: org.knime.json.filehandling
