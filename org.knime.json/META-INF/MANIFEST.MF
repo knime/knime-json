@@ -13,6 +13,7 @@ Export-Package: org.knime.core.data.json,
  org.knime.json.node.container.input.row,
  org.knime.json.node.container.input.table,
  org.knime.json.node.container.input.variable,
+ org.knime.json.node.container.input.file,
  org.knime.json.node.container.mappers,
  org.knime.json.node.container.output.row,
  org.knime.json.node.container.output.table,
@@ -44,7 +45,12 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="[4.2.0,5.0.0)",
  com.fifesoft.spellchecker;bundle-version="[2.5.7,3.0.0)",
  org.knime.jsnippets;bundle-version="[4.0.0,5.0.0)",
  org.knime.time;bundle-version="[4.0.0,5.0.0)",
- org.knime.rsyntaxtextarea;bundle-version="[4.0.0,5.0.0)"
+ org.knime.rsyntaxtextarea;bundle-version="[4.0.0,5.0.0)",
+ org.knime.filehandling.core
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.knime.json
+Import-Package: org.knime.filehandling.core.connections.location,
+ org.knime.filehandling.core.data.location.variable,
+ org.knime.filehandling.core.defaultnodesettings.filechooser,
+ org.knime.filehandling.core.defaultnodesettings.filechooser.reader

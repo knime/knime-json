@@ -35,6 +35,8 @@
       </node>
       <node after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory">
       </node>
+      <node after="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.file.ContainerFileInputNodeFactory">
+      </node>
       <node after="org.knime.json.node.container.input.variable.ContainerVariableInputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.output.table.ContainerTableOutputNodeFactory">
       </node>
       <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.credentials.ContainerCredentialsInputNodeFactory">
