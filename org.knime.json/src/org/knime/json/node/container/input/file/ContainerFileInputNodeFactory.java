@@ -54,8 +54,9 @@ import org.knime.core.node.NodeView;
 
 /**
  * The factory for the “Container Input (File)” node.
- * 
+ *
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @since 4.4
  */
 public final class ContainerFileInputNodeFactory extends NodeFactory<ContainerFileInputNodeModel> {
 

@@ -71,6 +71,7 @@ import org.knime.core.node.util.SharedIcons;
  * Contains the dialog components that are shared by all Container nodes.
  *
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @since 4.4
  */
 public final class ContainerNodeSharedDialogPanel extends JPanel {
     private static final long serialVersionUID = 8005938399476092828L;
@@ -130,7 +131,7 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
             m_parameterNameHint.setToolTipText(null);
             m_parameterNameHint.setIcon(SharedIcons.ERROR.get());
         } else if (!ContainerNodeSharedConfiguration.CFG_PARAMETER_VERIFIER.test(text)) {
-            m_parameterNameHint.setText("Please choose a valid name (see tool tip)");
+            m_parameterNameHint.setText("Please choose a valid name (see tooltip)");
             m_parameterNameHint.setToolTipText(ContainerNodeSharedConfiguration.MSG_PARAMETER_FORMAT_DESC);
             m_parameterNameHint.setIcon(SharedIcons.ERROR.get());
         } else {

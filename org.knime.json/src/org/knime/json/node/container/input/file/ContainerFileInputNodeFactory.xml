@@ -3,16 +3,16 @@
 	<name>Container Input (File)</name>
 
 	<shortDescription>
-		Uploads a file and exposes it via a flow variable
+		Receives an external file (e.g. provided via an upload) and exposes it via a flow variable.
     </shortDescription>
 
 	<fullDescription>
 		<intro>
             This node receives resources from an external caller (for example the
 			<i>REST interface</i>) and saves them locally for use in the current workflow.
-			A configured parameter makes the <i>Container Input (File)</i> visible from the
-			external caller and enables the caller to send a resource to the
-			the node.<br/>
+			A configured parameter makes the <i>Container Input (File)</i> visible for the
+			external caller and enables the caller to send a resource to the node.
+			<br/>
             <p>
                 <i>
                     This node uses the
@@ -30,7 +30,7 @@
             </i><a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html"><i>File Handling Guide.</i></a><br/></p>
 			<p>
 				A default file can be specified that is used when the node is excuted without a resource
-				from an external caller. The default file will not be saved. Only the path will be exposed.
+				from an external caller. The default file will not be moved or copied. Only the path will be exposed.
 			</p>
 		</intro>
 
@@ -52,18 +52,18 @@
 			A description for the variable input parameter. The description is shown in the API specification
 			of the REST interface.
         </option>
-        <option name="Output variable name">
+        <option name="Variable name">
 			The name of the flow variable that contains the location of the local copy of the resource.
 			Any characters are allowed as long as the name is not empty.
         </option>
-        <option name="Save non-default file in">
+        <option name="Save external file at">
 			Where to save the resource provided by the external caller. The two possible values are
 			<ul>
 				<li>
-					<i>workflow data area</i>: the file is saved in a temporary directory in the workflow data area.
+					<i>workflow data area:</i> the file is saved in a temporary directory in the workflow data area.
 				</li>
 				<li>
-					<i>workflow group</i>: the file is saved in in a temporary directory in the same workflow group as
+					<i>workflow group:</i> the file is saved in in a temporary directory in the same workflow group as
 						the current workflow, i.e. next to the workflow in the KNIME explorer. Please keep in mind that
 						the person that is executing the workflow has to have the permissions to create files and
 						directories in the workflow group.
@@ -95,7 +95,7 @@
 			relative to the current mountpoint, current workflow or the current workflow's data area.
 			When selected a new drop-down menu appears to choose which of the three options to use.
 	</li>
-	<li><i>Custom/KNIME URL:</i> Allows to specify a URL (e.g. file://, http:// or knime:// protocol). 
+	<li><i>Custom/KNIME URL:</i> Allows to specify a URL (e.g. file://, http:// or knime:// protocol).
 		When selected, a spinner appears that allows you to specify the desired connection and read timeout in milliseconds.
 		In case it takes longer to connect to the host / read the file, the node fails to execute.
 		Browsing is disabled for this option.
@@ -107,7 +107,7 @@
 					node to the newly added input port. The file system connection will then be shown in the drop-down menu.
 					It is greyed out if the file system is not connected in which case you have to (re)execute the connector node first.
 					Note: The default file systems listed above can't be selected if a file system is provided via the input port.
-					--> 
+					-->
 			</option>
 			<option name="File, Folder or URL">
 				Enter a URL when reading from <i>Custom/KNIME URL</i>, otherwise enter a path to a file or folder. The
@@ -126,7 +126,7 @@
 					Browsing is disabled if the connector node hasn't been executed since the workflow has been opened.
 					(Re)execute the connector node to enable browsing.</li>
 				</ul>
-                <i>The location can be exposed as or automatically set via a 
+                <i>The location can be exposed as or automatically set via a
                 </i><a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html#path">
 				<i>path flow variable.</i></a> This is done additionally to the variable that is
 					exposed via <i>Output variable name</i>.

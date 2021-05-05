@@ -63,6 +63,7 @@ import org.knime.core.node.util.CheckUtils;
  * Contains the configurations that are shared by all Container nodes.
  *
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @since 4.4
  */
 public final class ContainerNodeSharedConfiguration
     implements Serializable /* because ContainerNodeSharedDialog is a JPanel */ {
@@ -100,7 +101,7 @@ public final class ContainerNodeSharedConfiguration
 
     /**
      * Constructs a new configuration that is shared between container nodes.
-     * 
+     *
      * @param defaultParameter the default name of the parameter
      */
     public ContainerNodeSharedConfiguration(final String defaultParameter) {

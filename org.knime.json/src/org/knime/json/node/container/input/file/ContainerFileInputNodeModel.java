@@ -103,9 +103,9 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
 
     private final NodeConfiguration m_config;
 
-    private Optional<FSLocation> m_localLocation;
+    private Optional<FSLocation> m_externalLocation;
 
-    private Optional<URI> m_externalLocation;
+    private Optional<URI> m_externalURI;
 
     /**
      * Creates a new {@link ContainerFileInputNodeModel} with no input ports and one flow variable output port.
@@ -115,8 +115,8 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
         m_sharedConfig = new ContainerNodeSharedConfiguration(CFG_PARAMETER_DEFAULT);
         m_config = new NodeConfiguration();
 
-        m_localLocation = Optional.empty();
         m_externalLocation = Optional.empty();
+        m_externalURI = Optional.empty();
     }
 
     /**
@@ -124,7 +124,7 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        if (m_externalLocation.isPresent()) {
+        if (m_externalURI.isPresent()) {
             return new PortObjectSpec[]{FlowVariablePortObjectSpec.INSTANCE};
         }
 
@@ -149,7 +149,10 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     protected PortObject[] execute(final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
-        setVariablesAndMaySave();
+        m_externalLocation.ifPresent(ContainerFileInputNodeModel::deleteLocalFile); // this should never be executed
+        FSLocation location = resolveFile();
+        m_externalLocation = Optional.of(location);
+        pushFlowVariable(m_config.getOutputVariableName(), FSLocationVariableType.INSTANCE, location);
         return new PortObject[]{FlowVariablePortObject.INSTANCE};
     }
 
@@ -172,7 +175,7 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
         if (inputData.getResource() == null) {
             throw new InvalidSettingsException("Expected a resource.");
         }
-        m_externalLocation = Optional.of(inputData.getResource());
+        m_externalURI = Optional.of(inputData.getResource());
     }
 
     /**
@@ -216,8 +219,8 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
 
     @Override
     protected void reset() {
-        m_localLocation.ifPresent(ContainerFileInputNodeModel::deleteLocalFile);
-        m_localLocation = Optional.empty();
+        m_externalLocation.ifPresent(ContainerFileInputNodeModel::deleteLocalFile);
+        m_externalLocation = Optional.empty();
         // we do not reset the external location here because this method is directly called after the input is set
     }
 
@@ -226,9 +229,9 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
      */
     @Override
     protected void onDispose() {
-        m_localLocation.ifPresent(ContainerFileInputNodeModel::deleteLocalFile);
-        m_localLocation = Optional.empty();
+        m_externalLocation.ifPresent(ContainerFileInputNodeModel::deleteLocalFile);
         m_externalLocation = Optional.empty();
+        m_externalURI = Optional.empty();
         super.onDispose();
     }
 
@@ -257,46 +260,43 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
         }
     }
 
-    private void setVariablesAndMaySave() throws InvalidSettingsException {
-        FSLocation flowvar;
-        if (m_externalLocation.isPresent()) {
-            flowvar = resolveExternalFile(m_externalLocation.get()); // NOSONAR: check in line above
+    private FSLocation resolveFile() throws InvalidSettingsException {
+        FSLocation location;
+        if (m_externalURI.isPresent()) {
+            location = resolveUriToTempLocation(m_externalURI.get(), m_config.isWritingInWorkflow()); // NOSONAR: check in line above
             // we do not want that future executions without an external resource still think that
             // there is some resource present (in that case we want to offer the default file again)
-            m_externalLocation = Optional.empty();
+            m_externalURI = Optional.empty();
         } else if (m_config.hasDefaultFile()) {
-            flowvar = resolveDefaultFile();
+            location = m_config.getDefaultFile();
         } else {
             throw new InvalidSettingsException("No file to process");
         }
-
-        pushFlowVariable(m_config.getOutputVariableName(), FSLocationVariableType.INSTANCE, flowvar);
+        return location;
     }
 
-    private FSLocation resolveExternalFile(final URI uri) throws InvalidSettingsException {
+    private static FSLocation resolveUriToTempLocation(final URI uri, final boolean useWorkflowDataArea)
+        throws InvalidSettingsException {
         try {
             final var currentLocation = ResolverUtil.resolveURItoLocalOrTempFile(uri).toPath();
-            return createSavedFile(currentLocation, !currentLocation.toUri().equals(uri)); // We assume that the file is temporary if the URI is different
+            boolean isTemporaryAlready = !currentLocation.toUri().equals(uri); // We assume that the file is temporary if the URI is different
+            return moveOrCopyFileToTempLocation(currentLocation, isTemporaryAlready, useWorkflowDataArea);
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not resolve external file: " + e.getMessage(), e);
         }
     }
 
-    private FSLocation resolveDefaultFile() {
-        return m_config.getDefaultFile();
-    }
-
-    private FSLocation createSavedFile(final Path currentLocation, final boolean isTemporary)
-        throws InvalidSettingsException {
-        final var result = getAndSetSaveLocation(FilenameUtils.EXTENSION_SEPARATOR_STR
-            + FilenameUtils.getExtension(currentLocation.getFileName().toString()));
+    private static FSLocation moveOrCopyFileToTempLocation(final Path currentLocation, final boolean isTemporaryAlready,
+        final boolean useWorkflowDataArea) throws InvalidSettingsException {
+        final var result = getTempLocation(FilenameUtils.EXTENSION_SEPARATOR_STR
+            + FilenameUtils.getExtension(currentLocation.getFileName().toString()), useWorkflowDataArea);
         final var factory = FSPathProviderFactory.newFactory(Optional.empty(), result);
         final var provider = factory.create(result);
 
         try (provider; factory) {
             final var targetLocation = provider.getPath();
             // if the file is in the local file system, we'll copy it (to be sure)
-            if (isTemporary) {
+            if (isTemporaryAlready) {
                 tryMove(currentLocation, targetLocation);
             } else {
                 Files.copy(currentLocation, targetLocation, StandardCopyOption.REPLACE_EXISTING);
@@ -319,11 +319,12 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
         }
     }
 
-    private FSLocation getAndSetSaveLocation(final String extension) throws InvalidSettingsException {
+    private static FSLocation getTempLocation(final String extension, final boolean useWorkflowDataArea)
+        throws InvalidSettingsException {
 
         final String reativeType;
         final String relativeLocation;
-        if (m_config.isWritingInWorkflow()) {
+        if (useWorkflowDataArea) {
             reativeType = URL_THIS_WORKFLOW_DATA;
             relativeLocation = ResolverUtil.IN_WORKFLOW_TEMP_DIR;
         } else {
@@ -341,11 +342,8 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
             Files.createDirectories(dirPath);
             final var filePath = Files.createTempFile(dirPath, TEMP_FILE_PREFIX, extension);
 
-            final var result = new FSLocation(entrypoint.getFileSystemCategory(), reativeType,
+            return new FSLocation(entrypoint.getFileSystemCategory(), reativeType,
                 Paths.get(entrypoint.getPath(), filePath.getFileName().toString()).toString());
-            m_localLocation.ifPresent(ContainerFileInputNodeModel::deleteLocalFile); // this should never be executed
-            m_localLocation = Optional.of(result);
-            return result;
 
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not create temp file: " + e.getMessage(), e);

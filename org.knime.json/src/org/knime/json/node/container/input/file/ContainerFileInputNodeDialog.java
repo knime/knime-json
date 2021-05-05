@@ -118,7 +118,7 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
         final var outputPanel = new JPanel(new GridBagLayout());
         outputPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Output"));
 
-        final var outVarNameDesc = new JLabel("Output variable name:");
+        final var outVarNameDesc = new JLabel("Variable name:");
         m_outVarNameField = new JTextField(m_config.getOutputVariableName());
         final var hint = new JLabel(" ");
         m_outVarNameField.getDocument().addDocumentListener(new DocumentListener() {
@@ -138,7 +138,7 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
                 checkOutputVarName(m_outVarNameField, hint);
             }
         });
-        final var writeInDesc = new JLabel("Save non-default file in ");
+        final var writeInDesc = new JLabel("Save external file at ");
         m_writeIn = new JComboBox<>(new String[]{"workflow data area", "workflow group"});
         m_writeIn.setSelectedIndex(0);
 
