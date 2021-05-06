@@ -56,7 +56,6 @@ import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -87,8 +86,6 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
     private DialogComponentReaderFileChooser m_fileChooser;
 
     private JCheckBox m_useDefaultFileBox;
-
-    private JComboBox<String> m_writeIn;
 
     private JTextField m_outVarNameField;
 
@@ -138,9 +135,6 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
                 checkOutputVarName(m_outVarNameField, hint);
             }
         });
-        final var writeInDesc = new JLabel("Save external file at ");
-        m_writeIn = new JComboBox<>(new String[]{"workflow data area", "workflow group"});
-        m_writeIn.setSelectedIndex(0);
 
         // setup layout
         final var constraints = new GridBagConstraints();
@@ -160,18 +154,6 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
         constraints.gridy++;
         constraints.insets = new Insets(0, 5, 5, 5);
         outputPanel.add(hint, constraints);
-
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.weightx = 0;
-        constraints.gridx = 0;
-        constraints.gridy++;
-        constraints.insets = new Insets(5, 5, 5, 5);
-        outputPanel.add(writeInDesc, constraints);
-
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 1;
-        constraints.gridx++;
-        outputPanel.add(m_writeIn, constraints);
 
         return outputPanel;
     }
@@ -227,7 +209,6 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
         try {
             m_config.setUseDefaultFile(m_useDefaultFileBox.isSelected());
             m_config.setOutputVarianleName(m_outVarNameField.getText().strip());
-            m_config.setWriteInWorkflow(m_writeIn.getSelectedIndex() == 0);
         } catch (final IllegalArgumentException e) {
             throw new InvalidSettingsException("Please correct the following error: " + e.getMessage(), e);
         }
@@ -250,7 +231,6 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
             m_config.reset();
         }
         m_useDefaultFileBox.setSelected(m_config.isUsingDefaultFile());
-        m_writeIn.setSelectedIndex(m_config.isWritingInWorkflow() ? 0 : 1);
         m_outVarNameField.setText(m_config.getOutputVariableName());
     }
 }

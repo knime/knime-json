@@ -49,11 +49,12 @@
 package org.knime.json.node.container.input.file;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
@@ -83,8 +84,8 @@ public final class ContainerNodeSharedConfiguration
 
     private static final String CFG_INPUT_PATH_URL_KEY = "inputPathOrUrl";
 
-    static final String MSG_PARAMETER_FORMAT_DESC = "The name must start with a letter, followed other lettes, "
-        + "digits and single dashes or underscores. The last character must be a letter again.";
+    static final String MSG_PARAMETER_FORMAT_DESC = "Must start with a letter, followed by other lettes, "
+        + "digits or single dashes or underscores. Must end with a letter.";
 
     static final String MSG_PARAMETER_FORMAT_REGEX_DESC =
         " (Regular expression: “" + DialogNode.PARAMETER_NAME_PATTERN.pattern() + "”)";
@@ -117,7 +118,12 @@ public final class ContainerNodeSharedConfiguration
      * Resets this configuration's values to the default ones.
      */
     public void reset() {
-        setParameter(m_paramterDefault);
+        try {
+            setParameter(m_paramterDefault);
+        } catch (InvalidSettingsException e) {
+            // this was checked before and should not happen
+            NodeLogger.getLogger(getClass()).error("Unexpected exception: " + e.getMessage(), e);
+        }
         m_description = CFG_DESCRIPTION_DEFAULT;
         m_inputPathOrUrl = "";
         m_fullyQualifiedName = false;
@@ -161,12 +167,14 @@ public final class ContainerNodeSharedConfiguration
     /**
      * @param parameter the parameter name that is exposed. This value must adhere to
      *            {@link DialogNode#PARAMETER_NAME_PATTERN}.
+     * @throws InvalidSettingsException if the parameter is not valid.
      */
-    public void setParameter(final String parameter) {
-        if (!CFG_PARAMETER_VERIFIER.test(parameter)) {
-            throw new IllegalArgumentException(
-                "Parameter name is invalid: " + MSG_PARAMETER_FORMAT_DESC + MSG_PARAMETER_FORMAT_REGEX_DESC);
-        }
+    public void setParameter(final String parameter) throws InvalidSettingsException {
+        CheckUtils.checkSetting(StringUtils.isNotEmpty(parameter), "parameter name must not be null or empty");
+        CheckUtils.checkSetting(DialogNode.PARAMETER_NAME_PATTERN.matcher(parameter).matches(),
+            "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
+                + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
+            parameter, DialogNode.PARAMETER_NAME_PATTERN.pattern());
         m_parameter = parameter;
     }
 
@@ -205,17 +213,15 @@ public final class ContainerNodeSharedConfiguration
      */
     public static void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         CheckUtils.checkSetting(CFG_PARAMETER_VERIFIER.test(settings.getString(CFG_PARAMETER_KEY)),
-            "Please supply a valid parameter name: " + MSG_PARAMETER_FORMAT_DESC + MSG_PARAMETER_FORMAT_REGEX_DESC);
+            "Parameter doesn't match pattern - must start with character, followed by other characters, digits, "
+                + "or single dashes or underscores:\n  Input: %s\n  Pattern: %s",
+            settings.getString(CFG_PARAMETER_KEY), DialogNode.PARAMETER_NAME_PATTERN.pattern());
         CheckUtils.checkSetting(settings.getString(CFG_DESCRIPTION_KEY) != null,
             "Please supply a non-null description.");
         settings.getBoolean(CFG_USE_FULLY_QUAL_NAME_KEY);
-        try {
-            if (settings.getString(CFG_INPUT_PATH_URL_KEY) != null) {
-                URI.create(settings.getString(CFG_INPUT_PATH_URL_KEY));
-            }
-        } catch (IllegalArgumentException e) {
-            throw new InvalidSettingsException("Please provide a valid URI: " + e.getMessage(), e);
-        }
+        final var inputPathUrl = settings.getString(CFG_INPUT_PATH_URL_KEY);
+        CheckUtils.checkSetting(inputPathUrl == null || StringUtils.isNotEmpty(inputPathUrl),
+            "Please supply a non-null, non-empty input path or URL.");
     }
 
     /**

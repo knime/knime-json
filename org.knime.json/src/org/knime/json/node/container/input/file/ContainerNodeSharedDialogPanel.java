@@ -65,6 +65,7 @@ import javax.swing.event.DocumentListener;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.util.SharedIcons;
 
 /**
@@ -93,6 +94,8 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
         m_config = new ContainerNodeSharedConfiguration(defaultParamameter);
 
         m_parameterNameField = new JTextField();
+        // NOTE: revert to new behavior when refactoring other nodes
+        m_parameterNameField.setInputVerifier(DialogNode.PARAMETER_NAME_VERIFIER);
         m_parameterNameHint = new JLabel(" ");
         m_parameterNameField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -153,6 +156,8 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
         gbc.weightx = 1.0;
         gbc.insets = new Insets(5, 5, 0, 5);
         add(m_parameterNameField, gbc);
+        // NOTE: revert to new behavior when refactoring other nodes
+        m_parameterNameHint.setVisible(false);
         gbc.gridy++;
         gbc.insets = new Insets(0, 5, 5, 5);
         add(m_parameterNameHint, gbc);

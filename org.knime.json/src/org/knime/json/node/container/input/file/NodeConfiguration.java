@@ -78,13 +78,9 @@ final class NodeConfiguration {
 
     static final String CFG_OUT_VAR_NAME_KEY = "outputVariableName";
 
-    static final String CFG_WRITE_WS_KEY = "saveInWorkflow";
-
     static final String CFG_OUT_VAR_NAME_DEFAULT = "location";
 
     private boolean m_useDefaultFile;
-
-    private boolean m_writeInWorkflow;
 
     private String m_outVarName;
 
@@ -106,7 +102,6 @@ final class NodeConfiguration {
      */
     void reset() {
         m_useDefaultFile = false;
-        m_writeInWorkflow = true;
         m_outVarName = CFG_OUT_VAR_NAME_DEFAULT;
 
         m_fileChooserSettingsModel.setEnabled(false);
@@ -163,13 +158,6 @@ final class NodeConfiguration {
     }
 
     /**
-     * @return whether the file is written in the workflow data area
-     */
-    boolean isWritingInWorkflow() {
-        return m_writeInWorkflow;
-    }
-
-    /**
      * @return the name of the variable that will be send to the output.
      */
     String getOutputVariableName() {
@@ -191,13 +179,6 @@ final class NodeConfiguration {
     }
 
     /**
-     * @param writeInWorkflow whether the file should be saved in the workspace
-     */
-    void setWriteInWorkflow(final boolean writeInWorkflow) {
-        m_writeInWorkflow = writeInWorkflow;
-    }
-
-    /**
      * @param outputVariableName the name to be set. It must not be blank, i.e. contain of only white space
      */
     void setOutputVarianleName(final String outputVariableName) {
@@ -216,7 +197,6 @@ final class NodeConfiguration {
         m_fileChooserSettingsModel.saveSettingsTo(settings);
         settings.addBoolean(CFG_USE_DEFAULT_FILE_KEY, m_useDefaultFile);
         settings.addString(CFG_OUT_VAR_NAME_KEY, m_outVarName);
-        settings.addBoolean(CFG_WRITE_WS_KEY, m_writeInWorkflow);
     }
 
     /**
@@ -231,7 +211,6 @@ final class NodeConfiguration {
             throw new InvalidSettingsException("Please make sure the output variale name is not blank");
         }
         m_fileChooserSettingsModel.validateSettings(settings);
-        settings.getBoolean(CFG_WRITE_WS_KEY);
     }
 
     /**
@@ -242,7 +221,6 @@ final class NodeConfiguration {
      */
     void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_useDefaultFile = settings.getBoolean(CFG_USE_DEFAULT_FILE_KEY);
-        m_writeInWorkflow = settings.getBoolean(CFG_WRITE_WS_KEY);
         m_outVarName = settings.getString(CFG_OUT_VAR_NAME_KEY);
         m_fileChooserSettingsModel.loadSettingsFrom(settings);
         m_fileChooserSettingsModel.setEnabled(m_useDefaultFile);
