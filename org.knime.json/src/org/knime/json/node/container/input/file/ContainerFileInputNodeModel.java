@@ -225,6 +225,16 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * NOTE on why we need to store the 'external location' path here: If a job gets swapped from the executor to the
+     * server, it is first saved, then uploaded to the server and finally removed/disposed from the executor. Since the
+     * dispose only happens after the job's workflow has bee saved and uploaded already, the 'external file', stored in
+     * the workflow's data area, is transferred to the server, too. When the job eventually is restored (i.e. moved back
+     * to an executor), it will still contain the 'external file' in the data area. Hence, we need to keep track of the
+     * file location in order to be able to delete it, e.g., if the node is reset.
+     */
     @Override
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
@@ -278,7 +288,7 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
     protected void reset() {
         m_externalLocation.ifPresent(Deleter::runNew);
         m_externalLocation = Optional.empty();
-        // we do not reset the external location here because this method is directly called after the input is set
+        // we do not reset the external URI here because this method is directly called after the input is set
     }
 
     /**
