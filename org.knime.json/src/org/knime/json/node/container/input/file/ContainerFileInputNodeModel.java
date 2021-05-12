@@ -75,12 +75,12 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
-import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.ThreadUtils.ThreadWithContext;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.filehandling.core.connections.FSCategory;
 import org.knime.filehandling.core.connections.FSFiles;
 import org.knime.filehandling.core.connections.FSLocation;
+import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.connections.RelativeTo;
 import org.knime.filehandling.core.connections.location.FSPathProviderFactory;
 import org.knime.filehandling.core.data.location.variable.FSLocationVariableType;
@@ -96,23 +96,24 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ContainerFileInputNodeModel.class);
 
-    private static final String INT_FILE_NAME = "internals.xml";
+    static final String INT_FILE_NAME = "internals.xml";
 
-    private static final String INT_SETTINGS_NAME = "containerFileInputNodeInternals";
+    static final String INT_SETTINGS_NAME = "containerFileInputNodeInternals";
 
-    private static final String INT_CFG_EXTERNAL_LOCATION_KEY = "externalLocation";
+    static final String INT_CFG_EXTERNAL_LOCATION_KEY = "externalLocation";
 
     static final String CFG_PARAMETER_DEFAULT = "input-file";
 
-    private static final String URL_THIS_WORKFLOW_DATA = RelativeTo.WORKFLOW_DATA.getSettingsValue();
+    static final String TEMP_FILE_PREFIX = "knimetemp-";
 
-    private static final String TEMP_FILE_PREFIX = "knimetemp-";
+    private static final String URL_THIS_WORKFLOW_DATA = RelativeTo.WORKFLOW_DATA.getSettingsValue();
 
     private final ContainerNodeSharedConfiguration m_sharedConfig;
 
     private final NodeConfiguration m_config;
 
-    private Optional<FSLocation> m_externalLocation;
+    /** Only accessible for testing */
+    Optional<FSLocation> m_externalLocation;
 
     private Optional<URI> m_externalURI;
 
@@ -207,19 +208,20 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
                     return;
                 }
 
-                final var locationStrings = settings.getStringArray(INT_CFG_EXTERNAL_LOCATION_KEY);
-                CheckUtils.checkSetting(locationStrings.length == 3,
-                    "Expected three elements to represent a the file location.");
+                final var locationString = settings.getString(INT_CFG_EXTERNAL_LOCATION_KEY);
 
-                final var location = new FSLocation(locationStrings[0], locationStrings[1], locationStrings[2]);
+                final var uncheckedLocation =
+                    new FSLocation(FSCategory.RELATIVE, RelativeTo.WORKFLOW_DATA.getSettingsValue(), locationString);
 
-                if (!checkExists(location)) {
+                final var checkedLocation = normalizeAndValidateExternalLocation(uncheckedLocation);
+
+                if (!checkExists(checkedLocation)) {
                     setWarningMessage("The external file has been deleted. Please re-execute the node.");
                 }
 
-                m_externalLocation = Optional.of(location);
+                m_externalLocation = Optional.of(checkedLocation);
 
-            } catch (InvalidSettingsException e) {
+            } catch (InvalidSettingsException | IOException e) {
                 throw new IOException("Could not load internal settings: " + e.getMessage(), e);
             }
         }
@@ -245,13 +247,38 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
         final var location = m_externalLocation.get();
 
         final var settings = new NodeSettings(INT_SETTINGS_NAME);
-        settings.addStringArray(INT_CFG_EXTERNAL_LOCATION_KEY, location.getFileSystemCategory(),
-            location.getFileSystemSpecifier().orElse(null), location.getPath());
+        settings.addString(INT_CFG_EXTERNAL_LOCATION_KEY, location.getPath());
 
         final var internalsFile = nodeInternDir.toPath().resolve(INT_FILE_NAME);
 
         try (final var internalsStream = Files.newOutputStream(internalsFile)) {
             settings.saveToXML(internalsStream);
+        }
+    }
+
+    private static FSLocation normalizeAndValidateExternalLocation(final FSLocation location) throws IOException {
+        try (final var factory = FSPathProviderFactory.newFactory(Optional.empty(), location);
+                final var provider = factory.create(location)) {
+            final var path = provider.getPath().normalize();
+
+            if (path.isAbsolute()) {
+                final var message = "External location must not be absolute!";
+                LOGGER.error(message);
+                throw new IOException(message);
+            }
+            if (!(path.getNameCount() == 2 && path.getName(0).toString().startsWith(TEMP_FILE_PREFIX)
+                && (!FSFiles.exists(path) || Files.isRegularFile(path)))) {
+                final var message = "External location is not in a valid form!\n" + " Expected: \"" + TEMP_FILE_PREFIX
+                    + "<tmp string>/<regular file>\",\n" + " Got: \"" + path.toString() + "\"";
+                LOGGER.error(message);
+                throw new IOException(message);
+            }
+
+            return ((FSPath)path).toFSLocation();
+        } catch (AccessDeniedException e) {
+            final var message = "Could not read file: " + e.getMessage();
+            LOGGER.error(message, e);
+            throw new IOException(message, e);
         }
     }
 
@@ -401,7 +428,8 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
                 final var tempfile = providerFile.getPath();
                 final var tempdir = tempfile.getParent();
                 FSFiles.deleteSafely(tempfile);
-                if (tempdir != null && Files.exists(tempdir) && tempdir.getFileName().toString().startsWith(TEMP_FILE_PREFIX)) {
+                if (tempdir != null && FSFiles.exists(tempdir) && FSFiles.isDirectory(tempdir)
+                    && tempdir.getFileName().toString().startsWith(TEMP_FILE_PREFIX)) {
                     deleteDirectoryIfNotEmpty(tempdir);
                 }
             } catch (IOException e) {
