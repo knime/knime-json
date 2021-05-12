@@ -51,12 +51,13 @@ package org.knime.json.node.filehandling.reader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.jsfr.json.JsonSurfer;
 import org.jsfr.json.JsonSurferJackson;
 import org.jsfr.json.compiler.JsonPathCompiler;
-import org.jsfr.json.path.JsonPath;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCellFactory;
@@ -88,7 +89,6 @@ public class JSONPathRead extends JSONRead implements Read<Path, DataValue> {
      */
     JSONPathRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
         super(path, config);
-
         m_jsonPath = m_jsonReaderConfig.getJSONPath();
         m_failIfNotFound = m_jsonReaderConfig.failIfNotFound();
         m_linesRead = 0;
@@ -97,43 +97,56 @@ public class JSONPathRead extends JSONRead implements Read<Path, DataValue> {
     @Override
     public RandomAccessible<DataValue> next() throws IOException {
         m_linesRead++;
-        RandomAccessible<DataValue> dataValue = null;
         if (m_linesRead == 1) {
             try {
-                final JsonPath p = JsonPathCompiler.compile(m_jsonPath);
-                m_iterator = m_surfer.iterator(m_compressionAwareStream, p);
-            } catch (ParseCancellationException e) { // Invalid JSON Path
-                dataValue = handleJSONPathError(e);
+                m_iterator = m_surfer.iterator(m_compressionAwareStream, JsonPathCompiler.compile(m_jsonPath));
+            } catch (ParseCancellationException e) {// Invalid JSON Path
+                return handleJSONPathError(e);
             }
             // Nothing in JSON Path
-            if (!m_iterator.hasNext()) {
-                dataValue = handleJSONPathError(null);
+            if (m_iterator == null || !m_iterator.hasNext()) {
+                return handleJSONPathError(null);
             }
         }
-        if (m_iterator.hasNext()) {
-            dataValue = createRandomAccessible(JSONCellFactory.create(m_iterator.next().toString()));
+        if (m_iterator != null && m_iterator.hasNext()) {
+            return createRandomAccessible(JSONCellFactory.create(m_iterator.next().toString()));
+        } else {
+            return null;
         }
-        return dataValue;
     }
 
     /**
      *
      * @param e RuntimeException in parsing
      * @return a {@link RandomAccessible}
-     * @throws IOException
      * @throws {@link RuntimeException} on invalid JSON Path, {@link NullPointerException} on nothing found for the JSON
      *             Path if {@link #m_failIfNotFound} is set
      */
-    private RandomAccessible<DataValue> handleJSONPathError(final RuntimeException e) throws IOException {
+    private RandomAccessible<DataValue> handleJSONPathError(final RuntimeException e) {
         if (m_failIfNotFound) {
             if (e != null) {
-                throw new IOException("Invalid JSON Path " + m_jsonPath, e);
+                throw new RuntimeException("Invalid JSON Path " + m_jsonPath, e);
             } else {
-                throw new IOException("Nothing found for JSON Path " + m_jsonPath);
+                throw new NullPointerException("Nothing found for JSON Path " + m_jsonPath);
             }
         } else {
             return createRandomAccessible(DataType.getMissingCell());
         }
+    }
+
+    @Override
+    public OptionalLong getMaxProgress() {
+        return OptionalLong.of(m_size);
+    }
+
+    @Override
+    public long getProgress() {
+        return m_compressionAwareStream.getCount();
+    }
+
+    @Override
+    public Optional<Path> getItem() {
+        return Optional.of(m_path);
     }
 
     @Override

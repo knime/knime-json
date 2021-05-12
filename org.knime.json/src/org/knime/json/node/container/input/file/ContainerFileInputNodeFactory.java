@@ -44,76 +44,61 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 12, 2021 (Moditha): created
+ *   20.04.2021 (jl): created
  */
-package org.knime.json.node.filehandling.reader;
+package org.knime.json.node.container.input.file;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.OptionalLong;
-
-import org.knime.core.data.DataValue;
-import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
-import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessible;
-import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessibleUtils;
-import org.knime.filehandling.core.util.CompressionAwareCountingInputStream;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
 
 /**
+ * The factory for the “Container Input (File)” node.
  *
- * @author Moditha
+ * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @since 4.4
  */
-public class JSONRead {
-
-    protected final Path m_path;
-
-    protected final CompressionAwareCountingInputStream m_compressionAwareStream;
-
-    protected final long m_size;
-
-    protected final TableReadConfig<JSONReaderConfig> m_config;
-
-    protected final JSONReaderConfig m_jsonReaderConfig;
-
-    protected long m_linesRead;
+public final class ContainerFileInputNodeFactory extends NodeFactory<ContainerFileInputNodeModel> {
 
     /**
-     * Creates a {@link RandomAccessible} with a row id and a line.
-     *
-     * @param line the content of a line
-     * @return a {@link RandomAccessible}
+     * {@inheritDoc}
      */
-    protected static RandomAccessible<DataValue> createRandomAccessible(final DataValue line) {
-        return RandomAccessibleUtils.createFromArray(line);
+    @Override
+    public ContainerFileInputNodeModel createNodeModel() {
+        return new ContainerFileInputNodeModel();
     }
 
     /**
-     *
-     * @param path
-     * @param config
-     * @throws IOException
+     * {@inheritDoc}
      */
-    public JSONRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
-        m_config = config;
-        m_jsonReaderConfig = m_config.getReaderSpecificConfig();
-
-        m_path = path;
-        m_size = Files.size(m_path);
-
-        m_compressionAwareStream = new CompressionAwareCountingInputStream(path);
+    @Override
+    protected int getNrNodeViews() {
+        return 0;
     }
 
-    public OptionalLong getMaxProgress() {
-        return OptionalLong.of(m_size);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean hasDialog() {
+        return true;
     }
 
-    public long getProgress() {
-        return m_compressionAwareStream.getCount();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected NodeDialogPane createNodeDialogPane() {
+        return new ContainerFileInputNodeDialog();
     }
 
-    public Optional<Path> getItem() {
-        return Optional.of(m_path);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeView<ContainerFileInputNodeModel> createNodeView(final int viewIndex,
+        final ContainerFileInputNodeModel nodeModel) {
+        throw new UnsupportedOperationException("This node has no views.");
     }
 
 }

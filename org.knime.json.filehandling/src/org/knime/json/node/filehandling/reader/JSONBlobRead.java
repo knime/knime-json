@@ -67,7 +67,7 @@ import org.knime.filehandling.core.util.BomEncodingUtils;
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-public class JSONBlobRead extends JSONRead implements Read<Path, DataValue>{
+public class JSONBlobRead extends JSONRead implements Read<Path, DataValue> {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONBlobRead.class);
 
@@ -84,19 +84,12 @@ public class JSONBlobRead extends JSONRead implements Read<Path, DataValue>{
      */
     JSONBlobRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
         super(path, config);
-
         final Charset charset = StandardCharsets.UTF_8;
         m_reader = BomEncodingUtils.createBufferedReader(m_compressionAwareStream, charset);
         m_allowComments = m_jsonReaderConfig.allowComments();
         m_linesRead = 0;
     }
 
-    /**
-     * Reads entire JSON File as a single cell
-     *
-     * @return a {@link RandomAccessible}
-     * @throws IOException
-     */
     @Override
     public RandomAccessible<DataValue> next() throws IOException {
         m_linesRead++;
@@ -117,4 +110,5 @@ public class JSONBlobRead extends JSONRead implements Read<Path, DataValue>{
         }
         m_compressionAwareStream.close();
     }
+
 }

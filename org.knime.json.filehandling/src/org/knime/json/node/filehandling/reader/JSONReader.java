@@ -72,8 +72,7 @@ final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataVa
     public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config)
         throws IOException {
         final JSONReaderConfig jsonReaderConfig = config.getReaderSpecificConfig();
-        final boolean useJSONPath = jsonReaderConfig.useJSONPath();
-        if (useJSONPath) {
+        if (jsonReaderConfig.useJSONPath()) {
             return new JSONPathRead(path, config);
         } else {
             return new JSONBlobRead(path, config);

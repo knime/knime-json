@@ -121,10 +121,9 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     private final JCheckBox m_failIfNotFound;
 
     /**
-     * @param fileChooser
-     * @param config
-     * @param multiReader
+     * @param readFactory
      * @param productionPathProvider
+     * @param allowsMultipleFiles
      */
     protected JSONReaderNodeDialog(final SettingsModelReaderFileChooser fileChooser,
         final JSONMultiTableReadConfig config,
@@ -201,7 +200,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_failIfNotFound.setEnabled(m_selectPart.isSelected());
         m_jsonPath.setEnabled(m_selectPart.isSelected());
         // Jsurfer doesn't support JSON comments
-        m_allowComments.setEnabled(!m_selectPart.isSelected());
+        m_allowComments.setEnabled(m_selectPart.isSelected());
     }
 
     private void createDialogPanels() {
@@ -253,6 +252,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
+
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
@@ -261,15 +261,13 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         optionsPanel.add(new JLabel("Output column name"), gbc);
         gbc.gridx = 1;
         optionsPanel.add(getInFlowLayout(m_columnName), gbc);
-
         gbc.gridy++;
-
         gbc.gridx = 0;
         optionsPanel.add(getInFlowLayout(m_selectPart), gbc);
         gbc.gridy++;
-
         optionsPanel.add(new JLabel("JSONPath"), gbc);
         gbc.gridx = 1;
+
         optionsPanel.add(getInFlowLayout(m_jsonPath), gbc);
 
         gbc.gridy++;
@@ -287,7 +285,6 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = 2;
-
         optionsPanel.add(new JPanel(), gbc);
 
         return optionsPanel;
@@ -338,6 +335,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     protected JSONMultiTableReadConfig loadSettings(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
         m_sourceFilePanel.loadSettingsFrom(SettingsUtils.getOrEmpty(settings, SettingsUtils.CFG_SETTINGS_TAB), specs);
+        final DefaultTableReadConfig<JSONReaderConfig> tableReadConfig = m_config.getTableReadConfig();
         final JSONReaderConfig jsonReaderConfig = m_config.getReaderSpecificConfig();
 
         m_config.loadInDialog(settings, specs);
@@ -388,7 +386,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      *
      * @param config the {@link DefaultTableReadConfig}
      */
-    private static void saveTableReadSettings(final DefaultTableReadConfig<JSONReaderConfig> config) {
+    private void saveTableReadSettings(final DefaultTableReadConfig<JSONReaderConfig> config) {
         config.setUseRowIDIdx(false);
         config.setRowIDIdx(-1);
         config.setColumnHeaderIdx(0);
