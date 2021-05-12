@@ -48,10 +48,7 @@
  */
 package org.knime.json.node.filehandling.reader;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
@@ -61,50 +58,23 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.jsfr.json.JsonSurfer;
 import org.jsfr.json.JsonSurferJackson;
 import org.jsfr.json.compiler.JsonPathCompiler;
-import org.jsfr.json.path.JsonPath;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCellFactory;
-import org.knime.core.node.NodeLogger;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessible;
-import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessibleUtils;
 import org.knime.filehandling.core.node.table.reader.read.Read;
-import org.knime.filehandling.core.util.BomEncodingUtils;
-import org.knime.filehandling.core.util.CompressionAwareCountingInputStream;
 
 /**
  * Class for the JSON reader which implements {@link Read}.
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-public class JSONRead implements Read<Path, DataValue> {
+public class JSONPathRead extends JSONRead implements Read<Path, DataValue> {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONRead.class);
+    private final String m_jsonPath;
 
-    private final Path m_path;
-
-    private final BufferedReader m_reader;
-
-    private final CompressionAwareCountingInputStream m_compressionAwareStream;
-
-    private final long m_size;
-
-    private final TableReadConfig<JSONReaderConfig> m_config;
-
-    private final JSONReaderConfig m_jsonReaderConfig;
-
-    private final boolean m_allowComments;
-
-    private final long m_maxRows;
-
-    private long m_linesRead;
-
-    private final boolean m_useJSONPath;
-
-    private final String m_JSONPath;
-
-    private final JsonSurfer m_surfer = JsonSurferJackson.INSTANCE;
+    private static final JsonSurfer m_surfer = JsonSurferJackson.INSTANCE;
 
     private Iterator<Object> m_iterator;
 
@@ -117,49 +87,20 @@ public class JSONRead implements Read<Path, DataValue> {
      * @param config the {@link TableReadConfig} of the node
      * @throws IOException
      */
-    JSONRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
-        m_config = config;
-        m_jsonReaderConfig = m_config.getReaderSpecificConfig();
-
-        m_path = path;
-        m_size = Files.size(m_path);
-
-        m_compressionAwareStream = new CompressionAwareCountingInputStream(path);
-
-        final String charSetName = null; // TODO: maybe needed in future config.getReaderSpecificConfig().getCharSetName();
-        final Charset charset = charSetName == null ? Charset.forName("UTF-8") : Charset.forName(charSetName);
-        m_reader = BomEncodingUtils.createBufferedReader(m_compressionAwareStream, charset);
-        m_allowComments = m_jsonReaderConfig.allowComments();
-        m_useJSONPath = m_jsonReaderConfig.useJSONPath();
-        m_JSONPath = m_jsonReaderConfig.getJSONPath();
+    JSONPathRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
+        super(path, config);
+        m_jsonPath = m_jsonReaderConfig.getJSONPath();
         m_failIfNotFound = m_jsonReaderConfig.failIfNotFound();
         m_linesRead = 0;
-        m_maxRows = m_config.getMaxRows();
     }
 
     @Override
     public RandomAccessible<DataValue> next() throws IOException {
         m_linesRead++;
-        if (m_useJSONPath) {
-            return readWithJSONPath();
-        } else {
-            return readFileToJSONCell();
-        }
-    }
-
-    /**
-     * @return
-     * @throws IOException
-     */
-    private RandomAccessible<DataValue> readWithJSONPath() throws IOException {
         if (m_linesRead == 1) {
             try {
-                JsonPath p = JsonPathCompiler.compile(m_JSONPath);
-                m_iterator = m_surfer.iterator(m_compressionAwareStream, JsonPathCompiler.compile(m_JSONPath));
-                //                  m_iterator = m_surfer.iterator(m_reader, JsonPathCompiler.compile(m_JSONPath));
-            }
-            // Invalid JSON Path
-            catch (ParseCancellationException e) {
+                m_iterator = m_surfer.iterator(m_compressionAwareStream, JsonPathCompiler.compile(m_jsonPath));
+            } catch (ParseCancellationException e) {// Invalid JSON Path
                 return handleJSONPathError(e);
             }
             // Nothing in JSON Path
@@ -175,20 +116,6 @@ public class JSONRead implements Read<Path, DataValue> {
     }
 
     /**
-     * Reads entire JSON File as a single cell
-     *
-     * @return a {@link RandomAccessible}
-     * @throws IOException
-     */
-    private RandomAccessible<DataValue> readFileToJSONCell() throws IOException {
-        if (m_linesRead > 1) {
-            return null;
-        } else {
-            return createRandomAccessible(JSONCellFactory.create(m_reader, m_allowComments));
-        }
-    }
-
-    /**
      *
      * @param e RuntimeException in parsing
      * @return a {@link RandomAccessible}
@@ -198,23 +125,13 @@ public class JSONRead implements Read<Path, DataValue> {
     private RandomAccessible<DataValue> handleJSONPathError(final RuntimeException e) {
         if (m_failIfNotFound) {
             if (e != null) {
-                throw new RuntimeException("Invalid JSON Path " + m_JSONPath, e);
+                throw new RuntimeException("Invalid JSON Path " + m_jsonPath, e);
             } else {
-                throw new NullPointerException("Nothing found for JSON Path " + m_JSONPath);
+                throw new NullPointerException("Nothing found for JSON Path " + m_jsonPath);
             }
         } else {
             return createRandomAccessible(DataType.getMissingCell());
         }
-    }
-
-    /**
-     * Creates a {@link RandomAccessible} with a row id and a line.
-     *
-     * @param line the content of a line
-     * @return a {@link RandomAccessible}
-     */
-    private static RandomAccessible<DataValue> createRandomAccessible(final DataValue line) {
-        return RandomAccessibleUtils.createFromArray(line);
     }
 
     @Override
@@ -234,12 +151,6 @@ public class JSONRead implements Read<Path, DataValue> {
 
     @Override
     public void close() throws IOException {
-        try {
-            m_reader.close();
-        } catch (IOException e) {
-            LOGGER.error("Something went wrong while closing the BufferedReader. "
-                + "For further details please have a look into the log.", e);
-        }
         m_compressionAwareStream.close();
     }
 

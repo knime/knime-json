@@ -63,13 +63,20 @@ import org.knime.filehandling.core.node.table.reader.spec.TypedReaderTableSpec;
 
 /**
  * Reader for the JSON reader node.
+ *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
 final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataValue> {
 
     @Override
-    public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
-        return new JSONRead(path, config);
+    public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config)
+        throws IOException {
+        final JSONReaderConfig jsonReaderConfig = config.getReaderSpecificConfig();
+        if (jsonReaderConfig.useJSONPath()) {
+            return new JSONPathRead(path, config);
+        } else {
+            return new JSONBlobRead(path, config);
+        }
     }
 
     @Override

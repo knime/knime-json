@@ -67,7 +67,7 @@ public final class JSONReaderConfig implements ReaderSpecificConfig<JSONReaderCo
 
     private boolean m_failIfNotFound = false;
 
-    private String m_JSONPath = "$";
+    private String m_jsonPath = "$";
 
     /**
      * Constructor.
@@ -152,14 +152,14 @@ public final class JSONReaderConfig implements ReaderSpecificConfig<JSONReaderCo
      * @return the jSONPath
      */
     public String getJSONPath() {
-        return m_JSONPath;
+        return m_jsonPath;
     }
 
     /**
      * @param jSONPath the jSONPath to set
      */
     public void setJSONPath(final String jSONPath) {
-        m_JSONPath = jSONPath;
+        m_jsonPath = jSONPath;
     }
 
     /**

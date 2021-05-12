@@ -49,18 +49,17 @@
 package org.knime.json.node.filehandling.reader;
 
 import java.awt.CardLayout;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -251,55 +250,44 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
         final JPanel optionsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
+
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
         gbc.weighty = 0;
-        gbc.gridwidth = 1;
 
         optionsPanel.add(new JLabel("Output column name"), gbc);
         gbc.gridx = 1;
-        gbc.weightx = 1;
-        optionsPanel.add(m_columnName, gbc);
-
-        gbc.gridy++;
-
-        gbc.gridx = 1;
-        optionsPanel.add(m_selectPart, gbc);
+        optionsPanel.add(getInFlowLayout(m_columnName), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.weightx = 0;
+        optionsPanel.add(getInFlowLayout(m_selectPart), gbc);
+        gbc.gridy++;
         optionsPanel.add(new JLabel("JSONPath"), gbc);
         gbc.gridx = 1;
-        gbc.weightx = 1;
-        optionsPanel.add(m_jsonPath, gbc);
+
+        optionsPanel.add(getInFlowLayout(m_jsonPath), gbc);
+
         gbc.gridy++;
         optionsPanel.add(m_warningLabel, gbc);
         gbc.gridy++;
-
-        gbc.weightx = 1;
-        optionsPanel.add(m_failIfNotFound, gbc);
+        gbc.gridx = 0;
+        optionsPanel.add(getInFlowLayout(m_failIfNotFound), gbc);
         gbc.gridy++;
 
-        gbc.gridy++;
-        optionsPanel.add(m_allowComments, gbc);
+        optionsPanel.add(getInFlowLayout(m_allowComments), gbc);
 
         //Filling remaining space
         gbc.gridy++;
         gbc.weighty = 1;
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridwidth = 2;
         optionsPanel.add(new JPanel(), gbc);
 
-        final JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(Box.createVerticalStrut(5));
-        panel.add(optionsPanel);
-
-        return panel;
+        return optionsPanel;
     }
 
     private JPanel makeStreamingModePanel() {
@@ -328,6 +316,14 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      */
     private static final GBCBuilder createGBCBuilder() {
         return new GBCBuilder().resetPos().fillHorizontal().anchorFirstLineStart();
+    }
+
+    private static JPanel getInFlowLayout(final JComponent... comps) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        for (JComponent c : comps) {
+            p.add(c);
+        }
+        return p;
     }
 
     @Override

@@ -56,7 +56,6 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.filehandling.core.node.table.reader.config.ConfigSerializer;
 import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConfig;
-import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigID;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigIDFactory;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.NodeSettingsConfigID;
@@ -79,17 +78,17 @@ enum JSONReaderMultiTableReadConfigSerializer
 
     private static final String DEFAULT_COLUMN_NAME = "json";
 
-    private static final String COLUMN_NAME = "column.name";
+    private static final String COLUMN_NAME = "column_name";
 
-    private static final String READ_MODE = "read.mode";
+    private static final String READ_MODE = "read_mode";
 
-    private static final String ALLOW_COMMENTS = "allow.comments";
+    private static final String ALLOW_COMMENTS = "allow_comments";
 
-    private static final String USE_PATH = "use.path";
+    private static final String USE_PATH = "use_path";
 
-    private static final String JSON_PATH = "json.path";
+    private static final String JSON_PATH = "json_path";
 
-    private static final String FAIL_IF_NOT_FOUND = "fail.if.not.found";
+    private static final String FAIL_IF_NOT_FOUND = "fail_if_not_found";
 
     private static final String DEFAULT_JSON_PATH = "$";
 
@@ -110,7 +109,6 @@ enum JSONReaderMultiTableReadConfigSerializer
      * @param addNodeSettings
      */
     void saveConfigIDSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO addNodeSettings) {
-        // TODO Auto-generated method stub
 
     }
 
@@ -171,15 +169,14 @@ enum JSONReaderMultiTableReadConfigSerializer
     }
 
     private static void saveSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
-        final TableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
         final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
 
-        settings.addString(COLUMN_NAME, jsonReaderCfg.getColumnName());
         settings.addString(READ_MODE, jsonReaderCfg.getJsonReadMode().name());
-        settings.addBoolean(ALLOW_COMMENTS, jsonReaderCfg.allowComments());
+        settings.addString(COLUMN_NAME, jsonReaderCfg.getColumnName());
         settings.addBoolean(USE_PATH, jsonReaderCfg.useJSONPath());
-        settings.addBoolean(FAIL_IF_NOT_FOUND, jsonReaderCfg.failIfNotFound());
         settings.addString(JSON_PATH, jsonReaderCfg.getJSONPath());
+        settings.addBoolean(FAIL_IF_NOT_FOUND, jsonReaderCfg.failIfNotFound());
+        settings.addBoolean(ALLOW_COMMENTS, jsonReaderCfg.allowComments());
     }
 
     @Override
@@ -195,7 +192,8 @@ enum JSONReaderMultiTableReadConfigSerializer
     }
 
     /**
-     * @param nodeSettings
+     * @param settings
+     * @throws InvalidSettingsException
      */
     public static void validateSettingsTab(final NodeSettingsRO settings) throws InvalidSettingsException {
         settings.getString(COLUMN_NAME);
