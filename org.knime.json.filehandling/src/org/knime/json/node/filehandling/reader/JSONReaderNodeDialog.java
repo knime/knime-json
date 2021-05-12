@@ -121,9 +121,10 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     private final JCheckBox m_failIfNotFound;
 
     /**
-     * @param readFactory
+     * @param fileChooser
+     * @param config
+     * @param multiReader
      * @param productionPathProvider
-     * @param allowsMultipleFiles
      */
     protected JSONReaderNodeDialog(final SettingsModelReaderFileChooser fileChooser,
         final JSONMultiTableReadConfig config,
@@ -337,7 +338,6 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     protected JSONMultiTableReadConfig loadSettings(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
         m_sourceFilePanel.loadSettingsFrom(SettingsUtils.getOrEmpty(settings, SettingsUtils.CFG_SETTINGS_TAB), specs);
-        final DefaultTableReadConfig<JSONReaderConfig> tableReadConfig = m_config.getTableReadConfig();
         final JSONReaderConfig jsonReaderConfig = m_config.getReaderSpecificConfig();
 
         m_config.loadInDialog(settings, specs);
@@ -388,7 +388,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      *
      * @param config the {@link DefaultTableReadConfig}
      */
-    private void saveTableReadSettings(final DefaultTableReadConfig<JSONReaderConfig> config) {
+    private static void saveTableReadSettings(final DefaultTableReadConfig<JSONReaderConfig> config) {
         config.setUseRowIDIdx(false);
         config.setRowIDIdx(-1);
         config.setColumnHeaderIdx(0);

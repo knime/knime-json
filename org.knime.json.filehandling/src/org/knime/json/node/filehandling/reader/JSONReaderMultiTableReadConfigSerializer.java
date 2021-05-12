@@ -56,7 +56,6 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.filehandling.core.node.table.reader.config.ConfigSerializer;
 import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConfig;
-import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigID;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigIDFactory;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.NodeSettingsConfigID;
@@ -110,7 +109,6 @@ enum JSONReaderMultiTableReadConfigSerializer
      * @param addNodeSettings
      */
     void saveConfigIDSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO addNodeSettings) {
-        // TODO Auto-generated method stub
 
     }
 
@@ -171,7 +169,6 @@ enum JSONReaderMultiTableReadConfigSerializer
     }
 
     private static void saveSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
-        final TableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
         final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
 
         settings.addString(READ_MODE, jsonReaderCfg.getJsonReadMode().name());
@@ -195,7 +192,8 @@ enum JSONReaderMultiTableReadConfigSerializer
     }
 
     /**
-     * @param nodeSettings
+     * @param settings
+     * @throws InvalidSettingsException
      */
     public static void validateSettingsTab(final NodeSettingsRO settings) throws InvalidSettingsException {
         settings.getString(COLUMN_NAME);

@@ -50,42 +50,95 @@ package org.knime.json.node.filehandling.reader;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
+import java.util.Iterator;
 
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.jsfr.json.JsonSurfer;
+import org.jsfr.json.JsonSurferJackson;
+import org.jsfr.json.compiler.JsonPathCompiler;
+import org.jsfr.json.path.JsonPath;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
-import org.knime.core.data.json.JSONCell;
-import org.knime.core.node.ExecutionMonitor;
-import org.knime.filehandling.core.node.table.reader.TableReader;
+import org.knime.core.data.json.JSONCellFactory;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
+import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessible;
 import org.knime.filehandling.core.node.table.reader.read.Read;
-import org.knime.filehandling.core.node.table.reader.spec.TypedReaderTableSpec;
 
 /**
- * Reader for the JSON reader node.
+ * Class for the JSON reader which implements {@link Read}.
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataValue> {
+public class JSONPathRead extends JSONRead implements Read<Path, DataValue> {
+
+    private final String m_jsonPath;
+
+    private static final JsonSurfer m_surfer = JsonSurferJackson.INSTANCE;
+
+    private Iterator<Object> m_iterator;
+
+    private final boolean m_failIfNotFound;
+
+    /**
+     * Constructor.
+     *
+     * @param path the {@link Path} to the file
+     * @param config the {@link TableReadConfig} of the node
+     * @throws IOException
+     */
+    JSONPathRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
+        super(path, config);
+
+        m_jsonPath = m_jsonReaderConfig.getJSONPath();
+        m_failIfNotFound = m_jsonReaderConfig.failIfNotFound();
+        m_linesRead = 0;
+    }
 
     @Override
-    public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config)
-        throws IOException {
-        final JSONReaderConfig jsonReaderConfig = config.getReaderSpecificConfig();
-        final boolean useJSONPath = jsonReaderConfig.useJSONPath();
-        if (useJSONPath) {
-            return new JSONPathRead(path, config);
+    public RandomAccessible<DataValue> next() throws IOException {
+        m_linesRead++;
+        RandomAccessible<DataValue> dataValue = null;
+        if (m_linesRead == 1) {
+            try {
+                final JsonPath p = JsonPathCompiler.compile(m_jsonPath);
+                m_iterator = m_surfer.iterator(m_compressionAwareStream, p);
+            } catch (ParseCancellationException e) { // Invalid JSON Path
+                dataValue = handleJSONPathError(e);
+            }
+            // Nothing in JSON Path
+            if (!m_iterator.hasNext()) {
+                dataValue = handleJSONPathError(null);
+            }
+        }
+        if (m_iterator.hasNext()) {
+            dataValue = createRandomAccessible(JSONCellFactory.create(m_iterator.next().toString()));
+        }
+        return dataValue;
+    }
+
+    /**
+     *
+     * @param e RuntimeException in parsing
+     * @return a {@link RandomAccessible}
+     * @throws IOException
+     * @throws {@link RuntimeException} on invalid JSON Path, {@link NullPointerException} on nothing found for the JSON
+     *             Path if {@link #m_failIfNotFound} is set
+     */
+    private RandomAccessible<DataValue> handleJSONPathError(final RuntimeException e) throws IOException {
+        if (m_failIfNotFound) {
+            if (e != null) {
+                throw new IOException("Invalid JSON Path " + m_jsonPath, e);
+            } else {
+                throw new IOException("Nothing found for JSON Path " + m_jsonPath);
+            }
         } else {
-            return new JSONBlobRead(path, config);
+            return createRandomAccessible(DataType.getMissingCell());
         }
     }
 
     @Override
-    public TypedReaderTableSpec<DataType> readSpec(final Path path, final TableReadConfig<JSONReaderConfig> config,
-        final ExecutionMonitor exec) throws IOException {
-        final String colName = config.getReaderSpecificConfig().getColumnName();
-        return TypedReaderTableSpec.create(Collections.singleton(colName), Collections.singleton(JSONCell.TYPE),
-            Collections.singleton(Boolean.TRUE));
+    public void close() throws IOException {
+        m_compressionAwareStream.close();
     }
 
 }

@@ -48,44 +48,73 @@
  */
 package org.knime.json.node.filehandling.reader;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Collections;
 
-import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
-import org.knime.core.data.json.JSONCell;
-import org.knime.core.node.ExecutionMonitor;
-import org.knime.filehandling.core.node.table.reader.TableReader;
+import org.knime.core.data.json.JSONCellFactory;
+import org.knime.core.node.NodeLogger;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
+import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessible;
 import org.knime.filehandling.core.node.table.reader.read.Read;
-import org.knime.filehandling.core.node.table.reader.spec.TypedReaderTableSpec;
+import org.knime.filehandling.core.util.BomEncodingUtils;
 
 /**
- * Reader for the JSON reader node.
+ * Class for the JSON reader which implements {@link Read}.
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataValue> {
+public class JSONBlobRead extends JSONRead implements Read<Path, DataValue>{
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONBlobRead.class);
+
+    private final BufferedReader m_reader;
+
+    private final boolean m_allowComments;
+
+    /**
+     * Constructor.
+     *
+     * @param path the {@link Path} to the file
+     * @param config the {@link TableReadConfig} of the node
+     * @throws IOException
+     */
+    JSONBlobRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
+        super(path, config);
+
+        final Charset charset = StandardCharsets.UTF_8;
+        m_reader = BomEncodingUtils.createBufferedReader(m_compressionAwareStream, charset);
+        m_allowComments = m_jsonReaderConfig.allowComments();
+        m_linesRead = 0;
+    }
+
+    /**
+     * Reads entire JSON File as a single cell
+     *
+     * @return a {@link RandomAccessible}
+     * @throws IOException
+     */
     @Override
-    public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config)
-        throws IOException {
-        final JSONReaderConfig jsonReaderConfig = config.getReaderSpecificConfig();
-        final boolean useJSONPath = jsonReaderConfig.useJSONPath();
-        if (useJSONPath) {
-            return new JSONPathRead(path, config);
+    public RandomAccessible<DataValue> next() throws IOException {
+        m_linesRead++;
+        if (m_linesRead > 1) {
+            return null;
         } else {
-            return new JSONBlobRead(path, config);
+            return createRandomAccessible(JSONCellFactory.create(m_reader, m_allowComments));
         }
     }
 
     @Override
-    public TypedReaderTableSpec<DataType> readSpec(final Path path, final TableReadConfig<JSONReaderConfig> config,
-        final ExecutionMonitor exec) throws IOException {
-        final String colName = config.getReaderSpecificConfig().getColumnName();
-        return TypedReaderTableSpec.create(Collections.singleton(colName), Collections.singleton(JSONCell.TYPE),
-            Collections.singleton(Boolean.TRUE));
+    public void close() throws IOException {
+        try {
+            m_reader.close();
+        } catch (IOException e) {
+            LOGGER.error("Something went wrong while closing the BufferedReader. "
+                + "For further details please have a look into the log.", e);
+        }
+        m_compressionAwareStream.close();
     }
-
 }

@@ -21,6 +21,9 @@
     </properties>
 
 	<modules>
+	<!-- this needs to go first because it ensures that jar files required by jsurfer are present -->
+        <module>org.knime.json.filehandling/libs/fetch_jars</module>
+
 		<module>org.knime.json</module>
 		<module>org.knime.features.json</module>
 		<module>org.knime.update.json</module>
