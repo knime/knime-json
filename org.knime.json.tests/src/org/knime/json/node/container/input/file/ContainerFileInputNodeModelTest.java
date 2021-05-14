@@ -132,6 +132,7 @@ public class ContainerFileInputNodeModelTest {
         m_pathInvalidWrongDirectoryName = createInternalsDir("notTheRightPrefix-123456780/externalFile.bin");
 
         // setup a mock workflow for testing
+        MountPointFileSystemAccessMock.enabled = true;
         final var wfContext = new WorkflowContext.Factory(createMockWorkflowDir().toFile()).createContext();
         final var wfHelper = new WorkflowCreationHelper();
         wfHelper.setWorkflowContext(wfContext);
@@ -234,5 +235,6 @@ public class ContainerFileInputNodeModelTest {
         WorkflowManager.ROOT.removeProject(m_wfManagerNodeID);
 
         FSFiles.deleteRecursively(m_mockWorkflowDir);
+        MountPointFileSystemAccessMock.enabled = false;
     }
 }

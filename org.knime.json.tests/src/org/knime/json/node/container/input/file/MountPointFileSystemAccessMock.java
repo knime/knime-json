@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import org.knime.filehandling.core.connections.base.attributes.BaseFileAttributes;
@@ -63,9 +64,15 @@ import org.knime.filehandling.core.util.MountPointFileSystemAccess;
  */
 public class MountPointFileSystemAccessMock implements MountPointFileSystemAccess {
 
+    static boolean enabled = false;
+
     @Override
     public List<String> getMountedIDs() {
-        return List.of("foo");
+        if (enabled) {
+            return List.of("foo");
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -120,7 +127,7 @@ public class MountPointFileSystemAccessMock implements MountPointFileSystemAcces
 
     @Override
     public boolean isReadable(final URI uri) throws IOException {
-        return true;
+        return enabled;
     }
 
     @Override
