@@ -16,5 +16,11 @@
       <!--AggregationOperator AggregationOperator="org.knime.json.aggregation.JsonPointer" deprecated="false"/-->
       <AggregationOperator AggregationOperator="org.knime.json.aggregation.ToJson" deprecated="false"/>
    </extension>
+   <extension
+         point="org.knime.filehandling.core.MountPointFileSystemAccess">
+      <MountPointFileSystemAccess
+            MountPointFileSystemAccess="org.knime.json.node.container.input.file.MountPointFileSystemAccessMock">
+      </MountPointFileSystemAccess>
+   </extension>
 
 </fragment>
