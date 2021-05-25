@@ -44,100 +44,87 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 14, 2021 (hornm): created
+ *   21.05.2021 (jl): created
  */
-package org.knime.json.node.container.input.file;
+package org.knime.json.node.container.input.variable2;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import org.knime.filehandling.core.connections.base.attributes.BaseFileAttributes;
-import org.knime.filehandling.core.util.MountPointFileSystemAccess;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 /**
+ * Json schema for flow variables sent to a Container Input (Variable) node. Is serializable/deserializable with
+ * Jackson.
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ *
+ * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @since 4.4
  */
-public class MountPointFileSystemAccessMock implements MountPointFileSystemAccess {
+final class ContainerVariableJsonSchema2 {
 
-    static boolean enabled = false;
+    private final Map<String, Object> m_variables = new LinkedHashMap<>();
 
-    @Override
-    public List<String> getMountedIDs() {
-        if (enabled) {
-            return List.of("foo");
-        } else {
-            return Collections.emptyList();
+    /**
+     * Add a variable to this schema.
+     *
+     * @param name the name of the variable
+     * @param value the value of the variable
+     * @throws InvalidSettingsException if the name is blank or already contained
+     */
+    @JsonAnySetter
+    void addVariable(final String name, final Object value) throws InvalidSettingsException {
+        final var cleanName = name.trim();
+        if (cleanName.isEmpty()) {
+            throw new InvalidSettingsException("Name is empty");
+        }
+        if (m_variables.containsKey(cleanName)) {
+            throw new InvalidSettingsException("Name is already in use: " + cleanName);
+        }
+        m_variables.put(name, value);
+    }
+
+    /**
+     * Returns the variables in this input.
+     *
+     * @return the variables
+     */
+    @JsonAnyGetter
+    Map<String, Object> getVariables() {
+        return m_variables;
+    }
+
+    static class SimpleSchema {
+        final Object m_value;
+
+        SimpleSchema(final String value) {
+            m_value = value;
+        }
+
+        SimpleSchema(final Integer value) {
+            m_value = value;
+        }
+
+        SimpleSchema(final Double value) {
+            m_value = value;
+        }
+
+        SimpleSchema(final Boolean value) {
+            m_value = value;
+        }
+
+        ContainerVariableJsonSchema2 build(final String name) {
+            final var result = new ContainerVariableJsonSchema2();
+            try {
+                result.addVariable(name, m_value);
+            } catch (InvalidSettingsException e) { // should not happen
+                NodeLogger.getLogger(ContainerVariableInputNodeModel2.class).coding(e);
+            }
+            return result;
         }
     }
-
-    @Override
-    public URL resolveKNIMEURL(final URL url) throws IOException {
-        return null;
-    }
-
-    @Override
-    public List<URI> listFiles(final URI uri) throws IOException {
-        return null; // NOSONAR: should not be used
-    }
-
-    @Override
-    public BaseFileAttributes getFileAttributes(final URI uri) throws IOException {
-        return null;
-    }
-
-    @Override
-    public boolean copyFile(final URI source, final URI target) throws IOException {
-        //
-        return false;
-    }
-
-    @Override
-    public boolean moveFile(final URI source, final URI target) throws IOException {
-        //
-        return false;
-    }
-
-    @Override
-    public boolean deleteFile(final URI uri) throws IOException {
-        //
-        return false;
-    }
-
-    @Override
-    public void createDirectory(final URI uri) throws IOException {
-        //
-
-    }
-
-    @Override
-    public void deployWorkflow(final File source, final URI target, final boolean overwrite, final boolean attemptOpen)
-        throws IOException {
-        //
-    }
-
-    @Override
-    public File toLocalWorkflowDir(final URI uri) throws IOException {
-        return null;
-    }
-
-    @Override
-    public boolean isReadable(final URI uri) throws IOException {
-        return enabled;
-    }
-
-    @Override
-    public boolean isWorkflow(final URI uri) {
-        return false;
-    }
-
-    @Override
-    public URI getDefaultDirectory(final URI uri) {
-        return null;
-    }
-
 }

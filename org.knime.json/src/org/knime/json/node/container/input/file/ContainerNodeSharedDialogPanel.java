@@ -89,8 +89,10 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
 
     /**
      * New pane for configuring the Container node.
+     *
+     * @param defaultParamameter the default value that should be used for the parameter name
      */
-    ContainerNodeSharedDialogPanel(final String defaultParamameter) {
+    public ContainerNodeSharedDialogPanel(final String defaultParamameter) {
         m_config = new ContainerNodeSharedConfiguration(defaultParamameter);
 
         m_parameterNameField = new JTextField();
@@ -178,6 +180,14 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
         gbc.weightx = 1;
         gbc.gridx++;
         add(sp, gbc);
+    }
+
+    /**
+     * @return the text field for parameter name input. This should be used
+     *      to register listeners only.
+     */
+    public JTextField getParameterTextField() {
+        return m_parameterNameField;
     }
 
     /**

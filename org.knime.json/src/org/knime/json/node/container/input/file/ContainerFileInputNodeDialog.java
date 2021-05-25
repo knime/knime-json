@@ -98,6 +98,7 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
         final var constraints = new GridBagConstraints();
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.weightx = 1.0;
         constraints.gridx = 0;
 
         settingsPanel.add(setupSharedPanel(), constraints);
@@ -180,7 +181,7 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
         m_fileChooser =
             new DialogComponentReaderFileChooser(m_config.getFileChooserSettingsModel(), "container_input_file", fvm);
 
-        final var filePanelWarpper = new JPanel(new GridBagLayout());
+        final var filePanelWrapper = new JPanel(new GridBagLayout());
         m_useDefaultFileBox = new JCheckBox("Use a default file", m_config.isUsingDefaultFile());
         m_useDefaultFileBox.setToolTipText("Use a default file if an external file is not available.");
         m_useDefaultFileBox.addActionListener(
@@ -189,13 +190,13 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
         final var constraints = new GridBagConstraints();
         constraints.anchor = GridBagConstraints.NORTHWEST;
 
-        filePanelWarpper.add(m_useDefaultFileBox, constraints);
+        filePanelWrapper.add(m_useDefaultFileBox, constraints);
         constraints.gridx++;
-        filePanelWarpper.add(m_fileChooser.getComponentPanel(), constraints);
+        filePanelWrapper.add(m_fileChooser.getComponentPanel(), constraints);
 
-        filePanelWarpper
+        filePanelWrapper
             .setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Default File"));
-        return filePanelWarpper;
+        return filePanelWrapper;
     }
 
     /**

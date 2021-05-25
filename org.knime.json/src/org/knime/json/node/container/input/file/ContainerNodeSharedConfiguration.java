@@ -50,6 +50,7 @@ package org.knime.json.node.container.input.file;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
@@ -181,8 +182,8 @@ public final class ContainerNodeSharedConfiguration
     /**
      * @return the inputPathOrUrl
      */
-    public String getInputPathOrUrl() {
-        return m_inputPathOrUrl;
+    public Optional<String> getInputPathOrUrl() {
+        return Optional.ofNullable(m_inputPathOrUrl);
     }
 
     /**

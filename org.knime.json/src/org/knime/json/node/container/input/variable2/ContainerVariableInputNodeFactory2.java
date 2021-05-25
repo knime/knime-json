@@ -44,100 +44,61 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 14, 2021 (hornm): created
+ *   17.05.2021 (jl): created
  */
-package org.knime.json.node.container.input.file;
+package org.knime.json.node.container.input.variable2;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-
-import org.knime.filehandling.core.connections.base.attributes.BaseFileAttributes;
-import org.knime.filehandling.core.util.MountPointFileSystemAccess;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeView;
 
 /**
+ * Factory for the Container Input (Variable) node.
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @since 4.4
  */
-public class MountPointFileSystemAccessMock implements MountPointFileSystemAccess {
+public final class ContainerVariableInputNodeFactory2 extends NodeFactory<ContainerVariableInputNodeModel2> {
 
-    static boolean enabled = false;
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public List<String> getMountedIDs() {
-        if (enabled) {
-            return List.of("foo");
-        } else {
-            return Collections.emptyList();
-        }
+    public ContainerVariableInputNodeModel2 createNodeModel() {
+        return new ContainerVariableInputNodeModel2();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public URL resolveKNIMEURL(final URL url) throws IOException {
-        return null;
+    public int getNrNodeViews() {
+        return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public List<URI> listFiles(final URI uri) throws IOException {
-        return null; // NOSONAR: should not be used
+    public NodeView<ContainerVariableInputNodeModel2> createNodeView(final int viewIndex,
+        final ContainerVariableInputNodeModel2 nodeModel) {
+        throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public BaseFileAttributes getFileAttributes(final URI uri) throws IOException {
-        return null;
+    public boolean hasDialog() {
+        return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean copyFile(final URI source, final URI target) throws IOException {
-        //
-        return false;
-    }
-
-    @Override
-    public boolean moveFile(final URI source, final URI target) throws IOException {
-        //
-        return false;
-    }
-
-    @Override
-    public boolean deleteFile(final URI uri) throws IOException {
-        //
-        return false;
-    }
-
-    @Override
-    public void createDirectory(final URI uri) throws IOException {
-        //
-
-    }
-
-    @Override
-    public void deployWorkflow(final File source, final URI target, final boolean overwrite, final boolean attemptOpen)
-        throws IOException {
-        //
-    }
-
-    @Override
-    public File toLocalWorkflowDir(final URI uri) throws IOException {
-        return null;
-    }
-
-    @Override
-    public boolean isReadable(final URI uri) throws IOException {
-        return enabled;
-    }
-
-    @Override
-    public boolean isWorkflow(final URI uri) {
-        return false;
-    }
-
-    @Override
-    public URI getDefaultDirectory(final URI uri) {
-        return null;
+    public NodeDialogPane createNodeDialogPane() {
+        return new ContainerVariableInputNodeDialog2();
     }
 
 }

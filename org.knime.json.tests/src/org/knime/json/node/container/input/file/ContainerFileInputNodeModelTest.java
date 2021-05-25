@@ -55,8 +55,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.knime.core.node.NodeModelWarningListener;
 import org.knime.core.node.NodeSettings;
@@ -77,24 +77,24 @@ import org.knime.filehandling.core.connections.RelativeTo;
  */
 public class ContainerFileInputNodeModelTest {
 
-    private ContainerFileInputNodeModel m_model;
+    private static ContainerFileInputNodeModel model;
 
-    private NodeID m_wfManagerNodeID;
+    private static NodeID wfManagerNodeID;
 
-    private static Path m_pathValid;
+    private static Path pathValid;
 
-    private static final String VALID_PATH =
+    private static final String VALID_PATH_SUFFIX =
         ContainerFileInputNodeModel.TEMP_FILE_PREFIX + "123456780/externalFile.bin";
 
-    private static Path m_pathInvalidAbsolute;
+    private static Path pathInvalidAbsolute;
 
-    private static Path m_pathInvalidTooShort;
+    private static Path pathInvalidTooShort;
 
-    private static Path m_pathInvalidTooLong;
+    private static Path pathInvalidTooLong;
 
-    private static Path m_pathInvalidWrongDirectoryName;
+    private static Path pathInvalidWrongDirectoryName;
 
-    private static Path m_mockWorkflowDir;
+    private static Path mockWorkflowDir;
 
     private static Path createInternalsDir(final String pathValue) throws IOException {
         final var result = Files.createTempDirectory("ContainerFileInputModelTest_internals-");
@@ -112,9 +112,9 @@ public class ContainerFileInputNodeModelTest {
     }
 
     private static Path createMockWorkflowDir() throws IOException {
-        m_mockWorkflowDir = Files.createTempDirectory("ContainerFileInputModelTest_workflow-");
-        Files.createDirectories(m_mockWorkflowDir.resolve("data"));
-        return m_mockWorkflowDir;
+        mockWorkflowDir = Files.createTempDirectory("ContainerFileInputModelTest_workflow-");
+        Files.createDirectories(mockWorkflowDir.resolve("data"));
+        return mockWorkflowDir;
     }
 
     /**
@@ -122,14 +122,14 @@ public class ContainerFileInputNodeModelTest {
      *
      * @throws java.lang.Exception if the files could not be created
      */
-    @Before
-    public void setUp() throws Exception {
-        m_pathValid = createInternalsDir(VALID_PATH);
-        m_pathInvalidAbsolute = createInternalsDir("/" + VALID_PATH);
-        m_pathInvalidTooShort = createInternalsDir("somefile.bin");
+    @BeforeClass
+    public static void setUp() throws Exception {
+        pathValid = createInternalsDir(VALID_PATH_SUFFIX);
+        pathInvalidAbsolute = createInternalsDir("/" + VALID_PATH_SUFFIX); // NOSONAR: Java NIO API should be able to handle this notation
+        pathInvalidTooShort = createInternalsDir("somefile.bin");
         // this still should point to the correct file but it's not what we would expect
-        m_pathInvalidTooLong = createInternalsDir("../../../../" + VALID_PATH);
-        m_pathInvalidWrongDirectoryName = createInternalsDir("notTheRightPrefix-123456780/externalFile.bin");
+        pathInvalidTooLong = createInternalsDir("../../../../" + VALID_PATH_SUFFIX);
+        pathInvalidWrongDirectoryName = createInternalsDir("notTheRightPrefix-123456780/externalFile.bin");
 
         // setup a mock workflow for testing
         MountPointFileSystemAccessMock.enabled = true;
@@ -137,10 +137,10 @@ public class ContainerFileInputNodeModelTest {
         final var wfHelper = new WorkflowCreationHelper();
         wfHelper.setWorkflowContext(wfContext);
         final var manager = WorkflowManager.ROOT.createAndAddProject("ContainerFileInputModelTest", wfHelper);
-        m_wfManagerNodeID = manager.getID();
+        wfManagerNodeID = manager.getID();
         final var nodeID = manager.createAndAddNode(new ContainerFileInputNodeFactory());
         final var container = (NativeNodeContainer)manager.getNodeContainer(nodeID);
-        m_model = (ContainerFileInputNodeModel)container.getNode().getNodeModel();
+        model = (ContainerFileInputNodeModel)container.getNode().getNodeModel();
         NodeContext.pushContext(container);
     }
 
@@ -155,23 +155,23 @@ public class ContainerFileInputNodeModelTest {
         // setup for warning checks (because file should not exist)
         final var warningSet = new boolean[1];
         final NodeModelWarningListener listener = s -> warningSet[0] = true;
-        m_model.addWarningListener(listener);
+        model.addWarningListener(listener);
 
-        m_model.loadInternals(m_pathValid.toFile(), null);
+        model.loadInternals(pathValid.toFile(), null);
 
         // test if path was set correctly
-        assertTrue("Expected an external file to be set", m_model.m_externalLocation.isPresent());
-        final var setLocation = m_model.m_externalLocation.get();
+        assertTrue("Expected an external file to be set", model.m_externalLocation.isPresent());
+        final var setLocation = model.m_externalLocation.get();
 
         assertEquals("Expected category to be relative", FSCategory.RELATIVE, setLocation.getFSCategory());
         assertTrue("Expected there to be a file system specifier", setLocation.getFileSystemSpecifier().isPresent());
         assertEquals("Expected file system specifier to be workflow data area relative",
             RelativeTo.WORKFLOW_DATA.getSettingsValue(), setLocation.getFileSystemSpecifier().get());
-        assertEquals("Expected the path to be set to the configured value", VALID_PATH, setLocation.getPath());
+        assertEquals("Expected the path to be set to the configured value", VALID_PATH_SUFFIX, setLocation.getPath());
 
         // test warning message
         assertTrue("Expected that a warning message was set because the file does not exist", warningSet[0]);
-        m_model.removeWarningListener(listener);
+        model.removeWarningListener(listener);
     }
 
     /**
@@ -182,7 +182,7 @@ public class ContainerFileInputNodeModelTest {
      */
     @Test(expected = IOException.class)
     public void testInvalidPathAbsolute() throws Exception {
-        m_model.loadInternals(m_pathInvalidAbsolute.toFile(), null);
+        model.loadInternals(pathInvalidAbsolute.toFile(), null);
     }
 
     /**
@@ -193,7 +193,7 @@ public class ContainerFileInputNodeModelTest {
      */
     @Test(expected = IOException.class)
     public void testInvalidPathTooShort() throws Exception {
-        m_model.loadInternals(m_pathInvalidTooShort.toFile(), null);
+        model.loadInternals(pathInvalidTooShort.toFile(), null);
     }
 
     /**
@@ -204,7 +204,7 @@ public class ContainerFileInputNodeModelTest {
      */
     @Test(expected = IOException.class)
     public void testInvalidPathTooLong() throws Exception {
-        m_model.loadInternals(m_pathInvalidTooLong.toFile(), null);
+        model.loadInternals(pathInvalidTooLong.toFile(), null);
     }
 
     /**
@@ -215,7 +215,7 @@ public class ContainerFileInputNodeModelTest {
      */
     @Test(expected = IOException.class)
     public void testInvalidPathWrongDirectoryName() throws Exception {
-        m_model.loadInternals(m_pathInvalidWrongDirectoryName.toFile(), null);
+        model.loadInternals(pathInvalidWrongDirectoryName.toFile(), null);
     }
 
     /**
@@ -223,18 +223,18 @@ public class ContainerFileInputNodeModelTest {
      *
      * @throws java.lang.Exception if the files could not be deleted
      */
-    @After
-    public void tearDown() throws Exception {
-        FSFiles.deleteRecursively(m_pathValid);
-        FSFiles.deleteRecursively(m_pathInvalidAbsolute);
-        FSFiles.deleteRecursively(m_pathInvalidTooShort);
-        FSFiles.deleteRecursively(m_pathInvalidTooLong);
-        FSFiles.deleteRecursively(m_pathInvalidWrongDirectoryName);
+    @AfterClass
+    public static void tearDown() throws Exception {
+        FSFiles.deleteRecursively(pathValid);
+        FSFiles.deleteRecursively(pathInvalidAbsolute);
+        FSFiles.deleteRecursively(pathInvalidTooShort);
+        FSFiles.deleteRecursively(pathInvalidTooLong);
+        FSFiles.deleteRecursively(pathInvalidWrongDirectoryName);
 
         NodeContext.removeLastContext();
-        WorkflowManager.ROOT.removeProject(m_wfManagerNodeID);
+        WorkflowManager.ROOT.removeProject(wfManagerNodeID);
 
-        FSFiles.deleteRecursively(m_mockWorkflowDir);
+        FSFiles.deleteRecursively(mockWorkflowDir);
         MountPointFileSystemAccessMock.enabled = false;
     }
 }
