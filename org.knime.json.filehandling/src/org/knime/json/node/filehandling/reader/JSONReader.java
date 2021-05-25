@@ -59,6 +59,7 @@ import org.knime.core.node.ExecutionMonitor;
 import org.knime.filehandling.core.node.table.reader.TableReader;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.read.Read;
+import org.knime.filehandling.core.node.table.reader.read.ReadUtils;
 import org.knime.filehandling.core.node.table.reader.spec.TypedReaderTableSpec;
 
 /**
@@ -68,14 +69,15 @@ import org.knime.filehandling.core.node.table.reader.spec.TypedReaderTableSpec;
  */
 final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataValue> {
 
+    @SuppressWarnings("resource") // closing the read is the responsibility of the caller
     @Override
     public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config)
         throws IOException {
         final JSONReaderConfig jsonReaderConfig = config.getReaderSpecificConfig();
         if (jsonReaderConfig.useJSONPath()) {
-            return new JSONPathRead(path, config);
+            return decorateForReading(new JSONPathRead(path, config), config);
         } else {
-            return new JSONBlobRead(path, config);
+            return decorateForReading(new JSONBlobRead(path, config), config);
         }
     }
 
@@ -87,4 +89,28 @@ final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataVa
             Collections.singleton(Boolean.TRUE));
     }
 
+    /**
+     * Creates a decorated {@link Read} from {@link JSONRead}, taking into account how many rows should be skipped or
+     * what is the maximum number of rows to read.
+     *
+     * @param path the path of the file to read
+     * @param config the {@link TableReadConfig} used
+     * @return a decorated read of type {@link Read}
+     * @throws IOException if a stream can not be created from the provided file.
+     */
+    @SuppressWarnings("resource") // closing the read is the responsibility of the caller
+    private static Read<Path, DataValue> decorateForReading(final JSONRead read,
+        final TableReadConfig<JSONReaderConfig> config) {
+        Read<Path, DataValue> filtered = read;
+        final boolean skipRows = config.skipRows();
+        if (skipRows) {
+            final long numRowsToSkip = config.getNumRowsToSkip();
+            filtered = ReadUtils.skip(filtered, numRowsToSkip);
+        }
+        if (config.limitRows()) {
+            final long numRowsToKeep = config.getMaxRows();
+            filtered = ReadUtils.limit(filtered, numRowsToKeep);
+        }
+        return filtered;
+    }
 }

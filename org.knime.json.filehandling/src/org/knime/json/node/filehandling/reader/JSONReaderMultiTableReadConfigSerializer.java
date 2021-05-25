@@ -57,6 +57,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.filehandling.core.node.table.reader.config.ConfigSerializer;
 import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConfig;
+import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigID;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigIDFactory;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.NodeSettingsConfigID;
@@ -80,6 +81,7 @@ enum JSONReaderMultiTableReadConfigSerializer
     private static final String CFG_DEFAULT_COLUMN_NAME = "json";
 
     private static final String CFG_COLUMN_NAME = "column_name";
+
     /**
      * remove the internal suffix after enabling autodetect
      */
@@ -95,6 +97,16 @@ enum JSONReaderMultiTableReadConfigSerializer
 
     private static final String CFG_DEFAULT_JSON_PATH = "$";
 
+    private static final String CFG_LIMIT_ROWS_TAB = "limit_rows";
+
+    private static final String CFG_MAX_ROWS = "max_rows";
+
+    private static final String CFG_LIMIT_DATA_ROWS = "limit_data_rows";
+
+    private static final String CFG_NUMBER_OF_ROWS_TO_SKIP = "number_of_rows_to_skip";
+
+    private static final String CFG_SKIP_DATA_ROWS = "skip_data_rows";
+
     @Override
     public ConfigID createFromSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         return new NodeSettingsConfigID(settings.getNodeSettings(KEY));
@@ -103,20 +115,34 @@ enum JSONReaderMultiTableReadConfigSerializer
     @Override
     public ConfigID createFromConfig(final JSONMultiTableReadConfig config) {
         final NodeSettings settings = new NodeSettings(KEY);
-        settings.addNodeSettings(SettingsUtils.CFG_SETTINGS_TAB);
+        saveConfigIDSettingsTab(config, settings.addNodeSettings(SettingsUtils.CFG_SETTINGS_TAB));
+        saveConfigIDLimitRowsTab(config, settings.addNodeSettings(CFG_LIMIT_ROWS_TAB));
         return new NodeSettingsConfigID(settings);
+    }
+
+    private static void saveConfigIDSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
+        final JSONReaderConfig cc = config.getReaderSpecificConfig();
+        settings.addString(CFG_READ_MODE, cc.getJsonReadMode().name());
+        settings.addString(CFG_COLUMN_NAME, cc.getColumnName());
+        settings.addBoolean(CFG_USE_PATH, cc.useJSONPath());
+        settings.addString(CFG_JSON_PATH, cc.getJSONPath());
+        settings.addBoolean(CFG_FAIL_IF_NOT_FOUND, cc.failIfNotFound());
+        settings.addBoolean(CFG_ALLOW_COMMENTS, cc.allowComments());
+    }
+
+    private static void saveConfigIDLimitRowsTab(final JSONMultiTableReadConfig config,
+        final NodeSettingsWO limitRowsSettings) {
+        limitRowsSettings.addBoolean(CFG_SKIP_DATA_ROWS, config.getTableReadConfig().skipRows());
+        limitRowsSettings.addLong(CFG_NUMBER_OF_ROWS_TO_SKIP, config.getTableReadConfig().getNumRowsToSkip());
     }
 
     @Override
     public void loadInDialog(final JSONMultiTableReadConfig config, final NodeSettingsRO settings,
         final PortObjectSpec[] specs) throws NotConfigurableException {
         loadSettingsTabInDialog(config, SettingsUtils.getOrEmpty(settings, SettingsUtils.CFG_SETTINGS_TAB));
+        loadLimitRowsTabInDialog(config, SettingsUtils.getOrEmpty(settings, CFG_LIMIT_ROWS_TAB));
     }
 
-    /**
-     * @param config
-     * @param orEmpty
-     */
     private static void loadSettingsTabInDialog(final JSONMultiTableReadConfig config, final NodeSettingsRO settings) {
         final DefaultTableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
         tc.setRowIDIdx(-1);
@@ -132,16 +158,31 @@ enum JSONReaderMultiTableReadConfigSerializer
         jsonReaderCfg.setUseJSONPath(settings.getBoolean(CFG_USE_PATH, false));
     }
 
+    private static void loadLimitRowsTabInDialog(final JSONMultiTableReadConfig config, final NodeSettingsRO settings) {
+        final DefaultTableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
+        tc.setSkipRows(settings.getBoolean(CFG_SKIP_DATA_ROWS, false));
+        tc.setNumRowsToSkip(settings.getLong(CFG_NUMBER_OF_ROWS_TO_SKIP, 1L));
+        tc.setLimitRows(settings.getBoolean(CFG_LIMIT_DATA_ROWS, false));
+        tc.setMaxRows(settings.getLong(CFG_MAX_ROWS, 50L));
+    }
+
     @Override
     public void loadInModel(final JSONMultiTableReadConfig config, final NodeSettingsRO settings)
         throws InvalidSettingsException {
         loadSettingsTabInModel(config, settings.getNodeSettings(SettingsUtils.CFG_SETTINGS_TAB));
+        loadLimitRowsTabInModel(config, settings.getNodeSettings(CFG_LIMIT_ROWS_TAB));
     }
 
-    /**
-     * @param config
-     * @param nodeSettings
-     */
+    private static void loadLimitRowsTabInModel(final JSONMultiTableReadConfig config, final NodeSettingsRO settings)
+        throws InvalidSettingsException {
+        final DefaultTableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
+
+        tc.setSkipRows(settings.getBoolean(CFG_SKIP_DATA_ROWS));
+        tc.setNumRowsToSkip(settings.getLong(CFG_NUMBER_OF_ROWS_TO_SKIP));
+        tc.setLimitRows(settings.getBoolean(CFG_LIMIT_DATA_ROWS));
+        tc.setMaxRows(settings.getLong(CFG_MAX_ROWS));
+    }
+
     private static void loadSettingsTabInModel(final JSONMultiTableReadConfig config, final NodeSettingsRO settings)
         throws InvalidSettingsException {
         final DefaultTableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
@@ -162,6 +203,17 @@ enum JSONReaderMultiTableReadConfigSerializer
     @Override
     public void saveInModel(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
         saveSettingsTab(config, SettingsUtils.getOrAdd(settings, SettingsUtils.CFG_SETTINGS_TAB));
+        saveLimitRowsTab(config, settings.addNodeSettings(CFG_LIMIT_ROWS_TAB));
+
+    }
+
+    private static void saveLimitRowsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
+        final TableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
+
+        settings.addBoolean(CFG_SKIP_DATA_ROWS, tc.skipRows());
+        settings.addLong(CFG_NUMBER_OF_ROWS_TO_SKIP, tc.getNumRowsToSkip());
+        settings.addBoolean(CFG_LIMIT_DATA_ROWS, tc.limitRows());
+        settings.addLong(CFG_MAX_ROWS, tc.getMaxRows());
     }
 
     private static void saveSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
@@ -185,18 +237,22 @@ enum JSONReaderMultiTableReadConfigSerializer
     public void validate(final JSONMultiTableReadConfig config, final NodeSettingsRO settings)
         throws InvalidSettingsException {
         validateSettingsTab(settings.getNodeSettings(SettingsUtils.CFG_SETTINGS_TAB));
+        validateLimitRowsTab(settings.getNodeSettings(CFG_LIMIT_ROWS_TAB));
     }
 
-    /**
-     * @param settings
-     * @throws InvalidSettingsException
-     */
-    public static void validateSettingsTab(final NodeSettingsRO settings) throws InvalidSettingsException {
+    private static void validateSettingsTab(final NodeSettingsRO settings) throws InvalidSettingsException {
         settings.getString(CFG_COLUMN_NAME);
         settings.getString(CFG_READ_MODE);
         settings.getBoolean(CFG_ALLOW_COMMENTS);
         settings.getBoolean(CFG_FAIL_IF_NOT_FOUND);
         settings.getBoolean(CFG_USE_PATH);
         settings.getString(CFG_JSON_PATH);
+    }
+
+    private static void validateLimitRowsTab(final NodeSettingsRO settings) throws InvalidSettingsException {
+        settings.getBoolean(CFG_SKIP_DATA_ROWS);
+        settings.getLong(CFG_NUMBER_OF_ROWS_TO_SKIP);
+        settings.getBoolean(CFG_LIMIT_DATA_ROWS);
+        settings.getLong(CFG_MAX_ROWS);
     }
 }

@@ -62,7 +62,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,6 +83,7 @@ import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.Settin
 import org.knime.filehandling.core.node.table.reader.MultiTableReadFactory;
 import org.knime.filehandling.core.node.table.reader.ProductionPathProvider;
 import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConfig;
+import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.preview.dialog.AbstractPathTableReaderNodeDialog;
 import org.knime.filehandling.core.util.GBCBuilder;
 import org.knime.filehandling.core.util.SettingsUtils;
@@ -114,6 +117,14 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
     private final JCheckBox m_failIfNotFound;
 
+    private final JCheckBox m_limitRowsChecker;
+
+    private final JSpinner m_limitRowsSpinner;
+
+    private final JCheckBox m_skipFirstRowsChecker;
+
+    private final JSpinner m_skipFirstRowsSpinner;
+
     /**
      *
      * @param fileChooser
@@ -133,6 +144,12 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
                 Arrays.stream(fileChooserModel.getKeysForFSLocation())).toArray(String[]::new),
             FSLocationSpecVariableType.INSTANCE);
 
+        Long stepSize = Long.valueOf(1);
+        Long rowStart = Long.valueOf(0);
+        Long rowEnd = Long.valueOf(Long.MAX_VALUE);
+        Long skipOne = Long.valueOf(1);
+        Long initLimit = Long.valueOf(50);
+
         m_config = config;
         m_fileChooser = fileChooser;
 
@@ -149,6 +166,17 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_jsonModeCardLayout = makeReadModeCardLayout();
         m_selectPart.addChangeListener(l -> handleUsePath());
         m_selectPart.doClick();
+
+        m_skipFirstRowsChecker = new JCheckBox("Skip first data rows ");
+        m_skipFirstRowsSpinner = new JSpinner(new SpinnerNumberModel(skipOne, rowStart, rowEnd, stepSize));
+        m_skipFirstRowsChecker.addActionListener(e -> controlSpinner(m_skipFirstRowsChecker, m_skipFirstRowsSpinner));
+        m_skipFirstRowsChecker.doClick();
+
+        m_limitRowsChecker = new JCheckBox("Limit data rows ");
+        m_limitRowsSpinner = new JSpinner(new SpinnerNumberModel(initLimit, rowStart, rowEnd, initLimit));
+        m_limitRowsChecker.addActionListener(e -> controlSpinner(m_limitRowsChecker, m_limitRowsSpinner));
+        m_limitRowsChecker.doClick();
+
         registerPreviewChangeListeners();
         createDialogPanels();
     }
@@ -180,6 +208,22 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_selectPart.addActionListener(actionListener);
         m_jsonPath.getDocument().addDocumentListener(documentListener);
         m_failIfNotFound.addActionListener(actionListener);
+
+        m_limitRowsChecker.addActionListener(actionListener);
+        m_skipFirstRowsChecker.addActionListener(actionListener);
+
+        m_skipFirstRowsSpinner.getModel().addChangeListener(changeListener);
+        m_limitRowsSpinner.getModel().addChangeListener(changeListener);
+    }
+
+    /**
+     * Enables a {@link JSpinner} based on a corresponding {@link JCheckBox}.
+     *
+     * @param checker the {@link JCheckBox} which controls if a {@link JSpinner} should be enabled
+     * @param spinner a {@link JSpinner} controlled by the {@link JCheckBox}
+     */
+    private static void controlSpinner(final JCheckBox checker, final JSpinner spinner) {
+        spinner.setEnabled(checker.isSelected());
     }
 
     private void handleUsePath() {
@@ -191,6 +235,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
     private void createDialogPanels() {
         addTab("Settings", createSettingsPanel());
+        addTab("Limit Rows", getLimitRowsPanel());
     }
 
     private JPanel createSettingsPanel() {
@@ -270,6 +315,40 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     }
 
     /**
+     * Creates a {@link JPanel} filled with dialog components specific to limiting the number of rows that are read.
+     *
+     * @return a {@link JPanel} filled with dialog components.
+     */
+    private JPanel getLimitRowsPanel() {
+        JPanel optionsPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.gridy += 1;
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        optionsPanel.add(m_skipFirstRowsChecker, gbc);
+        gbc.gridx += 1;
+        gbc.weightx = 1;
+        optionsPanel.add(m_skipFirstRowsSpinner, gbc);
+
+        gbc.gridy += 1;
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        optionsPanel.add(m_limitRowsChecker, gbc);
+        gbc.gridx += 1;
+        gbc.weightx = 1;
+        optionsPanel.add(m_limitRowsSpinner, gbc);
+        gbc.weighty = 1;
+        gbc.gridx = 0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.gridy += 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        optionsPanel.add(createPreview(), gbc);
+
+        return optionsPanel;
+    }
+
+    /**
      * Creates a standard setup {@link GBCBuilder}.
      *
      * @return returns a {@link GBCBuilder}
@@ -296,6 +375,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         throws NotConfigurableException {
         m_sourceFilePanel.loadSettingsFrom(SettingsUtils.getOrEmpty(settings, SettingsUtils.CFG_SETTINGS_TAB), specs);
         final JSONReaderConfig jsonReaderConfig = m_config.getReaderSpecificConfig();
+        final TableReadConfig<JSONReaderConfig> tableReadConfig = m_config.getTableReadConfig();
 
         m_config.loadInDialog(settings, specs);
 
@@ -304,6 +384,16 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_selectPart.setSelected(jsonReaderConfig.useJSONPath());
         m_jsonPath.setText(jsonReaderConfig.getJSONPath());
         m_failIfNotFound.setSelected(jsonReaderConfig.failIfNotFound());
+
+        m_skipFirstRowsChecker.setSelected(tableReadConfig.skipRows());
+        m_skipFirstRowsSpinner.setValue(tableReadConfig.getNumRowsToSkip());
+
+        m_limitRowsChecker.setSelected(tableReadConfig.limitRows());
+        m_limitRowsSpinner.setValue(tableReadConfig.getMaxRows());
+
+        controlSpinner(m_skipFirstRowsChecker, m_skipFirstRowsSpinner);
+        controlSpinner(m_limitRowsChecker, m_limitRowsSpinner);
+
         return m_config;
     }
 
@@ -338,10 +428,17 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      *
      * @param config the {@link DefaultTableReadConfig}
      */
-    private static void saveTableReadSettings(final DefaultTableReadConfig<JSONReaderConfig> config) {
+    private void saveTableReadSettings(final DefaultTableReadConfig<JSONReaderConfig> config) {
         config.setUseRowIDIdx(false);
         config.setRowIDIdx(-1);
         config.setColumnHeaderIdx(0);
+
+        config.setSkipRows(m_skipFirstRowsChecker.isSelected());
+        config.setNumRowsToSkip((Long)m_skipFirstRowsSpinner.getValue());
+
+        config.setLimitRows(m_limitRowsChecker.isSelected());
+        config.setMaxRows((Long)m_limitRowsSpinner.getValue());
+
     }
 
     @Override

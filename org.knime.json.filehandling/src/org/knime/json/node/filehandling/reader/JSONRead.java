@@ -80,6 +80,10 @@ abstract class JSONRead implements Read<Path, DataValue> {
 
     protected long m_linesRead;
 
+    protected final boolean m_limitRows;
+
+    protected final long m_maxRows;
+
     /**
      * Creates a {@link RandomAccessible} with a row id and a line.
      *
@@ -102,6 +106,9 @@ abstract class JSONRead implements Read<Path, DataValue> {
 
         m_path = path;
         m_size = Files.size(m_path);
+
+        m_limitRows = m_config.limitRows();
+        m_maxRows = m_config.getMaxRows();
 
         m_compressionAwareStream = new CompressionAwareCountingInputStream(path);
     }
