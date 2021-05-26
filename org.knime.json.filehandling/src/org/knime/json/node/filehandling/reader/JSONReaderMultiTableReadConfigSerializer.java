@@ -53,10 +53,10 @@ import org.knime.core.node.NodeSettings;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
+import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.filehandling.core.node.table.reader.config.ConfigSerializer;
 import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConfig;
-import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigID;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.ConfigIDFactory;
 import org.knime.filehandling.core.node.table.reader.config.tablespec.NodeSettingsConfigID;
@@ -77,15 +77,25 @@ enum JSONReaderMultiTableReadConfigSerializer
 
     private static final String KEY = "json_reader";
 
-    private static final String DEFAULT_COLUMN_NAME = "json";
+    private static final String CFG_DEFAULT_COLUMN_NAME = "json";
 
-    private static final String COLUMN_NAME = "column.name";
+    private static final String CFG_COLUMN_NAME = "column_name";
+    /**
+     * remove the internal suffix after enabling autodetect
+     */
+    private static final String CFG_READ_MODE = "read_mode" + SettingsModel.CFGKEY_INTERNAL;
 
-    private static final String READ_MODE = "read.mode";
+    private static final String CFG_ALLOW_COMMENTS = "allow_comments";
 
-    private static final String ALLOW_COMMENTS = "allow.comments";
+    private static final String CFG_USE_PATH = "use_path";
 
-   @Override
+    private static final String CFG_JSON_PATH = "json_path";
+
+    private static final String CFG_FAIL_IF_NOT_FOUND = "fail_if_not_found";
+
+    private static final String CFG_DEFAULT_JSON_PATH = "$";
+
+    @Override
     public ConfigID createFromSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         return new NodeSettingsConfigID(settings.getNodeSettings(KEY));
     }
@@ -93,17 +103,8 @@ enum JSONReaderMultiTableReadConfigSerializer
     @Override
     public ConfigID createFromConfig(final JSONMultiTableReadConfig config) {
         final NodeSettings settings = new NodeSettings(KEY);
-        saveConfigIDSettingsTab(config, settings.addNodeSettings(SettingsUtils.CFG_SETTINGS_TAB));
+        settings.addNodeSettings(SettingsUtils.CFG_SETTINGS_TAB);
         return new NodeSettingsConfigID(settings);
-    }
-
-    /**
-     * @param config
-     * @param addNodeSettings
-     */
-    void saveConfigIDSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO addNodeSettings) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -122,10 +123,13 @@ enum JSONReaderMultiTableReadConfigSerializer
         tc.setLimitRowsForSpec(false);
         tc.setUseColumnHeaderIdx(false);
         final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
-        jsonReaderCfg.setColumnName(settings.getString(COLUMN_NAME, DEFAULT_COLUMN_NAME));
-        jsonReaderCfg.setJsonReadMode(JSONReadMode.valueOf(settings.getString(READ_MODE, JSONReadMode.LEGACY.name())));
-        jsonReaderCfg.setAllowComments(settings.getBoolean(ALLOW_COMMENTS, false));
-
+        jsonReaderCfg.setColumnName(settings.getString(CFG_COLUMN_NAME, CFG_DEFAULT_COLUMN_NAME));
+        jsonReaderCfg
+            .setJsonReadMode(JSONReadMode.valueOf(settings.getString(CFG_READ_MODE, JSONReadMode.LEGACY.name())));
+        jsonReaderCfg.setAllowComments(settings.getBoolean(CFG_ALLOW_COMMENTS, false));
+        jsonReaderCfg.setFailIfNotFound(settings.getBoolean(CFG_FAIL_IF_NOT_FOUND, false));
+        jsonReaderCfg.setJSONPath(settings.getString(CFG_JSON_PATH, CFG_DEFAULT_JSON_PATH));
+        jsonReaderCfg.setUseJSONPath(settings.getBoolean(CFG_USE_PATH, false));
     }
 
     @Override
@@ -147,27 +151,31 @@ enum JSONReaderMultiTableReadConfigSerializer
         tc.setLimitRowsForSpec(false);
         tc.setUseColumnHeaderIdx(false);
         final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
-        jsonReaderCfg.setColumnName(settings.getString(COLUMN_NAME));
-        jsonReaderCfg.setJsonReadMode(JSONReadMode.valueOf(settings.getString(READ_MODE)));
-        jsonReaderCfg.setAllowComments(settings.getBoolean(ALLOW_COMMENTS));
-
+        jsonReaderCfg.setColumnName(settings.getString(CFG_COLUMN_NAME));
+        jsonReaderCfg.setJsonReadMode(JSONReadMode.valueOf(settings.getString(CFG_READ_MODE)));
+        jsonReaderCfg.setAllowComments(settings.getBoolean(CFG_ALLOW_COMMENTS));
+        jsonReaderCfg.setFailIfNotFound(settings.getBoolean(CFG_FAIL_IF_NOT_FOUND));
+        jsonReaderCfg.setJSONPath(settings.getString(CFG_JSON_PATH));
+        jsonReaderCfg.setUseJSONPath(settings.getBoolean(CFG_USE_PATH));
     }
 
     @Override
     public void saveInModel(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
         saveSettingsTab(config, SettingsUtils.getOrAdd(settings, SettingsUtils.CFG_SETTINGS_TAB));
-       }
-
-    private static void saveSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
-        final TableReadConfig<JSONReaderConfig> tc = config.getTableReadConfig();
-        final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
-
-        settings.addString(COLUMN_NAME, jsonReaderCfg.getColumnName());
-        settings.addString(READ_MODE, jsonReaderCfg.getJsonReadMode().name());
-        settings.addBoolean(ALLOW_COMMENTS, jsonReaderCfg.allowComments());
     }
 
-   @Override
+    private static void saveSettingsTab(final JSONMultiTableReadConfig config, final NodeSettingsWO settings) {
+        final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
+
+        settings.addString(CFG_READ_MODE, jsonReaderCfg.getJsonReadMode().name());
+        settings.addString(CFG_COLUMN_NAME, jsonReaderCfg.getColumnName());
+        settings.addBoolean(CFG_USE_PATH, jsonReaderCfg.useJSONPath());
+        settings.addString(CFG_JSON_PATH, jsonReaderCfg.getJSONPath());
+        settings.addBoolean(CFG_FAIL_IF_NOT_FOUND, jsonReaderCfg.failIfNotFound());
+        settings.addBoolean(CFG_ALLOW_COMMENTS, jsonReaderCfg.allowComments());
+    }
+
+    @Override
     public void saveInDialog(final JSONMultiTableReadConfig config, final NodeSettingsWO settings)
         throws InvalidSettingsException {
         saveInModel(config, settings);
@@ -177,14 +185,18 @@ enum JSONReaderMultiTableReadConfigSerializer
     public void validate(final JSONMultiTableReadConfig config, final NodeSettingsRO settings)
         throws InvalidSettingsException {
         validateSettingsTab(settings.getNodeSettings(SettingsUtils.CFG_SETTINGS_TAB));
-        }
+    }
 
     /**
-     * @param nodeSettings
+     * @param settings
+     * @throws InvalidSettingsException
      */
     public static void validateSettingsTab(final NodeSettingsRO settings) throws InvalidSettingsException {
-        settings.getString(COLUMN_NAME);
-        settings.getString(READ_MODE);
-        settings.getBoolean(ALLOW_COMMENTS);
+        settings.getString(CFG_COLUMN_NAME);
+        settings.getString(CFG_READ_MODE);
+        settings.getBoolean(CFG_ALLOW_COMMENTS);
+        settings.getBoolean(CFG_FAIL_IF_NOT_FOUND);
+        settings.getBoolean(CFG_USE_PATH);
+        settings.getString(CFG_JSON_PATH);
     }
 }

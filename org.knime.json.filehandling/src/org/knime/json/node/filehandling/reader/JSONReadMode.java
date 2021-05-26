@@ -51,13 +51,14 @@ package org.knime.json.node.filehandling.reader;
 import org.knime.core.node.util.ButtonGroupEnumInterface;
 
 /**
+ * Enum for JSON read modes
  *
- * @author Moditha
+ * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
 enum JSONReadMode implements ButtonGroupEnumInterface {
 
-        LEGACY("Simple/JSON Path"), //
-        STREAMING("Autodetect");
+        LEGACY("Simple/JSON Path"); //
+//        STREAMING("Autodetect"); //NOSONAR for future reference
 
     private final String m_label;
 
@@ -85,6 +86,6 @@ enum JSONReadMode implements ButtonGroupEnumInterface {
 
     @Override
     public boolean isDefault() {
-        return this == STREAMING;
+        return this == LEGACY;
     }
 }

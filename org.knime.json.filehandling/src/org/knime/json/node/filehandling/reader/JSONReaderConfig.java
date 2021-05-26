@@ -58,9 +58,19 @@ import org.knime.filehandling.core.node.table.reader.config.ReaderSpecificConfig
 public final class JSONReaderConfig implements ReaderSpecificConfig<JSONReaderConfig> {
 
     private String m_columnName = "json";
+
+    /**
+     * For future use, default value should be streaming mode
+     */
     private JSONReadMode m_jsonReadMode = JSONReadMode.LEGACY;
+
     private boolean m_allowComments = false;
 
+    private boolean m_useJSONPath = false;
+
+    private boolean m_failIfNotFound = false;
+
+    private String m_jsonPath = "$";
 
     /**
      * Constructor.
@@ -74,6 +84,10 @@ public final class JSONReaderConfig implements ReaderSpecificConfig<JSONReaderCo
     private JSONReaderConfig(final JSONReaderConfig toCopy) {
         setColumnName(toCopy.getColumnName());
         setJsonReadMode(toCopy.getJsonReadMode());
+        setAllowComments(toCopy.allowComments());
+        setFailIfNotFound(toCopy.failIfNotFound());
+        setJSONPath(toCopy.getJSONPath());
+        setUseJSONPath(toCopy.useJSONPath());
     }
 
     @Override
@@ -94,6 +108,7 @@ public final class JSONReaderConfig implements ReaderSpecificConfig<JSONReaderCo
     public void setColumnName(final String columnName) {
         m_columnName = columnName;
     }
+
     /**
      * @return the jsonReadMode
      */
@@ -120,5 +135,47 @@ public final class JSONReaderConfig implements ReaderSpecificConfig<JSONReaderCo
      */
     public void setAllowComments(final boolean allowComments) {
         m_allowComments = allowComments;
+    }
+
+    /**
+     * @return the useJSONPath
+     */
+    public boolean useJSONPath() {
+        return m_useJSONPath;
+    }
+
+    /**
+     * @param useJSONPath the useJSONPath to set
+     */
+    public void setUseJSONPath(final boolean useJSONPath) {
+        m_useJSONPath = useJSONPath;
+    }
+
+    /**
+     * @return the jSONPath
+     */
+    public String getJSONPath() {
+        return m_jsonPath;
+    }
+
+    /**
+     * @param jSONPath the jSONPath to set
+     */
+    public void setJSONPath(final String jSONPath) {
+        m_jsonPath = jSONPath;
+    }
+
+    /**
+     * @return the failIfNotFound
+     */
+    public boolean failIfNotFound() {
+        return m_failIfNotFound;
+    }
+
+    /**
+     * @param failIfNotFound the failIfNotFound to set
+     */
+    public void setFailIfNotFound(final boolean failIfNotFound) {
+        m_failIfNotFound = failIfNotFound;
     }
 }

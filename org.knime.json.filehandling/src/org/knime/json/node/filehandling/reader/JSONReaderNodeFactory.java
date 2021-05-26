@@ -58,6 +58,7 @@ import org.knime.filehandling.core.defaultnodesettings.EnumConfig;
 import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.SettingsModelReaderFileChooser;
 import org.knime.filehandling.core.defaultnodesettings.filtermode.SettingsModelFilterMode.FilterMode;
 import org.knime.filehandling.core.node.table.reader.AbstractTableReaderNodeFactory;
+import org.knime.filehandling.core.node.table.reader.GenericTableReader;
 import org.knime.filehandling.core.node.table.reader.MultiTableReadFactory;
 import org.knime.filehandling.core.node.table.reader.ProductionPathProvider;
 import org.knime.filehandling.core.node.table.reader.ReadAdapterFactory;
@@ -80,6 +81,13 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
 
     private static TypeTester<DataType, DataType> createTypeTester(final DataType type) {
         return TypeTester.createTypeTester(type, s -> true);
+    }
+
+    @Override
+    protected MultiTableReadFactory<Path, JSONReaderConfig, DataType>
+        createMultiTableReadFactory(final GenericTableReader<Path, JSONReaderConfig, DataType, DataValue> reader) {
+        final MultiTableReadFactory<Path, JSONReaderConfig, DataType> multiTableReadFactory = super.createMultiTableReadFactory(reader);
+        return new JSONMultiTableReadFactory(multiTableReadFactory);
     }
 
     @Override

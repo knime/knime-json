@@ -44,81 +44,70 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 12, 2021 (Moditha): created
+ *   Apr 7, 2021 (Moditha): created
  */
 package org.knime.json.node.filehandling.reader;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Optional;
-import java.util.OptionalLong;
 
 import org.knime.core.data.DataValue;
+import org.knime.core.data.json.JSONCellFactory;
+import org.knime.core.node.NodeLogger;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessible;
-import org.knime.filehandling.core.node.table.reader.randomaccess.RandomAccessibleUtils;
 import org.knime.filehandling.core.node.table.reader.read.Read;
-import org.knime.filehandling.core.util.CompressionAwareCountingInputStream;
+import org.knime.filehandling.core.util.BomEncodingUtils;
 
 /**
- * Common Class for JSON Reading
+ * Class for the JSON reader which implements {@link Read} which reads the JSON as a single cell (blob).
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-abstract class JSONRead implements Read<Path, DataValue> {
+final class JSONBlobRead extends JSONRead {
 
-    protected final Path m_path;
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONBlobRead.class);
 
-    protected final CompressionAwareCountingInputStream m_compressionAwareStream;
+    private final BufferedReader m_reader;
 
-    protected final long m_size;
-
-    protected final TableReadConfig<JSONReaderConfig> m_config;
-
-    protected final JSONReaderConfig m_jsonReaderConfig;
-
-    protected long m_linesRead;
+    private final boolean m_allowComments;
 
     /**
-     * Creates a {@link RandomAccessible} with a row id and a line.
+     * Constructor.
      *
-     * @param line the content of a line
-     * @return a {@link RandomAccessible}
-     */
-    protected static RandomAccessible<DataValue> createRandomAccessible(final DataValue line) {
-        return RandomAccessibleUtils.createFromArray(line);
-    }
-
-    /**
-     *
-     * @param path
-     * @param config
+     * @param path the {@link Path} to the file
+     * @param config the {@link TableReadConfig} of the node
      * @throws IOException
      */
-    public JSONRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
-        m_config = config;
-        m_jsonReaderConfig = m_config.getReaderSpecificConfig();
-
-        m_path = path;
-        m_size = Files.size(m_path);
-
-        m_compressionAwareStream = new CompressionAwareCountingInputStream(path);
+    JSONBlobRead(final Path path, final TableReadConfig<JSONReaderConfig> config) throws IOException {
+        super(path, config);
+        final Charset charset = StandardCharsets.UTF_8;
+        m_reader = BomEncodingUtils.createBufferedReader(m_compressionAwareStream, charset);
+        m_allowComments = m_jsonReaderConfig.allowComments();
+        m_linesRead = 0;
     }
 
     @Override
-    public OptionalLong getMaxProgress() {
-        return OptionalLong.of(m_size);
+    public RandomAccessible<DataValue> next() throws IOException {
+        m_linesRead++;
+        if (m_linesRead > 1) {
+            return null;
+        } else {
+            return createRandomAccessible(JSONCellFactory.create(m_reader, m_allowComments));
+        }
     }
 
     @Override
-    public long getProgress() {
-        return m_compressionAwareStream.getCount();
-    }
-
-    @Override
-    public Optional<Path> getItem() {
-        return Optional.of(m_path);
+    public void close() throws IOException {
+        try {
+            m_reader.close();
+        } catch (IOException e) {
+            LOGGER.error("Something went wrong while closing the BufferedReader. "
+                + "For further details please have a look into the log.", e);
+        }
     }
 
 }

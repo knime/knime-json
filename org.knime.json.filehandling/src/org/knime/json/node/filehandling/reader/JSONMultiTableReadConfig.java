@@ -54,7 +54,7 @@ import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConf
 import org.knime.filehandling.core.node.table.reader.config.MultiTableReadConfig;
 
 /**
- * {@link MultiTableReadConfig} for the line reader.
+ * {@link MultiTableReadConfig} for the JSON Reader.
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
