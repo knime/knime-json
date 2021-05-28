@@ -67,16 +67,21 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 
 /**
  * Node dialog for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since = "4.4")
 final class ContainerVariableInputNodeDialog extends NodeDialogPane {
 
     private final JFormattedTextField m_parameterNameField;
+
     private final JCheckBox m_useFQParamNameChecker;
+
     private final JTextArea m_descriptionArea;
 
     /**
@@ -145,8 +150,10 @@ final class ContainerVariableInputNodeDialog extends NodeDialogPane {
      * {@inheritDoc}
      */
     @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs) throws NotConfigurableException {
-        ContainerVariableInputNodeConfiguration config = new ContainerVariableInputNodeConfiguration().loadInDialog(settings);
+    protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
+        throws NotConfigurableException {
+        ContainerVariableInputNodeConfiguration config =
+            new ContainerVariableInputNodeConfiguration().loadInDialog(settings);
         m_parameterNameField.setText(config.getParameterName());
         m_useFQParamNameChecker.setSelected(config.isUseFQNParamName());
         m_descriptionArea.setText(config.getDescription());

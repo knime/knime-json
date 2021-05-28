@@ -54,6 +54,9 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.knime.core.node.NodeLogger;
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,7 +68,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since="4.4")
 public class ContainerVariableJsonSchema {
 
     private final List<Map<String, Object>> m_variables;
@@ -104,6 +109,7 @@ public class ContainerVariableJsonSchema {
             new ObjectMapper().readValue(jsonValue.toString(), ContainerVariableJsonSchema.class);
             return true;
         } catch (IOException e) {
+            NodeLogger.getLogger(ContainerVariableJsonSchema.class).error(e);
             return false;
         }
     }

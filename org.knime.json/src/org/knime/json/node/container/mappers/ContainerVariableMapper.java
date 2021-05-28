@@ -60,6 +60,7 @@ import javax.json.JsonValue;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.FlowVariable;
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,7 +70,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since = "4.4")
 public class ContainerVariableMapper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -81,8 +84,10 @@ public class ContainerVariableMapper {
      * @return a JsonValue representing the flow variables
      * @throws InvalidSettingsException if variables cannot be mapped to {@link ContainerVariableJsonSchema}
      */
-    public static JsonValue toContainerVariableJsonValue(final Collection<FlowVariable> flowVariables) throws InvalidSettingsException {
-        ContainerVariableJsonSchema containerVariableInput = new ContainerVariableJsonSchema(createVariables(flowVariables));
+    public static JsonValue toContainerVariableJsonValue(final Collection<FlowVariable> flowVariables)
+        throws InvalidSettingsException {
+        ContainerVariableJsonSchema containerVariableInput =
+            new ContainerVariableJsonSchema(createVariables(flowVariables));
         try {
             String containerVariableJson = new ObjectMapper().writeValueAsString(containerVariableInput);
             return JSONUtil.parseJSONValue(containerVariableJson);
@@ -104,21 +109,26 @@ public class ContainerVariableMapper {
 
     private static Object parseFlowVariable(final FlowVariable variable) {
         switch (variable.getType()) {
-            case INTEGER : return variable.getIntValue();
-            case STRING : return variable.getStringValue();
-            case DOUBLE : return variable.getDoubleValue();
-            default : return variable.getValueAsString();
+            case INTEGER:
+                return variable.getIntValue();
+            case STRING:
+                return variable.getStringValue();
+            case DOUBLE:
+                return variable.getDoubleValue();
+            default:
+                return variable.getValueAsString();
         }
     }
 
     /**
-     * Maps a json string to {@link ContainerVariableJsonSchema}, if if conforms to the schema.
+     * Maps a json string to {@link ContainerVariableJsonSchema}, if conforms to the schema.
      *
      * @param json json string that should be mapped to {@link ContainerVariableJsonSchema}
      * @return {@link ContainerVariableJsonSchema} of the given input string
      * @throws InvalidSettingsException if the input string does not conform to {@link ContainerVariableJsonSchema}
      */
-    public static ContainerVariableJsonSchema toContainerVariableJsonSchema(final String json) throws InvalidSettingsException {
+    public static ContainerVariableJsonSchema toContainerVariableJsonSchema(final String json)
+        throws InvalidSettingsException {
         try {
             return OBJECT_MAPPER.readValue(json, ContainerVariableJsonSchema.class);
         } catch (IOException e) {

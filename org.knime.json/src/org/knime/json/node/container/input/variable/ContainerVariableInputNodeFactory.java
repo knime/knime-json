@@ -51,13 +51,16 @@ package org.knime.json.node.container.input.variable;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 
 /**
  * Factory for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since = "4.4")
 public final class ContainerVariableInputNodeFactory extends NodeFactory<ContainerVariableInputNodeModel> {
 
     /**
@@ -80,7 +83,8 @@ public final class ContainerVariableInputNodeFactory extends NodeFactory<Contain
      * {@inheritDoc}
      */
     @Override
-    public NodeView<ContainerVariableInputNodeModel> createNodeView(final int viewIndex, final ContainerVariableInputNodeModel nodeModel) {
+    public NodeView<ContainerVariableInputNodeModel> createNodeView(final int viewIndex,
+        final ContainerVariableInputNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 

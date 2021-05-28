@@ -71,6 +71,7 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerVariableMapper;
 
@@ -79,27 +80,27 @@ import org.knime.json.node.container.mappers.ContainerVariableMapper;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since = "4.4")
 final class ContainerVariableInputNodeModel extends NodeModel implements InputNode {
 
     private JsonValue m_externalValue;
+
     private ContainerVariableInputNodeConfiguration m_configuration = new ContainerVariableInputNodeConfiguration();
 
     /**
      * Constructor for the node model.
      */
     ContainerVariableInputNodeModel() {
-        super(
-            new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL},
-            new PortType[]{FlowVariablePortObject.TYPE});
+        super(new PortType[]{FlowVariablePortObject.TYPE_OPTIONAL}, new PortType[]{FlowVariablePortObject.TYPE});
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
-            throws Exception {
+    protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
         JsonValue externalJsonValue = getExternalVariableInput();
         if (externalJsonValue == null && inData[0] == null) {
             setWarningMessage("Default variables are output");
@@ -139,13 +140,14 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
                 Object value = variableEntry.getValue();
 
                 if (Integer.class.equals(value.getClass())) {
-                    pushFlowVariableInt(name, (int) value);
+                    pushFlowVariableInt(name, (int)value);
                 } else if (Double.class.equals(value.getClass())) {
-                    pushFlowVariableDouble(name, (double) value);
+                    pushFlowVariableDouble(name, (double)value);
                 } else if (String.class.equals(value.getClass())) {
-                    pushFlowVariableString(name, (String) value);
+                    pushFlowVariableString(name, (String)value);
                 } else {
-                    throw new RuntimeException("Variable \"" + name + "\" has invalid variable class \"" + value + "\"");
+                    throw new InvalidSettingsException(
+                        "Variable \"" + name + "\" has invalid variable class \"" + value + "\"");
                 }
             }
         }
@@ -188,11 +190,10 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
      */
     @Override
     public ExternalNodeData getInputData() {
-        JsonValue value = m_externalValue != null ? m_externalValue : ContainerVariableDefaultJsonStructure.asJsonValue();
+        JsonValue value =
+            m_externalValue != null ? m_externalValue : ContainerVariableDefaultJsonStructure.asJsonValue();
         return ExternalNodeData.builder(m_configuration.getParameterName())
-                .description(m_configuration.getDescription())
-                .jsonValue(value)
-                .build();
+            .description(m_configuration.getDescription()).jsonValue(value).build();
     }
 
     /**

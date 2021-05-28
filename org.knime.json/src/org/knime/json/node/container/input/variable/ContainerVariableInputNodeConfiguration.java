@@ -56,11 +56,13 @@ import javax.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 import org.knime.json.util.JSONUtil;
 
 /**
@@ -68,18 +70,27 @@ import org.knime.json.util.JSONUtil;
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since = "4.4")
 final class ContainerVariableInputNodeConfiguration {
 
     private static final String DEFAULT_PARAMETER_NAME = "variable-input";
+
     private static final String DEFAULT_DESCRIPTION = "";
+
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
+
     private static final JsonValue DEFAULT_EXAMPLE_INPUT = ContainerVariableDefaultJsonStructure.asJsonValue();
 
     private String m_parameterName;
+
     private boolean m_useFQNParamName = false; // added in 4.3
+
     private String m_description;
+
     private String m_inputPathOrUrl;
+
     private JsonValue m_exampleInput;
 
     /**
@@ -137,14 +148,18 @@ final class ContainerVariableInputNodeConfiguration {
         return this;
     }
 
-    /** Get value as per {@link #setUseFQNParamName(boolean)}.
+    /**
+     * Get value as per {@link #setUseFQNParamName(boolean)}.
+     * 
      * @return the useFQNParamName
      */
     boolean isUseFQNParamName() {
         return m_useFQNParamName;
     }
 
-    /** Sets property as per {@link InputNode#isUseAlwaysFullyQualifiedParameterName()}.
+    /**
+     * Sets property as per {@link InputNode#isUseAlwaysFullyQualifiedParameterName()}.
+     * 
      * @param useFQNParamName the useFQNParamName to set
      */
     void setUseFQNParamName(final boolean useFQNParamName) {
@@ -164,12 +179,13 @@ final class ContainerVariableInputNodeConfiguration {
      */
     void setInputPathOrUrl(final String inputPathOrUrl) throws InvalidSettingsException {
         CheckUtils.checkSetting(inputPathOrUrl == null || StringUtils.isNotEmpty(inputPathOrUrl),
-                "Input path \"%s\" must be null or not empty", inputPathOrUrl);
+            "Input path \"%s\" must be null or not empty", inputPathOrUrl);
         m_inputPathOrUrl = inputPathOrUrl;
     }
 
     /**
      * Gets the example input.
+     * 
      * @return the example input
      */
     JsonValue getExampleInput() {
@@ -178,6 +194,7 @@ final class ContainerVariableInputNodeConfiguration {
 
     /**
      * Sets the example input.
+     * 
      * @param exampleInput the example input to set
      * @throws InvalidSettingsException if the input does not comply with {@link ContainerVariableJsonSchema}
      */
@@ -212,7 +229,8 @@ final class ContainerVariableInputNodeConfiguration {
     }
 
     /**
-     * Loads the settings from the given node settings object. Default values will be used for missing or invalid settings.
+     * Loads the settings from the given node settings object. Default values will be used for missing or invalid
+     * settings.
      *
      * @param settings a node settings object
      * @return the updated configuration
@@ -222,6 +240,7 @@ final class ContainerVariableInputNodeConfiguration {
             setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
             setInputPathOrUrl(settings.getString("inputPathOrUrl", DEFAULT_INPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
+            NodeLogger.getLogger(ContainerVariableInputNodeModel.class).error(e);
             m_parameterName = DEFAULT_PARAMETER_NAME;
             m_inputPathOrUrl = DEFAULT_INPUT_PATH_OR_URL;
         }
@@ -232,6 +251,8 @@ final class ContainerVariableInputNodeConfiguration {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setExampleInput(jsonValue);
         } catch (IOException | InvalidSettingsException e) {
+            NodeLogger.getLogger(ContainerVariableInputNodeModel.class).error(e);
+            m_parameterName = DEFAULT_PARAMETER_NAME;
             m_exampleInput = DEFAULT_EXAMPLE_INPUT;
         }
         return this;
@@ -248,7 +269,7 @@ final class ContainerVariableInputNodeConfiguration {
         settings.addBoolean("useFullyQualifiedName", m_useFQNParamName); // added in 4.3
         settings.addString("description", m_description);
         settings.addString("inputPathOrUrl", m_inputPathOrUrl);
-        if (m_exampleInput != null ) {
+        if (m_exampleInput != null) {
             settings.addString("exampleInput", JSONUtil.toPrettyJSONString(m_exampleInput));
         }
         return this;

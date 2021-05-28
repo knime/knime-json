@@ -58,38 +58,51 @@ import javax.json.JsonArray;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonValue;
 
+import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
+
 /**
  * Class that holds a hard coded prototype JSON structure for the Container Input (Variable) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
  * @since 3.6
+ * @deprecated superseded by {@link ContainerVariableInputNodeFactory2}
  */
+@Deprecated(since = "4.4")
 public final class ContainerVariableDefaultJsonStructure {
+
+    private ContainerVariableDefaultJsonStructure() {
+        // do not initialize me
+    }
 
     /**
      * Default string variable name.
      */
-    public final static String STRING_VARIABLE_NAME = "variable-string";
+    public static final String STRING_VARIABLE_NAME = "variable-string";
+
     /**
      * Default string variable value.
      */
-    public final static String STRING_VARIABLE_VALUE = "somevariable";
+    public static final String STRING_VARIABLE_VALUE = "somevariable";
+
     /**
      * Default double variable name.
      */
-    public final static String DOUBLE_VARIABLE_NAME = "variable-double";
+    public static final String DOUBLE_VARIABLE_NAME = "variable-double";
+
     /**
      * Default double variable value.
      */
-    public final static Double DOUBLE_VARIABLE_VALUE = 42.0;
+    public static final Double DOUBLE_VARIABLE_VALUE = 42.0;
+
     /**
      * Default int variable name.
      */
-    public final static String INT_VARIABLE_NAME = "variable-int";
+    public static final String INT_VARIABLE_NAME = "variable-int";
+
     /**
      * Default int variable value.
      */
-    public final static Integer INT_VARIABLE_VALUE = 100;
+    public static final Integer INT_VARIABLE_VALUE = 100;
 
     /**
      * Returns the default variables as a list of singleton maps.
@@ -125,10 +138,10 @@ public final class ContainerVariableDefaultJsonStructure {
 
     private static JsonArray createVariables(final JsonBuilderFactory factory) {
         return factory.createArrayBuilder() //
-                .add(factory.createObjectBuilder().add(STRING_VARIABLE_NAME, STRING_VARIABLE_VALUE)) //
-                .add(factory.createObjectBuilder().add(DOUBLE_VARIABLE_NAME, DOUBLE_VARIABLE_VALUE)) //
-                .add(factory.createObjectBuilder().add(INT_VARIABLE_NAME, INT_VARIABLE_VALUE)) //
-                .build(); //
+            .add(factory.createObjectBuilder().add(STRING_VARIABLE_NAME, STRING_VARIABLE_VALUE)) //
+            .add(factory.createObjectBuilder().add(DOUBLE_VARIABLE_NAME, DOUBLE_VARIABLE_VALUE)) //
+            .add(factory.createObjectBuilder().add(INT_VARIABLE_NAME, INT_VARIABLE_VALUE)) //
+            .build(); //
     }
 
 }
