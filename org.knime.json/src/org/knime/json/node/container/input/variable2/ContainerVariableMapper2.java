@@ -56,7 +56,6 @@ import java.util.Optional;
 
 import javax.json.JsonValue;
 
-import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
@@ -130,7 +129,7 @@ final class ContainerVariableMapper2 {
      *
      * @param json json string that should be mapped to {@link ContainerVariableJsonSchema2}
      * @param simplifiedSchemaName the name of the variable to use if the simplified json schema is expected
-     * @return {@link ContainerVariableJsonSchema} of the given input string
+     * @return {@link ContainerVariableJsonSchema2} of the given input string
      * @throws InvalidSettingsException if the input string does not conform to {@link ContainerVariableJsonSchema2}
      */
     static ContainerVariableJsonSchema2 toContainerVariableJsonSchema(final String json,

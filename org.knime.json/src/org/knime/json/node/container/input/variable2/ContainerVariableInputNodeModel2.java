@@ -254,7 +254,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
         if (m_configuration.isRequireMatchSpecification()) {
             final var variables = new LinkedHashMap<String, FlowVariable>(m_variableSelection.getRowCount());
 
-            for (int row = 0; row  < m_variableSelection.getRowCount(); row++) {
+            for (int row = 0; row < m_variableSelection.getRowCount(); row++) {
                 final var type = m_variableSelection.getType(row);
                 final var name = m_variableSelection.getName(row);
                 final var val = m_variableSelection.getValue(row);
