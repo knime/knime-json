@@ -95,7 +95,9 @@ import com.jayway.jsonpath.ReadContext;
  * This is the model implementation of JSONReader. Reads {@code .json} files to {@link JSONValue}s.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+@Deprecated
 public final class JSONReaderNodeModel extends NodeModel {
     private final JSONReaderSettings m_settings = createSettings();
 

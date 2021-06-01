@@ -58,7 +58,9 @@ import org.knime.core.node.port.PortObjectSpec;
  * The settings for the JSONReader node.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+@Deprecated
 final class JSONReaderSettings {
     static final String ALLOW_COMMENTS = "allow.comments", COLUMN_NAME = "column.name", DEFAULT_COLUMN_NAME = "json",
             LOCATION = "json.location";

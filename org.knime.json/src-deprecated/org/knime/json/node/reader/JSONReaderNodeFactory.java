@@ -58,7 +58,9 @@ import org.knime.core.node.NodeView;
  * <code>NodeFactory</code> for the "JSONReader" node. Reads {@code .json} files to {@link JSONValue}s.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+@Deprecated
 public final class JSONReaderNodeFactory extends ContextAwareNodeFactory<JSONReaderNodeModel> {
 
     /**

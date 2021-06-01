@@ -73,6 +73,7 @@ import org.knime.filehandling.core.node.table.reader.util.StagedMultiTableRead;
  * were produced when reading in JSON files (which can happen e.g. if the JSON Path expression does not match).
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
+ *
  */
 final class JSONMultiTableReadFactory implements MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> {
 

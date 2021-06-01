@@ -84,7 +84,9 @@ import com.jayway.jsonpath.JsonPath;
  * <code>NodeDialog</code> for the "JSONReader" node. Reads {@code .json} files to {@link JSONValue}s.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+@Deprecated
 final class JSONReaderNodeDialog extends NodeDialogPane {
     /**
      * The key for the history of previous locations.
