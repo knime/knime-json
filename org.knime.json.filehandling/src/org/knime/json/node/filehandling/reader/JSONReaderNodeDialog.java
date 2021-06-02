@@ -154,7 +154,8 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_warningLabel = new JLabel("");
         m_selectPart = new JCheckBox("Select with JSONPath");
         m_failIfNotFound = new JCheckBox("Fail if path not found");
-        m_failIfNotFound.setToolTipText("When unchecked and path does not match any input, empty table will be generated.");
+        m_failIfNotFound
+            .setToolTipText("When unchecked and path does not match any input, empty table will be generated.");
         m_allowComments = new JCheckBox("Allow comments in JSON files");
         m_allowComments.setToolTipText("/*...*/, // or #");
 
@@ -227,7 +228,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_failIfNotFound.setEnabled(m_selectPart.isSelected());
         m_jsonPath.setEnabled(m_selectPart.isSelected());
         // Jsurfer doesn't support JSON comments
-        m_allowComments.setEnabled(m_selectPart.isSelected());
+        m_allowComments.setEnabled(!m_selectPart.isSelected());
     }
 
     private void createDialogPanels() {
@@ -316,32 +317,20 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      * @return a {@link JPanel} filled with dialog components.
      */
     private JPanel getLimitRowsPanel() {
-        JPanel optionsPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.gridy += 1;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        optionsPanel.add(m_skipFirstRowsChecker, gbc);
-        gbc.gridx += 1;
-        gbc.weightx = 1;
-        optionsPanel.add(m_skipFirstRowsSpinner, gbc);
-
-        gbc.gridy += 1;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        optionsPanel.add(m_limitRowsChecker, gbc);
-        gbc.gridx += 1;
-        gbc.weightx = 1;
-        optionsPanel.add(m_limitRowsSpinner, gbc);
-        gbc.weighty = 1;
-        gbc.gridx = 0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridy += 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        optionsPanel.add(createPreview(), gbc);
-
-        return optionsPanel;
+        final JPanel limitPanel = new JPanel(new GridBagLayout());
+        GBCBuilder gbc = createGBCBuilder().fillNone();
+        limitPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Limit rows"));
+        limitPanel.add(m_skipFirstRowsChecker, gbc.build());
+        gbc.incX().setWeightX(1);
+        limitPanel.add(m_skipFirstRowsSpinner, gbc.build());
+        gbc.incY();
+        gbc.setX(0).setWeightX(0);
+        limitPanel.add(m_limitRowsChecker, gbc.build());
+        gbc.incX().setWeightX(1);
+        limitPanel.add(m_limitRowsSpinner, gbc.build());
+        gbc.setWeightY(1).resetX().widthRemainder().incY().insetBottom(0).fillBoth();
+        limitPanel.add(createPreview(), gbc.build());
+        return limitPanel;
     }
 
     /**

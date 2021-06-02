@@ -138,6 +138,8 @@ enum JSONReaderMultiTableReadConfigSerializer
         final NodeSettingsWO limitRowsSettings) {
         limitRowsSettings.addBoolean(CFG_SKIP_DATA_ROWS, config.getTableReadConfig().skipRows());
         limitRowsSettings.addLong(CFG_NUMBER_OF_ROWS_TO_SKIP, config.getTableReadConfig().getNumRowsToSkip());
+        limitRowsSettings.addBoolean(CFG_LIMIT_DATA_ROWS, config.getTableReadConfig().limitRows());
+        limitRowsSettings.addLong(CFG_MAX_ROWS, config.getTableReadConfig().getMaxRows());
     }
 
     @Override
