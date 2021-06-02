@@ -51,7 +51,6 @@ package org.knime.json.node.filehandling.reader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.knime.core.data.DataValue;
@@ -66,9 +65,7 @@ import org.knime.filehandling.core.util.CompressionAwareCountingInputStream;
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-abstract class JSONRead implements Read<Path, DataValue> {
-
-    protected final Path m_path;
+abstract class JSONRead implements Read<DataValue> {
 
     protected final CompressionAwareCountingInputStream m_compressionAwareStream;
 
@@ -104,8 +101,7 @@ abstract class JSONRead implements Read<Path, DataValue> {
         m_config = config;
         m_jsonReaderConfig = m_config.getReaderSpecificConfig();
 
-        m_path = path;
-        m_size = Files.size(m_path);
+        m_size = Files.size(path);
 
         m_limitRows = m_config.limitRows();
         m_maxRows = m_config.getMaxRows();
@@ -121,11 +117,6 @@ abstract class JSONRead implements Read<Path, DataValue> {
     @Override
     public long getProgress() {
         return m_compressionAwareStream.getCount();
-    }
-
-    @Override
-    public Optional<Path> getItem() {
-        return Optional.of(m_path);
     }
 
 }

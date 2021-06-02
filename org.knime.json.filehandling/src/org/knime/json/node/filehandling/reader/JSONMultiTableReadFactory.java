@@ -49,7 +49,6 @@
 package org.knime.json.node.filehandling.reader;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
@@ -57,6 +56,7 @@ import org.knime.core.data.DataType;
 import org.knime.core.data.filestore.FileStoreFactory;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.streamable.RowOutput;
+import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.node.table.reader.MultiTableReadFactory;
 import org.knime.filehandling.core.node.table.reader.PreviewIteratorException;
 import org.knime.filehandling.core.node.table.reader.PreviewRowIterator;
@@ -74,57 +74,57 @@ import org.knime.filehandling.core.node.table.reader.util.StagedMultiTableRead;
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-final class JSONMultiTableReadFactory implements MultiTableReadFactory<Path, JSONReaderConfig, DataType> {
+final class JSONMultiTableReadFactory implements MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> {
 
-    private final MultiTableReadFactory<Path, JSONReaderConfig, DataType> m_multiTableReadFactory;
+    private final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> m_multiTableReadFactory;
 
     private static IllegalArgumentException createNoRowsException() {
         return new IllegalArgumentException("Nothing found for JSON Path ");
     }
 
     @Override
-    public StagedMultiTableRead<Path, DataType> create(final SourceGroup<Path> sourceGroup,
+    public StagedMultiTableRead<FSPath, DataType> create(final SourceGroup<FSPath> sourceGroup,
         final MultiTableReadConfig<JSONReaderConfig, DataType> config, final ExecutionMonitor exec) throws IOException {
-        final StagedMultiTableRead<Path, DataType> stagedultiTableReadFactory =
+        final StagedMultiTableRead<FSPath, DataType> stagedultiTableReadFactory =
             m_multiTableReadFactory.create(sourceGroup, config, exec);
         return new JSONStagedMultiTableRead(stagedultiTableReadFactory,
             config.getTableReadConfig().getReaderSpecificConfig());
     }
 
     JSONMultiTableReadFactory(
-        final MultiTableReadFactory<Path, JSONReaderConfig, DataType> multiTableReadFactory) {
+        final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiTableReadFactory) {
         m_multiTableReadFactory = multiTableReadFactory;
     }
 
     @Override
-    public StagedMultiTableRead<Path, DataType> createFromConfig(final SourceGroup<Path> sourceGroup,
+    public StagedMultiTableRead<FSPath, DataType> createFromConfig(final SourceGroup<FSPath> sourceGroup,
         final MultiTableReadConfig<JSONReaderConfig, DataType> config) {
-        final StagedMultiTableRead<Path, DataType> stagedultiTableReadFactory =
+        final StagedMultiTableRead<FSPath, DataType> stagedultiTableReadFactory =
             m_multiTableReadFactory.createFromConfig(sourceGroup, config);
         return new JSONStagedMultiTableRead(stagedultiTableReadFactory,
             config.getTableReadConfig().getReaderSpecificConfig());
     }
 
-    private static final class JSONStagedMultiTableRead implements StagedMultiTableRead<Path, DataType> {
+    private static final class JSONStagedMultiTableRead implements StagedMultiTableRead<FSPath, DataType> {
 
-        private final StagedMultiTableRead<Path, DataType> m_stagedMutltiTableRead;
+        private final StagedMultiTableRead<FSPath, DataType> m_stagedMutltiTableRead;
 
         private final JSONReaderConfig m_config;
 
-        JSONStagedMultiTableRead(final StagedMultiTableRead<Path, DataType> stagedMutltiTableRead,
+        JSONStagedMultiTableRead(final StagedMultiTableRead<FSPath, DataType> stagedMutltiTableRead,
             final JSONReaderConfig config) {
             m_stagedMutltiTableRead = stagedMutltiTableRead;
             m_config = config;
         }
 
         @Override
-        public MultiTableRead<DataType> withoutTransformation(final SourceGroup<Path> sourceGroup) {
+        public MultiTableRead<DataType> withoutTransformation(final SourceGroup<FSPath> sourceGroup) {
             final MultiTableRead<DataType> multiTableRead = m_stagedMutltiTableRead.withoutTransformation(sourceGroup);
             return new JSONMultiTableRead(multiTableRead, m_config);
         }
 
         @Override
-        public MultiTableRead<DataType> withTransformation(final SourceGroup<Path> sourceGroup,
+        public MultiTableRead<DataType> withTransformation(final SourceGroup<FSPath> sourceGroup,
             final TableTransformation<DataType> selectorModel) {
             final MultiTableRead<DataType> multiTableRead =
                 m_stagedMutltiTableRead.withTransformation(sourceGroup, selectorModel);
@@ -137,7 +137,7 @@ final class JSONMultiTableReadFactory implements MultiTableReadFactory<Path, JSO
         }
 
         @Override
-        public boolean isValidFor(final SourceGroup<Path> sourceGroup) {
+        public boolean isValidFor(final SourceGroup<FSPath> sourceGroup) {
             return m_stagedMutltiTableRead.isValidFor(sourceGroup);
         }
 

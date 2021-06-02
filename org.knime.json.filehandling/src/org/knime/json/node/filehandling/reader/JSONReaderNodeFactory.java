@@ -48,12 +48,11 @@
  */
 package org.knime.json.node.filehandling.reader;
 
-import java.nio.file.Path;
-
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.node.context.NodeCreationConfiguration;
+import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.defaultnodesettings.EnumConfig;
 import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.SettingsModelReaderFileChooser;
 import org.knime.filehandling.core.defaultnodesettings.filtermode.SettingsModelFilterMode.FilterMode;
@@ -84,9 +83,9 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
     }
 
     @Override
-    protected MultiTableReadFactory<Path, JSONReaderConfig, DataType>
-        createMultiTableReadFactory(final GenericTableReader<Path, JSONReaderConfig, DataType, DataValue> reader) {
-        final MultiTableReadFactory<Path, JSONReaderConfig, DataType> multiTableReadFactory = super.createMultiTableReadFactory(reader);
+    protected MultiTableReadFactory<FSPath, JSONReaderConfig, DataType>
+        createMultiTableReadFactory(final GenericTableReader<FSPath, JSONReaderConfig, DataType, DataValue> reader) {
+        final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiTableReadFactory = super.createMultiTableReadFactory(reader);
         return new JSONMultiTableReadFactory(multiTableReadFactory);
     }
 
@@ -98,7 +97,7 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
     @Override
     protected AbstractPathTableReaderNodeDialog<JSONReaderConfig, DataType> createNodeDialogPane(
         final NodeCreationConfiguration creationConfig,
-        final MultiTableReadFactory<Path, JSONReaderConfig, DataType> readFactory,
+        final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> readFactory,
         final ProductionPathProvider<DataType> defaultProductionPathFn) {
 
         return new JSONReaderNodeDialog(createPathSettings(creationConfig), createConfig(creationConfig), readFactory,

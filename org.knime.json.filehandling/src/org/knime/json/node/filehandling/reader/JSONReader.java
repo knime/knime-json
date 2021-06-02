@@ -49,13 +49,13 @@
 package org.knime.json.node.filehandling.reader;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collections;
 
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.node.ExecutionMonitor;
+import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.node.table.reader.TableReader;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
 import org.knime.filehandling.core.node.table.reader.read.Read;
@@ -71,7 +71,7 @@ final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataVa
 
     @SuppressWarnings("resource") // closing the read is the responsibility of the caller
     @Override
-    public Read<Path, DataValue> read(final Path path, final TableReadConfig<JSONReaderConfig> config)
+    public Read<DataValue> read(final FSPath path, final TableReadConfig<JSONReaderConfig> config)
         throws IOException {
         final JSONReaderConfig jsonReaderConfig = config.getReaderSpecificConfig();
         if (jsonReaderConfig.useJSONPath()) {
@@ -82,7 +82,7 @@ final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataVa
     }
 
     @Override
-    public TypedReaderTableSpec<DataType> readSpec(final Path path, final TableReadConfig<JSONReaderConfig> config,
+    public TypedReaderTableSpec<DataType> readSpec(final FSPath path, final TableReadConfig<JSONReaderConfig> config,
         final ExecutionMonitor exec) throws IOException {
         final String colName = config.getReaderSpecificConfig().getColumnName();
         return TypedReaderTableSpec.create(Collections.singleton(colName), Collections.singleton(JSONCell.TYPE),
@@ -99,9 +99,9 @@ final class JSONReader implements TableReader<JSONReaderConfig, DataType, DataVa
      * @throws IOException if a stream can not be created from the provided file.
      */
     @SuppressWarnings("resource") // closing the read is the responsibility of the caller
-    private static Read<Path, DataValue> decorateForReading(final JSONRead read,
+    private static Read<DataValue> decorateForReading(final JSONRead read,
         final TableReadConfig<JSONReaderConfig> config) {
-        Read<Path, DataValue> filtered = read;
+        Read<DataValue> filtered = read;
         final boolean skipRows = config.skipRows();
         if (skipRows) {
             final long numRowsToSkip = config.getNumRowsToSkip();

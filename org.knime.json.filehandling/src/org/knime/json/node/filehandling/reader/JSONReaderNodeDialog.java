@@ -53,7 +53,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -76,6 +75,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.data.location.variable.FSLocationSpecVariableType;
 import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.DialogComponentReaderFileChooser;
 import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.ReadPathAccessor;
@@ -134,7 +134,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
      */
     protected JSONReaderNodeDialog(final SettingsModelReaderFileChooser fileChooser,
         final JSONMultiTableReadConfig config,
-        final MultiTableReadFactory<Path, JSONReaderConfig, DataType> multiReader,
+        final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiReader,
         final ProductionPathProvider<DataType> productionPathProvider) {
         super(multiReader, productionPathProvider, true);
 
