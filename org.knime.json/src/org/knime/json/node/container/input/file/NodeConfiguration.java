@@ -181,7 +181,7 @@ final class NodeConfiguration {
     /**
      * @param outputVariableName the name to be set. It must not be blank, i.e. contain of only white space
      */
-    void setOutputVarianleName(final String outputVariableName) {
+    void setOutputVariableName(final String outputVariableName) {
         if (Objects.requireNonNull(outputVariableName).isBlank()) {
             throw new IllegalArgumentException("The output variable name is empty");
         }
@@ -208,7 +208,7 @@ final class NodeConfiguration {
     void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         settings.getBoolean(CFG_USE_DEFAULT_FILE_KEY);
         if (settings.getString(CFG_OUT_VAR_NAME_KEY).isBlank()) {
-            throw new InvalidSettingsException("Please make sure the output variale name is not blank");
+            throw new InvalidSettingsException("Please make sure the output variable name is not blank");
         }
         m_fileChooserSettingsModel.validateSettings(settings);
     }

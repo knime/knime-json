@@ -209,7 +209,7 @@ final class ContainerFileInputNodeDialog extends NodeDialogPane {
 
         try {
             m_config.setUseDefaultFile(m_useDefaultFileBox.isSelected());
-            m_config.setOutputVarianleName(m_outVarNameField.getText().strip());
+            m_config.setOutputVariableName(m_outVarNameField.getText().strip());
         } catch (final IllegalArgumentException e) {
             throw new InvalidSettingsException("Please correct the following error: " + e.getMessage(), e);
         }

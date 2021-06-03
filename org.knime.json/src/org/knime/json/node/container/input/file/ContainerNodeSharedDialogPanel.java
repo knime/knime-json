@@ -90,10 +90,10 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
     /**
      * New pane for configuring the Container node.
      *
-     * @param defaultParamameter the default value that should be used for the parameter name
+     * @param defaultParameter the default value that should be used for the parameter name
      */
-    public ContainerNodeSharedDialogPanel(final String defaultParamameter) {
-        m_config = new ContainerNodeSharedConfiguration(defaultParamameter);
+    public ContainerNodeSharedDialogPanel(final String defaultParameter) {
+        m_config = new ContainerNodeSharedConfiguration(defaultParameter);
 
         m_parameterNameField = new JTextField();
         // NOTE: revert to new behavior when refactoring other nodes
@@ -208,6 +208,7 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
 
     /**
      * Loads from settings to this dialog's fields and the underlying {@link ContainerNodeSharedConfiguration}.
+     * If the settings are invalid, the default settings are loaded instead.
      *
      * @param settings the settings to load from to.
      */

@@ -74,7 +74,10 @@ public final class ContainerNodeSharedConfiguration
 
     private static final String CFG_PARAMETER_KEY = "parameterName";
 
-    static final Predicate<String> CFG_PARAMETER_VERIFIER =
+    /**
+     * A predicate that checks for a correct parameter name according to {@link DialogNode#PARAMETER_NAME_PATTERN}.
+     */
+    public static final Predicate<String> CFG_PARAMETER_VERIFIER =
         ((Predicate<String>)Objects::nonNull).and(DialogNode.PARAMETER_NAME_PATTERN.asMatchPredicate());
 
     private static final String CFG_DESCRIPTION_KEY = "description";
@@ -85,10 +88,17 @@ public final class ContainerNodeSharedConfiguration
 
     private static final String CFG_INPUT_PATH_URL_KEY = "inputPathOrUrl";
 
-    static final String MSG_PARAMETER_FORMAT_DESC = "Must start with a letter, followed by other lettes, "
+    /**
+     * A String which describes the format of a parameter name in words.
+     */
+    public static final String MSG_PARAMETER_FORMAT_DESC = "Must start with a letter, followed by other letters, "
         + "digits or single dashes or underscores. Must end with a letter.";
 
-    static final String MSG_PARAMETER_FORMAT_REGEX_DESC =
+    /**
+     * A String that can be used as additional information as it contains the regular expression used
+     * to validate parameter names in parenthesis and with a few context words.
+     */
+    public static final String MSG_PARAMETER_FORMAT_REGEX_DESC =
         " (Regular expression: “" + DialogNode.PARAMETER_NAME_PATTERN.pattern() + "”)";
 
     private final String m_paramterDefault;
