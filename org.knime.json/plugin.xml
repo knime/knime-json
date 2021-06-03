@@ -45,6 +45,8 @@
       </node>
    	  <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory">
    	  </node>
+      <node after="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.output.file.ContainerFileOutputNodeFactory">
+      </node>
 </extension>
    <extension point="org.knime.core.DataValueRenderer">
       <dataValue valueClass="org.knime.core.data.json.JSONValue">

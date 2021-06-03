@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./service-out.png" type="Container" xmlns="http://knime.org/node/v4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v4.1 http://knime.org/node/v4.1.xsd">
+	<name>Container Output (File)</name>
+
+	<shortDescription>
+		Makes a file in the workflow accessible to an external caller.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+            This node makes a file accessible to an external caller (for example the
+			<i>REST interface</i>) by providing the path to the file as a resource. The file has
+			to exist and be located in the current workflow's data area.
+			<br/>
+            <p>
+                <i>
+                    This uses node a
+                </i>
+                <a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html#path">
+                    <i>
+                        path flow variables
+                    </i>
+                </a>
+				<i> to select which file to expose. To convert the
+			string variables created by some nodes that have not been migrated yet to paths you can use the </i>
+		<a href="https://kni.me/n/ZQhbBU6AJWXWZgxn"><i>String to Path (Variable)</i></a><i> node.</i>
+            <i> For further information about file handling in general see the
+            </i><a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html"><i>File Handling Guide.</i></a><br/></p>
+		</intro>
+
+        <option name="Parameter name">
+			A name for the variable output parameter (preferably unique). This name is exposed in the REST interface
+			and will have the resource attached to it.
+			It must start with a letter, followed by letters and digits and single minus signs or dashes and must end
+				with a letter.<br/>
+			(The accepted pattern is described by the following regular expression:
+			<i>^[a-zA-Z](?:[-_]?[a-zA-Z0-9]+)*(?&lt;![0-9])$</i>)
+        </option>
+
+        <option name="Append unique ID to parameter name">
+			If checked, the name set above will be amended by the node's ID to guarantee unique parameter names.
+			Usually it's a good idea to have this box <i>not</i> checked and instead make sure to use meaningful
+			and unique names in all container nodes present in a workflow.
+        </option>
+
+        <option name="Description">
+			A description for the resource output parameter. The description is shown in the API specification
+			of the REST interface.
+        </option>
+
+        <option name="File Path Variable">
+			Defines the variable that contains the path to the resource to be exposed. This has to be a
+			<a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html#path">
+				<i>
+					path flow variable.
+				</i>
+			</a>
+			The path must point to a file that exists, must be regular (e.g. <i>not</i> a folder) and must be contained
+			in the current workflow's data area.
+        </option>
+	<link href="https://www.knime.com/knime-introductory-course/chapter7/section1/creation-and-usage-of-flow-variables">
+			KNIME E-Learning Course: Creation and usage of Flow Variables in a KNIME workflow
+	</link>
+	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Resource location">
+			The local location of the resource as a
+                <a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html#path">
+                    <i>path flow variable.</i></a>
+		</inPort>
+	</ports>
+</knimeNode>
