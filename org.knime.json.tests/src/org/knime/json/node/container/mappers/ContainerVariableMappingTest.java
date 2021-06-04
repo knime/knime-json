@@ -59,7 +59,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.json.node.container.input.variable.ContainerVariableDefaultJsonStructure;
-import org.knime.json.node.container.input.variable2.ContainerOutputVariable2MappingTest;
+import org.knime.json.node.container.input.variable2.ContainerInputVariable2MappingTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -67,7 +67,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Test suite for the serialization/deserialization of a {@link ContainerVariableJsonSchema} via Jackson.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
- * @deprecated superseded by {@link ContainerOutputVariable2MappingTest}
+ * @deprecated superseded by {@link ContainerInputVariable2MappingTest}
  */
 @Deprecated(since = "4.4")
 public class ContainerVariableMappingTest {

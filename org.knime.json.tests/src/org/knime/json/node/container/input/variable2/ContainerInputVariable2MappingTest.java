@@ -84,7 +84,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
  * @since 4.4
  */
-public class ContainerOutputVariable2MappingTest {
+public class ContainerInputVariable2MappingTest {
 
     private static final JsonBuilderFactory FACTORY = Json.createBuilderFactory(null);
 
