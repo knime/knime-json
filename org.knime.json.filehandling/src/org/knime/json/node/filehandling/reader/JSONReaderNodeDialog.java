@@ -84,6 +84,7 @@ import org.knime.filehandling.core.node.table.reader.MultiTableReadFactory;
 import org.knime.filehandling.core.node.table.reader.ProductionPathProvider;
 import org.knime.filehandling.core.node.table.reader.config.DefaultTableReadConfig;
 import org.knime.filehandling.core.node.table.reader.config.TableReadConfig;
+import org.knime.filehandling.core.node.table.reader.dialog.SourceIdentifierColumnPanel;
 import org.knime.filehandling.core.node.table.reader.preview.dialog.AbstractPathTableReaderNodeDialog;
 import org.knime.filehandling.core.util.GBCBuilder;
 import org.knime.filehandling.core.util.SettingsUtils;
@@ -125,13 +126,8 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
     private final JSpinner m_skipFirstRowsSpinner;
 
-    /**
-     *
-     * @param fileChooser
-     * @param config
-     * @param multiReader
-     * @param productionPathProvider
-     */
+    private final SourceIdentifierColumnPanel m_pathColumnPanel = new SourceIdentifierColumnPanel("Path");
+
     protected JSONReaderNodeDialog(final SettingsModelReaderFileChooser fileChooser,
         final JSONMultiTableReadConfig config,
         final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiReader,
@@ -214,6 +210,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
         m_skipFirstRowsSpinner.getModel().addChangeListener(changeListener);
         m_limitRowsSpinner.getModel().addChangeListener(changeListener);
+        m_pathColumnPanel.addChangeListener(changeListener);
     }
 
     /**
@@ -242,9 +239,8 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         final JPanel panel = new JPanel(new GridBagLayout());
         GBCBuilder gbc = createGBCBuilder().fillHorizontal().setWeightX(1).anchorPageStart();
         panel.add(createSourcePanel(), gbc.build());
-        gbc.incY();
-        panel.add(m_jsonModeCardLayout, gbc.build());
-        gbc.incY();
+        panel.add(m_jsonModeCardLayout, gbc.incY().build());
+        panel.add(m_pathColumnPanel, gbc.incY().build());
         gbc.setWeightY(1).resetX().widthRemainder().incY().fillBoth();
         panel.add(createPreview(), gbc.build());
         return panel;
@@ -391,6 +387,8 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_limitRowsChecker.setSelected(tableReadConfig.limitRows());
         m_limitRowsSpinner.setValue(tableReadConfig.getMaxRows());
 
+        m_pathColumnPanel.load(m_config.prependItemIdentifierColumn(), m_config.getItemIdentifierColumnName());
+
         controlSpinner(m_skipFirstRowsChecker, m_skipFirstRowsSpinner);
         controlSpinner(m_limitRowsChecker, m_limitRowsSpinner);
 
@@ -419,7 +417,8 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     protected JSONMultiTableReadConfig getConfig() throws InvalidSettingsException {
         saveTableReadSettings(m_config.getTableReadConfig());
         saveJsonReaderSettings(m_config.getTableReadConfig().getReaderSpecificConfig());
-
+        m_config.setPrependItemIdentifierColumn(m_pathColumnPanel.isPrependSourceIdentifierColumn());
+        m_config.setItemIdentifierColumnName(m_pathColumnPanel.getSourceIdentifierColumnName());
         return m_config;
     }
 
@@ -438,16 +437,12 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
 
         config.setLimitRows(m_limitRowsChecker.isSelected());
         config.setMaxRows((Long)m_limitRowsSpinner.getValue());
-
     }
 
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_sourceFilePanel.saveSettingsTo(SettingsUtils.getOrAdd(settings, SettingsUtils.CFG_SETTINGS_TAB));
-        saveTableReadSettings(m_config.getTableReadConfig());
-        saveJsonReaderSettings(m_config.getTableReadConfig().getReaderSpecificConfig());
-
-        m_config.saveInDialog(settings);
+        getConfig().saveInDialog(settings);
     }
 
     @Override
