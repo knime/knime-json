@@ -183,8 +183,7 @@ public final class ContainerNodeSharedDialogPanel extends JPanel {
     }
 
     /**
-     * @return the text field for parameter name input. This should be used
-     *      to register listeners only.
+     * @return the text field for parameter name input. This should be used to register listeners only.
      */
     public JTextField getParameterTextField() {
         return m_parameterNameField;

@@ -68,7 +68,9 @@
             </p>
         </option>
         <option name="Set input variables as template">
-            Loads the variables at the variable inports as the new template variables.
+            Loads variables (that are not global constants) at the variable inports as the new template variables.
+            Only supported types will be loaded. These are the same types as the ones listed in the <i>Type</i> section, i.e.
+            <i>String,</i> <i>Integer,</i> <i>Double</i> and <i>Boolean</i>.
             There are two modes for loading the variables into the template:
             <ul>
                 <li>

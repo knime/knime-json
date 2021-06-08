@@ -60,8 +60,6 @@ import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.knime.base.node.io.variablecreator.DialogComponentVariables;
 import org.knime.base.node.io.variablecreator.SettingsModelVariables;
@@ -119,20 +117,6 @@ public class ContainerInputVariable2MappingTest {
             new FlowVariable(KEY_BOOLEAN, VariableType.BooleanType.INSTANCE, VAL_BOOLEAN));
         VALUES = Map.of(KEY_STRING, VAL_STRING, KEY_INT, VAL_INT, KEY_DOUBLE, VAL_DOUBLE, KEY_BOOLEAN, VAL_BOOLEAN);
 
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
     }
 
     /**

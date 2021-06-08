@@ -370,7 +370,7 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
                 Files.copy(currentLocation, targetLocation);
             }
             return new FSLocation(tempDir.getFileSystemCategory(), tempDir.getFileSystemSpecifier().orElse(null),
-                Paths.get(tempDir.getPath(), currentLocation.getFileName().toString()).toString());
+                Paths.get(tempDir.getPath(), currentLocation.getFileName().toString()).toString()); // NOSONAR: is provided by server and API and should be safe
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not copy or move file:" + e.getMessage(), e);
         }
@@ -402,7 +402,7 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
             final var dirPath = provider.getPath();
             final var tempDirPath = FSFiles.createRandomizedDirectory(dirPath, TEMP_FILE_PREFIX, "");
             return new FSLocation(entrypoint.getFileSystemCategory(), reativeType,
-                Paths.get(entrypoint.getPath(), tempDirPath.getFileName().toString()).toString());
+                Paths.get(entrypoint.getPath(), tempDirPath.getFileName().toString()).toString()); // NOSONAR: filename is generated using code
 
         } catch (IOException e) {
             throw new InvalidSettingsException("Could not create temp file: " + e.getMessage(), e);

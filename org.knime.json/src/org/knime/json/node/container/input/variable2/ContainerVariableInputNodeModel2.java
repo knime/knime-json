@@ -49,7 +49,6 @@
 package org.knime.json.node.container.input.variable2;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -63,7 +62,6 @@ import javax.json.JsonValue;
 
 import org.knime.base.node.io.variablecreator.SettingsModelVariables;
 import org.knime.base.node.io.variablecreator.SettingsModelVariables.Type;
-import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
@@ -137,7 +135,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
         final var specificationAndDefaults = getSpecificationAndDefaults();
-        if (specificationAndDefaults.map(Map::isEmpty).orElse(false)) {
+        if (specificationAndDefaults.map(Map::isEmpty).orElse(Boolean.FALSE)) {
             setWarningMessage("Specification is empty; no variables can be received");
         }
         if (m_externalValue.isPresent()) {
@@ -157,7 +155,8 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
     private void pushVariablesToStack(final String json, final boolean dryrun,
         final Optional<Map<String, FlowVariable>> specificationDefaults) throws InvalidSettingsException { // NOSONAR: avoid unnecessary unpacking and re-packing
         String simpleVariableName = null;
-        if (specificationDefaults.map(m -> m.size() == 1).orElse(false) && m_configuration.hasSimpleJsonSpec()) {
+        if (specificationDefaults.map(m -> m.size() == 1).orElse(Boolean.FALSE)
+            && m_configuration.hasSimpleJsonSpec()) {
             simpleVariableName = m_configShared.getParameter();
         }
         final var variableInput = ContainerVariableMapper2.toContainerVariableJsonSchema(json, simpleVariableName);
@@ -170,7 +169,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
                 diff.getFirst(), diff.getSecond());
         }
 
-        var failed = new StringBuilder("");
+        var failed = new StringBuilder();
         final var entries = new ArrayList<>(variableInput.getVariables().entrySet());
         Collections.reverse(entries); // ensure right order in output
         for (final var variable : entries) {
@@ -192,7 +191,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
             } catch (InvalidSettingsException e) {
                 final var msg = name + ": " + e.getMessage();
                 getLogger().error(msg, e);
-                failed.append(msg + "; ");
+                failed.append(msg).append("; ");
             }
         }
 
@@ -337,7 +336,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
         JsonValue value;
         try {
             value = ContainerVariableMapper2.toContainerVariableJsonValue(
-                getSpecificationAndDefaults().orElse(Collections.emptyMap()), m_configuration.hasSimpleJsonSpec());
+                getSpecificationAndDefaults().orElseGet(Collections::emptyMap), m_configuration.hasSimpleJsonSpec());
         } catch (InvalidSettingsException e) { // this should not happen
             getLogger().coding("Could not build default values!", e);
             value = null;
@@ -364,7 +363,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
      * {@inheritDoc}
      */
     @Override
-    public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
+    public void setInputData(final ExternalNodeData inputData) {
         m_externalValue = Optional.of(inputData.getJSONValue());
     }
 
@@ -377,8 +376,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
      * {@inheritDoc}
      */
     @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec) {
         //No internal state.
     }
 
@@ -386,8 +384,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
      * {@inheritDoc}
      */
     @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
-        throws IOException, CanceledExecutionException {
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec) {
         //No internal state.
     }
 
