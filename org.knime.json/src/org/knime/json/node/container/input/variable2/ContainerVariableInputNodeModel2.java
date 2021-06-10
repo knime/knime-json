@@ -125,7 +125,6 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
         } else if (m_configuration.isRequireMatchSpecification() && m_externalValue.isEmpty()) {
             setWarningMessage("Default variables are output");
         }
-        m_externalValue = Optional.empty(); // reset here so that value is not available anymore after reset
         return new PortObject[]{FlowVariablePortObject.INSTANCE};
     }
 
@@ -313,6 +312,8 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        // we do not want to return an outdated and probably wrong format if the configuration is edited
+        m_externalValue = Optional.empty();
         m_configShared.loadValidatedSettingsFrom(settings);
         m_configuration.loadInModel(settings);
         m_variableSelection.loadSettingsFrom(settings);
@@ -334,12 +335,17 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
     @Override
     public ExternalNodeData getInputData() {
         JsonValue value;
-        try {
-            value = ContainerVariableMapper2.toContainerVariableJsonValue(
-                getSpecificationAndDefaults().orElseGet(Collections::emptyMap), m_configuration.hasSimpleJsonSpec());
-        } catch (InvalidSettingsException e) { // this should not happen
-            getLogger().coding("Could not build default values!", e);
-            value = null;
+        if (m_externalValue.isPresent()) {
+            value = m_externalValue.get();
+        } else {
+            try {
+                value = ContainerVariableMapper2.toContainerVariableJsonValue(
+                    getSpecificationAndDefaults().orElseGet(Collections::emptyMap),
+                    m_configuration.hasSimpleJsonSpec());
+            } catch (InvalidSettingsException e) { // this should not happen
+                getLogger().coding("Could not build default values!", e);
+                value = null;
+            }
         }
         return ExternalNodeData.builder(m_configShared.getParameter()).description(m_configShared.getDescription())
             .jsonValue(value).build();
@@ -352,7 +358,7 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
     public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
         try {
             CheckUtils.checkSetting(inputData.getJSONValue() != null, "Expected a JSON value.");
-            pushVariablesToStack(inputData.getJSONValue().toString(), false, getSpecificationAndDefaults());
+            pushVariablesToStack(inputData.getJSONValue().toString(), true, getSpecificationAndDefaults());
         } catch (InvalidSettingsException e) {
             // re-throw with parameter name as context
             throw new InvalidSettingsException(m_configShared.getParameter() + ": " + e.getMessage(), e);
