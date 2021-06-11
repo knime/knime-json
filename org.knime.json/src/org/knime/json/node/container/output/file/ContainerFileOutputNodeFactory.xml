@@ -55,8 +55,8 @@
 					path flow variable.
 				</i>
 			</a>
-			The path must point to a file that exists, must be regular (e.g. <i>not</i> a folder) and must be contained
-			in the current workflow's data area.
+			The path must be relative to the <i>workflow data area</i> and must point to an existing and regular file
+			(e.g. <i>not</i> a folder).
         </option>
 	<link href="https://www.knime.com/knime-introductory-course/chapter7/section1/creation-and-usage-of-flow-variables">
 			KNIME E-Learning Course: Creation and usage of Flow Variables in a KNIME workflow

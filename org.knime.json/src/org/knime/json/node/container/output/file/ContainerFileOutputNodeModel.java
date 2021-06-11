@@ -53,7 +53,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -76,16 +75,16 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
 import org.knime.core.util.FileUtil;
+import org.knime.filehandling.core.connections.FSCategory;
 import org.knime.filehandling.core.connections.FSConnection;
 import org.knime.filehandling.core.connections.FSLocation;
 import org.knime.filehandling.core.connections.FSPath;
+import org.knime.filehandling.core.connections.RelativeTo;
 import org.knime.filehandling.core.connections.location.FSPathProvider;
 import org.knime.filehandling.core.connections.location.FSPathProviderFactory;
-import org.knime.filehandling.core.connections.uriexport.URIExporter;
 import org.knime.filehandling.core.connections.uriexport.URIExporterIDs;
 import org.knime.filehandling.core.connections.uriexport.noconfig.NoConfigURIExporterFactory;
 import org.knime.filehandling.core.data.location.variable.FSLocationVariableType;
-import org.knime.filehandling.core.defaultnodesettings.ValidationUtils;
 import org.knime.json.node.container.input.file.ContainerNodeSharedConfiguration;
 
 /**
@@ -137,10 +136,9 @@ final class ContainerFileOutputNodeModel extends NodeModel implements OutputNode
     private URI getPathFromVariable() throws InvalidSettingsException {
         final var varName = m_config.getFlowVariableName();
         if (varName.isEmpty() || varName.get().isEmpty()) {
-            throw new InvalidSettingsException("Invalid (empty) variable name");
+            throw new InvalidSettingsException("Invalid (empty) path variable name");
         }
 
-        String value;
         final Map<String, FlowVariable> flowVariables = getAvailableFlowVariables(SUPPORTED_VAR_TYPES);
         final var flowVariable = varName.map(flowVariables::get);
 
@@ -148,76 +146,60 @@ final class ContainerFileOutputNodeModel extends NodeModel implements OutputNode
             throw new InvalidSettingsException("No variable with selected name \"" + varName.get() + "\" found.");
         }
 
-        value = checkVariable(flowVariable.get());
-
-        Path filePath = null;
-        Path workflowPath = null;
-        try {
-            workflowPath = FileUtil.resolveToPath(FileUtil.toURL("knime://knime.workflow/data/"));
-        } catch (IOException | URISyntaxException | InvalidPathException e) {
-            throw new IllegalStateException("Workflow data area path does not denote a valid file.", e);
-        }
-        try {
-            filePath = FileUtil.resolveToPath(FileUtil.toURL(value));
-        } catch (IOException | URISyntaxException | InvalidPathException e) {
-            throw new InvalidSettingsException(
-                "Variable \"" + varName.get() + "\" does not denote a valid file: " + value, e);
-        }
-
-        CheckUtils.checkState(workflowPath != null && Files.exists(workflowPath),
-            "Workflow path does not denote an existing file: %s", workflowPath);
-        CheckUtils.checkSetting(filePath != null,
-            "Variable \"%s\" does not denote an existing file or is pointing outside of the workflow data area: %s",
-            varName.get(), value);
-
-        try {
-            // try to give a possible attacker not too much information about the file system
-            CheckUtils.checkSetting(
-                Files.exists(filePath) && filePath.toRealPath().startsWith(workflowPath.toRealPath()), // NOSONAR: non-null state is checked above
-                "Variable \"%s\" does not denote an existing file or is pointing outside of the workflow data area: %s",
-                varName.get(), value);
-        } catch (IOException | InvalidPathException e) {
-            throw new InvalidSettingsException(
-                "Could not resolve workflow data area or file path (\"" + value + "\") to real file.", e);
-        }
-
-        CheckUtils.checkSetting(Files.isRegularFile(filePath), "Variable \"%s\" does not denote a regular file: %s",
-            varName.get(), value);
-
-        return filePath.toUri(); // NOSONAR: non-null state is checked above by CheckUtils
+        final var fsLocation = flowVariable.get().getValue(FSLocationVariableType.INSTANCE);
+        return checkFSLocationAndGetUri(fsLocation, varName.get());
     }
 
-    private static String checkVariable(final FlowVariable variable) throws InvalidSettingsException {
-        final var fsLocation = variable.getValue(FSLocationVariableType.INSTANCE);
-        switch (fsLocation.getFSCategory()) {
-            case RELATIVE:
-                return getRelativePath(fsLocation);
-            case LOCAL:
-                ValidationUtils.validateLocalFsAccess();
-                return fsLocation.getPath();
-            case CUSTOM_URL:
-                ValidationUtils.validateCustomURLLocation(fsLocation);
-                return fsLocation.getPath();
-            default:
-                // MOUNTPOINT, CONNECTION
-                throw new InvalidSettingsException("File system category is not yet supported");
-        }
-    }
-
-    private static String getRelativePath(final FSLocation fsLocation) {
+    private static URI checkFSLocationAndGetUri(final FSLocation fsLocation, final String varName)
+        throws InvalidSettingsException {
         try (final FSPathProviderFactory factory = FSPathProviderFactory.newFactory(Optional.empty(), fsLocation);
                 final FSPathProvider pathProvider = factory.create(fsLocation);
-                final FSConnection fsConnection = pathProvider.getFSConnection();) {
+                final FSConnection pathConnection = pathProvider.getFSConnection()) {
 
-            final URIExporter exporter =
-                ((NoConfigURIExporterFactory)fsConnection.getURIExporterFactory(URIExporterIDs.LEGACY_KNIME_URL))
-                    .getExporter();
-            final FSPath path = pathProvider.getPath();
-            return exporter.toUri(path).toString();
+            Path filePath = pathProvider.getPath().normalize();
+
+            checkIsWorkflowDataAreaRelativeLocation(fsLocation, varName);
+            checkIsWithinWorkflowDataArea(filePath, fsLocation, varName);
+
+            CheckUtils.checkSetting(Files.exists(filePath.toAbsolutePath()),
+                "Path variable \"%s\" does not denote an existing file: %s", varName, fsLocation);
+
+            CheckUtils.checkSetting(Files.isRegularFile(filePath),
+                "Path variable \"%s\" does not denote a regular file: %s", varName, filePath);
+
+            return resolveToURI(pathProvider.getPath(), pathConnection);
         } catch (IOException | URISyntaxException e) {
-            throw new IllegalArgumentException(String.format("The path '%s' could not be converted to a KNIME URL: %s",
+            throw new InvalidSettingsException(String.format("The location '%s' could not be converted to an URI: %s",
                 fsLocation.getPath(), e.getMessage()), e);
         }
+
+    }
+
+    private static URI resolveToURI(final FSPath filePath, final FSConnection connection)
+        throws IOException, URISyntaxException {
+        final var exporter =
+            ((NoConfigURIExporterFactory)connection.getURIExporterFactory(URIExporterIDs.LEGACY_KNIME_URL))
+                .getExporter();
+        return FileUtil.resolveToPath(FileUtil.toURL(exporter.toUri(filePath).toString())).toUri();
+    }
+
+    private static void checkIsWorkflowDataAreaRelativeLocation(final FSLocation fsLocation, final String varName)
+        throws InvalidSettingsException {
+        CheckUtils.checkSetting(isWorkflowDataAreaRelativeLocation(fsLocation),
+            "Path variable \"%s\" does not denote a 'workflow data area'-relative file location: %s", varName,
+            fsLocation);
+    }
+
+    private static boolean isWorkflowDataAreaRelativeLocation(final FSLocation fsLocation) {
+        return fsLocation.getFSCategory() == FSCategory.RELATIVE && fsLocation.getFileSystemSpecifier()
+            .map(RelativeTo.WORKFLOW_DATA.getSettingsValue()::equals).orElse(Boolean.FALSE);
+    }
+
+    private static void checkIsWithinWorkflowDataArea(final Path filePath, final FSLocation fsLocation,
+        final String varName) throws InvalidSettingsException {
+        // try to give a possible attacker not too much information about the file system
+        CheckUtils.checkSetting(filePath.toAbsolutePath().normalize().equals(filePath.toAbsolutePath()),
+            "Path variable \"%s\" is pointing outside of the 'workflow data area': %s", varName, fsLocation);
     }
 
     /**
