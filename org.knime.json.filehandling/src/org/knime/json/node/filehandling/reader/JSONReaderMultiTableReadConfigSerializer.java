@@ -107,7 +107,7 @@ enum JSONReaderMultiTableReadConfigSerializer
 
     private static final String CFG_SKIP_DATA_ROWS = "skip_data_rows";
 
-    private static final String CFG_PREPEND_PATH_COLUMN = "prepend_path_column" + SettingsModel.CFGKEY_INTERNAL;
+    private static final String CFG_APPEND_PATH_COLUMN = "append_path_column" + SettingsModel.CFGKEY_INTERNAL;
 
     private static final String CFG_PATH_COLUMN_NAME = "path_column_name" + SettingsModel.CFGKEY_INTERNAL;
 
@@ -163,8 +163,8 @@ enum JSONReaderMultiTableReadConfigSerializer
         jsonReaderCfg.setJSONPath(settings.getString(CFG_JSON_PATH, CFG_DEFAULT_JSON_PATH));
         jsonReaderCfg.setUseJSONPath(settings.getBoolean(CFG_USE_PATH, false));
 
-        config.setPrependItemIdentifierColumn(
-            settings.getBoolean(CFG_PREPEND_PATH_COLUMN, config.prependItemIdentifierColumn()));
+        config.setAppendItemIdentifierColumn(
+            settings.getBoolean(CFG_APPEND_PATH_COLUMN, config.appendItemIdentifierColumn()));
         config.setItemIdentifierColumnName(
             settings.getString(CFG_PATH_COLUMN_NAME, config.getItemIdentifierColumnName()));
     }
@@ -209,7 +209,7 @@ enum JSONReaderMultiTableReadConfigSerializer
         jsonReaderCfg.setFailIfNotFound(settings.getBoolean(CFG_FAIL_IF_NOT_FOUND));
         jsonReaderCfg.setJSONPath(settings.getString(CFG_JSON_PATH));
         jsonReaderCfg.setUseJSONPath(settings.getBoolean(CFG_USE_PATH));
-        config.setPrependItemIdentifierColumn(settings.getBoolean(CFG_PREPEND_PATH_COLUMN));
+        config.setAppendItemIdentifierColumn(settings.getBoolean(CFG_APPEND_PATH_COLUMN));
         config.setItemIdentifierColumnName(settings.getString(CFG_PATH_COLUMN_NAME));
     }
 
@@ -238,7 +238,7 @@ enum JSONReaderMultiTableReadConfigSerializer
         settings.addString(CFG_JSON_PATH, jsonReaderCfg.getJSONPath());
         settings.addBoolean(CFG_FAIL_IF_NOT_FOUND, jsonReaderCfg.failIfNotFound());
         settings.addBoolean(CFG_ALLOW_COMMENTS, jsonReaderCfg.allowComments());
-        settings.addBoolean(CFG_PREPEND_PATH_COLUMN, config.prependItemIdentifierColumn());
+        settings.addBoolean(CFG_APPEND_PATH_COLUMN, config.appendItemIdentifierColumn());
         settings.addString(CFG_PATH_COLUMN_NAME, config.getItemIdentifierColumnName());
     }
 
@@ -262,7 +262,7 @@ enum JSONReaderMultiTableReadConfigSerializer
         settings.getBoolean(CFG_FAIL_IF_NOT_FOUND);
         settings.getBoolean(CFG_USE_PATH);
         settings.getString(CFG_JSON_PATH);
-        settings.getBoolean(CFG_PREPEND_PATH_COLUMN);
+        settings.getBoolean(CFG_APPEND_PATH_COLUMN);
         settings.getString(CFG_PATH_COLUMN_NAME);
     }
 

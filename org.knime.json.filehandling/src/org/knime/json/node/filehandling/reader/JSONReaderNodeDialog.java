@@ -376,7 +376,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         m_limitRowsChecker.setSelected(tableReadConfig.limitRows());
         m_limitRowsSpinner.setValue(tableReadConfig.getMaxRows());
 
-        m_pathColumnPanel.load(m_config.prependItemIdentifierColumn(), m_config.getItemIdentifierColumnName());
+        m_pathColumnPanel.load(m_config.appendItemIdentifierColumn(), m_config.getItemIdentifierColumnName());
 
         controlSpinner(m_skipFirstRowsChecker, m_skipFirstRowsSpinner);
         controlSpinner(m_limitRowsChecker, m_limitRowsSpinner);
@@ -406,7 +406,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     protected JSONMultiTableReadConfig getConfig() throws InvalidSettingsException {
         saveTableReadSettings(m_config.getTableReadConfig());
         saveJsonReaderSettings(m_config.getTableReadConfig().getReaderSpecificConfig());
-        m_config.setPrependItemIdentifierColumn(m_pathColumnPanel.isPrependSourceIdentifierColumn());
+        m_config.setAppendItemIdentifierColumn(m_pathColumnPanel.isAppendSourceIdentifierColumn());
         m_config.setItemIdentifierColumnName(m_pathColumnPanel.getSourceIdentifierColumnName());
         return m_config;
     }
