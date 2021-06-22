@@ -132,7 +132,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
         final JSONMultiTableReadConfig config,
         final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiReader,
         final ProductionPathProvider<DataType> productionPathProvider) {
-        super(multiReader, productionPathProvider, true);
+        super(multiReader, productionPathProvider, true, false, true);
 
         final SettingsModelReaderFileChooser fileChooserModel = fileChooser;
         final FlowVariableModel sourceFvm = createFlowVariableModel(
