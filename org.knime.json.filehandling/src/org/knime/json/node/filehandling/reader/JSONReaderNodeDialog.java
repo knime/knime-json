@@ -437,6 +437,7 @@ final class JSONReaderNodeDialog extends AbstractPathTableReaderNodeDialog<JSONR
     @Override
     public void onClose() {
         m_sourceFilePanel.onClose();
+        super.onClose();
     }
 
 }
