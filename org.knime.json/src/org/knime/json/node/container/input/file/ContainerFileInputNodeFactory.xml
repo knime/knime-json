@@ -9,10 +9,16 @@
 	<fullDescription>
 		<intro>
             This node receives resources from an external caller (for example the
-			<i>REST interface</i>) and saves them locally in the current workflow's data area.
-			A configured parameter makes the <i>Container Input (File)</i> visible for the
+			REST interface) and saves them in the (job's) workflow data area.
+			Using the REST interface this can be achieved by sending a <tt>multipart/form-data</tt>
+			request.<br/>
+			A configured parameter makes the <i>Container Input (File)</i> visible to the
 			external caller and enables the caller to send a resource to the node.
 			<br/>
+			<p>
+				A default file can be specified which is used when the node is executed without a resource
+				from an external caller. The default file will not be moved or copied. Only the path will be exposed.
+			</p>
             <p>
                 <i>
                     This node uses the
@@ -28,18 +34,12 @@
             <a href="https://kni.me/n/7iP1GCKnb_WMgJ4V"><i>Path to String (Variable)</i></a><i> node.</i>
             <i> For further information about file handling in general see the
             </i><a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html"><i>File Handling Guide.</i></a><br/></p>
-			<p>
-				A default file can be specified that is used when the node is excuted without a resource
-				from an external caller. The default file will not be moved or copied. Only the path will be exposed.
-			</p>
 		</intro>
 
         <option name="Parameter name">
-            A name for the variable input parameter (preferably unique). This name is exposed in the REST interface.
+            A name for the input parameter (preferably unique). This name is exposed in the REST interface.
 			It must start with a letter, followed by letters and digits and single minus signs or dashes and must end
-				with a letter.<br/>
-			(The accepted pattern is descibed by the following regular expression:
-			<i>^[a-zA-Z](?:[-_]?[a-zA-Z0-9]+)*(?&lt;![0-9])$</i>)
+			with a letter.
         </option>
 
         <option name="Append unique ID to parameter name">
@@ -49,8 +49,8 @@
         </option>
 
         <option name="Description">
-			A description for the variable input parameter. The description is shown in the API specification
-			of the REST interface.
+			The description for the input parameter. It is currently <i>not</i> shown in the API specification of
+			the REST interface.
         </option>
         <option name="Variable name">
 			The name of the flow variable that contains the location of the local copy of the resource.
@@ -136,7 +136,7 @@
 		<outPort index="0" name="Resource location">
 			The local location of the resource as a
                 <a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html#path">
-                    <i>path flow variable</i></a>.
+                    <i>path flow variable.</i></a>
 		</outPort>
 	</ports>
 </knimeNode>

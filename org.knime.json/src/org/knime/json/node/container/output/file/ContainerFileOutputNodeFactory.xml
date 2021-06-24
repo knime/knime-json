@@ -9,7 +9,9 @@
 	<fullDescription>
 		<intro>
             This node makes a file accessible to an external caller (for example the
-			<i>REST interface</i>) by providing the path to the file as a resource. The file has
+			REST interface) by providing the path to the file as a resource. It can
+			then for example be downloaded after
+			executing a job that isn't discarded yet. The file has
 			to exist and be located in the current workflow's data area.
 			<br/>
             <p>
@@ -29,12 +31,10 @@
 		</intro>
 
         <option name="Parameter name">
-			A name for the variable output parameter (preferably unique). This name is exposed in the REST interface
+			A name for the output parameter (preferably unique). This name is exposed in the REST interface
 			and will have the resource attached to it.
 			It must start with a letter, followed by letters and digits and single minus signs or dashes and must end
 				with a letter.<br/>
-			(The accepted pattern is described by the following regular expression:
-			<i>^[a-zA-Z](?:[-_]?[a-zA-Z0-9]+)*(?&lt;![0-9])$</i>)
         </option>
 
         <option name="Append unique ID to parameter name">
@@ -44,7 +44,7 @@
         </option>
 
         <option name="Description">
-			A description for the resource output parameter. The description is shown in the API specification
+			A description for the resource output parameter. It is currently <i>not</i> shown in the API specification
 			of the REST interface.
         </option>
 
