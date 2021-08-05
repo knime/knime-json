@@ -288,7 +288,7 @@ public class ProposedJson2XmlTest {
             new Options[]{Options.looseTypeInfo, Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root><a b=\"2\"/></root>", "{\"a\":{\"@b\":2}}", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{
-            "<root><a><b xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\" ns:originalKey=\"@b\"><c>3</c></b></a></root>",
+            "<root xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\"><a><b ns:originalKey=\"@b\"><c>3</c></b></a></root>",
             "{\"a\": { \"@b\": {\"c\":3}}}", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root><a><item>3</item><item>3</item></a></root>", "{\"a\" : [ 3, 3 ]}",
             new Options[]{Options.looseTypeInfo}});
@@ -298,7 +298,7 @@ public class ProposedJson2XmlTest {
             new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root a=\"3\"/>", "{\"@a\":3}", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{
-            "<root><control xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\" ns:originalKey=\"@control\"><x>y</x></control></root>",
+            "<root xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\"><control ns:originalKey=\"@control\"><x>y</x></control></root>",
             "{\"@control\" : { \"x\": \"y\"}}", new Options[]{Options.looseTypeInfo}});
         ret.add(new Object[]{"<root><a><item><item><x>true</x></item><item>4</item></item></a></root>",
             "{\"a\" : [ [ {\"x\" : true}, 4 ] ]}",
@@ -324,7 +324,7 @@ public class ProposedJson2XmlTest {
         ret.add(new Object[]{"<root><a><y>4</y></a><a x=\"true\"/></root>",
             "{\"a\" : [ {\"y\" : 4}, {\"@x\" : true}]}",
             new Options[]{Options.UseParentKeyWhenPossible, Options.looseTypeInfo}});
-        ret.add(new Object[]{"<root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\"><Int:blahblah xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\" ns:originalKey=\"blah blah\">3</Int:blahblah></root>", "{\"blah blah\" : [ 3]}",
+        ret.add(new Object[]{"<root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\" xmlns:ns=\"http://www.knime.org/json2xml/originalKey/\"><Int:blahblah ns:originalKey=\"blah blah\">3</Int:blahblah></root>", "{\"blah blah\" : [ 3]}",
             new Options[]{Options.UseParentKeyWhenPossible}});
         ret.add(new Object[]{"<root xmlns:Int=\"http://www.w3.org/2001/XMLSchema/integer\"><Int:a>3</Int:a></root>", "{\"a\" : [ 3]}",
             new Options[]{Options.UseParentKeyWhenPossible}});

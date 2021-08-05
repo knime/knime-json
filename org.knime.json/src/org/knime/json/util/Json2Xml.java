@@ -87,14 +87,9 @@ import com.fasterxml.jackson.databind.node.TextNode;
  * @author Gabor Bakos
  */
 public class Json2Xml {
-    /**
-     *
-     */
+
     private static final String NS_ORIGINAL_KEY = "ns:originalKey";
 
-    /**
-     *
-     */
     private static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
 
     private static final String ORIGINALKEY_URI = "http://www.knime.org/json2xml/originalKey/";
@@ -406,6 +401,7 @@ public class Json2Xml {
     public static final String BINARY_NAMESPACE = "http://www.w3.org/2001/XMLSchema/binary";
 
     private static final String HASH_COMMENT = "#comment";
+
     private static final String QUESTIONMARK_PREFIX = "?";
 
     private static final Pattern REPLACE_START_WITH_NON_LETTER_OR_UNDERSCORE = Pattern.compile("^[^a-zA-Z_]+");
@@ -415,6 +411,8 @@ public class Json2Xml {
 
     private Json2XmlSettings m_settings = new Json2XmlSettings("root", "item", null, "Array", "null", "Binary", "Text",
         "Real", "Int", "Bool", "#text");
+
+    private boolean m_requireOriginalKey = false;
 
     /**
      * Creates the {@link Json2Xml} converter with default settings. By default it keeps the type information.
@@ -462,6 +460,7 @@ public class Json2Xml {
      */
     public Document toXml(final JsonNode node) throws ParserConfigurationException, DOMException, IOException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document doc = documentBuilder.newDocument();
         //Necessary because of {"a":[{"c":2,"#text":"text"}]} with type prefixes for item.
@@ -492,6 +491,11 @@ public class Json2Xml {
         for (JsonPrimitiveTypes type : EnumSet.complementOf(types)) {
             root.removeAttribute("xmlns:" + m_settings.prefix(type));
         }
+
+        if(m_requireOriginalKey) {
+            root.setAttributeNS(XMLNS_URI, "xmlns:ns", ORIGINALKEY_URI);
+        }
+
         return doc;
     }
 
@@ -1306,6 +1310,7 @@ public class Json2Xml {
             doc.createElementNS(m_looseTypeInfo ? getNamespace() : type.getDefaultNamespace(), elementName);
         if (!cleanName.equals(rawElementName)) {
             elem.setAttributeNS(ORIGINALKEY_URI, NS_ORIGINAL_KEY, rawElementName);
+            m_requireOriginalKey = true;
         }
         elem.setTextContent(content);
         return elem;
@@ -1352,6 +1357,7 @@ public class Json2Xml {
         }
         final Element ret = doc.createElementNS(m_settings.m_namespace, cleanName.isEmpty() ? "_" : cleanName);
         ret.setAttributeNS(ORIGINALKEY_URI, NS_ORIGINAL_KEY, name);
+        m_requireOriginalKey = true;
         return ret;
     }
 
