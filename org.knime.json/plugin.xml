@@ -8,8 +8,8 @@
 
    <extension point="org.knime.workbench.repository.nodes">
       <node category-path="/struct-data/json" deprecated="true" factory-class="org.knime.json.node.reader.JSONReaderNodeFactory"/>
-      <node category-path="/struct-data/json" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory"/>
-      <node after="org.knime.json.node.writer.JSONWriterNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
+      <node category-path="/struct-data/json" deprecated="true" factory-class="org.knime.json.node.writer.JSONWriterNodeFactory"/>
+      <node after="org.knime.json.node.filehandling.writer.JSONWriterNodeFactory2" category-path="/struct-data/json" factory-class="org.knime.json.node.fromstring.StringToJSONNodeFactory"/>
       <node after="org.knime.json.node.fromstring.StringToJSONNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.fromtable.TableToJsonNodeFactory"/>
       <node after="org.knime.json.node.fromtable.TableToJsonNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.totable.JSONToTableNodeFactory"/>
       <node after="org.knime.json.node.totable.JSONToTableNodeFactory" category-path="/struct-data/json" factory-class="org.knime.json.node.tojson.ColumnsToJsonNodeFactory"/>

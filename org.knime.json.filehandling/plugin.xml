@@ -5,6 +5,7 @@
       
    <extension point="org.knime.workbench.repository.nodes">
       <node category-path="/struct-data/json" factory-class="org.knime.json.node.filehandling.reader.JSONReaderNodeFactory"/>
+       <node category-path="/struct-data/json" factory-class="org.knime.json.node.filehandling.writer.JSONWriterNodeFactory2"/>
    </extension>
    <extension point="org.knime.workbench.repository.registeredFileExtensions">
       <FileExtensionMapping NodeFactory="org.knime.json.node.filehandling.reader.JSONReaderNodeFactory">

@@ -61,7 +61,10 @@ import org.knime.core.node.NodeSettingsWO;
  * Hofer.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+
+@Deprecated
 class JSONWriterNodeSettings {
     /**
      *

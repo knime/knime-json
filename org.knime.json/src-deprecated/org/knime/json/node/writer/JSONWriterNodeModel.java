@@ -89,7 +89,9 @@ import org.knime.json.node.util.RemoveOrAddColumnSettings;
  * This is the model implementation of JSONWriter. Writes {@code .json} files from {@link JSONValue}s.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+@Deprecated
 public final class JSONWriterNodeModel extends NodeModel {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONWriterNodeModel.class);
 
