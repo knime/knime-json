@@ -44,70 +44,36 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   25 Sept. 2014 (Gabor): created
+ *   3 Aug 2021 (modithahewasinghage): created
  */
-package org.knime.json.node.writer;
+package org.knime.json.node.filehandling.writer;
 
-import org.knime.core.data.json.JSONValue;
-import org.knime.core.node.ContextAwareNodeFactory;
-import org.knime.core.node.NodeCreationContext;
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeView;
+import org.knime.core.data.DataColumnSpec;
+import org.knime.core.node.context.ports.PortsConfiguration;
+import org.knime.filehandling.core.defaultnodesettings.filechooser.writer.FileOverwritePolicy;
+import org.knime.filehandling.core.node.table.writer.AbstractMultiTableWriterNodeModel;
 
 /**
- * <code>NodeFactory</code> for the "JSONWriter" node. Writes {@code .json} files from {@link JSONValue}s.
  *
- * @author Gabor Bakos
+ * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
  */
-public final class JSONWriterNodeFactory extends ContextAwareNodeFactory<JSONWriterNodeModel> {
+final class JSONMultiTableWriterNodeModel
+    extends AbstractMultiTableWriterNodeModel<JSONMultiTableWriterNodeConfig, JSONMultiFileWriterCellFactory> {
 
     /**
-     * {@inheritDoc}
+     * @param portConfig
+     * @param nodeConfig
+     * @param inputTableIdx
      */
-    @Override
-    public JSONWriterNodeModel createNodeModel() {
-        return new JSONWriterNodeModel();
+    JSONMultiTableWriterNodeModel(final PortsConfiguration portConfig,
+        final JSONMultiTableWriterNodeConfig nodeConfig, final int inputTableIdx) {
+        super(portConfig, nodeConfig, inputTableIdx);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public int getNrNodeViews() {
-        return 0;
+    protected JSONMultiFileWriterCellFactory getFactory(final DataColumnSpec[] outputColumnSpecs, final int srcColIdx,
+        final FileOverwritePolicy overwritePolicy) {
+        return new JSONMultiFileWriterCellFactory(outputColumnSpecs, srcColIdx, overwritePolicy);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<JSONWriterNodeModel> createNodeView(final int viewIndex, final JSONWriterNodeModel nodeModel) {
-        throw new UnsupportedOperationException("No views yet.");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new JSONWriterNodeDialog();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public JSONWriterNodeModel createNodeModel(final NodeCreationContext context) {
-        JSONWriterNodeModel ret = new JSONWriterNodeModel();
-        ret.setUrl(context.getUrl());
-        return ret;
-    }
 }

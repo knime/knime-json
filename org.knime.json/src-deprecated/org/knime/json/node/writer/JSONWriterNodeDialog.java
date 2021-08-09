@@ -89,7 +89,9 @@ import org.knime.json.node.writer.JSONWriterNodeSettings.CompressionMethods;
  * <code>NodeDialog</code> for the "JSONWriter" node. Writes {@code .json} files from {@link JSONValue}s.
  *
  * @author Gabor Bakos
+ * @deprecated
  */
+@Deprecated
 final class JSONWriterNodeDialog extends NodeDialogPane {
     /**
      *
@@ -115,7 +117,7 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
 
     private JTextField m_extension;
 
-//    private RemoteFileChooserPanel m_fileChooserPanel;
+    //    private RemoteFileChooserPanel m_fileChooserPanel;
 
     /**
      * New pane for configuring the JSONWriter node.
@@ -217,7 +219,8 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
                     default:
                         throw new UnsupportedOperationException("Unknown compression format: " + selected);
                 }
-            }});
+            }
+        });
 
         c.gridx = 0;
         c.gridy++;
@@ -230,9 +233,9 @@ final class JSONWriterNodeDialog extends NodeDialogPane {
         c.fill = GridBagConstraints.BOTH;
         c.gridx++;
         c.weightx = 1;
-        m_container =
-            new FilesHistoryPanel(createFlowVariableModel(JSONWriterNodeSettings.OUTPUT_LOCATION, Type.STRING),
-                "org.knime.json.node.writer", LocationValidation.DirectoryOutput, DOT_JSON, DOT_JSON_GZ, ".zip"/*, ".smile", ".smile.gz"*/);
+        m_container = new FilesHistoryPanel(
+            createFlowVariableModel(JSONWriterNodeSettings.OUTPUT_LOCATION, Type.STRING), "org.knime.json.node.writer",
+            LocationValidation.DirectoryOutput, DOT_JSON, DOT_JSON_GZ, ".zip"/*, ".smile", ".smile.gz"*/);
         m_container.requestFocus();
         m_container.setBorder(null);
         ret.add(m_container, c);
