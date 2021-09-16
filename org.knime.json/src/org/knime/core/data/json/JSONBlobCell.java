@@ -104,6 +104,9 @@ public final class JSONBlobCell extends BlobDataCell implements JSONValue, Strin
 
     private final JSONCellContent m_content;
 
+    // cache the hash
+    private Integer m_hash = null;
+
     /**
      * Create a new instance.
      *
@@ -159,7 +162,11 @@ public final class JSONBlobCell extends BlobDataCell implements JSONValue, Strin
      */
     @Override
     public int hashCode() {
-        return m_content.hashCode();
+        if (null == m_hash) {
+            m_hash = m_content.hashCode();
+        }
+
+        return m_hash;
     }
 
 }
