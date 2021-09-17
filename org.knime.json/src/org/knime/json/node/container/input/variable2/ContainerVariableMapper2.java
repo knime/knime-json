@@ -69,8 +69,10 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
  *
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
  * @since 4.4
+ * @noreference This class is not intended to be referenced by clients (made public s.t. it can be referenced by other
+ *              internal code such as node implementations).
  */
-final class ContainerVariableMapper2 {
+public final class ContainerVariableMapper2 {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -85,7 +87,7 @@ final class ContainerVariableMapper2 {
      * @param trySimplifiedJson output the json in simplified form if only one variable is defined
      * @throws InvalidSettingsException if variables cannot be mapped to {@link ContainerVariableJsonSchema2}
      */
-    static JsonValue toContainerVariableJsonValue(final Map<String, FlowVariable> flowVariables,
+    public static JsonValue toContainerVariableJsonValue(final Map<String, FlowVariable> flowVariables,
         final boolean trySimplifiedJson) throws InvalidSettingsException {
         final var containerVariableInput = new ContainerVariableJsonSchema2();
         for (final var entry : flowVariables.entrySet()) {
