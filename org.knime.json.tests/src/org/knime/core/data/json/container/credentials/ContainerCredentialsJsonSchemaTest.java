@@ -86,7 +86,8 @@ public final class ContainerCredentialsJsonSchemaTest {
      */
     @Test
     public void testDeserializingIsEncryptedProperty() throws Exception {
-        String json = "{\"isEncrypted\":true}";
+        String json =
+            "{\"isEncrypted\":true,\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
 
         ContainerCredentialsJsonSchema credentialsJson =
             new ObjectMapper().readValue(json, ContainerCredentialsJsonSchema.class);
@@ -119,7 +120,8 @@ public final class ContainerCredentialsJsonSchemaTest {
      */
     @Test
     public void testDeserializeCredentials() throws Exception {
-        String json = "{\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
+        String json =
+            "{\"isEncrypted\":true,\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
 
         ContainerCredentialsJsonSchema credentialsJsonSchema =
             new ObjectMapper().readValue(json, ContainerCredentialsJsonSchema.class);
@@ -137,7 +139,7 @@ public final class ContainerCredentialsJsonSchemaTest {
     @Test
     public void testWellFormedJsonIsRecognizedAsValid() {
         String json =
-            "{\"isEncrypted\":true},\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
+            "{\"isEncrypted\":true,\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
 
         assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(true));
     }
@@ -147,9 +149,13 @@ public final class ContainerCredentialsJsonSchemaTest {
      */
     @Test
     public void testNotWellFormedJsonIsRecognizedAsInvalid() {
-        String json =
-            "{\"wrong-prop-name\":true},\"credentials\":[{\"id\":\"id\"}]}";
+        String json = "{\"wrong-prop-name\":true,\"credentials\":[{\"id\":\"id\"}]}";
+        assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
 
+        json = "{}";
+        assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
+
+        json = "{\"credentials\":[{\"id\":\"id\"}]}";
         assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
     }
 
