@@ -82,7 +82,7 @@ public class ContainerTableJsonSchema {
      * @param tableData the table data for this table, not null
      */
     public ContainerTableJsonSchema(
-        @JsonProperty(value = "table-spec", required = true) final ContainerTableSpec tableSpec,
+        @JsonProperty(value = "table-spec") final ContainerTableSpec tableSpec,
         @JsonProperty(value = "table-data", required = true) final ContainerTableData tableData) {
         m_tableSpec = tableSpec;
         m_tableData = CheckUtils.checkArgumentNotNull(tableData);
