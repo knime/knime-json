@@ -75,7 +75,7 @@ public final class ContainerCredentialsJsonSchema {
      * @param credentials
      */
     public ContainerCredentialsJsonSchema(
-            @JsonProperty(value = "isEncrypted", required = true) final boolean isEncrypted,
+            @JsonProperty(value = "isEncrypted") final boolean isEncrypted,
             @JsonProperty(value = "credentials", required = true) final List<ContainerCredential> credentials) {
         m_isEncrypted = isEncrypted;
         m_credentials = credentials;
