@@ -120,8 +120,7 @@ public final class ContainerCredentialsJsonSchemaTest {
      */
     @Test
     public void testDeserializeCredentials() throws Exception {
-        String json =
-            "{\"isEncrypted\":true,\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
+        String json = "{\"credentials\":[{\"id\":\"id\",\"user\":\"user\",\"password\":\"password\"}]}";
 
         ContainerCredentialsJsonSchema credentialsJsonSchema =
             new ObjectMapper().readValue(json, ContainerCredentialsJsonSchema.class);
@@ -153,9 +152,6 @@ public final class ContainerCredentialsJsonSchemaTest {
         assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
 
         json = "{}";
-        assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
-
-        json = "{\"credentials\":[{\"id\":\"id\"}]}";
         assertThat(ContainerCredentialsJsonSchema.hasValidSchema(json), is(false));
     }
 
