@@ -104,6 +104,7 @@ public final class ContainerVariableMapper2 {
                 containerVariableJson = new ObjectMapper()
                     .writeValueAsString(containerVariableInput.getVariables().values().iterator().next());
             } else {
+                // encode according to schema given by `ContainerVariableJsonSchema2`.
                 containerVariableJson = new ObjectMapper().writeValueAsString(containerVariableInput);
             }
             return JSONUtil.parseJSONValue(containerVariableJson);
@@ -134,8 +135,9 @@ public final class ContainerVariableMapper2 {
      * @return {@link ContainerVariableJsonSchema2} of the given input string
      * @throws InvalidSettingsException if the input string does not conform to {@link ContainerVariableJsonSchema2}
      */
-    static ContainerVariableJsonSchema2 toContainerVariableJsonSchema(final String json,
+    public static ContainerVariableJsonSchema2 toContainerVariableJsonSchema(final String json,
         final String simplifiedSchemaName) throws InvalidSettingsException {
+        // case of simplified schema
         if (simplifiedSchemaName != null) {
             try {
                 return Optional
@@ -150,7 +152,7 @@ public final class ContainerVariableMapper2 {
             } catch (IOException e) {
                 throw checkNestedInvalidSettingsException(e, "simplified JSON");
             }
-        } else {
+        } else {  // case of full schema
             try {
                 return Optional.ofNullable(OBJECT_MAPPER.readValue(json, ContainerVariableJsonSchema2.class))
                     .orElseThrow();

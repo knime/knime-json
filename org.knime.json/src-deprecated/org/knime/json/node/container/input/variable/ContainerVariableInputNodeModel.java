@@ -50,9 +50,13 @@ package org.knime.json.node.container.input.variable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
@@ -72,8 +76,12 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
 import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
+import org.knime.json.node.container.input.variable2.ContainerVariableJsonSchema2;
+import org.knime.json.node.container.input.variable2.ContainerVariableMapper2;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerVariableMapper;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The node model for the Container Input (Variable) node.
@@ -132,13 +140,88 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
         }
     }
 
+    private <T> boolean checkSchema(final String json, final Class<T> schemaDef) {
+        try {
+            new ObjectMapper().readValue(json, schemaDef);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+
+    /**
+     * Given a JSON String, attempt to decode it under the assumption that it conforms to one of the two schemas
+     * ("simple" and "full") introduced by the revised Container Input (Variable) node (suffix "2"). *
+     *
+     * @see ContainerVariableInputNodeModel#decode(String)
+     * @param json A String representing a JSON value
+     * @return Will produce {@link ContainerVariableJsonSchema2} in both cases.
+     *
+     * @throws InvalidSettingsException
+     */
+    private ContainerVariableJsonSchema2 decodeNewSchema(final String json) throws InvalidSettingsException {
+        // Name if simplified schema is given or null if schema is not-simplified ("full")
+        String simplifiedSchemaName = checkSchema(json, ContainerVariableJsonSchema2.SimpleSchema.class)
+            ? m_configuration.getParameterName() : null;
+        // Implementation decides based on nullness of simplifiedSchemaName whether to parse it as a simple or a full
+        //   schema.
+        return ContainerVariableMapper2.toContainerVariableJsonSchema(json, simplifiedSchemaName);
+    }
+
+    /**
+     * Decode flow variables from given JSON string. Understands the schema of the revised Container Input (Variable)
+     * node as well as the deprecated one
+     *
+     * This is to provide "upwards compatibility" since callers (e.g. Call Workflow nodes) have been adjusted to work
+     * with the revised CI(V) node. Callers cannot easily distinguish the type of schema they should adhere to. See
+     * AP-17403.
+     *
+     * @param json A String encoding of JSON data, adhering either to {@link ContainerVariableJsonSchema} or
+     *            {@link ContainerVariableJsonSchema2}.
+     * @return List of singleton maps. The entry of a singleton map is a single flow variable, the map key and value
+     *         being the flow variable's name and value, respectively. See
+     *         {@link ContainerVariableMapper#createVariables(Collection)}.
+     * @throws InvalidSettingsException
+     */
+    private List<Map<String, Object>> decode(final String json) throws InvalidSettingsException {
+        try { // ... parsing according to old schema
+              // ContainerVariableJsonSchema2 also matches a JSON that matches the old schema, so we need to check for
+              // this one first. This is because CVJS2 puts no constraints on the value types.
+            return ContainerVariableMapper.toContainerVariableJsonSchema(json).getVariables();
+        } catch (InvalidSettingsException oldSchemaParseException) {
+            try { // ... parsing according to new schema.
+                ContainerVariableJsonSchema2 newSchemaDecodeResult = decodeNewSchema(json); // may throw ISE
+                Map<String, Object> variables = newSchemaDecodeResult.getVariables();
+                // Must not allow this to accept types that are not allowed by this#pushVariablesToStack (which sort of
+                //  defines an interface depicting what flow variable types this node can output).
+                // In fact, ContainerVariableJsonSchema2 has no constraints on the value type whatsoever. This means
+                //  complex types such as collections may appear here as well.
+                if (!variables.values().stream().allMatch(o -> {
+                    return Integer.class.equals(o.getClass()) || Double.class.equals(o.getClass())
+                        || String.class.equals(o.getClass());
+                })) {
+                    // does not matter what we throw here
+                    throw new InvalidSettingsException("Variable value of invalid type");
+                }
+                // Unpack into singleton maps to have same structure as old format.
+                return variables.entrySet().stream() //
+                    .map(entry -> Collections.singletonMap(entry.getKey(), entry.getValue())) //
+                    .collect(Collectors.toList());
+            } catch (InvalidSettingsException newSchemaParseException) {
+                // Throw this exception for backwards compatibility: If a JSON is supplied that matches neither the
+                // new nor the old schema, the same exception as before should be thrown.
+                throw oldSchemaParseException;
+            }
+        }
+    }
+
     private void pushVariablesToStack(final String json) throws InvalidSettingsException {
-        ContainerVariableJsonSchema variableInput = ContainerVariableMapper.toContainerVariableJsonSchema(json);
-        for (Map<String, Object> variable : variableInput.getVariables()) {
+        var variables = decode(json);
+        for (Map<String, Object> variable : variables) {
             for (Entry<String, Object> variableEntry : variable.entrySet()) {
                 String name = variableEntry.getKey();
                 Object value = variableEntry.getValue();
-
                 if (Integer.class.equals(value.getClass())) {
                     pushFlowVariableInt(name, (int)value);
                 } else if (Double.class.equals(value.getClass())) {
