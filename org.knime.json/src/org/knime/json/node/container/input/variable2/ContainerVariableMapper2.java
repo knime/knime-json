@@ -100,7 +100,8 @@ public final class ContainerVariableMapper2 {
 
         try {
             String containerVariableJson;
-            if (trySimplifiedJson && flowVariables.size() == 1) {
+            if (trySimplifiedJson && containerVariableInput.getVariables().size() == 1) {
+                // encode only the *value* of the single present flow variable, omit the name
                 containerVariableJson = new ObjectMapper()
                     .writeValueAsString(containerVariableInput.getVariables().values().iterator().next());
             } else {
