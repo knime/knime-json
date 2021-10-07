@@ -61,11 +61,13 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
  * Json schema for flow variables sent to a Container Input (Variable) node. Is serializable/deserializable with
  * Jackson.
  *
+ * Full schema, has a key-value pair for each flow variable.
  *
+ * @see SimpleSchema
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
  * @since 4.4
  */
-final class ContainerVariableJsonSchema2 {
+public final class ContainerVariableJsonSchema2 {
 
     private final Map<String, Object> m_variables = new LinkedHashMap<>();
 
@@ -94,11 +96,14 @@ final class ContainerVariableJsonSchema2 {
      * @return the variables
      */
     @JsonAnyGetter
-    Map<String, Object> getVariables() {
+    public Map<String, Object> getVariables() {
         return m_variables;
     }
 
-    static class SimpleSchema {
+    /**
+     * Simple schema containing only the flow variable value in JSON encoding.
+     */
+    public static class SimpleSchema {
         final Object m_value;
 
         SimpleSchema(final String value) {
