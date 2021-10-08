@@ -140,35 +140,6 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
         }
     }
 
-    private <T> boolean checkSchema(final String json, final Class<T> schemaDef) {
-        try {
-            new ObjectMapper().readValue(json, schemaDef);
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-
-    /**
-     * Given a JSON String, attempt to decode it under the assumption that it conforms to one of the two schemas
-     * ("simple" and "full") introduced by the revised Container Input (Variable) node (suffix "2"). *
-     *
-     * @see ContainerVariableInputNodeModel#decode(String)
-     * @param json A String representing a JSON value
-     * @return Will produce {@link ContainerVariableJsonSchema2} in both cases.
-     *
-     * @throws InvalidSettingsException
-     */
-    private ContainerVariableJsonSchema2 decodeNewSchema(final String json) throws InvalidSettingsException {
-        // Name if simplified schema is given or null if schema is not-simplified ("full")
-        String simplifiedSchemaName = checkSchema(json, ContainerVariableJsonSchema2.SimpleSchema.class)
-            ? m_configuration.getParameterName() : null;
-        // Implementation decides based on nullness of simplifiedSchemaName whether to parse it as a simple or a full
-        //   schema.
-        return ContainerVariableMapper2.toContainerVariableJsonSchema(json, simplifiedSchemaName);
-    }
-
     /**
      * Decode flow variables from given JSON string. Understands the schema of the revised Container Input (Variable)
      * node as well as the deprecated one
@@ -190,29 +161,36 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
               // this one first. This is because CVJS2 puts no constraints on the value types.
             return ContainerVariableMapper.toContainerVariableJsonSchema(json).getVariables();
         } catch (InvalidSettingsException oldSchemaParseException) {
-            try { // ... parsing according to new schema.
-                ContainerVariableJsonSchema2 newSchemaDecodeResult = decodeNewSchema(json); // may throw ISE
-                Map<String, Object> variables = newSchemaDecodeResult.getVariables();
-                // Must not allow this to accept types that are not allowed by this#pushVariablesToStack (which sort of
-                //  defines an interface depicting what flow variable types this node can output).
-                // In fact, ContainerVariableJsonSchema2 has no constraints on the value type whatsoever. This means
-                //  complex types such as collections may appear here as well.
-                if (!variables.values().stream().allMatch(o -> {
-                    return Integer.class.equals(o.getClass()) || Double.class.equals(o.getClass())
-                        || String.class.equals(o.getClass());
-                })) {
-                    // does not matter what we throw here
-                    throw new InvalidSettingsException("Variable value of invalid type");
-                }
-                // Unpack into singleton maps to have same structure as old format.
-                return variables.entrySet().stream() //
-                    .map(entry -> Collections.singletonMap(entry.getKey(), entry.getValue())) //
-                    .collect(Collectors.toList());
-            } catch (InvalidSettingsException newSchemaParseException) {
+            // Try parsing according to new schema (simplified or full)
+            // Infer whether simplified schema is used
+            String simplifiedSchemaName = ContainerVariableMapper2.hasSimpleSchema(json) ?
+                    m_configuration.getParameterName() : null;
+            ContainerVariableJsonSchema2 newSchemaDecodeResult;
+            try {
+                // Implementation decides based on nullness of simplifiedSchemaName whether to parse it as a simple or a full
+                //   schema.
+                newSchemaDecodeResult =
+                        ContainerVariableMapper2.toContainerVariableJsonSchema(json, simplifiedSchemaName);
+            } catch (InvalidSettingsException e) {
                 // Throw this exception for backwards compatibility: If a JSON is supplied that matches neither the
                 // new nor the old schema, the same exception as before should be thrown.
                 throw oldSchemaParseException;
             }
+            Map<String, Object> variables = newSchemaDecodeResult.getVariables();
+            // Must not allow this to accept types that are not allowed by pushVariablesToStack (which sort of
+            //  defines an interface depicting what flow variable types this node can output).
+            // In fact, ContainerVariableJsonSchema2 has no constraints on the value type whatsoever. This means
+            //  complex types such as collections may appear here as well.
+            if (!variables.values().stream().allMatch(o -> {
+                return Integer.class.equals(o.getClass()) || Double.class.equals(o.getClass())
+                    || String.class.equals(o.getClass());
+            })) {
+                throw oldSchemaParseException;
+            }
+            // Unpack into singleton maps to have same structure as old format.
+            return variables.entrySet().stream() //
+                .map(entry -> Collections.singletonMap(entry.getKey(), entry.getValue())) //
+                .collect(Collectors.toList());
         }
     }
 
