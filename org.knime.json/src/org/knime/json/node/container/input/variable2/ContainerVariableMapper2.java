@@ -170,6 +170,15 @@ public final class ContainerVariableMapper2 {
         }
     }
 
+    public static boolean hasSimpleSchema(final String json) {
+        try {
+            OBJECT_MAPPER.readValue(json, ContainerVariableJsonSchema2.SimpleSchema.class);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     private static InvalidSettingsException checkNestedInvalidSettingsException(final IOException e,
         final String type) {
         if (e.getCause() instanceof InvalidSettingsException) {
