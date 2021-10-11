@@ -81,8 +81,6 @@ import org.knime.json.node.container.input.variable2.ContainerVariableMapper2;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerVariableMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * The node model for the Container Input (Variable) node.
  *
@@ -171,7 +169,7 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
                 //   schema.
                 newSchemaDecodeResult =
                         ContainerVariableMapper2.toContainerVariableJsonSchema(json, simplifiedSchemaName);
-            } catch (InvalidSettingsException e) {
+            } catch (InvalidSettingsException e) { // NOSONAR
                 // Throw this exception for backwards compatibility: If a JSON is supplied that matches neither the
                 // new nor the old schema, the same exception as before should be thrown.
                 throw oldSchemaParseException;

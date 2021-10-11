@@ -59,6 +59,7 @@ import javax.json.JsonValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
+import org.knime.json.node.container.input.variable2.ContainerVariableJsonSchema2.SimpleSchema;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -170,11 +171,16 @@ public final class ContainerVariableMapper2 {
         }
     }
 
+    /**
+     * @param json
+     * @return <code>true</code> if the json string can be read in as {@link SimpleSchema}, otherwise
+     *         <code>false</code>
+     */
     public static boolean hasSimpleSchema(final String json) {
         try {
             OBJECT_MAPPER.readValue(json, ContainerVariableJsonSchema2.SimpleSchema.class);
             return true;
-        } catch (IOException e) {
+        } catch (IOException e) { // NOSONAR
             return false;
         }
     }

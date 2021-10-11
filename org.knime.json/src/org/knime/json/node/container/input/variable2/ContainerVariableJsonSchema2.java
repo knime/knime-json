@@ -65,7 +65,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
  *
  * @see SimpleSchema
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
- * @since 4.4
+ * @since 4.5
  */
 public final class ContainerVariableJsonSchema2 {
 
