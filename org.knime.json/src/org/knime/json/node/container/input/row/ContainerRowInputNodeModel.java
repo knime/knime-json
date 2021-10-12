@@ -274,7 +274,7 @@ public final class ContainerRowInputNodeModel extends NodeModel implements Input
      */
     @Override
     public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        if (inputData.getJSONValue() == null) {
+        if (inputData != null && inputData.getJSONValue() == null) {
             throw new InvalidSettingsException("No JSON input provided (is null)");
         }
     }
@@ -284,7 +284,12 @@ public final class ContainerRowInputNodeModel extends NodeModel implements Input
      */
     @Override
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        m_externalValue = inputData.getJSONValue();
+        m_externalValue = inputData == null ? null : inputData.getJSONValue();
+    }
+
+    @Override
+    public boolean isInputDataRequired() {
+        return false;
     }
 
     /**

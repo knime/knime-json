@@ -268,7 +268,12 @@ final class ContainerVariableInputNodeModel extends NodeModel implements InputNo
      */
     @Override
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        m_externalValue = inputData.getJSONValue();
+        m_externalValue = inputData == null ? null : inputData.getJSONValue();
+    }
+
+    @Override
+    public boolean isInputDataRequired() {
+        return false;
     }
 
     @Override

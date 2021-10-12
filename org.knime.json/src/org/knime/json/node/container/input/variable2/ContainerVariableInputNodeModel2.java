@@ -356,12 +356,14 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
      */
     @Override
     public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        try {
-            CheckUtils.checkSetting(inputData.getJSONValue() != null, "Expected a JSON value.");
-            pushVariablesToStack(inputData.getJSONValue().toString(), true, getSpecificationAndDefaults());
-        } catch (InvalidSettingsException e) {
-            // re-throw with parameter name as context
-            throw new InvalidSettingsException(m_configShared.getParameter() + ": " + e.getMessage(), e);
+        if (inputData != null) {
+            try {
+                CheckUtils.checkSetting(inputData.getJSONValue() != null, "Expected a JSON value.");
+                pushVariablesToStack(inputData.getJSONValue().toString(), true, getSpecificationAndDefaults());
+            } catch (InvalidSettingsException e) {
+                // re-throw with parameter name as context
+                throw new InvalidSettingsException(m_configShared.getParameter() + ": " + e.getMessage(), e);
+            }
         }
     }
 
@@ -370,7 +372,12 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
      */
     @Override
     public void setInputData(final ExternalNodeData inputData) {
-        m_externalValue = Optional.of(inputData.getJSONValue());
+        m_externalValue = inputData == null ? Optional.empty() : Optional.of(inputData.getJSONValue());
+    }
+
+    @Override
+    public boolean isInputDataRequired() {
+        return false;
     }
 
     @Override

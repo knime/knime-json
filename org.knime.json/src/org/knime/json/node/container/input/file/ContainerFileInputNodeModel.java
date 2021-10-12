@@ -174,17 +174,26 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
 
     @Override
     public void validateInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        if (inputData.getResource() == null) {
+        if (inputData != null && inputData.getResource() == null) {
             throw new InvalidSettingsException("Expected a resource.");
         }
     }
 
     @Override
     public void setInputData(final ExternalNodeData inputData) throws InvalidSettingsException {
-        if (inputData.getResource() == null) {
-            throw new InvalidSettingsException("Expected a resource.");
+        if (inputData == null) {
+            m_externalURI = Optional.empty();
+        } else {
+            if (inputData.getResource() == null) {
+                throw new InvalidSettingsException("Expected a resource.");
+            }
+            m_externalURI = Optional.of(inputData.getResource());
         }
-        m_externalURI = Optional.of(inputData.getResource());
+    }
+
+    @Override
+    public boolean isInputDataRequired() {
+        return !m_config.isUsingDefaultFile();
     }
 
     /**
