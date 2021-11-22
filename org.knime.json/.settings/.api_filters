@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component id="org.knime.json" version="2">
+    <resource path="src/org/knime/json/node/container/input/variable2/ContainerVariableMapper2.java" type="org.knime.json.node.container.input.variable2.ContainerVariableMapper2">
+        <filter comment="class made public a release after its introduction" id="1108344834">
+            <message_arguments>
+                <message_argument value="4.4"/>
+                <message_argument value="4.5"/>
+                <message_argument value="org.knime.json.node.container.input.variable2.ContainerVariableMapper2"/>
+            </message_arguments>
+        </filter>
+    </resource>
+</component>
