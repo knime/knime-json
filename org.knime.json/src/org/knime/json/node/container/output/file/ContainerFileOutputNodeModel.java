@@ -233,11 +233,17 @@ final class ContainerFileOutputNodeModel extends NodeModel implements OutputNode
         final var data =
             ExternalNodeData.builder(m_sharedConfig.getParameter()).description(m_sharedConfig.getDescription());
         try {
-            return data.resource(getPathFromVariable()).build();
+            data.resource(getPathFromVariable());
         } catch (InvalidSettingsException e) {
             LOGGER.error("Could not fetch resource: " + e.getMessage(), e);
-            return data.resource(null).build();
+            try {
+                data.resource(new URI("unknown-filename"));
+            } catch (URISyntaxException e1) {
+                LOGGER.error("Error while creating resource URI for unknown file: " + e1.getMessage(), e1);
+            }
         }
+
+        return data.build();
     }
 
     @Override
