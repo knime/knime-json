@@ -6,8 +6,8 @@
       provider-name="KNIME AG, Zurich, Switzerland">
 
    <description>
-      This feature contains several node for reading, manipulating,
-and writing XML data.
+      This extension contains several nodes for reading, manipulating, and
+      writing JSON data, as well as converting between JSON and XML.
    </description>
 
    <copyright>
@@ -919,7 +919,8 @@ propagated with or for interoperation with KNIME.
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-	<plugin
+
+   <plugin
          id="org.knime.json.filehandling"
          download-size="0"
          install-size="0"
