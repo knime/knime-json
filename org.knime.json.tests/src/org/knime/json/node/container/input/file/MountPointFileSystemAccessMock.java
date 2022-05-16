@@ -54,6 +54,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.knime.filehandling.core.connections.base.attributes.BaseFileAttributes;
 import org.knime.filehandling.core.util.MountPointFileSystemAccess;
@@ -140,4 +141,8 @@ public class MountPointFileSystemAccessMock implements MountPointFileSystemAcces
         return null;
     }
 
+    @Override
+    public List<String> getMountedIDs(final Set<String> providerFactoryIDs) {
+        return null;
+    }
 }
