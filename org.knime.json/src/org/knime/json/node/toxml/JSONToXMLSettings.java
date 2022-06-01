@@ -131,6 +131,12 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
 
     private static final boolean DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = true;
 
+    private static final String VALUE_REMOVE_INVALID_CHARS = "value.remove.invalid.chars";
+
+    private static final boolean DEFAULT_VALUE_REMOVE_INVALID_CHARS = true;
+
+    private static final boolean DEFAULT_VALUE_REMOVE_INVALID_CHARS_BACKWARD = false;
+
     private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT,
             m_array = DEFAULT_ARRAY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,
             m_integer = DEFAULT_INTEGER_PREFIX, m_null = DEFAULT_NULL_PREFIX, m_decimal = DEFAULT_DECIMAL_PREFIX,
@@ -147,6 +153,8 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     private boolean m_translateHashCommentToComment = !DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT;
 
     private boolean m_translateQuestionPrefixToProcessingInstruction = !DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT;
+
+    private boolean m_valueRemoveInvalidChars = DEFAULT_VALUE_REMOVE_INVALID_CHARS;
 
     /**
      * Constructs the object.
@@ -179,6 +187,7 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         m_parentKeyAsElementName = settings.getBoolean(PARENT_KEY_AS_ELEMENT_NAME, DEFAULT_PARENT_KEY_AS_ELEMENT_NAME);
         m_translateHashCommentToComment = !settings.getBoolean(TRANSLATE_HASHCOMMENT_AS_ELEMENT, DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT);
         m_translateQuestionPrefixToProcessingInstruction = !settings.getBoolean(TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT);
+        m_valueRemoveInvalidChars = settings.getBoolean(VALUE_REMOVE_INVALID_CHARS, DEFAULT_VALUE_REMOVE_INVALID_CHARS);
     }
 
     /**
@@ -204,6 +213,9 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         m_parentKeyAsElementName = settings.getBoolean(PARENT_KEY_AS_ELEMENT_NAME, DEFAULT_PARENT_KEY_AS_ELEMENT_NAME);
         m_translateHashCommentToComment = !settings.getBoolean(TRANSLATE_HASHCOMMENT_AS_ELEMENT, DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT);
         m_translateQuestionPrefixToProcessingInstruction = !settings.getBoolean(TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT);
+
+        // new option added in 4.6, use backward as default if not set
+        m_valueRemoveInvalidChars = settings.getBoolean(VALUE_REMOVE_INVALID_CHARS, DEFAULT_VALUE_REMOVE_INVALID_CHARS_BACKWARD);
     }
 
     /**
@@ -228,6 +240,7 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
         settings.addBoolean(PARENT_KEY_AS_ELEMENT_NAME, m_parentKeyAsElementName);
         settings.addBoolean(TRANSLATE_HASHCOMMENT_AS_ELEMENT, !m_translateHashCommentToComment);
         settings.addBoolean(TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, !m_translateQuestionPrefixToProcessingInstruction);
+        settings.addBoolean(VALUE_REMOVE_INVALID_CHARS, m_valueRemoveInvalidChars);
     }
 
     /**
@@ -457,5 +470,21 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     void setTranslateQuestionPrefixToProcessingInstruction(
         final boolean translateQuestionPrefixToProcessingInstruction) {
         m_translateQuestionPrefixToProcessingInstruction = translateQuestionPrefixToProcessingInstruction;
+    }
+
+    /**
+     * @return {@code true} if invalid XML 1.0 characters should be removed from values
+     * @since 4.6
+     */
+    boolean valueRemoveInvalidChars() {
+        return m_valueRemoveInvalidChars;
+    }
+
+    /**
+     * @param removeChars {@code true} if invalid XML 1.0 characters should be removed from values
+     * @since 4.6
+     */
+    void setValueRemoveInvalidChars(final boolean removeChars) {
+        m_valueRemoveInvalidChars = removeChars;
     }
 }

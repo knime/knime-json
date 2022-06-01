@@ -201,6 +201,7 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
         settings.setTextKey(getSettings().isCreateTextForSpecificKeys() ? getSettings().getKeyForText() : null);
         settings.setTranslateHashCommentToComment(getSettings().isTranslateHashCommentToComment());
         settings.setTranslateQuestionPrefixToProcessingInstruction(getSettings().isTranslateQuestionPrefixToProcessingInstruction());
+        settings.setValueRemoveInvalidChars(getSettings().valueRemoveInvalidChars());
         Json2Xml ret = getSettings().isParentKeyAsElementName() ? Json2Xml.createWithUseParentKeyWhenPossible(settings) : new Json2Xml(settings);
         ret.setLooseTypeInfo(!getSettings().isKeepTypeInfo());
         return ret;
