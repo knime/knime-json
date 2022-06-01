@@ -138,6 +138,11 @@ public class Json2Xml {
         private boolean m_translateQuestionPrefixToProcessingInstruction = false;
 
         /**
+         * Whether invalid XML 1.0 characters should be removed from values.
+         */
+        private boolean m_valueRemoveInvalidChars = true;
+
+        /**
          * {@code null} means we do not convert any keys to text, otherwise these keys are converted to text when
          * applicable.
          */
@@ -363,6 +368,22 @@ public class Json2Xml {
         public boolean isTranslateQuestionPrefixToProcessingInstruction() {
             return m_translateQuestionPrefixToProcessingInstruction;
         }
+
+        /**
+         * @param removeChars {@code true} if invalid XML 1.0 characters should be removed from values
+         * @since 4.6
+         */
+        public void setValueRemoveInvalidChars(final boolean removeChars) {
+            m_valueRemoveInvalidChars = removeChars;
+        }
+
+        /**
+         * @return {@code true} if invalid XML 1.0 characters should be removed from values
+         * @since 4.6
+         */
+        public boolean valueRemoveInvalidChars() {
+            return m_valueRemoveInvalidChars;
+        }
     }
 
     /**
@@ -405,6 +426,8 @@ public class Json2Xml {
     private static final String QUESTIONMARK_PREFIX = "?";
 
     private static final Pattern REPLACE_START_WITH_NON_LETTER_OR_UNDERSCORE = Pattern.compile("^[^a-zA-Z_]+");
+
+    private static final Pattern INVALID_XML_10_CHARS = Pattern.compile("[^\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD]");
 
     /** Loose/omit type information? */
     private boolean m_looseTypeInfo = false;
@@ -545,7 +568,7 @@ public class Json2Xml {
             element = doc.createElementNS(namespace, prefix + m_settings.m_rootName);
         }
         if (!node.isNull()) {
-            element.setTextContent(node.asText());
+            element.setTextContent(removeInvalidValueChars(node.asText()));
         }
         doc.appendChild(element);
     }
@@ -582,7 +605,7 @@ public class Json2Xml {
      */
     protected Element fixValueNode(final JsonNode node, final Element element, final Set<JsonPrimitiveTypes> types) {
         if (node.isValueNode()) {
-            element.setTextContent(node.asText());
+            element.setTextContent(removeInvalidValueChars(node.asText()));
             if (!m_looseTypeInfo) {
                 if (node.isBinary()) {
                     types.add(JsonPrimitiveTypes.BINARY);
@@ -664,8 +687,8 @@ public class Json2Xml {
             final JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(node);
             safeAdd(
                 parentElement,
-                createElementWithContent(m_settings.prefix(primitiveType), origKey, primitiveType, valueToString(node),
-                    doc, types));
+                createElementWithContent(m_settings.prefix(primitiveType), origKey, primitiveType,
+                    valueToString(node, m_settings.valueRemoveInvalidChars()), doc, types));
             return parentElement;
         }
         throw new IllegalStateException("Should not reach this! " + node);
@@ -846,7 +869,7 @@ public class Json2Xml {
                     safeAdd(
                         currentElement,
                         createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType,
-                            valueToString(value), doc, types));
+                            valueToString(value, m_settings.valueRemoveInvalidChars()), doc, types));
                 }
             } else if (hasTextKey && value.isValueNode()) {
                 if (entry.getKey().equals(getTextKey())) {
@@ -858,7 +881,7 @@ public class Json2Xml {
                         JsonPrimitiveTypes primitiveType = valueTypeToPrimitiveType(value);
                         Element elem =
                             createElementWithContent(m_settings.prefix(primitiveType), entry.getKey(), primitiveType,
-                                valueToString(value), doc, types);
+                                valueToString(value, m_settings.valueRemoveInvalidChars()), doc, types);
                         safeAdd(currentElement, elem);
                     }
                 }
@@ -924,7 +947,7 @@ public class Json2Xml {
                     new String(Base64.getEncoder().encode(node.binaryValue()), StandardCharsets.UTF_8), doc, types);
             } else if (node.isTextual()) {
                 return createElementWithContent(m_settings.m_text, elementName, JsonPrimitiveTypes.TEXT,
-                    node.textValue(), doc, types);
+                    removeInvalidValueChars(node.textValue()), doc, types);
             } else if (node.isNull()) {
                 return createElementWithContent(m_settings.m_null, elementName, JsonPrimitiveTypes.NULL, "", doc, types);
             } else {
@@ -1048,7 +1071,7 @@ public class Json2Xml {
                     final String origName = parentElement.getAttribute(NS_ORIGINAL_KEY);
                     return createElementWithContent(settings.prefix(primitiveType),
                         parentElement.hasAttribute(NS_ORIGINAL_KEY) ? origName : parentElement.getNodeName(),
-                        primitiveType, valueToString(node), doc, types);
+                        primitiveType, valueToString(node, settings.valueRemoveInvalidChars()), doc, types);
                 }
                 if (node.isArray()) {
                     for (final JsonNode child : node) {
@@ -1104,12 +1127,38 @@ public class Json2Xml {
     }
 
     /**
+     * Remove invalid XML 1.0 control characters.
+     *
+     * @param value string to clean
+     * @param removeInvalidChars {@code true} if invalid XML 1.0 characters should be removed
+     * @return value without invalid characters
+     */
+    private static String removeInvalidValueChars(final String value, final boolean removeInvalidChars) {
+        if (value != null && removeInvalidChars) {
+            return INVALID_XML_10_CHARS.matcher(value).replaceAll("");
+        } else {
+            return value;
+        }
+    }
+
+    /**
+     * Remove invalid XML 1.0 control characters.
+     *
+     * @param value string to clean
+     * @return value without invalid characters
+     */
+    private String removeInvalidValueChars(final String value) {
+        return removeInvalidValueChars(value, m_settings.valueRemoveInvalidChars());
+    }
+
+    /**
      * @param value A value {@link JsonNode}.
+     * @param removeInvalidChars {@code true} if invalid XML 1.0 characters should be removed
      * @return The {@link String} representation of {@code value}.
      */
-    private static String valueToString(final JsonNode value) {
+    private static String valueToString(final JsonNode value, final boolean removeInvalidChars) {
         assert value.isValueNode() : value + " ! " + value.getNodeType();
-        return value.isNull() ? "" : value.asText();
+        return value.isNull() ? "" : removeInvalidValueChars(value.asText(), removeInvalidChars);
     }
 
     /**
@@ -1178,7 +1227,7 @@ public class Json2Xml {
         assert entry.getKey().startsWith("@") || getTextKey().equals(entry.getKey());
         final JsonNode v = entry.getValue();
         if (v.isValueNode()) {
-            String val = v.asText();
+            String val = removeInvalidValueChars(v.asText());
             String key = entry.getKey();
             if (key.equals(getTextKey())) {
                 return setTextContent(element, entry, types);
@@ -1225,7 +1274,7 @@ public class Json2Xml {
     private Element setTextContent(final Element element, final Entry<String, JsonNode> entry,
         final Set<JsonPrimitiveTypes> types) {
         final JsonNode v = entry.getValue();
-        final String val = v.asText();
+        final String val = removeInvalidValueChars(v.asText());
         element.appendChild(element.getOwnerDocument().createTextNode(val));
         if (!m_looseTypeInfo) {
             if (v.isIntegralNumber()) {

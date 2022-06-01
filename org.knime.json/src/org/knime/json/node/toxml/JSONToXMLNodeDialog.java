@@ -86,6 +86,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
     private JCheckBox m_useParentKeyAsElementName;
     private JRadioButton m_translateHashCommentAsElement, m_translateHashCommentAsComment;
     private JRadioButton m_translateQuestionPrefixAsElement, m_translateQuestionPrefixAsPI;
+    private JCheckBox m_valueRemoveInvalidChars;
 
     /**
      * New pane for configuring the JSONToXML node.
@@ -232,6 +233,14 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         questionPrefixGroup.add(m_translateQuestionPrefixAsPI);
         questionPrefixGroup.add(m_translateQuestionPrefixAsElement);
         gbc.gridy++;
+
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
+        m_valueRemoveInvalidChars = new JCheckBox("Remove invalid XML characters from values");
+        panel.add(m_valueRemoveInvalidChars, gbc);
+        gbc.gridy++;
     }
 
     /**
@@ -344,6 +353,7 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         getSettings().setParentKeyAsElementName(m_useParentKeyAsElementName.isSelected());
         getSettings().setTranslateHashCommentToComment(m_translateHashCommentAsComment.isSelected());
         getSettings().setTranslateQuestionPrefixToProcessingInstruction(m_translateQuestionPrefixAsPI.isSelected());
+        getSettings().setValueRemoveInvalidChars(m_valueRemoveInvalidChars.isSelected());
         super.saveSettingsTo(settings);
     }
 
@@ -375,5 +385,6 @@ public class JSONToXMLNodeDialog extends ReplaceColumnDialog<JSONToXMLSettings> 
         m_translateHashCommentAsElement.setSelected(!getSettings().isTranslateHashCommentToComment());
         m_translateQuestionPrefixAsPI.setSelected(getSettings().isTranslateQuestionPrefixToProcessingInstruction());
         m_translateQuestionPrefixAsElement.setSelected(!getSettings().isTranslateQuestionPrefixToProcessingInstruction());
+        m_valueRemoveInvalidChars.setSelected(getSettings().valueRemoveInvalidChars());
     }
 }

@@ -31,6 +31,7 @@
         <option name="Translate JSON key ?pi to">JSON objects with keys starting with a question mark such as <tt>{"?pi": "content"}</tt>
           can either be translated to XML elements (<tt>&lt;pi ns:originalKey="?pi"&gt;content&lt;/do&gt;</tt>) or to XML processing instructions
           (<tt>&lt;?pi content?&gt;</tt>)</option>
+          <option name="Remove invalid XML characters from values">XML 1.0 supports only a limited set of characters (see <a href="https://www.w3.org/TR/xml/#charsets">RFC</a>). When checked, invalid characters will be removed from values.</option>
         </tab>
         <tab name="Type information">
         <option name="Keep type information by adding namespace">When checked, the JSON type information will be preserved, numbers, booleans, ... will be represented as text, but their node will have a prefix identifying its type. Otherwise all kind of values will be represented as text.</option>
