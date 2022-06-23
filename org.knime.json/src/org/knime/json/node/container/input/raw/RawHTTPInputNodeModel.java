@@ -216,7 +216,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         DataTableSpecCreator creator = new DataTableSpecCreator();
         // TODO: sort?
         for (String param : m_configuration.getQueryParams().keySet()) {
-            creator.addColumns(new DataColumnSpecCreator(param.toLowerCase(), StringCell.TYPE).createSpec());
+            creator.addColumns(new DataColumnSpecCreator(param, StringCell.TYPE).createSpec());
         }
         return creator.createSpec();
     }
