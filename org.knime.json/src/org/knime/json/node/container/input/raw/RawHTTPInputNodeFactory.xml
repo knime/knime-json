@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./json-in.png" type="Container"
+	xmlns="http://knime.org/node/v4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v4.1 http://knime.org/node/v4.1.xsd">
+	<name>Container Input (Raw HTTP)</name>
+
+	<shortDescription>
+    	Reads the body, headers, and the query string from an HTTP request calling the workflow
+    	and outputs it in 3 different tables.
+    </shortDescription>
+
+	<fullDescription>
+		<intro>
+			<p>
+				When an external caller executes the workflow with this node via an HTTP call to the KNIME Server's REST API,
+				the HTTP body, headers, and query parameters are captured and exposed as tables.
+			</p>
+			<p>
+				There can only be one Container Input node in a workflow containing this node, as it captures the raw request.
+			</p>
+		</intro>
+
+        <option name="Default body">
+            The body data to return while building the workflow, when no actual request is available.
+            The default body you can specify here must be encoded in base64.
+        </option>
+        
+        <option name="Default headers">
+            The default headers to return while building the workflow, when no actual request is available.
+            The format here is JSON, i.e. each JSON key is a header name and the JSON value the header value.
+        </option>
+        
+        <option name="Default query parameters">
+            The default query parameters to return while building the workflow, when no actual request is available.
+            The format here is JSON, i.e. each JSON key is a parameter name and the JSON value the parameter value.
+        </option>
+	</fullDescription>
+
+	<ports>
+		<outPort index="0" name="Binary data">
+			Table containing a single binary value in the column <tt>body</tt>.
+		</outPort>
+		<outPort index="1" name="Headers">
+			Table containing one column for each header.
+		</outPort>
+		<outPort index="2" name="Query Parameters">
+			Table containing one column for each query parameter.
+		</outPort>
+	</ports>
+</knimeNode>
