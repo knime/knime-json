@@ -140,7 +140,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         // Header table
         BufferedDataContainer headerContainer;
         if (m_headers != null) {
-            DataTableSpec headerSpec = createSpecFromJsonObject(m_headers);
+            DataTableSpec headerSpec = createSpecFromJsonObject(m_headers, true);
             headerContainer = exec.createDataContainer(headerSpec);
             headerContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0L),
                 StreamSupport.stream(m_headers.values().spliterator(), false)
@@ -160,7 +160,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         // Query parameter table
         BufferedDataContainer qpContainer;
         if (m_headers != null) {
-            DataTableSpec qpSpec = createSpecFromJsonObject(m_queryParams);
+            DataTableSpec qpSpec = createSpecFromJsonObject(m_queryParams, false);
             qpContainer = exec.createDataContainer(qpSpec);
             qpContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0L),
                 StreamSupport.stream(m_queryParams.values().spliterator(), false)
@@ -190,10 +190,10 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         //No internal state.
     }
 
-    private static DataTableSpec createSpecFromJsonObject(final JsonObject o) {
+    private static DataTableSpec createSpecFromJsonObject(final JsonObject o, final boolean lowerCase) {
         DataTableSpecCreator creator = new DataTableSpecCreator();
         for (String key : o.keySet()) {
-            creator.addColumns(new DataColumnSpecCreator(key.toLowerCase(), StringCell.TYPE).createSpec());
+            creator.addColumns(new DataColumnSpecCreator(lowerCase ? key.toLowerCase() : key, StringCell.TYPE).createSpec());
         }
         return creator.createSpec();
     }
@@ -228,8 +228,8 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         return new DataTableSpec[]{
             createBodySpec(),
-            m_headers != null ? createSpecFromJsonObject(m_headers) : createHeaderSpec(),
-            m_queryParams != null ? createSpecFromJsonObject(m_queryParams) : createQueryParamSpec()
+            m_headers != null ? createSpecFromJsonObject(m_headers, true) : createHeaderSpec(),
+            m_queryParams != null ? createSpecFromJsonObject(m_queryParams, false) : createQueryParamSpec()
         };
     }
 
