@@ -47,6 +47,18 @@
    	  </node>
       <node after="org.knime.json.node.container.output.row.ContainerRowOutputNodeFactory" category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.output.file.ContainerFileOutputNodeFactory">
       </node>
+      <node
+            category-path="/flowabstraction/container"
+            deprecated="false"
+            factory-class="org.knime.json.node.container.input.raw.RawHTTPInputNodeFactory"
+            hidden="false">
+      </node>
+      <node
+            category-path="/flowabstraction/container"
+            deprecated="false"
+            factory-class="org.knime.json.node.container.output.raw.RawHTTPOutputNodeFactory"
+            hidden="false">
+      </node>
 </extension>
    <extension point="org.knime.core.DataValueRenderer">
       <dataValue valueClass="org.knime.core.data.json.JSONValue">
