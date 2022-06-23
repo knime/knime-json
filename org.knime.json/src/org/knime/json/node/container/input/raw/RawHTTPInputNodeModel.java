@@ -59,6 +59,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.knime.core.data.DataCell;
@@ -164,7 +165,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
             qpContainer = exec.createDataContainer(qpSpec);
             qpContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0L),
                 StreamSupport.stream(m_queryParams.values().spliterator(), false)
-                .map(v -> new StringCell(v.toString()))
+                .map(v -> new StringCell(((JsonString)v).getString()))
                 .collect(Collectors.toList())));
         } else {
             DataTableSpec qpSpec = createQueryParamSpec();
