@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<knimeNode icon="./json-out.png" type="Container" xmlns="http://knime.org/node/v4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v4.1 http://knime.org/node/v4.1.xsd">
+<knimeNode icon="./raw-out.png" type="Container" xmlns="http://knime.org/node/v4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v4.1 http://knime.org/node/v4.1.xsd">
     <name>Container Output (Raw HTTP)</name>
     
     <shortDescription>
-        Reads a binary column from a table and makes it available to an external caller as body of an HTTP Request.
+        Reads the first cell of a binary column from a table and makes its content
+        available to an external caller as body of an HTTP Request.
     	Columns from the second input table are sent as HTTP headers.
+    	There can only be one Container Output node when this node is part of the workflow.
+    	If no content-type header is specified in the header table, application/octet-stream is returned.
     </shortDescription>
     
     <fullDescription>
         <intro>
+        	This node produces a raw HTTP response with headers, body, and status code configurable via the input tables
+        	and dialog options. The headers are sent back to the client as response headers and the body data is sent
+        	in the HTTP response body.
         </intro>
+        <option name="Status code">
+        	The HTTP <a href="https://en.wikipedia.org/wiki/List_of_HTTP_status_codes">status code</a> to send back to the client.
+        </option>
         
     </fullDescription>
     <ports>
         <inPort index="0" name="Body Input">A table containing a binary column whose content is made available to the caller.</inPort>
-        <inPort index="1" name="Header Input">A table containing headers made available to the caller.</inPort>
+        <inPort index="1" name="Header Input">A table containing headers made available to the caller. Each column is treated as a header, with the column name being the header name and the value in the first row being the value for the header.</inPort>
     </ports>
 </knimeNode>

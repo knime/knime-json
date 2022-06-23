@@ -57,10 +57,8 @@ import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.util.FileUtil;
 import org.knime.filehandling.core.connections.FSCategory;
-import org.knime.filehandling.core.connections.FSConnection;
 import org.knime.filehandling.core.connections.FSFiles;
 import org.knime.filehandling.core.connections.FSLocation;
-import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.connections.RelativeTo;
 import org.knime.filehandling.core.connections.location.FSPathProviderFactory;
 import org.knime.filehandling.core.connections.uriexport.URIExporterIDs;
@@ -97,10 +95,14 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     private SettingsModelInteger m_statusCode = createStatusCodeSettingsModel();
 
     /** {@inheritDoc} */
-    @SuppressWarnings("null")
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-        // TODO: check if a binary column exists
+        int idx = findBinaryColumnIndex(inSpecs[0]);
+        if (idx < 0) {
+            throw new InvalidSettingsException("No binary column available.");
+        } else {
+            logger.info("Using column " + inSpecs[idx].getName() + " for HTTP body.");
+        }
         return new DataTableSpec[0];
     }
 
@@ -118,11 +120,15 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         JsonObjectBuilder headerBuilder = Json.createObjectBuilder();
 
         String mimetype = "application/octet-stream";
+        boolean hasContentType = false;
+        // Read headers from the second table and remember the content-type
         BufferedDataTable headerTable = inData[1];
         CloseableRowIterator headerIter = headerTable.iterator();
+        // We need one row
         if (headerIter.hasNext()) {
             DataTableSpec headerInSpec = headerTable.getDataTableSpec();
             DataRow row = headerIter.next();
+            // Each column is a header
             for (int i = 0; i < headerInSpec.getNumColumns(); i++) {
                 DataColumnSpec cspec = headerInSpec.getColumnSpec(i);
                 if (cspec.getType().isCompatible(StringValue.class)) {
@@ -130,12 +136,18 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
                     String value = ((StringValue)row.getCell(i)).getStringValue();
                     if (name.equals("content-type")) {
                         mimetype = value;
+                        hasContentType = true;
                     }
                     headerBuilder.add(name, value);
                 }
             }
         }
+        // If the user did not specify a content-type header, we use a default one
+        if (!hasContentType) {
+            headerBuilder.add("content-type", mimetype);
+        }
 
+        // Read the binary data from the first row in the first binary column
         BufferedDataTable dataTable = inData[0];
         CloseableRowIterator dataIter = dataTable.iterator();
         if (dataIter.hasNext()) {
@@ -175,7 +187,21 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     @Override
     protected void reset() {
         m_json = null;
-        // TODO: Do in Thread?
+        cleanup();
+        m_resourceURI = null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onDispose() {
+        super.onDispose();
+        cleanup();
+    }
+
+    // TODO: Do in Thread?
+    private void cleanup() {
         if(!m_isDataURI) {
             try {
                 Files.delete(Path.of(m_resourceURI));
@@ -183,7 +209,6 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
                 logger.error("Could not delete temporary output file", e);
             }
         }
-        m_resourceURI = null;
     }
 
     /** {@inheritDoc} */
@@ -238,11 +263,12 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         }
     }
 
+    // Turns the data into a base64 string and passes it to the outside as data URI
     private static URI createDataURI(final InputStream stream, final String mimetype, final int size) throws IOException {
-        byte[] imageBytes = new byte[size];
-        stream.read(imageBytes, 0, imageBytes.length);
-        String imageStr = Base64.getEncoder().encodeToString(imageBytes);
-        String uriStr = "data:" + mimetype + ";charset=utf8;base64," + imageStr;
+        byte[] bytes = new byte[size];
+        stream.read(bytes, 0, bytes.length);
+        String b64Str = Base64.getEncoder().encodeToString(bytes);
+        String uriStr = "data:" + mimetype + ";charset=utf8;base64," + b64Str;
         return URI.create(uriStr);
     }
 
@@ -253,12 +279,15 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         try (final var factory = FSPathProviderFactory.newFactory(Optional.empty(), tempDir);
                 final var provider = factory.create(tempDir)) {
 
+            // Create a temporary file that can be passed on to the server as response body
             final var targetLocation = provider.getPath().resolve(new String[] {"raw-http-output.bin"});
 
             try(OutputStream fos = FSFiles.newOutputStream(targetLocation)) {
                 stream.transferTo(fos);
             }
 
+            // We need an absolute URI to the file to give to the outside
+            @SuppressWarnings("resource")
             var exporter = ((NoConfigURIExporterFactory)provider.getFSConnection().getURIExporterFactory(URIExporterIDs.LEGACY_KNIME_URL))
             .getExporter();
 
@@ -267,14 +296,6 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         } catch (IOException | URISyntaxException e) {
             throw new InvalidSettingsException("Could not write file:" + e.getMessage(), e);
         }
-    }
-
-    private static URI resolveToURI(final FSPath filePath, final FSConnection connection)
-        throws IOException, URISyntaxException {
-        final var exporter =
-            ((NoConfigURIExporterFactory)connection.getURIExporterFactory(URIExporterIDs.LEGACY_KNIME_URL))
-                .getExporter();
-        return FileUtil.resolveToPath(FileUtil.toURL(exporter.toUri(filePath).toString())).toUri();
     }
 
     /**
