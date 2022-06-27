@@ -66,21 +66,23 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 
 /**
- * <code>NodeDialog</code> for the "JSONInput" Node. Allows to read a text and return it as a JSON value.
+ * <code>NodeDialog</code> for the "Container Input (Raw HTTP)" Node.
  *
- * @author Gabor Bakos
- * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
+ * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 final class RawHTTPInputNodeDialog extends NodeDialogPane {
 
+    // Text input for base64-encoded binary data
     private final RSyntaxTextArea m_body;
 
-    private final RSyntaxTextArea m_headers;
+    // Table header key-value pairs
+    private final KeyValueTable m_headerTable;
 
-    private final RSyntaxTextArea m_queryParams;
+    // Table for query parameter key-value pairs
+    private final KeyValueTable m_qpTable;
 
     /**
-     * New pane for configuring the JSONInput node.
+     * New pane for configuring the Container Input (Raw HTTP) node.
      */
     protected RawHTTPInputNodeDialog() {
 
@@ -88,15 +90,8 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         m_body.setPreferredSize(new Dimension(0, 150));
         m_body.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
 
-        m_headers = new RSyntaxTextArea();
-        m_headers.setCodeFoldingEnabled(true);
-        m_headers.setPreferredSize(new Dimension(0, 100));
-        m_headers.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
-
-        m_queryParams = new RSyntaxTextArea();
-        m_queryParams.setCodeFoldingEnabled(true);
-        m_queryParams.setPreferredSize(new Dimension(0, 100));
-        m_queryParams.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        m_headerTable = new KeyValueTable("Name", "Value");
+        m_qpTable = new KeyValueTable("Name", "Value");
 
         addTab("Data", createLayout(), false);
     }
@@ -120,22 +115,24 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         gbc.gridy++;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
-        p.add(new JLabel("Headers: "), gbc);
+        p.add(new JLabel("Expected Headers: "), gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
-        p.add(new RTextScrollPane(m_headers, true), gbc);
+        m_headerTable.setPreferredSize(new Dimension(0, 150));
+        p.add(m_headerTable, gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
-        p.add(new JLabel("Query Parameters: "), gbc);
+        p.add(new JLabel("Expected Query Parameters: "), gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
-        p.add(new RTextScrollPane(m_queryParams, true), gbc);
+        m_qpTable.setPreferredSize(new Dimension(0, 150));
+        p.add(m_qpTable, gbc);
 
         return p;
     }
@@ -145,8 +142,8 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         RawHTTPInputNodeConfiguration config = new RawHTTPInputNodeConfiguration();
         config.setBody(m_body.getText());
-        config.setHeaders(m_headers.getText());
-        config.setQueryParams(m_queryParams.getText());
+        config.setHeaders(m_headerTable.getTable());
+        config.setQueryParams(m_qpTable.getTable());
         config.save(settings);
     }
 
@@ -158,7 +155,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         throws NotConfigurableException {
         RawHTTPInputNodeConfiguration config = new RawHTTPInputNodeConfiguration().loadInDialog(settings);
         m_body.setText(config.getBody());
-        m_headers.setText(config.getHeadersAsString());
-        m_queryParams.setText(config.getQueryParametersAsString());
+        m_headerTable.setTable(config.getHeaders());
+        m_qpTable.setTable(config.getQueryParams());
     }
 }

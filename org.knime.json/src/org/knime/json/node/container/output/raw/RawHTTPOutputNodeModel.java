@@ -56,6 +56,7 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.util.FileUtil;
+import org.knime.core.util.ThreadUtils.ThreadWithContext;
 import org.knime.filehandling.core.connections.FSCategory;
 import org.knime.filehandling.core.connections.FSFiles;
 import org.knime.filehandling.core.connections.FSLocation;
@@ -65,9 +66,9 @@ import org.knime.filehandling.core.connections.uriexport.URIExporterIDs;
 import org.knime.filehandling.core.connections.uriexport.noconfig.NoConfigURIExporterFactory;
 
 /**
- * This is the model for the JSON output node.
+ * Node model for the Container Output (Raw HTTP) node.
  *
- * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
+ * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
 
@@ -200,14 +201,9 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         cleanup();
     }
 
-    // TODO: Do in Thread?
     private void cleanup() {
-        if(!m_isDataURI) {
-            try {
-                Files.delete(Path.of(m_resourceURI));
-            } catch (IOException e) {
-                logger.error("Could not delete temporary output file", e);
-            }
+        if(!m_isDataURI && m_resourceURI != null) {
+            Deleter.runNew(Path.of(m_resourceURI));
         }
     }
 
@@ -317,5 +313,32 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     @Override
     public boolean isUseAlwaysFullyQualifiedParameterName() {
         return true;
+    }
+
+    private static final class Deleter extends ThreadWithContext {
+        private final Path m_toDelete;
+
+        private Deleter(final Path toDelete) {
+            m_toDelete = toDelete;
+        }
+
+        @Override
+        protected void runWithContext() {
+            deleteLocalFile(m_toDelete);
+        }
+
+        private static void deleteLocalFile(final Path location) {
+            try {
+                if (Files.exists(location)) {
+                    Files.delete(location);
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not clean up local file!", e);
+            }
+        }
+
+        static void runNew(final Path location) {
+            new Deleter(location).start();
+        }
     }
 }

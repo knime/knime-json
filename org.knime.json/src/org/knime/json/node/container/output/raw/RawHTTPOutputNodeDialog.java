@@ -53,11 +53,14 @@ import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 
 /**
- *
- * @author Alexander Fillbrunn, KNIME
+ * Dialog for the Container Output (Raw HTTP) node.
+ * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 public class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
 
+    /**
+     * Creates a new instance of a dialog for the Container Output (Raw HTTP) node.
+     */
     public RawHTTPOutputNodeDialog() {
         SettingsModelInteger statusCode = RawHTTPOutputNodeModel.createStatusCodeSettingsModel();
         addDialogComponent(new DialogComponentNumber(statusCode, "Status Code", 1));
