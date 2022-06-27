@@ -25,9 +25,9 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * This is the factory for the JSON Output node.
+ * This is the factory for the Container Output (Raw HTTP) node.
  *
- * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
+ * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 public final class RawHTTPOutputNodeFactory extends NodeFactory<RawHTTPOutputNodeModel> {
     /** {@inheritDoc} */

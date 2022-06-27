@@ -27,12 +27,10 @@
         
         <option name="Default headers">
             The default headers to return while building the workflow, when no actual request is available.
-            The format here is JSON, i.e. each JSON key is a header name and the JSON value the header value.
         </option>
         
         <option name="Default query parameters">
             The default query parameters to return while building the workflow, when no actual request is available.
-            The format here is JSON, i.e. each JSON key is a parameter name and the JSON value the parameter value.
         </option>
 	</fullDescription>
 

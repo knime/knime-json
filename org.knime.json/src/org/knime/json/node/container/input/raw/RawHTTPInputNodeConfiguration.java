@@ -49,86 +49,67 @@
 package org.knime.json.node.container.input.raw;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.knime.core.node.config.Config;
 
 /**
- * Configuration for the JSON Input node.
+ * Configuration for the Container Input (Raw HTTP) node.
  *
- * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
+ * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 final class RawHTTPInputNodeConfiguration {
-    /**
-     *
-     */
+
     private static final String CFG_QUERY_PARAMS = "query_params";
-    /**
-     *
-     */
+
     private static final String CFG_BODY = "body";
-    /**
-     *
-     */
+
     private static final String CFG_HEADERS = "headers";
-    /**
-     *
-     */
-    private static final String EMPTY_JSON = "{}";
+
     private String m_body = "";
-    private Map<String, String> m_headers = Collections.emptyMap();
+
+    private Map<String, String> m_headers = new HashMap<>() {{
+        put("content-type", "application/octet-stream");
+    }};
+
     private Map<String, String> m_queryParams = Collections.emptyMap();
 
-    private static Map<String, String> jsonToMap(final String json) throws InvalidSettingsException {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readValue(json, Map.class);
-        } catch (JsonProcessingException e) {
-            throw new InvalidSettingsException("Unable to parse JSON: " + e.getMessage(), e);
-        }
-    }
-
-    private static String mapToJson(final Map<String, String> m) throws InvalidSettingsException {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(m);
-        } catch (JsonProcessingException e) {
-            throw new InvalidSettingsException("Unable to create JSON: " + e.getMessage(), e);
-        }
-    }
-
     /**
-     * @return the body
+     * @return the body stored in this configuration in base64 format
      */
     public String getBody() {
         return m_body;
     }
 
     /**
-     * @param body the body to set
+     * @param body the body to set in base64 format
      */
     public void setBody(final String body) {
         m_body = body;
     }
 
     /**
-     * @return the headers
+     * @return the headers stored in this configuration
      */
     public Map<String, String> getHeaders() {
         return m_headers;
     }
 
     /**
-     * @param headers the headers to set
-     * @throws InvalidSettingsException
+     * Sets the headers stored by this configuration.
+     * @param headers a map where the key is the header name and the value the header value
+     * @return this instance of the configuration
      */
-    public RawHTTPInputNodeConfiguration setHeaders(final String headers) throws InvalidSettingsException {
-        m_headers = jsonToMap(headers);
+    public RawHTTPInputNodeConfiguration setHeaders(final Map<String, String> headers) {
+        m_headers.clear();
+        for (Entry<String, String> e : headers.entrySet()) {
+            m_headers.put(e.getKey(), e.getValue());
+        }
         return this;
     }
 
@@ -140,11 +121,15 @@ final class RawHTTPInputNodeConfiguration {
     }
 
     /**
-     * @param queryParams the queryParams to set
-     * @throws InvalidSettingsException
+     * Sets the query parameters stored by this configuration.
+     * @param queryParams a map where the key is the parameter name and the value the parameter value
+     * @return this instance of the configuration
      */
-    public RawHTTPInputNodeConfiguration setQueryParams(final String queryParams) throws InvalidSettingsException {
-        m_queryParams = jsonToMap(queryParams);
+    public RawHTTPInputNodeConfiguration setQueryParams(final Map<String, String> queryParams) {
+        m_queryParams.clear();
+        for (Entry<String, String> e : queryParams.entrySet()) {
+            m_queryParams.put(e.getKey(), e.getValue());
+        }
         return this;
     }
 
@@ -157,8 +142,19 @@ final class RawHTTPInputNodeConfiguration {
      */
     RawHTTPInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setBody(settings.getString(CFG_BODY));
-        setHeaders(settings.getString(CFG_HEADERS, EMPTY_JSON));
-        setQueryParams(settings.getString(CFG_QUERY_PARAMS, EMPTY_JSON));
+        m_headers.clear();
+        Config headerConf = settings.getConfig(CFG_HEADERS);
+        for (String key : headerConf.keySet()) {
+            String value = headerConf.getString(key);
+            m_headers.put(key, value);
+        }
+
+        m_queryParams.clear();
+        Config qpConf = settings.getConfig(CFG_QUERY_PARAMS);
+        for (String key : qpConf.keySet()) {
+            String value = qpConf.getString(key);
+            m_queryParams.put(key, value);
+        }
         return this;
     }
 
@@ -170,16 +166,29 @@ final class RawHTTPInputNodeConfiguration {
      */
     RawHTTPInputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         setBody(settings.getString(CFG_BODY, ""));
+
+        m_headers.clear();
         try {
-            setHeaders(settings.getString(CFG_HEADERS, EMPTY_JSON));
+            Config headerConf = settings.getConfig(CFG_HEADERS);
+            for (String key : headerConf.keySet()) {
+                String value = headerConf.getString(key);
+                m_headers.put(key, value);
+            }
         } catch (InvalidSettingsException e) {
             m_headers = Collections.emptyMap();
         }
+
+        m_queryParams.clear();
         try {
-            setQueryParams(settings.getString(CFG_QUERY_PARAMS, EMPTY_JSON));
+            Config qpConf = settings.getConfig(CFG_QUERY_PARAMS);
+            for (String key : qpConf.keySet()) {
+                String value = qpConf.getString(key);
+                m_queryParams.put(key, value);
+            }
         } catch (InvalidSettingsException e) {
             m_queryParams = Collections.emptyMap();
         }
+
         return this;
     }
 
@@ -191,42 +200,17 @@ final class RawHTTPInputNodeConfiguration {
      */
     RawHTTPInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString(CFG_BODY, m_body);
-        try {
-            settings.addString(CFG_HEADERS, mapToJson(m_headers));
-        } catch (InvalidSettingsException e) {
-            settings.addString(CFG_HEADERS, EMPTY_JSON);
+
+        Config headerConf = settings.addConfig(CFG_HEADERS);
+        for (Entry<String, String> e : m_headers.entrySet()) {
+            headerConf.addString(e.getKey(), e.getValue());
         }
-        try {
-            settings.addString(CFG_QUERY_PARAMS, mapToJson(m_queryParams));
-        } catch (InvalidSettingsException e) {
-            settings.addString(CFG_QUERY_PARAMS, EMPTY_JSON);
+
+        Config qpConf = settings.addConfig(CFG_QUERY_PARAMS);
+        for (Entry<String, String> e : m_queryParams.entrySet()) {
+            qpConf.addString(e.getKey(), e.getValue());
         }
+
         return this;
     }
-
-    /**
-     * @return
-     */
-    public String getHeadersAsString() {
-        try {
-            return mapToJson(m_headers);
-        } catch (InvalidSettingsException e) {
-            return EMPTY_JSON;
-        }
-    }
-
-    public String getQueryParametersAsString() {
-        try {
-            return mapToJson(m_queryParams);
-        } catch (InvalidSettingsException e) {
-            return EMPTY_JSON;
-        }
-    }
-
-    /** {@inheritDoc} */
-    /*
-    @Override
-    public String toString() {
-        return "\"" + m_parameterName + "\": " + m_value.toString();
-    }*/
 }

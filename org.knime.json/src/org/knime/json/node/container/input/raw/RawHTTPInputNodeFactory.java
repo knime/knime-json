@@ -53,10 +53,9 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "JSONInput" Node. Allows to read a text and return it as a JSON value.
+ * <code>NodeFactory</code> for the "Container Input (Raw HTTP)" Node.
  *
- * @author Gabor Bakos
- * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
+ * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 public class RawHTTPInputNodeFactory extends NodeFactory<RawHTTPInputNodeModel> {
     /**
