@@ -48,8 +48,12 @@
  */
 package org.knime.json.node.container.output.raw;
 
+import org.knime.core.data.StringValue;
+import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
+import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
+import org.knime.core.node.defaultnodesettings.SettingsModelColumnName;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 
 /**
@@ -64,5 +68,9 @@ public class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
     public RawHTTPOutputNodeDialog() {
         SettingsModelInteger statusCode = RawHTTPOutputNodeModel.createStatusCodeSettingsModel();
         addDialogComponent(new DialogComponentNumber(statusCode, "Status Code", 1));
+
+        SettingsModelColumnName colName = RawHTTPOutputNodeModel.createBodyColumnSettingsModel();
+        addDialogComponent(new DialogComponentColumnNameSelection(colName, "Body Column", 0,
+            StringValue.class, BinaryObjectDataValue.class));
     }
 }

@@ -20,12 +20,14 @@
  */
 package org.knime.json.node.container.output.raw;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +43,7 @@ import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.blob.BinaryObjectDataCell;
+import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -51,6 +54,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelColumnName;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
@@ -76,6 +80,8 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
 
     private static final String CFG_STATUS_CODE = "statusCode";
 
+    private static final String CFG_BODY_COLUMN = "bodyColumn";
+
     private static final String PARAMETER_NAME = "raw-http-output";
     private URI m_resourceURI;
     private boolean m_isDataURI = false;
@@ -93,16 +99,31 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         return new SettingsModelInteger(CFG_STATUS_CODE, 200);
     }
 
+    static SettingsModelColumnName createBodyColumnSettingsModel() {
+        return new SettingsModelColumnName(CFG_BODY_COLUMN, null);
+    }
+
     private SettingsModelInteger m_statusCode = createStatusCodeSettingsModel();
+
+    private SettingsModelColumnName m_bodyColumn = createBodyColumnSettingsModel();
 
     /** {@inheritDoc} */
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-        int idx = findBinaryColumnIndex(inSpecs[0]);
-        if (idx < 0) {
-            throw new InvalidSettingsException("No binary column available.");
-        } else {
-            logger.info("Using column " + inSpecs[idx].getName() + " for HTTP body.");
+
+        DataTableSpec bodySpec = inSpecs[0];
+        // Auto-guess body column when non is set. We prefer a binary column.
+        if (m_bodyColumn.getColumnName() == null) {
+            int idx = findBinaryColumnIndex(bodySpec);
+            if (idx < 0) {
+                idx = findStringColumnIndex(bodySpec);
+                if (idx < 0) {
+                    throw new InvalidSettingsException("No binary or string column in input table");
+                }
+            }
+            String col = bodySpec.getColumnSpec(idx).getName();
+            setWarningMessage("No body column configured. Falling back to \"" + col + "\"");
+            m_bodyColumn.setStringValue(col);
         }
         return new DataTableSpec[0];
     }
@@ -111,12 +132,6 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
         final ExecutionContext exec) throws Exception {
-
-        DataTableSpec bodyInSpec = inData[0].getDataTableSpec();
-        int colIdx = findBinaryColumnIndex(bodyInSpec);
-        if (colIdx < 0) {
-            throw new InvalidSettingsException("No binary column available");
-        }
 
         JsonObjectBuilder headerBuilder = Json.createObjectBuilder();
 
@@ -150,19 +165,38 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
 
         // Read the binary data from the first row in the first binary column
         BufferedDataTable dataTable = inData[0];
+        DataTableSpec bodySpec = dataTable.getDataTableSpec();
+        int bodyColumnIndex = bodySpec.findColumnIndex(m_bodyColumn.getColumnName());
+        boolean isBinaryColumn = bodySpec.getColumnSpec(bodyColumnIndex).getType().isCompatible(BinaryObjectDataValue.class);
         CloseableRowIterator dataIter = dataTable.iterator();
         if (dataIter.hasNext()) {
             DataRow row = dataIter.next();
-            BinaryObjectDataCell cell = (BinaryObjectDataCell)row.getCell(colIdx);
-            m_isDataURI = cell.length() <= 1024*1024; // 1MB
+            InputStream stream = null;
+            long size;
+            try {
+                if (isBinaryColumn) {
+                    BinaryObjectDataCell cell = (BinaryObjectDataCell)row.getCell(bodyColumnIndex);
+                    stream = cell.openInputStream();
+                    size = cell.length();
+                } else {
+                    String s = ((StringValue)row.getCell(bodyColumnIndex)).getStringValue();
+                    byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+                    stream = new ByteArrayInputStream(bytes);
+                    size = bytes.length;
+                }
+                m_isDataURI = size <= 1024*1024; // 1MB
 
-            try (InputStream stream = cell.openInputStream()) {
                 if (m_isDataURI) {
-                    m_resourceURI = createDataURI(stream, mimetype, (int)cell.length());
+                    m_resourceURI = createDataURI(stream, mimetype, (int)size);
                 } else {
                     m_resourceURI = createTmpFileURI(stream);
                 }
+            } finally {
+                if (stream != null) {
+                    stream.close();
+                }
             }
+
         }
 
         JsonObjectBuilder mainBuilder = Json.createObjectBuilder();
@@ -177,7 +211,17 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     private static int findBinaryColumnIndex(final DataTableSpec spec) {
         for (int i = 0; i < spec.getNumColumns(); i++) {
             DataColumnSpec cspec = spec.getColumnSpec(i);
-            if (BinaryObjectDataCell.TYPE.isASuperTypeOf(cspec.getType())) {
+            if (cspec.getType().isCompatible(BinaryObjectDataValue.class)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int findStringColumnIndex(final DataTableSpec spec) {
+        for (int i = 0; i < spec.getNumColumns(); i++) {
+            DataColumnSpec cspec = spec.getColumnSpec(i);
+            if (cspec.getType().isCompatible(StringValue.class)) {
                 return i;
             }
         }
@@ -211,18 +255,21 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         m_statusCode.saveSettingsTo(settings);
+        m_bodyColumn.saveSettingsTo(settings);
     }
 
     /** {@inheritDoc} */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_statusCode.validateSettings(settings);
+        m_bodyColumn.validateSettings(settings);
     }
 
     /** {@inheritDoc} */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_statusCode.loadSettingsFrom(settings);
+        m_bodyColumn.loadSettingsFrom(settings);
     }
 
     /** {@inheritDoc} */
@@ -263,7 +310,12 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     private static URI createDataURI(final InputStream stream, final String mimetype, final int size) throws IOException {
         byte[] bytes = new byte[size];
         stream.read(bytes, 0, bytes.length);
-        String b64Str = Base64.getEncoder().encodeToString(bytes);
+
+        return createDataURI(bytes, mimetype);
+    }
+
+    private static URI createDataURI(final byte[] data, final String mimetype) throws IOException {
+        String b64Str = Base64.getEncoder().encodeToString(data);
         String uriStr = "data:" + mimetype + ";charset=utf8;base64," + b64Str;
         return URI.create(uriStr);
     }

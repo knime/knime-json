@@ -77,7 +77,7 @@ final class RawHTTPInputNodeConfiguration {
         put("content-type", "application/octet-stream");
     }};
 
-    private Map<String, String> m_queryParams = Collections.emptyMap();
+    private Map<String, String> m_queryParams = new HashMap<>();
 
     /**
      * @return the body stored in this configuration in base64 format
