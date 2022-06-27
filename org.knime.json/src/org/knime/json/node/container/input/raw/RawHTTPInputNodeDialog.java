@@ -51,6 +51,7 @@ package org.knime.json.node.container.input.raw;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -103,9 +104,10 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
+        gbc.insets = new Insets(10, 5, 0, 5);
 
         gbc.weightx = 0.0;
-        p.add(new JLabel("Body: "), gbc);
+        p.add(new JLabel("Body (base64 encoded): "), gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;

@@ -51,6 +51,7 @@ package org.knime.json.node.container.input.raw;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +79,7 @@ public class KeyValueTable extends JPanel {
         setBorder(BorderFactory.createLineBorder(Color.gray));
 
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(3, 3, 3, 3);
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
