@@ -98,7 +98,7 @@ final class ContainerFileOutputNodeModel extends NodeModel implements OutputNode
 
     static final VariableType<?>[] SUPPORTED_VAR_TYPES = {FSLocationVariableType.INSTANCE};
 
-    static final String CFG_PARAMETER_DEFAULT = "output-file";
+    static final String CFG_PARAMETER_DEFAULT = "file-output";
 
     private final ContainerNodeSharedConfiguration m_sharedConfig;
 

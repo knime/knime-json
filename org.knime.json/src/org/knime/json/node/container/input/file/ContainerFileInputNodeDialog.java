@@ -79,7 +79,7 @@ import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.Dialog
  */
 final class ContainerFileInputNodeDialog extends NodeDialogPane {
 
-    private final ContainerNodeSharedDialogPanel m_sharedPanel = new ContainerNodeSharedDialogPanel("input-file");
+    private final ContainerNodeSharedDialogPanel m_sharedPanel = new ContainerNodeSharedDialogPanel("file-input");
 
     private final NodeConfiguration m_config = new NodeConfiguration();
 

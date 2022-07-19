@@ -69,7 +69,7 @@ import org.knime.json.node.container.ui.ContainerTemplateTablePanel;
  */
 final class ContainerTableInputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "input";
+    private static final String DEFAULT_PARAMETER_NAME = "table-input";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_INPUT_PATH_OR_URL = null;
 

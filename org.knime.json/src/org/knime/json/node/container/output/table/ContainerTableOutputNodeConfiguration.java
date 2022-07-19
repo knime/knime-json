@@ -70,7 +70,7 @@ import org.knime.json.node.container.ui.ContainerTemplateTablePanel;
  */
 final class ContainerTableOutputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "output";
+    private static final String DEFAULT_PARAMETER_NAME = "table-output";
     private static final String DEFAULT_DESCRIPTION = "";
     private static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
 
