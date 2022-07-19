@@ -67,30 +67,43 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  * A simple table for editing key-value pairs.
+ *
  * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 public class KeyValueTable extends JPanel {
 
-    private DefaultTableModel m_keyValueTblModel;
-    private JTable m_table;
+    private static final long serialVersionUID = 771164411205219615L;
 
-    public KeyValueTable(final String keyLable, final String valueLabel) {
+    private DefaultTableModel m_keyValueTblModel;
+
+    /**
+     * Constructor for a JPanl representing and editable table of key-value pairs.
+     *
+     * @param keyLabel Label for the key column
+     * @param valueLabel Label for the value column
+     */
+    public KeyValueTable(final String keyLabel, final String valueLabel) {
+        createLayout(keyLabel, valueLabel);
+    }
+
+    private void createLayout(final String keyLabel, final String valueLabel) {
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createLineBorder(Color.gray));
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        var gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 3, 3);
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = 2;
 
-        m_table = new JTable();
+        var tablePanel = new JTable();
+        // stores the key-value pairs of the UI Component
         m_keyValueTblModel = new DefaultTableModel(0, 2);
-        m_keyValueTblModel.setColumnIdentifiers(new String[] {keyLable, valueLabel});
-        m_table.setModel(m_keyValueTblModel);
+        m_keyValueTblModel.setColumnIdentifiers(new String[]{keyLabel, valueLabel});
+        tablePanel.setModel(m_keyValueTblModel);
 
-        this.add(m_table, gbc);
+        this.add(tablePanel, gbc);
 
         gbc.fill = GridBagConstraints.NONE;
         gbc.weighty = 0.0;
@@ -98,16 +111,14 @@ public class KeyValueTable extends JPanel {
         gbc.gridwidth = 1;
         gbc.gridy = 1;
 
-        JButton addRowBtn = new JButton("Add");
-        addRowBtn.addActionListener((final ActionEvent e) -> {
-            m_keyValueTblModel.addRow(new Object[] {"key", "value"});
-        });
+        var addRowBtn = new JButton("Add");
+        addRowBtn.addActionListener((e -> m_keyValueTblModel.addRow(new Object[]{"key", "value"})));
         this.add(addRowBtn, gbc);
 
         gbc.gridx = 1;
-        JButton removeRowBtn = new JButton("Remove");
+        var removeRowBtn = new JButton("Remove");
         removeRowBtn.addActionListener((final ActionEvent e) -> {
-            ListSelectionModel sm = m_table.getSelectionModel();
+            ListSelectionModel sm = tablePanel.getSelectionModel();
             int min = sm.getMinSelectionIndex();
             int max = sm.getMaxSelectionIndex();
             if (sm.getMinSelectionIndex() != -1) {
@@ -119,20 +130,31 @@ public class KeyValueTable extends JPanel {
         this.add(removeRowBtn, gbc);
     }
 
+    /**
+     * Retrieves the JPanels table entries as a HashMap.
+     *
+     * @return Table of key-value pairs
+     */
+    @SuppressWarnings("unchecked")
     public Map<String, String> getTable() {
         HashMap<String, String> table = new HashMap<>();
-        for (Vector row : m_keyValueTblModel.getDataVector()) {
-            table.put((String)row.elementAt(0), (String)row.elementAt(1));
+        for (Vector<String> row : m_keyValueTblModel.getDataVector()) {
+            table.put(row.elementAt(0), row.elementAt(1));
         }
         return table;
     }
 
+    /**
+     * Sets the JPanels table entries from a given HashMap.
+     *
+     * @param table Table of key-value pairs
+     */
     public void setTable(final Map<String, String> table) {
         while (m_keyValueTblModel.getRowCount() > 0) {
             m_keyValueTblModel.removeRow(0);
         }
         for (Entry<String, String> row : table.entrySet()) {
-            m_keyValueTblModel.addRow(new Object[] {row.getKey(), row.getValue()});
+            m_keyValueTblModel.addRow(new Object[]{row.getKey(), row.getValue()});
         }
     }
 }

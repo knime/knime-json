@@ -54,9 +54,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.config.Config;
 
 /**
  * Configuration for the Container Input (Raw HTTP) node.
@@ -64,6 +64,8 @@ import org.knime.core.node.config.Config;
  * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 final class RawHTTPInputNodeConfiguration {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(RawHTTPInputNodeConfiguration.class);
 
     private static final String CFG_QUERY_PARAMS = "query_params";
 
@@ -73,11 +75,13 @@ final class RawHTTPInputNodeConfiguration {
 
     private String m_body = "";
 
-    private Map<String, String> m_headers = new HashMap<>() {{
-        put("content-type", "application/octet-stream");
-    }};
+    private Map<String, String> m_headers = new HashMap<>();
 
     private Map<String, String> m_queryParams = new HashMap<>();
+
+    public RawHTTPInputNodeConfiguration() {
+        m_headers.put("content-type", "application/octet-stream");
+    }
 
     /**
      * @return the body stored in this configuration in base64 format
@@ -143,16 +147,16 @@ final class RawHTTPInputNodeConfiguration {
     RawHTTPInputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
         setBody(settings.getString(CFG_BODY));
         m_headers.clear();
-        Config headerConf = settings.getConfig(CFG_HEADERS);
+        var headerConf = settings.getConfig(CFG_HEADERS);
         for (String key : headerConf.keySet()) {
-            String value = headerConf.getString(key);
+            var value = headerConf.getString(key);
             m_headers.put(key, value);
         }
 
         m_queryParams.clear();
-        Config qpConf = settings.getConfig(CFG_QUERY_PARAMS);
+        var qpConf = settings.getConfig(CFG_QUERY_PARAMS);
         for (String key : qpConf.keySet()) {
-            String value = qpConf.getString(key);
+            var value = qpConf.getString(key);
             m_queryParams.put(key, value);
         }
         return this;
@@ -169,23 +173,25 @@ final class RawHTTPInputNodeConfiguration {
 
         m_headers.clear();
         try {
-            Config headerConf = settings.getConfig(CFG_HEADERS);
+            var headerConf = settings.getConfig(CFG_HEADERS);
             for (String key : headerConf.keySet()) {
-                String value = headerConf.getString(key);
+                var value = headerConf.getString(key);
                 m_headers.put(key, value);
             }
         } catch (InvalidSettingsException e) {
+            LOGGER.debug(e);
             m_headers = Collections.emptyMap();
         }
 
         m_queryParams.clear();
         try {
-            Config qpConf = settings.getConfig(CFG_QUERY_PARAMS);
+            var qpConf = settings.getConfig(CFG_QUERY_PARAMS);
             for (String key : qpConf.keySet()) {
-                String value = qpConf.getString(key);
+                var value = qpConf.getString(key);
                 m_queryParams.put(key, value);
             }
         } catch (InvalidSettingsException e) {
+            LOGGER.debug(e);
             m_queryParams = Collections.emptyMap();
         }
 
@@ -201,12 +207,12 @@ final class RawHTTPInputNodeConfiguration {
     RawHTTPInputNodeConfiguration save(final NodeSettingsWO settings) {
         settings.addString(CFG_BODY, m_body);
 
-        Config headerConf = settings.addConfig(CFG_HEADERS);
+        var headerConf = settings.addConfig(CFG_HEADERS);
         for (Entry<String, String> e : m_headers.entrySet()) {
             headerConf.addString(e.getKey(), e.getValue());
         }
 
-        Config qpConf = settings.addConfig(CFG_QUERY_PARAMS);
+        var qpConf = settings.addConfig(CFG_QUERY_PARAMS);
         for (Entry<String, String> e : m_queryParams.entrySet()) {
             qpConf.addString(e.getKey(), e.getValue());
         }
