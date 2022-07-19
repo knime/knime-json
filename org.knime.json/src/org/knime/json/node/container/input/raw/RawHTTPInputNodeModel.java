@@ -55,7 +55,6 @@ import java.net.URI;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -104,7 +103,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
 
     // Regex to use for a data URI and extracting the base64 data
     private static final String DATA_URI_REGEX = "^data:(?<mediatype>[^;,]+(?:;charset=[^;,]+)?)?(?:;(?<encoding>[^,]+))?,(?<data>.*)$";
-    Pattern DATA_URI_PATTERN = Pattern.compile(DATA_URI_REGEX);
+    private static final Pattern DATA_URI_PATTERN = Pattern.compile(DATA_URI_REGEX);
 
     /**
      * Constructor for the node model.
@@ -122,7 +121,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
 
         DataTableSpec bodySpec = createBodySpec();
 
-        // Body table
+        // -- body table as binary object cell --
         final BufferedDataContainer bodyContainer = exec.createDataContainer(bodySpec);
         DataCell binaryData;
         // No external value: use config
@@ -130,12 +129,12 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
             byte[] data = Base64.getDecoder().decode(m_configuration.getBody());
             binaryData = new BinaryObjectCellFactory().create(data);
         } else {
-            Matcher m = DATA_URI_PATTERN.matcher(m_resourceURI.toString());
+            var m = DATA_URI_PATTERN.matcher(m_resourceURI.toString());
             if (m.matches()) {
                 String data = m.group("data");
                 binaryData = new BinaryObjectCellFactory().create(Base64.getDecoder().decode(data));
             } else {
-                try (FileInputStream fis = new FileInputStream(new File(m_resourceURI))) {
+                try (var fis = new FileInputStream(new File(m_resourceURI))) {
                     binaryData = new BinaryObjectCellFactory().create(fis);
                 }
             }
@@ -143,7 +142,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         bodyContainer.addRowToTable(new DefaultRow(RowKey.createRowKey(0L), binaryData));
         bodyContainer.close();
 
-        // Header table
+        // -- header table as a single row, one column for each attribute --
         BufferedDataContainer headerContainer;
         if (m_headers != null) {
             DataTableSpec headerSpec = createSpecFromJsonObject(m_headers, true);
@@ -156,7 +155,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         }
         headerContainer.close();
 
-        // Query parameter table
+     // -- query parameter table as a single row, one column for each attribute --
         BufferedDataContainer qpContainer;
         if (m_headers != null) {
             DataTableSpec qpSpec = createSpecFromJsonObject(m_queryParams, false);
@@ -175,6 +174,11 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
             qpContainer.getTable()};
     }
 
+    /**
+     * Converts from JsonObject to a single DefaultRow.
+     * @param json
+     * @return DataRow
+     */
     private static DataRow jsonToRow(final JsonObject json) {
         return new DefaultRow(RowKey.createRowKey(0L),
             StreamSupport.stream(json.entrySet().spliterator(), false)
@@ -182,6 +186,11 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
             .collect(Collectors.toList()));
     }
 
+    /**
+     * Converts from a Map to a single DefaultRow.
+     * @param map
+     * @return DataRow
+     */
     private static DataRow mapToRow(final Map<String, String> map) {
         return new DefaultRow(RowKey.createRowKey(0L),
             StreamSupport.stream(map.entrySet().spliterator(), false)
@@ -198,7 +207,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
     }
 
     private static DataTableSpec createSpecFromJsonObject(final JsonObject o, final boolean lowerCase) {
-        DataTableSpecCreator creator = new DataTableSpecCreator();
+        var creator = new DataTableSpecCreator();
         for (Entry<String, JsonValue> key : o.entrySet()) {
             String name = lowerCase ? key.getKey().toLowerCase() : key.getKey();
             creator.addColumns(new DataColumnSpecCreator(name, StringCell.TYPE).createSpec());
@@ -212,7 +221,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
     }
 
     private DataTableSpec createHeaderSpec() {
-        DataTableSpecCreator creator = new DataTableSpecCreator();
+        var creator = new DataTableSpecCreator();
         for (Entry<String, String> header : m_configuration.getHeaders().entrySet()) {
             String name = header.getKey().toLowerCase();
             creator.addColumns(new DataColumnSpecCreator(name, StringCell.TYPE).createSpec());
@@ -221,7 +230,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
     }
 
     private DataTableSpec createQueryParamSpec() {
-        DataTableSpecCreator creator = new DataTableSpecCreator();
+        var creator = new DataTableSpecCreator();
         for (Entry<String, String> param : m_configuration.getQueryParams().entrySet()) {
             creator.addColumns(new DataColumnSpecCreator(param.getKey(), StringCell.TYPE).createSpec());
         }
@@ -310,8 +319,9 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
             if (inputData.getResource() != null) {
                 m_resourceURI = inputData.getResource();
             }
-            if (inputData.getJSONValue() != null) {
-                JsonValue jsonValue = inputData.getJSONValue();
+            var jsonValue = inputData.getJSONValue();
+
+            if (jsonValue != null) {
                 m_headers = jsonValue.asJsonObject().getJsonObject("headers");
                 m_queryParams = jsonValue.asJsonObject().getJsonObject("query_parameters");
             }

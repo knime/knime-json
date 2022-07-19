@@ -98,8 +98,8 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
     }
 
     private JPanel createLayout() {
-        JPanel p = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        var p = new JPanel(new GridBagLayout());
+        var gbc = new GridBagConstraints();
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -142,7 +142,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
     /** {@inheritDoc} */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        RawHTTPInputNodeConfiguration config = new RawHTTPInputNodeConfiguration();
+        var config = new RawHTTPInputNodeConfiguration();
         config.setBody(m_body.getText());
         config.setHeaders(m_headerTable.getTable());
         config.setQueryParams(m_qpTable.getTable());
@@ -155,7 +155,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
         throws NotConfigurableException {
-        RawHTTPInputNodeConfiguration config = new RawHTTPInputNodeConfiguration().loadInDialog(settings);
+        var config = new RawHTTPInputNodeConfiguration().loadInDialog(settings);
         m_body.setText(config.getBody());
         m_headerTable.setTable(config.getHeaders());
         m_qpTable.setTable(config.getQueryParams());

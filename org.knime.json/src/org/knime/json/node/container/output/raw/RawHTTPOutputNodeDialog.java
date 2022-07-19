@@ -66,6 +66,10 @@ public class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
      * Creates a new instance of a dialog for the Container Output (Raw HTTP) node.
      */
     public RawHTTPOutputNodeDialog() {
+        createLayout();
+    }
+
+    private void createLayout() {
         SettingsModelInteger statusCode = RawHTTPOutputNodeModel.createStatusCodeSettingsModel();
         addDialogComponent(new DialogComponentNumber(statusCode, "Status Code", 1));
 

@@ -24,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -50,7 +50,6 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -75,8 +74,6 @@ import org.knime.filehandling.core.connections.uriexport.noconfig.NoConfigURIExp
  * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
-
-    private static NodeLogger logger = NodeLogger.getLogger(RawHTTPOutputNodeModel.class);
 
     private static final String CFG_STATUS_CODE = "statusCode";
 
@@ -135,68 +132,34 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
 
         JsonObjectBuilder headerBuilder = Json.createObjectBuilder();
 
-        String mimetype = "application/octet-stream";
-        boolean hasContentType = false;
+        var mimetype = "application/octet-stream";
         // Read headers from the second table and remember the content-type
         BufferedDataTable headerTable = inData[1];
-        CloseableRowIterator headerIter = headerTable.iterator();
-        // We need one row
-        if (headerIter.hasNext()) {
-            DataTableSpec headerInSpec = headerTable.getDataTableSpec();
-            DataRow row = headerIter.next();
-            // Each column is a header
-            for (int i = 0; i < headerInSpec.getNumColumns(); i++) {
-                DataColumnSpec cspec = headerInSpec.getColumnSpec(i);
-                if (cspec.getType().isCompatible(StringValue.class)) {
-                    String name = cspec.getName().toLowerCase();
-                    String value = ((StringValue)row.getCell(i)).getStringValue();
-                    if (name.equals("content-type")) {
-                        mimetype = value;
-                        hasContentType = true;
-                    }
-                    headerBuilder.add(name, value);
-                }
+        try (CloseableRowIterator headerIter = headerTable.iterator()) {
+            // We need one row
+            if (headerIter.hasNext()) {
+                mimetype = buildHeaders(headerBuilder, headerTable, headerIter.next());
             }
-        }
-        // If the user did not specify a content-type header, we use a default one
-        if (!hasContentType) {
-            headerBuilder.add("content-type", mimetype);
         }
 
         // Read the binary data from the first row in the first binary column
         BufferedDataTable dataTable = inData[0];
-        DataTableSpec bodySpec = dataTable.getDataTableSpec();
-        int bodyColumnIndex = bodySpec.findColumnIndex(m_bodyColumn.getColumnName());
-        boolean isBinaryColumn = bodySpec.getColumnSpec(bodyColumnIndex).getType().isCompatible(BinaryObjectDataValue.class);
-        CloseableRowIterator dataIter = dataTable.iterator();
-        if (dataIter.hasNext()) {
-            DataRow row = dataIter.next();
-            InputStream stream = null;
-            long size;
-            try {
+        var bodySpec = dataTable.getDataTableSpec();
+        var bodyColumnIndex = bodySpec.findColumnIndex(m_bodyColumn.getColumnName());
+        var isBinaryColumn = bodySpec.getColumnSpec(bodyColumnIndex).getType().isCompatible(BinaryObjectDataValue.class);
+        try (CloseableRowIterator dataIter = dataTable.iterator()) {
+            if (dataIter.hasNext()) {
+                var row = dataIter.next();
+
                 if (isBinaryColumn) {
                     BinaryObjectDataCell cell = (BinaryObjectDataCell)row.getCell(bodyColumnIndex);
-                    stream = cell.openInputStream();
-                    size = cell.length();
+                    buildData(cell::openInputStream, cell.length(), mimetype);
                 } else {
-                    String s = ((StringValue)row.getCell(bodyColumnIndex)).getStringValue();
+                    var s = ((StringValue)row.getCell(bodyColumnIndex)).getStringValue();
                     byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-                    stream = new ByteArrayInputStream(bytes);
-                    size = bytes.length;
-                }
-                m_isDataURI = size <= 1024*1024; // 1MB
-
-                if (m_isDataURI) {
-                    m_resourceURI = createDataURI(stream, mimetype, (int)size);
-                } else {
-                    m_resourceURI = createTmpFileURI(stream);
-                }
-            } finally {
-                if (stream != null) {
-                    stream.close();
+                    buildData(() -> new ByteArrayInputStream(bytes), bytes.length, mimetype);
                 }
             }
-
         }
 
         JsonObjectBuilder mainBuilder = Json.createObjectBuilder();
@@ -208,8 +171,68 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         return new BufferedDataTable[0];
     }
 
+    /**
+     * Builds the headers out of the single, inputted DataRow.
+     * If a content-type attribute is not detected, the default content-type
+     * will be set. Returns the final, used type as String.
+     *
+     * @param headerBuilder
+     * @param headerTable
+     * @param row
+     */
+    private static String buildHeaders(final JsonObjectBuilder headerBuilder, final BufferedDataTable headerTable,
+        final DataRow row) {
+        var headerInSpec = headerTable.getDataTableSpec();
+        var mimetype = "application/octet-stream";
+        var hasContentType = false;
+
+        // Each column is a header
+        for (var i = 0; i < headerInSpec.getNumColumns(); i++) {
+            DataColumnSpec cspec = headerInSpec.getColumnSpec(i);
+            if (cspec.getType().isCompatible(StringValue.class)) {
+                String name = cspec.getName().toLowerCase();
+                var value = ((StringValue)row.getCell(i)).getStringValue();
+                if (name.equals("content-type")) {
+                    mimetype = value;
+                    hasContentType = true;
+                }
+                headerBuilder.add(name, value);
+            }
+        }
+
+        // If the user did not specify a content-type header, we use a default one
+        if (!hasContentType) {
+            headerBuilder.add("content-type", mimetype);
+        }
+        return mimetype;
+    }
+
+    /**
+     * Retrieves the actual data from streams. For small files (<1MB), a data URI is used
+     * and for larger inputs a temp file URI is used.
+     *
+     * @param streamSupplier
+     * @param size
+     * @param mimetype
+     * @throws IOException
+     * @throws InvalidSettingsException
+     */
+    private void buildData(final IOSupplier<InputStream> streamSupplier, final long size, final String mimetype)
+        throws IOException, InvalidSettingsException {
+
+        try (var stream = streamSupplier.getWithException()) {
+            m_isDataURI = size <= 1024 * 1024; // 1MB
+
+            if (m_isDataURI) {
+                m_resourceURI = createDataURI(stream, mimetype, (int)size);
+            } else {
+                m_resourceURI = createTmpFileURI(stream);
+            }
+        }
+    }
+
     private static int findBinaryColumnIndex(final DataTableSpec spec) {
-        for (int i = 0; i < spec.getNumColumns(); i++) {
+        for (var i = 0; i < spec.getNumColumns(); i++) {
             DataColumnSpec cspec = spec.getColumnSpec(i);
             if (cspec.getType().isCompatible(BinaryObjectDataValue.class)) {
                 return i;
@@ -219,7 +242,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     }
 
     private static int findStringColumnIndex(final DataTableSpec spec) {
-        for (int i = 0; i < spec.getNumColumns(); i++) {
+        for (var i = 0; i < spec.getNumColumns(); i++) {
             DataColumnSpec cspec = spec.getColumnSpec(i);
             if (cspec.getType().isCompatible(StringValue.class)) {
                 return i;
@@ -286,10 +309,15 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         // no op
     }
 
+    /**
+     * Sets up a location where the temp file can be placed.
+     *
+     * @return FSLocation for the temp file.
+     * @throws InvalidSettingsException
+     */
     private static FSLocation getTempLocation() throws InvalidSettingsException {
-
-        final String reativeType = URL_THIS_WORKFLOW_DATA;
-        final String relativeLocation = "";
+        final var reativeType = URL_THIS_WORKFLOW_DATA;
+        final var relativeLocation = "";
 
         final var entrypoint = new FSLocation(FSCategory.RELATIVE.toString(), reativeType, relativeLocation);
 
@@ -306,20 +334,31 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         }
     }
 
-    // Turns the data into a base64 string and passes it to the outside as data URI
+    /**
+     * Turns the data into a base64 string and passes it to the outside as data URI
+     *
+     * @param stream
+     * @param mimetype
+     * @param size
+     * @return
+     * @throws IOException
+     */
     private static URI createDataURI(final InputStream stream, final String mimetype, final int size) throws IOException {
-        byte[] bytes = new byte[size];
+        var bytes = new byte[size];
         stream.read(bytes, 0, bytes.length);
 
-        return createDataURI(bytes, mimetype);
-    }
-
-    private static URI createDataURI(final byte[] data, final String mimetype) throws IOException {
-        String b64Str = Base64.getEncoder().encodeToString(data);
-        String uriStr = "data:" + mimetype + ";charset=utf8;base64," + b64Str;
+        var b64Str = Base64.getEncoder().encodeToString(bytes);
+        var uriStr = "data:" + mimetype + ";charset=utf8;base64," + b64Str;
         return URI.create(uriStr);
     }
 
+    /**
+     * Encodes the data in binary and passes it to the outside as a temp file URI
+     *
+     * @param stream
+     * @return
+     * @throws InvalidSettingsException
+     */
     private static URI createTmpFileURI(final InputStream stream)
         throws InvalidSettingsException {
         final var tempDir = getTempLocation();
@@ -330,7 +369,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
             // Create a temporary file that can be passed on to the server as response body
             final var targetLocation = provider.getPath().resolve(new String[] {"raw-http-output.bin"});
 
-            try(OutputStream fos = FSFiles.newOutputStream(targetLocation)) {
+            try(var fos = FSFiles.newOutputStream(targetLocation)) {
                 stream.transferTo(fos);
             }
 
@@ -367,6 +406,11 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         return true;
     }
 
+    /**
+     * Deleter thread that cleans up the temp file.
+     *
+     * @author Alexander Fillbrunn
+     */
     private static final class Deleter extends ThreadWithContext {
         private final Path m_toDelete;
 
@@ -376,13 +420,9 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
 
         @Override
         protected void runWithContext() {
-            deleteLocalFile(m_toDelete);
-        }
-
-        private static void deleteLocalFile(final Path location) {
             try {
-                if (Files.exists(location)) {
-                    Files.delete(location);
+                if (Files.exists(m_toDelete)) {
+                    Files.delete(m_toDelete);
                 }
             } catch (IOException e) {
                 throw new IllegalStateException("Could not clean up local file!", e);
@@ -392,5 +432,16 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         static void runNew(final Path location) {
             new Deleter(location).start();
         }
+    }
+
+    /**
+     * Convenience interface that equals the {@link Supplier} interface,
+     * except for the possibility of an IOException being thrown at the get method.
+     *
+     * @author Leon Wenzler
+     */
+    @FunctionalInterface
+    private interface IOSupplier<T> {
+        public abstract T getWithException() throws IOException;
     }
 }
