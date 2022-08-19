@@ -15,8 +15,15 @@
 				The body is outputted in binary, whereas the header and parameter tables are outputted as data tables.
 			</p>
 			<p>
+				Other container input nodes rely on body data to be provided in a JSON format.
+				However, this "Raw HTTP Input Container" node can deal with arbitrary data, which is provided to the workflow as-is in a binary format.
+				Therefore, the user is able to also input non-standard data, like for example an Excel spreadsheet (*.xlsx files).
+				Furthermore, because of the removed format constraint, this input container allows for an extended compatibility with external tools.
+			</p>
+			<p>
 				Important: There can only be one "Container Input (Raw HTTP)" node in a workflow, as it captures the raw request.
 				Additionally, this input node is only compatible with the "Container Output (Raw HTTP)" node.
+				This means, no other container output node will be supported with this raw HTTP input container.
 			</p>
 		</intro>
 
@@ -24,15 +31,15 @@
 			File chooser for selecting a file containing the body. Four different locations can be chosen from:
 			Local File System, Relative to, Mountpoint and Custom URL.
 			The body data must be encoded as base64 String.
-			This default body is then returned while building the workflow, when no actual request is available.
+			This default body is then returned while building the workflow when no actual request is available.
 		</option>
 		
 		<option name="Default headers">
-			The default headers to return while building the workflow, when no actual request is available.
+			The default headers to return while building the workflow when no actual request is available.
 		</option>
 		
 		<option name="Default query parameters">
-			The default query parameters to return while building the workflow, when no actual request is available.
+			The default query parameters to return while building the workflow when no actual request is available.
 		</option>
 	</fullDescription>
 

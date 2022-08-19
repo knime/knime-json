@@ -17,8 +17,15 @@
 				If no content-type header is specified in the header table, application/octet-stream is returned.
 			</p>
 			<p>
+				Other container output nodes only offer the body data of the response to be sent in a JSON format.
+				However, this "Raw HTTP Output Container" node can send arbitrary data back to the client.
+				Therefore, the user is able to receive non-standard data, for example an Excel spreadsheet (*.xlsx files).
+				Another use case would be to have node respond with an HTML body. The workflow could then be used to generate web pages on request.
+			</p>
+			<p>
 				Important: There can only be one "Container Output (Raw HTTP)" node in a workflow, as it generates the response for the client.
 				Additionally, this output node is only compatible with the "Container Input (Raw HTTP)" node.
+				This means, no other container input node will be supported with this raw HTTP output container.
 			</p>
 		</intro>
 		<option name="Status code">
@@ -31,7 +38,7 @@
 	</fullDescription>
 	<ports>
 		<inPort index="0" name="Body Input">
-			A table containing a binary column whose content is sent back to the caller as body.
+			A table containing a string or binary column whose content is sent back to the caller as <tt>body</tt>.
 		</inPort>
 		<inPort index="1" name="Header Input">
 			A table containing headers made available to the caller.
