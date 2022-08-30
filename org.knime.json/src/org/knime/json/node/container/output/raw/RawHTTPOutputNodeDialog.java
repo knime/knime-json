@@ -48,9 +48,8 @@
  */
 package org.knime.json.node.container.output.raw;
 
-import org.knime.core.data.blob.BinaryObjectDataCell;
-import org.knime.core.data.blob.BinaryObjectFileStoreDataCell;
-import org.knime.core.data.def.StringCell;
+import org.knime.core.data.StringValue;
+import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
@@ -75,8 +74,7 @@ final class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
         addDialogComponent(new DialogComponentNumber(statusCode, "Status Code", 1));
 
         // we support the selection of simple StringCell or any BinaryObjectDataValue columns
-        var columnTypeFilter =
-            new Class[]{StringCell.class, BinaryObjectDataCell.class, BinaryObjectFileStoreDataCell.class};
+        var columnTypeFilter = new Class[]{StringValue.class, BinaryObjectDataValue.class};
 
         SettingsModelColumnName colName = RawHTTPOutputNodeModel.createBodyColumnSettingsModel();
         addDialogComponent(
