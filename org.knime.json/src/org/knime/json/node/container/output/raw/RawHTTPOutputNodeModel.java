@@ -332,7 +332,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         stream.read(bytes, 0, bytes.length);
 
         var b64Str = Base64.getEncoder().encodeToString(bytes);
-        var uriStr = "data:" + mimetype + ";charset=utf8;base64," + b64Str;
+        var uriStr = "data:" + mimetype + ";base64," + b64Str;
         return URI.create(uriStr);
     }
 
