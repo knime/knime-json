@@ -109,6 +109,11 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
 
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        // if the new spec does not contain selected column anymore, issue a warning
+        var selectedColumn = m_bodyColumn.getColumnName();
+        if (selectedColumn != null && (inSpecs[0] == null || !inSpecs[0].containsName(selectedColumn))) {
+            throw new InvalidSettingsException("No such column: " + selectedColumn);
+        }
         return new DataTableSpec[0];
     }
 
@@ -132,12 +137,22 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
             headerBuilder.add("content-type", mimetype);
         }
 
-        // Read the binary data from the first row in the first binary column
-        BufferedDataTable dataTable = inData[0];
-        if (dataTable != null) {
-            var bodyColumnIndex = dataTable.getDataTableSpec().findColumnIndex(m_bodyColumn.getColumnName());
-            if (bodyColumnIndex >= 0) {
-                buildBody(dataTable, bodyColumnIndex, mimetype);
+        var selectedColumn = m_bodyColumn.getColumnName();
+        if (selectedColumn != null) {
+            var dataTable = inData[0];
+            var columnFound = false;
+
+            if (dataTable != null) {
+                var bodyColumnIndex = dataTable.getDataTableSpec().findColumnIndex(selectedColumn);
+                if (bodyColumnIndex >= 0) {
+                    columnFound = true;
+                    // Read the binary data from the first row in the first binary column
+                    buildBody(dataTable, bodyColumnIndex, mimetype);
+                }
+            }
+            if (!columnFound) {
+                // Abort execution if the selected body column cannot be found
+                throw new InvalidSettingsException("No such column: " + selectedColumn);
             }
         } else {
             // if no body was specified via an input table, we use an empty body
