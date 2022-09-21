@@ -63,9 +63,9 @@ import org.knime.core.node.NodeSettings;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContext;
 import org.knime.core.node.workflow.NodeID;
-import org.knime.core.node.workflow.WorkflowContext;
 import org.knime.core.node.workflow.WorkflowCreationHelper;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.filehandling.core.connections.FSCategory;
 import org.knime.filehandling.core.connections.FSFiles;
 import org.knime.filehandling.core.connections.RelativeTo;
@@ -133,9 +133,9 @@ public class ContainerFileInputNodeModelTest {
 
         // setup a mock workflow for testing
         MountPointFileSystemAccessMock.enabled = true;
-        final var wfContext = new WorkflowContext.Factory(createMockWorkflowDir().toFile()).createContext();
-        final var wfHelper = new WorkflowCreationHelper();
-        wfHelper.setWorkflowContext(wfContext);
+        final Path workflowDirectoryPath = createMockWorkflowDir();
+        final var wfHelper = new WorkflowCreationHelper(
+            WorkflowContextV2.forTemporaryWorkflow(workflowDirectoryPath, null));
         final var manager = WorkflowManager.ROOT.createAndAddProject("ContainerFileInputModelTest", wfHelper);
         wfManagerNodeID = manager.getID();
         final var nodeID = manager.createAndAddNode(new ContainerFileInputNodeFactory());
