@@ -71,13 +71,13 @@ final class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
 
     private void createLayout() {
         SettingsModelInteger statusCode = RawHTTPOutputNodeModel.createStatusCodeSettingsModel();
-        addDialogComponent(new DialogComponentNumber(statusCode, "Status Code", 1));
+        addDialogComponent(new DialogComponentNumber(statusCode, "Status code:", 1));
 
         // we support the selection of simple StringCell or any BinaryObjectDataValue columns
         var columnTypeFilter = new Class[]{StringValue.class, BinaryObjectDataValue.class};
 
         SettingsModelColumnName colName = RawHTTPOutputNodeModel.createBodyColumnSettingsModel();
         addDialogComponent(
-            new DialogComponentColumnNameSelection(colName, "Body Column", 0, false, true, columnTypeFilter));
+            new DialogComponentColumnNameSelection(colName, "Body column:", 0, false, true, columnTypeFilter));
     }
 }

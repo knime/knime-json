@@ -53,6 +53,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,6 +74,8 @@ import javax.swing.table.DefaultTableModel;
 final class InteractiveKeyValueTable extends JPanel {
 
     private static final long serialVersionUID = 771164411205219615L;
+
+    private JTable m_tablePanel;
 
     private DefaultTableModel m_keyValueTblModel;
 
@@ -97,13 +100,12 @@ final class InteractiveKeyValueTable extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = 2;
 
-        var tablePanel = new JTable();
+        m_tablePanel = new JTable();
         // stores the key-value pairs of the UI Component
         m_keyValueTblModel = new DefaultTableModel(0, 2);
         m_keyValueTblModel.setColumnIdentifiers(new String[]{keyLabel, valueLabel});
-        tablePanel.setModel(m_keyValueTblModel);
-
-        this.add(tablePanel, gbc);
+        m_tablePanel.setModel(m_keyValueTblModel);
+        this.add(m_tablePanel, gbc);
 
         gbc.fill = GridBagConstraints.NONE;
         gbc.weighty = 0.0;
@@ -118,7 +120,7 @@ final class InteractiveKeyValueTable extends JPanel {
         gbc.gridx = 1;
         var removeRowBtn = new JButton("Remove");
         removeRowBtn.addActionListener((final ActionEvent e) -> {
-            ListSelectionModel sm = tablePanel.getSelectionModel();
+            ListSelectionModel sm = m_tablePanel.getSelectionModel();
             int min = sm.getMinSelectionIndex();
             int max = sm.getMaxSelectionIndex();
             if (sm.getMinSelectionIndex() != -1) {
@@ -137,6 +139,7 @@ final class InteractiveKeyValueTable extends JPanel {
      */
     @SuppressWarnings("unchecked")
     public Map<String, String> getTable() {
+        fireTableDataConfirm();
         HashMap<String, String> table = new HashMap<>();
         for (Vector<String> row : m_keyValueTblModel.getDataVector()) {
             table.put(row.elementAt(0), row.elementAt(1));
@@ -155,6 +158,20 @@ final class InteractiveKeyValueTable extends JPanel {
         }
         for (Entry<String, String> row : table.entrySet()) {
             m_keyValueTblModel.addRow(new Object[]{row.getKey(), row.getValue()});
+        }
+    }
+
+    /**
+     * Confirms the data still being edited in the interactive table by firing an Enter key event on the component. The
+     * "edit-mode" of the table cells is then exited and the values are written to the model.
+     * Note: only firing {@link DefaultTableModel#fireTableDataChanged()} is not enough.
+     */
+    private void fireTableDataConfirm() {
+        if (m_tablePanel != null) {
+            var ke = new KeyEvent(m_tablePanel, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0,
+                KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED);
+            m_tablePanel.dispatchEvent(ke);
+            m_keyValueTblModel.fireTableDataChanged();
         }
     }
 }

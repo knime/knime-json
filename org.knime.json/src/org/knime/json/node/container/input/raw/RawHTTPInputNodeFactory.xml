@@ -27,10 +27,9 @@
 			</p>
 		</intro>
 
-		<option name="File for message body">
+		<option name="File for response body">
 			File chooser for selecting a file containing the body. Four different locations can be chosen from:
 			Local File System, Relative to, Mountpoint and Custom URL.
-			The body data must be encoded as base64 String.
 			This default body is then returned while building the workflow when no actual request is available.
 		</option>
 		

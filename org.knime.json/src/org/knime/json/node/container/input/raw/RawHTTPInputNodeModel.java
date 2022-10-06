@@ -54,7 +54,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Base64;
@@ -69,7 +68,6 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import org.apache.commons.io.IOUtils;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
@@ -181,11 +179,11 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         // No external value: use config
         if (m_resourceURI == null) {
             // if a body file location has been specified, retrieve its content
-            var bodyContent = m_bodyFileModel.isEnabled() && m_bodyFileModel.getLocation() != null
-                ? retrieveBodyFileContent(m_bodyFileModel, exec) : "";
-
-            byte[] data = Base64.getDecoder().decode(bodyContent);
-            binaryData = new BinaryObjectCellFactory().create(data);
+            var bodyData = new byte[0];
+            if (m_bodyFileModel.isEnabled() && m_bodyFileModel.getLocation() != null) {
+                bodyData = retrieveBodyFileContent(m_bodyFileModel, exec);
+            }
+            binaryData = new BinaryObjectCellFactory().create(bodyData);
         } else {
             var m = DATA_URI_PATTERN.matcher(m_resourceURI.toString());
             if (m.matches()) {
@@ -232,16 +230,16 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
     /**
      * Retrieves the body's content from the settings model.
      * The settings model contains an existing connection and the FSLocation of the selected file.
-     * Those are used to open an InputStream on the file and read the contents to String.
+     * Those are used to open an InputStream on the file and read the contents to a byte array.
      * If the file cannot be resolved, an exception is thrown.
      *
      * @param fileSelector the SettingsModel from the file chooser
      * @param exec ExecutionContext for potentially canceling the InputStream
-     * @return String of read file contents
+     * @return byte array of read file contents
      * @throws InvalidSettingsException
      * @throws IOException
      */
-    private static String retrieveBodyFileContent(final SettingsModelReaderFileChooser fileSelector,
+    private static byte[] retrieveBodyFileContent(final SettingsModelReaderFileChooser fileSelector,
         final ExecutionContext exec) throws InvalidSettingsException, IOException {
         var fsLocation = fileSelector.getLocation();
 
@@ -268,7 +266,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
                 final long fileSize = Files.readAttributes(rootPath, BasicFileAttributes.class).size();
                 try (final InputStream sourceStream =
                     new CancellableReportingInputStream(Files.newInputStream(rootPath), exec, fileSize)) {
-                    return IOUtils.toString(sourceStream, StandardCharsets.US_ASCII);
+                    return sourceStream.readAllBytes();
                 } catch (EOFException e) {
                     throw new InvalidSettingsException("The end of the file has been reached unexpectedly. ", e);
                 }

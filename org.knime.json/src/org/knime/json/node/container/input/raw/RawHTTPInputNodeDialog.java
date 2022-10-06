@@ -84,7 +84,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
 
     private static final String EMPTY_FILE_MESSAGE = "<no file specified>";
 
-    // File chooser for selecting base64-encoded binary data files
+    // File chooser for selecting binary data files
     private final DialogComponentReaderFileChooser m_bodyFileChooser;
 
     // Checkbox for enabling/disabling the file selection
@@ -118,7 +118,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         // dialog elements (body file selector, key-value tables for headers and parameters
         m_bodyFileChooser =
             new DialogComponentReaderFileChooser(settingsModel, RawHTTPInputNodeConfiguration.HISTORY_ID, fvm);
-        m_fileSelectionEnabler = new JCheckBox("Output body from file");
+        m_fileSelectionEnabler = new JCheckBox("Enable file output for body");
         m_headerTable = new InteractiveKeyValueTable("Name", "Value");
         m_qpTable = new InteractiveKeyValueTable("Name", "Value");
 
@@ -142,7 +142,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         gbc.anchor = GridBagConstraints.WEST;
 
         gbc.weightx = 0.0;
-        p.add(new JLabel("File for message body (base64 encoded): "), gbc);
+        p.add(new JLabel("File for response body: "), gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
@@ -157,7 +157,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         gbc.gridy++;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
-        p.add(new JLabel("Default Headers: "), gbc);
+        p.add(new JLabel("Default headers: "), gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
@@ -168,7 +168,7 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         gbc.gridy++;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
-        p.add(new JLabel("Default Query Parameters: "), gbc);
+        p.add(new JLabel("Default query parameters: "), gbc);
 
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
