@@ -927,4 +927,11 @@ propagated with or for interoperation with KNIME.
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="com.github.java-json-tools.jackson-coreutils-equivalence"
+         download-size="0"
+         install-size="0"
+         version="1.0.0.v20221113-knime"
+         unpack="false"/>
+
 </feature>

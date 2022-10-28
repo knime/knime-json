@@ -82,9 +82,9 @@ public class Activator implements BundleActivator {
             if ("com.jayway.jsonpath.json-path".equals(b.getSymbolicName())) {
                 jsonBundle = b;
                 //                } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
-            } else if ("com.github.fge.json-schema-core".equals(b.getSymbolicName())) {
+            } else if ("com.github.java-json-tools.json-schema-core".equals(b.getSymbolicName())) {
                 schemaCoreBundle = b;
-            } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
+            } else if ("com.github.java-json-tools.json-schema-validator".equals(b.getSymbolicName())) {
                 schemaValidatorBundle = b;
             } else if ("org.glassfish.javax.json".equals(b.getSymbolicName())) {
                 jsr353Bundle = b;
