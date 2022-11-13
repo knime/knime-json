@@ -412,8 +412,8 @@ public final class JSONPatchApplyNodeModel extends SingleColumnReplaceOrAddNodeM
         try (final StringReader reader = new StringReader(jsonPatchRaw);
                 final JsonLikeParser jsonLikeParser = createParser(reader)) {
             final TreeNode valueAsTree = jsonLikeParser.readValueAsTree();
-            replaceReferences(valueAsTree, availableInputFlowVariables, row, rowIndex);
-            return valueAsTree.toString();
+            var newValue = replaceReferences(valueAsTree, availableInputFlowVariables, row, rowIndex);
+            return newValue != null ? newValue.toString() : null;
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
