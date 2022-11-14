@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
@@ -40,140 +41,85 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ------------------------------------------------------------------------
+ * ---------------------------------------------------------------------
  *
  * History
- *   16.12.2010 (hofer): created
+ *   11 May 2023 (chaubold): created
  */
 package org.knime.core.data.json;
 
-import java.io.IOException;
-
 import org.knime.core.data.DataCell;
-import org.knime.core.data.DataCellDataInput;
-import org.knime.core.data.DataCellDataOutput;
-import org.knime.core.data.DataCellSerializer;
-import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.StringValue;
-import org.knime.core.data.container.BlobDataCell;
-import org.knime.core.data.xml.XMLBlobCell;
+import org.knime.core.data.filestore.FileStore;
+import org.knime.core.data.v2.filestore.NoOpSerializer;
+import org.knime.core.data.v2.filestore.TableOrFileStoreValueFactory.ObjectSerializerFileStoreCell;
+import org.knime.core.table.schema.VarBinaryDataSpec.ObjectDeserializer;
+import org.knime.core.table.schema.VarBinaryDataSpec.ObjectSerializer;
 
 import jakarta.json.JsonValue;
 
 /**
- * {@link BlobDataCell}, {@link JSONValue}, {@link StringValue} implementation that encapsulates a
- * {@link JSONCellContent}. <br/>
- * Use {@link JSONCell#TYPE} for {@link DataType}. <br/>
- * Based on {@link XMLBlobCell}.
+ * A {@link DataCell} implementation of {@link JSONValue} that stores the data in a file store.
  *
- * @since 2.11
- *
- * @author Heiko Hofer
- * @author Gabor Bakos
+ * @since 5.1
+ * @author Carsten Haubold, KNIME GmbH, Konstanz, Germany
+ * @author Jonas Klotz, KNIME GmbH, Berlin, Germany
+ * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
  */
-@SuppressWarnings("serial")
-public final class JSONBlobCell extends BlobDataCell implements JSONValue, StringValue {
-    /**
-     * Serializer for {@link JSONBlobCell}s.
-     *
-     * @noreference This class is not intended to be referenced by clients.
-     */
-    public static final class JSONSerializer implements DataCellSerializer<JSONBlobCell> {
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void serialize(final JSONBlobCell cell, final DataCellDataOutput output) throws IOException {
-            try {
-                output.writeUTF(cell.getStringValue());
-            } catch (IOException ex) {
-                throw ex;
-            }
-        }
+public class JSONFileStoreCell extends ObjectSerializerFileStoreCell<JSONCellContent>
+    implements JSONValue, StringValue {
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public JSONBlobCell deserialize(final DataCellDataInput input) throws IOException {
-            String s = input.readUTF();
-            return new JSONBlobCell(new JSONCellContent(s, false));
-        }
-    }
+    private static final ObjectSerializer<JSONCellContent> SERIALIZER =
+        (output, object) -> JSONValueFactory.SERIALIZER.serialize(output, object);
 
-    private final JSONCellContent m_content;
-
-    // cache the hash
-    private Integer m_hash = null;
+    private static final ObjectDeserializer<JSONCellContent> DESERIALIZER =
+        input -> new JSONCellContent(JSONValueFactory.DESERIALIZER.deserialize(input).getJsonValue());
 
     /**
-     * Create a new instance.
-     *
-     * @param content the content of this cell
+     * @param createFileStore
+     * @param content
      */
-    JSONBlobCell(final JSONCellContent content) {
-        m_content = content;
+    JSONFileStoreCell(final FileStore fs, final JSONValue content) {
+        super(fs, new JSONCellContent(content.getJsonValue()), SERIALIZER, DESERIALIZER);
     }
 
     /**
-     * {@inheritDoc}
+     * Deserialization constructor, FileStore will be provided by framework
      */
+    private JSONFileStoreCell() {
+        this(null);
+    }
+
+    JSONFileStoreCell(final Integer hashCode) {
+        super(SERIALIZER, DESERIALIZER, hashCode);
+    }
+
     @Override
     public String getStringValue() {
-        return m_content.getStringValue();
+        return getContent().getStringValue();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public JsonValue getJsonValue() {
-        return m_content.getJsonValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return m_content.toString();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean equalsDataCell(final DataCell dc) {
-        JSONBlobCell that = (JSONBlobCell)dc;
-        return m_content.equals(that.m_content);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected boolean equalContent(final DataValue otherValue) {
         return JSONValue.equalContent(this, (JSONValue)otherValue);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public int hashCode() {
-        if (null == m_hash) {
-            m_hash = m_content.hashCode();
-        }
-
-        return m_hash;
+    public JsonValue getJsonValue() {
+        return getContent().getJsonValue();
     }
 
     /**
-     * For use in the {@link JSONValueFactory}
+     * Serializer for {@link JSONFileStoreCell}s
+     *
+     * @noreference This class is not intended to be referenced by clients.
      */
-    JSONCellContent getContent() {
-        return m_content;
-    }
+    public static final class JSONSerializer extends NoOpSerializer<JSONFileStoreCell> {
 
+        /** public for the extension point */
+        public JSONSerializer() {
+            super(JSONFileStoreCell::new);
+        }
+    }
 }

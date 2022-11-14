@@ -47,7 +47,9 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="[5.0.0,6.0.0)",
  org.knime.jsnippets;bundle-version="[5.0.0,6.0.0)",
  org.knime.time;bundle-version="[5.0.0,6.0.0)",
  org.knime.rsyntaxtextarea;bundle-version="[5.0.0,6.0.0)",
- org.knime.filehandling.core;bundle-version="[5.0.0,6.0.0)"
+ org.knime.filehandling.core;bundle-version="[5.0.0,6.0.0)",
+ org.knime.core.table;bundle-version="[5.0.0,6.0.0)",
+ org.knime.python3.types;bundle-version="[5.0.0,6.0.0)";resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.knime.json

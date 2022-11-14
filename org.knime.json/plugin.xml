@@ -72,6 +72,11 @@
          </serializer>
          <serializer cellClass="org.knime.core.data.json.JSONBlobCell" serializerClass="org.knime.core.data.json.JSONBlobCell$JSONSerializer">
          </serializer>
+         <serializer cellClass="org.knime.core.data.json.JSONFileStoreCell" serializerClass="org.knime.core.data.json.JSONFileStoreCell$JSONSerializer">
+         </serializer>
+         <ValueFactory
+               valueFactoryClass="org.knime.core.data.json.JSONValueFactory">
+         </ValueFactory>
       </DataType>
    </extension>
    <extension
@@ -79,5 +84,14 @@
       <DataCellToJavaConverter
             factoryClass="org.knime.core.data.json.JsonValueToJavaConverterFactory">
       </DataCellToJavaConverter>
+   </extension>
+   <extension point="org.knime.python3.types.PythonValueFactory">
+      <Module modulePath="src/python" moduleName="knime.types.json">
+         <PythonValueFactory
+            PythonClassName="JsonValueFactory"
+            ValueFactory="org.knime.core.data.json.JSONValueFactory"
+            ValueTypeName="builtins.dict">
+         </PythonValueFactory>
+      </Module>
    </extension>
 </plugin>
