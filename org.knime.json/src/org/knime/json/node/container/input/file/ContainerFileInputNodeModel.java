@@ -76,6 +76,7 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObject;
 import org.knime.core.node.port.flowvariable.FlowVariablePortObjectSpec;
 import org.knime.core.util.ThreadUtils.ThreadWithContext;
+import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.filehandling.core.connections.FSCategory;
 import org.knime.filehandling.core.connections.FSFiles;
@@ -359,7 +360,7 @@ final class ContainerFileInputNodeModel extends NodeModel implements InputNode {
             final var currentLocation = ResolverUtil.resolveURItoLocalOrTempFile(uri).toPath();
             boolean isTemporaryAlready = !currentLocation.toUri().equals(uri); // We assume that the file is temporary if the URI is different
             return moveOrCopyFileToTempLocation(currentLocation, isTemporaryAlready);
-        } catch (IOException e) {
+        } catch (ResourceAccessException e) {
             throw new InvalidSettingsException("Could not resolve external file: " + e.getMessage(), e);
         }
     }
