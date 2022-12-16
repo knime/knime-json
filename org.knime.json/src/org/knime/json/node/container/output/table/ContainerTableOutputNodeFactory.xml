@@ -11,9 +11,10 @@
 	<fullDescription>
 		<intro>
 		
-			This node sends a KNIME table to an external caller (i.e. the <i>Call Workflow (Table Based)</i> node).
-			A configured parameter makes the <i>Container Output (Table)</i> visible from the external caller and enables 
-			the external caller to fetch a KNIME table from the <i>Container Output (Table)</i> node.<br/>
+			This node sends a table to an external caller (i.e. the <i>Call Workflow (Table Based)</i> node
+			or an external REST client). A configured parameter makes the <i>Container Output (Table)</i> 
+			visible from the external caller and enables the external caller to fetch a table from the 
+			<i>Container Output (Table)</i> node.<br/>
 			<br/>
 		
 			If a data table is connected to the input port, the node will simply forward this table to the output port. 

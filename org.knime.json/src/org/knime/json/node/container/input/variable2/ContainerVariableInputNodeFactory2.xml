@@ -8,9 +8,10 @@
 
     <fullDescription>
         <intro>
-            This node receives flow variables from an external caller (i.e. the REST interface) and makes them available to the workflow.
-             A configured parameter makes the <i>Container Input (Variable)</i> visible from the external caller and enables the external caller to send the variables to
-             the <i>Container Input (Variable)</i> node.<br/>
+            This node receives flow variables from an external caller (i.e. the Call Workflow (Table Based) node 
+            or an external REST client) and makes them available to the workflow. A configured parameter makes the 
+            <i>Container Input (Variable)</i> visible from the external caller and enables the external caller to 
+            send the variables to the <i>Container Input (Variable)</i> node.<br/>
             <br/>
             If no variables are send to this node and template variables are defined, their value will be exposed to
             the workflow.
@@ -199,8 +200,8 @@
             If you wish to delete a template variable definition, you can use the button with the bin icon next to
             the move buttons.
         </option>
-        <link href="https://www.knime.com/knime-introductory-course/chapter7/section1/creation-and-usage-of-flow-variables">
-            KNIME E-Learning Course: Creation and usage of Flow Variables in a KNIME workflow
+        <link href="https://docs.knime.com/latest/analytics_platform_workflow_invocation_guide/index.html#workflow-invocation-nodes">
+			KNIME Workflow Invocation (external clients)
         </link>
     </fullDescription>
 

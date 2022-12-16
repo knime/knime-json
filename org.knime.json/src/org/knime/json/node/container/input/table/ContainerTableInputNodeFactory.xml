@@ -11,10 +11,10 @@
  	<fullDescription>
  		<intro>
  		
- 			This node receives a KNIME table from an external caller (i.e. the <i>Call Workflow (Table Based)</i> node) 
- 			and makes it available at the output port. A configured parameter makes the <i>Container Input (Table)</i> 
- 			visible from the external caller and enables the external caller to send a KNIME table to the 
- 			<i>Container Input (Table)</i> node.<br/>
+			This node receives a table from an external caller (i.e. the <i>Call Workflow (Table Based)</i> node 
+			or an external REST client) and makes it available at the output port. A configured parameter makes the
+			<i>Container Input (Table)</i> visible from the external caller and enables the external caller to send a 
+			table to the <i>Container Input (Table)</i> node.<br/>
 			<br/>
 
 			If a data table is connected to the optional input, the node will simply forward this table to the output 

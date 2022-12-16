@@ -11,7 +11,7 @@
  	<fullDescription>
  		<intro>
 	 		This node receives a row from an external caller 
-			(i.e. the Call Local/Remote Workflow (Row Based) nodes or via REST) and makes it available at the output 
+			(i.e. the Call Workflow (Row Based) nodes or via an external REST client) and makes it available at the output 
 	 		port. Rows are represented in the input as simple key/value maps where the keys are the column names and 
 	 		the corresponding values are the row cells. 
 	 		A configured parameter makes the Container Input (Row) visible to the external caller.
@@ -26,8 +26,7 @@
  		</intro>
  
          <option name="Parameter name">
-             A name for the input parameter (preferably unique). This name is exposed in the REST interface and in the
-             <i>Call Local/Remote Workflow (Row Based)</i> nodes.
+             A name for the input parameter (preferably unique). This name is exposed in the REST interface.
          </option>
  
          <option name="Append unique ID to parameter name">

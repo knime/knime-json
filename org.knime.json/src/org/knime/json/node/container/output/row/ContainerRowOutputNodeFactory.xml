@@ -13,8 +13,8 @@
 	<fullDescription>
 		<intro>
 			Reads the first row of an input table and makes it available to an external caller (i.e. the <i>Call 
-			Local/Remote Workflow (Row Based)</i> nodes or an application consuming the workflow as a KNIME server web 
-			service). A configured parameter enables the external caller to fetch the row from the <i>Container Output 
+			Workflow (Row Based)</i> nodes or an application consuming the workflow as a REST service. 
+			A configured parameter enables the external caller to fetch the row from the <i>Container Output 
 			(Row)</i> node.<br/>
 			<br/>
 		

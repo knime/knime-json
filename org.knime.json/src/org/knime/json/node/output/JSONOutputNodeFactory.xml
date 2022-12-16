@@ -8,8 +8,8 @@
     
     <fullDescription>
         <intro>Reads the content of a JSON column and makes it available to an external caller. This node is used
-        in KNIME server web services, where the result of the web service is represented by the input of this node. By
-        default a JSON array is returned, where each row of the input table is an element in the array. Tables with
+        in workflows deployed as REST services, where the result of the web service is represented by the input of this node.
+        By default a JSON array is returned, where each row of the input table is an element in the array. Tables with
         no or only one row result in an array with zero or one element. This behavior can be changed in the dialog, see
         the settings below.
         </intro>
