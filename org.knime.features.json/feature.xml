@@ -2,7 +2,7 @@
 <feature
       id="org.knime.features.json"
       label="KNIME JSON-Processing"
-      version="4.7.0.qualifier"
+      version="5.0.0.qualifier"
       provider-name="KNIME AG, Zurich, Switzerland">
 
    <description>
