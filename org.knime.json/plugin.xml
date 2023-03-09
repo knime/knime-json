@@ -29,6 +29,8 @@
       </node>
       <node category-path="/struct-data/json" factory-class="org.knime.json.node.output.JSONOutputNodeFactory">
       </node>
+      <node category-path="/struct-data" factory-class="org.knime.json.node.input.EventInputNodeFactory">
+      </node>
       <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.table.ContainerTableInputNodeFactory">
       </node>
       <node category-path="/flowabstraction/container" factory-class="org.knime.json.node.container.input.row.ContainerRowInputNodeFactory">
@@ -73,5 +75,10 @@
          <serializer cellClass="org.knime.core.data.json.JSONBlobCell" serializerClass="org.knime.core.data.json.JSONBlobCell$JSONSerializer">
          </serializer>
       </DataType>
+   </extension>
+   <extension point="org.knime.core.WorkflowSaveHook">
+      <WorkflowSaveHook
+            class="org.knime.json.node.input.EventInputArtifactsGenerator">
+      </WorkflowSaveHook>
    </extension>
 </plugin>
