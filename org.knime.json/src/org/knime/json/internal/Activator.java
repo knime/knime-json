@@ -65,10 +65,6 @@ public class Activator implements BundleActivator {
 
     private Configuration m_jsonPathConfiguration;
 
-    private ClassLoader m_jsonSchemaCoreClassLoader;
-
-    private ClassLoader m_jsr353ClassLoader;
-
     private ClassLoader m_jsonSchemaValidatorClassLoader;
 
     /**
@@ -77,7 +73,7 @@ public class Activator implements BundleActivator {
     @Override
     public void start(final BundleContext ctx) throws Exception {
         INSTANCE = this;
-        Bundle jsonBundle = null, schemaCoreBundle = null, schemaValidatorBundle = null, jsr353Bundle = null;
+        Bundle jsonBundle = null, schemaCoreBundle = null, schemaValidatorBundle = null;
         for (Bundle b : ctx.getBundles()) {
             if ("com.jayway.jsonpath.json-path".equals(b.getSymbolicName())) {
                 jsonBundle = b;
@@ -86,8 +82,6 @@ public class Activator implements BundleActivator {
                 schemaCoreBundle = b;
             } else if ("com.github.java-json-tools.json-schema-validator".equals(b.getSymbolicName())) {
                 schemaValidatorBundle = b;
-            } else if ("org.glassfish.javax.json".equals(b.getSymbolicName())) {
-                jsr353Bundle = b;
             }
         }
         if (jsonBundle == null) {
@@ -96,19 +90,15 @@ public class Activator implements BundleActivator {
         if (schemaCoreBundle == null || schemaValidatorBundle == null) {
             throw new NullPointerException("JSON Schema validator could not be loaded.");
         }
-        if (jsr353Bundle == null) {
-            throw new NullPointerException("JSR-353 implementation could not be loaded.");
-        }
-        m_jsr353ClassLoader = jsr353Bundle.adapt(BundleWiring.class).getClassLoader();
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        m_jsonSchemaCoreClassLoader = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
         m_jsonSchemaValidatorClassLoader = schemaValidatorBundle.adapt(BundleWiring.class).getClassLoader();
 
         //This initializes the SchemaVersion enum with the schema core bundle, as the schema validator bundle
         //does not contain a required schema
         try {
-            Thread.currentThread().setContextClassLoader(m_jsonSchemaCoreClassLoader);
-            Class.forName("com.github.fge.jsonschema.SchemaVersion", true, m_jsonSchemaCoreClassLoader);
+            ClassLoader scl = schemaCoreBundle.adapt(BundleWiring.class).getClassLoader();
+            Thread.currentThread().setContextClassLoader(scl);
+            Class.forName("com.github.fge.jsonschema.SchemaVersion", true, scl);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
@@ -164,23 +154,9 @@ public class Activator implements BundleActivator {
     }
 
     /**
-     * @return the jsonSchemaClassLoader
-     */
-    public ClassLoader getJsonSchemaCoreClassLoader() {
-        return m_jsonSchemaCoreClassLoader;
-    }
-
-    /**
      * @return the jsonSchemaValidatorClassLoader
      */
     public ClassLoader getJsonSchemaValidatorClassLoader() {
         return m_jsonSchemaValidatorClassLoader;
-    }
-
-    /**
-     * @return the jsr353ClassLoader
-     */
-    public ClassLoader getJsr353ClassLoader() {
-        return m_jsr353ClassLoader;
     }
 }

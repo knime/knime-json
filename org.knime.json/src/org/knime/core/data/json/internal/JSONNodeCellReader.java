@@ -52,13 +52,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.json.JSONCellReader;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.data.xml.io.XMLCellReader;
+import org.knime.core.util.JsonUtil;
 import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -68,7 +67,9 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
+import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
+
+import jakarta.json.JsonValue;
 
 /**
  * A @link{JSONCellReader} to read a single cell from given @link{InputStream}.<br/>
@@ -86,7 +87,8 @@ class JSONNodeCellReader implements JSONCellReader {
 
     private JSONNodeCellReader(final InputSource is, final boolean allowComments) {
         m_in = is;
-        ObjectMapper mapper = JacksonConversions.getInstance().newMapper().registerModule(new JSR353Module());
+        ObjectMapper mapper =
+            JacksonConversions.getInstance().newMapper().registerModule(new JSONPModule(JsonUtil.getProvider()));
         ObjectReader reader = mapper.reader();
         JsonFactory factory = reader.getFactory();
         factory = factory.configure(JsonParser.Feature.ALLOW_COMMENTS, allowComments);

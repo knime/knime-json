@@ -53,8 +53,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.container.credentials.ContainerCredential;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -74,6 +72,8 @@ import org.knime.core.node.workflow.CredentialsProvider;
 import org.knime.core.node.workflow.CredentialsStore.CredentialsNode;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.json.node.container.io.FilePathOrURLReader;
+
+import jakarta.json.JsonValue;
 
 /**
  * Node model for the Container Input (Credentials) node.

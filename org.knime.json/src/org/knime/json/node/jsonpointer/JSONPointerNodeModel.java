@@ -51,8 +51,6 @@ package org.knime.json.node.jsonpointer;
 import java.io.File;
 import java.io.IOException;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -82,6 +80,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
 import com.github.fge.jackson.jsonpointer.JsonPointerException;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of JSONPointer. Selects certain pointers from the selected JSON column.

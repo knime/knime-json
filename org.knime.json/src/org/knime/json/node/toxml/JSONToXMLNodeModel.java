@@ -51,7 +51,6 @@ package org.knime.json.node.toxml;
 import java.io.File;
 import java.io.IOException;
 
-import javax.json.JsonValue;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.knime.core.data.DataCell;
@@ -78,6 +77,8 @@ import org.knime.json.util.Json2Xml.Json2XmlSettings;
 
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of JSONToXML.

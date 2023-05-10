@@ -59,7 +59,6 @@ import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.json.JsonValue;
 
 import org.knime.core.data.json.container.credentials.ContainerCredential;
 import org.knime.core.data.json.container.credentials.ContainerCredentialsJsonSchema;
@@ -70,6 +69,8 @@ import org.knime.core.util.crypto.IEncrypter;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Class responsible for mapping between JsonValue, {@link ContainerCredential} and

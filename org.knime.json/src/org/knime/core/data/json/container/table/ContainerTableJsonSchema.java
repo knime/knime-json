@@ -50,14 +50,14 @@ package org.knime.core.data.json.container.table;
 
 import java.io.IOException;
 
-import javax.json.JsonValue;
-
 import org.knime.core.node.util.CheckUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Defines a json schema for tables being sent to Container Input (Table) nodes

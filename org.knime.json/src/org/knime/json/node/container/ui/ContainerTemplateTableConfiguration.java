@@ -50,8 +50,6 @@ package org.knime.json.node.container.ui;
 
 import java.io.IOException;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -61,6 +59,8 @@ import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Configuration holding all relevant configurations of {@link ContainerTemplateTablePanel}.

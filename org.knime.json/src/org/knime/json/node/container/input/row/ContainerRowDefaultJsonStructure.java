@@ -51,8 +51,6 @@ package org.knime.json.node.container.input.row;
 import java.io.IOException;
 import java.util.Collections;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
@@ -60,6 +58,8 @@ import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Class that creates an empty JSON structure for the Container input/output (Row) nodes.

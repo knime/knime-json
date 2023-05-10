@@ -68,7 +68,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.json.stream.JsonLocation;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -137,6 +136,8 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ReadContext;
+
+import jakarta.json.stream.JsonLocation;
 
 /**
  * <code>NodeDialog</code> for the "JSONPath" Node. Selects certain paths from the selected JSON column.
@@ -1012,7 +1013,7 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
                 Iterable<?> paths = JsonPathUtil.asList(read);
                 h.removeAllHighlights();
                 for (Object object : paths) {
-                    Pair<javax.json.stream.JsonLocation, javax.json.stream.JsonLocation> context =
+                    Pair<JsonLocation, JsonLocation> context =
                         positionsFromPath(object);
                     //                    m_preview.setSelectionStart((int)context.getFirst().getByteOffset());
                     //                    m_preview.setSelectionEnd((int)context.getSecond().getByteOffset());
@@ -1049,10 +1050,9 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
      * @param object
      * @return
      */
-    private Pair<javax.json.stream.JsonLocation, javax.json.stream.JsonLocation> positionsFromPath(final Object object) {
+    private Pair<JsonLocation, JsonLocation> positionsFromPath(final Object object) {
         String normalizedPath = (String)object;
-        Pair<javax.json.stream.JsonLocation, javax.json.stream.JsonLocation> context =
-            m_paths.get(normalizedPath);
+        Pair<JsonLocation, JsonLocation> context = m_paths.get(normalizedPath);
         return context;
     }
 

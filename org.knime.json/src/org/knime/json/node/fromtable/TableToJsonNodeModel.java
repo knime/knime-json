@@ -15,11 +15,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -43,8 +38,13 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.util.JsonUtil;
 import org.knime.core.util.Pair;
 import org.knime.json.util.JSR353Util;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of TableToJson. Converts a whole table to a single JSON cell.
@@ -196,11 +196,11 @@ class TableToJsonNodeModel extends NodeModel {
         SortedMap<List<String>, Integer> keysSplit = createListKeySortedMap();
         fillStructures(data.getSpec(), m_settings.getColumnNameSeparator(), includes, indices, keys, keysSplit,
             structure);
-        JsonObjectBuilder root = Json.createObjectBuilder();
+        JsonObjectBuilder root = JsonUtil.getProvider().createObjectBuilder();
         Map<String, JsonArrayBuilder> keysToArrays = new LinkedHashMap<>();
         for (int i = 0; i < includes.length; i++) {
             String colName = includes[i];
-            JsonArrayBuilder ab = Json.createArrayBuilder();
+            JsonArrayBuilder ab = JsonUtil.getProvider().createArrayBuilder();
             keysToArrays.put(colName, ab);
         }
         String key = m_settings.getRowKeyKey();
@@ -208,7 +208,7 @@ class TableToJsonNodeModel extends NodeModel {
             case omit:
                 break;
             case asValue:
-                JsonArrayBuilder ab = Json.createArrayBuilder();
+                JsonArrayBuilder ab = JsonUtil.getProvider().createArrayBuilder();
                 keysToArrays.put(key, ab);
                 break;
             case asKey:
@@ -321,14 +321,14 @@ class TableToJsonNodeModel extends NodeModel {
         fillStructures(data.getSpec(), m_settings.getColumnNameSeparator(), includes, indices, keys, keysSplit,
             structure);
         if (m_settings.getRowKey() == RowKeyOption.asKey) {
-            JsonObjectBuilder root = Json.createObjectBuilder();
+            JsonObjectBuilder root = JsonUtil.getProvider().createObjectBuilder();
             for (DataRow dataRow : data) {
                 final JsonObjectBuilder row = visitRow(includes, indices, structure, dataRow);
                 root.add(dataRow.getKey().getString(), row);
             }
             return JSONCellFactory.create(root.build());
         }
-        final JsonArrayBuilder root = Json.createArrayBuilder();
+        final JsonArrayBuilder root = JsonUtil.getProvider().createArrayBuilder();
         for (DataRow dataRow : data) {
             final JsonObjectBuilder row = visitRow(includes, indices, structure, dataRow);
             switch (m_settings.getRowKey()) {
@@ -357,7 +357,7 @@ class TableToJsonNodeModel extends NodeModel {
      */
     JsonObjectBuilder visitRow(final String[] includes, final int[] indices, final Map<String, Object> structure,
         final DataRow dataRow) {
-        JsonObjectBuilder row = Json.createObjectBuilder();
+        JsonObjectBuilder row = JsonUtil.getProvider().createObjectBuilder();
         if (m_settings.isColumnNamesAsPath()) {
             visitStructure(structure, dataRow, row);
         } else {
@@ -439,7 +439,7 @@ class TableToJsonNodeModel extends NodeModel {
             }
 
             private JsonValue createValue(final DataRow dataRow) {
-                JsonObjectBuilder root = Json.createObjectBuilder();
+                JsonObjectBuilder root = JsonUtil.getProvider().createObjectBuilder();
                 if (m_settings.isColumnNamesAsPath()) {
                     visitStructure(m_structure, dataRow, root);
                 } else {
@@ -463,7 +463,8 @@ class TableToJsonNodeModel extends NodeModel {
                         root.add(m_settings.getRowKeyKey(), dataRow.getKey().getString());
                         break;
                     case asKey:
-                        return Json.createObjectBuilder().add(dataRow.getKey().getString(), root.build()).build();
+                        return JsonUtil.getProvider().createObjectBuilder()
+                            .add(dataRow.getKey().getString(), root.build()).build();
                     default:
                         CheckUtils.checkState(false, "Unsupported row key option: " + m_settings.getRowKey());
                 }
@@ -621,7 +622,7 @@ class TableToJsonNodeModel extends NodeModel {
                 Map<?, ?> map = (Map<?, ?>)object;
                 @SuppressWarnings("unchecked")
                 Map<String, Object> casted = (Map<String, Object>)map;
-                JsonObjectBuilder newBuilder = Json.createObjectBuilder();
+                JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
                 visitStructure(casted, row, newBuilder);
                 root.add(entry.getKey(), newBuilder);
             }
@@ -631,7 +632,7 @@ class TableToJsonNodeModel extends NodeModel {
                 Map<?, ?> map = (Map<?, ?>)pair.getSecond();
                 @SuppressWarnings("unchecked")
                 Map<String, Object> casted = (Map<String, Object>)map;
-                JsonObjectBuilder newBuilder = Json.createObjectBuilder();
+                JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
                 visitStructure(casted, row, newBuilder);
                 root.add(entry.getKey(), newBuilder);
                 DataCell cell = row.getCell(index);
@@ -680,7 +681,7 @@ class TableToJsonNodeModel extends NodeModel {
                 Map<?, ?> map = (Map<?, ?>)object;
                 @SuppressWarnings("unchecked")
                 Map<String, Object> casted = (Map<String, Object>)map;
-                JsonObjectBuilder newBuilder = Json.createObjectBuilder();
+                JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
                 visitStructure(casted, newBuilder, result, newCurrentKeys);
                 root.add(entry.getKey(), newBuilder);
             }
@@ -689,7 +690,7 @@ class TableToJsonNodeModel extends NodeModel {
                     Map<?, ?> map = (Map<?, ?>)pair.getSecond();
                     @SuppressWarnings("unchecked")
                     Map<String, Object> casted = (Map<String, Object>)map;
-                    JsonObjectBuilder newBuilder = Json.createObjectBuilder();
+                    JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
                     visitStructure(casted, newBuilder, result, newCurrentKeys);
                     root.add(entry.getKey(), newBuilder);
                     newBuilder.add(entry.getKey(), result.get(join(newCurrentKeys)));

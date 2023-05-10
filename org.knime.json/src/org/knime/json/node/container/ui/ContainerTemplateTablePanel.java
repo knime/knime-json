@@ -54,7 +54,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 
-import javax.json.JsonValue;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -74,6 +73,8 @@ import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.tableview.TableView;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * A view that displays a configured template table and holds an internal table that can be set as a

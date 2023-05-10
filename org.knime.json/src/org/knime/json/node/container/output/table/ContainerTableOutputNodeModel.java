@@ -53,8 +53,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.node.BufferedDataTable;
@@ -70,6 +68,8 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.json.node.container.io.FilePathOrURLWriter;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * The model implementation of the Container Output (Table) node.

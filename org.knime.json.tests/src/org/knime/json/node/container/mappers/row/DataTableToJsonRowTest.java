@@ -50,8 +50,6 @@ package org.knime.json.node.container.mappers.row;
 
 import static org.junit.Assert.assertEquals;
 
-import javax.json.JsonValue;
-
 import org.junit.Test;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataTable;
@@ -66,6 +64,8 @@ import org.knime.core.data.json.JSONCellFactory;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.json.node.container.mappers.BufferedDataTableToContainerTableTest.TestBufferedDataTableBuilder;
+
+import jakarta.json.JsonValue;
 
 /**
  * Tests suite for mapping the first row of a {@link DataTable} to a simple {@link JsonValue} representing the row.

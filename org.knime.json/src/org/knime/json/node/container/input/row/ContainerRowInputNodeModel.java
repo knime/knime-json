@@ -54,8 +54,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.CloseableRowIterator;
@@ -77,6 +75,8 @@ import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.node.container.mappers.row.ContainerRowMapper;
 import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMapperInputHandling;
+
+import jakarta.json.JsonValue;
 
 /**
  * The model implementation of the Container Input (Row) node.

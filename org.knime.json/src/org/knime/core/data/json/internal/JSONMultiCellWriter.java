@@ -50,17 +50,18 @@ package org.knime.core.data.json.internal;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.data.json.JSONCellWriter;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.util.JsonUtil;
 
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
+import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
+
+import jakarta.json.JsonValue;
 
 /**
  * An @link{JSONCellWriter} to write {@link JSONCell}s that can optionally be enclosed in a root element.
@@ -90,7 +91,7 @@ class JSONMultiCellWriter implements JSONCellWriter {
         ObjectMapper mapper =
             JacksonConversions.getInstance().newMapper().configure(Feature.AUTO_CLOSE_TARGET, false)
                 .configure(Feature.AUTO_CLOSE_JSON_CONTENT, false);
-        m_writer = mapper.registerModule(new JSR353Module());
+        m_writer = mapper.registerModule(new JSONPModule(JsonUtil.getProvider()));
         m_writer.disable(SerializationFeature.CLOSE_CLOSEABLE);
     }
 

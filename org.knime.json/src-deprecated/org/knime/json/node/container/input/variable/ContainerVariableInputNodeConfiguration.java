@@ -51,8 +51,6 @@ package org.knime.json.node.container.input.variable;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
@@ -64,6 +62,8 @@ import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * Configuration of the Container Input (Variable) node.
@@ -150,7 +150,7 @@ final class ContainerVariableInputNodeConfiguration {
 
     /**
      * Get value as per {@link #setUseFQNParamName(boolean)}.
-     * 
+     *
      * @return the useFQNParamName
      */
     boolean isUseFQNParamName() {
@@ -159,7 +159,7 @@ final class ContainerVariableInputNodeConfiguration {
 
     /**
      * Sets property as per {@link InputNode#isUseAlwaysFullyQualifiedParameterName()}.
-     * 
+     *
      * @param useFQNParamName the useFQNParamName to set
      */
     void setUseFQNParamName(final boolean useFQNParamName) {
@@ -185,7 +185,7 @@ final class ContainerVariableInputNodeConfiguration {
 
     /**
      * Gets the example input.
-     * 
+     *
      * @return the example input
      */
     JsonValue getExampleInput() {
@@ -194,7 +194,7 @@ final class ContainerVariableInputNodeConfiguration {
 
     /**
      * Sets the example input.
-     * 
+     *
      * @param exampleInput the example input to set
      * @throws InvalidSettingsException if the input does not comply with {@link ContainerVariableJsonSchema}
      */

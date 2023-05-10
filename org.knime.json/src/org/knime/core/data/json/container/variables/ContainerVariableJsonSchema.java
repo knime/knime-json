@@ -52,14 +52,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.JsonValue;
-
 import org.knime.core.node.NodeLogger;
 import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Json schema for flow variables sent to a Container Input (Variable) node.

@@ -58,8 +58,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.json.JsonValue;
-
 import org.knime.base.node.io.variablecreator.SettingsModelVariables;
 import org.knime.base.node.io.variablecreator.SettingsModelVariables.Type;
 import org.knime.core.node.ExecutionContext;
@@ -80,6 +78,8 @@ import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
 import org.knime.core.util.Pair;
 import org.knime.json.node.container.input.file.ContainerNodeSharedConfiguration;
+
+import jakarta.json.JsonValue;
 
 /**
  * The node model for the Container Input (Variable) node.

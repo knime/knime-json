@@ -51,8 +51,6 @@ package org.knime.json.node.input;
 import java.io.File;
 import java.io.IOException;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataTableSpecCreator;
@@ -71,6 +69,8 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.InputNode;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of JSONInput. Allows to read a text and return it as a JSON value.

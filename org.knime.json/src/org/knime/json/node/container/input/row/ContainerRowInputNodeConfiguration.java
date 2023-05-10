@@ -51,8 +51,6 @@ package org.knime.json.node.container.input.row;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -64,6 +62,8 @@ import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMappe
 import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * Configuration for the Container Input (Row) node.

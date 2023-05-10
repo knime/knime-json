@@ -54,7 +54,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-import javax.json.JsonValue;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -86,6 +85,8 @@ import org.knime.core.node.tableview.TableView;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
+
+import jakarta.json.JsonValue;
 
 /**
  * Dialog for the Container Input (Row) node.

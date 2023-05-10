@@ -50,13 +50,13 @@ package org.knime.json.node.container.input.table;
 
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonValue;
-
+import org.knime.core.util.JsonUtil;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonValue;
 
 /**
  * Class that holds a hard coded prototype JSON structure for the Container input/output nodes.
@@ -84,7 +84,7 @@ public final class ContainerTableDefaultJsonStructure {
      * @return the string representation of the JSON structure
      */
     public static String asString() {
-        JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        JsonBuilderFactory factory = JsonUtil.getProvider().createBuilderFactory(null);
         return
             factory.createObjectBuilder()
                 .add("table-spec",  createTableSpec(factory))

@@ -46,9 +46,6 @@
  */
 package org.knime.core.data.json;
 
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
-
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.renderer.AbstractDataValueRendererFactory;
@@ -56,6 +53,9 @@ import org.knime.core.data.renderer.DataValueRenderer;
 import org.knime.core.data.renderer.MultiLineStringValueRenderer;
 import org.knime.core.data.xml.XMLValueRenderer;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
 
 /**
  * Default (multi-line String) renderer for JSON values. <br/>

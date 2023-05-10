@@ -48,9 +48,8 @@
  */
 package org.knime.core.data.json.internal;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.util.JsonUtil;
 
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -59,7 +58,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
+import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
+
+import jakarta.json.JsonValue;
 
 /**
  * Converts between JSR353 and Jackson datatypes.
@@ -72,7 +73,7 @@ public final class JacksonConversionsImpl extends JacksonConversions {
      */
     public static final JacksonConversions INSTANCE = new JacksonConversionsImpl();
 
-    private final ObjectMapper m_mapper = newMapper().registerModule(new JSR353Module());
+    private final ObjectMapper m_mapper = newMapper().registerModule(new JSONPModule(JsonUtil.getProvider()));
 
     private JacksonConversionsImpl() {}
 

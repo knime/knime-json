@@ -52,8 +52,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.text.ParseException;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataCellFactory.FromComplexString;
 import org.knime.core.data.DataCellFactory.FromInputStream;
@@ -64,6 +62,8 @@ import org.knime.core.data.container.BlobDataCell;
 import org.knime.core.data.convert.DataCellFactoryMethod;
 import org.knime.core.data.xml.XMLCellFactory;
 import org.knime.core.node.NodeLogger;
+
+import jakarta.json.JsonValue;
 
 /**
  * Cell factory that creates JSON cells. Depending on the size either normal {@link DataCell}s or {@link BlobDataCell}s

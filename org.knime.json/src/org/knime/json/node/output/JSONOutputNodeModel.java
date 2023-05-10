@@ -23,10 +23,6 @@ package org.knime.json.node.output;
 import java.io.File;
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
@@ -47,6 +43,10 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.util.JsonUtil;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonValue;
 
 /**
  * This is the model for the JSON output node.
@@ -115,10 +115,10 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
             final int columnIndex) {
         CheckUtils.checkState(allowStaleState || table != null, "No table set, JSON output node must be executed");
         if (table == null) {
-            return Json.createArrayBuilder().build();
+            return JsonUtil.getProvider().createArrayBuilder().build();
         }
 
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder arrayBuilder = JsonUtil.getProvider().createArrayBuilder();
         final long rowCount = table.size();
         try (CloseableRowIterator it = allowStaleState ? table.iteratorFailProve() : table.iterator()) {
             while (it.hasNext()) {

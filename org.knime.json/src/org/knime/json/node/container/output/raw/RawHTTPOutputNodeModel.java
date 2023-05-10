@@ -34,10 +34,6 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
@@ -61,6 +57,7 @@ import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.core.node.port.PortType;
 import org.knime.core.util.FileUtil;
+import org.knime.core.util.JsonUtil;
 import org.knime.filehandling.core.connections.FSCategory;
 import org.knime.filehandling.core.connections.FSFiles;
 import org.knime.filehandling.core.connections.FSLocation;
@@ -68,6 +65,9 @@ import org.knime.filehandling.core.connections.RelativeTo;
 import org.knime.filehandling.core.connections.location.FSPathProviderFactory;
 import org.knime.filehandling.core.connections.uriexport.URIExporterIDs;
 import org.knime.filehandling.core.connections.uriexport.noconfig.NoConfigURIExporterFactory;
+
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 /**
  * Node model for the Container Output (Raw HTTP) node.
@@ -121,7 +121,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
         final ExecutionContext exec) throws Exception {
 
-        var headerBuilder = Json.createObjectBuilder();
+        var headerBuilder = JsonUtil.getProvider().createObjectBuilder();
 
         var mimetype = "application/octet-stream";
         // Read headers from the second table and remember the content-type
@@ -160,7 +160,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
             createOutData(() -> new ByteArrayInputStream(emptyBody), emptyBody.length, mimetype);
         }
 
-        JsonObjectBuilder mainBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder mainBuilder = JsonUtil.getProvider().createObjectBuilder();
         mainBuilder.add("status_code", m_statusCode.getIntValue());
 
         mainBuilder.add("headers", headerBuilder);

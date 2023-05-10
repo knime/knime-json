@@ -55,8 +55,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.workflow.FlowVariable;
@@ -64,6 +62,8 @@ import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeF
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Class that converts flow variables to a JsonValue conforming to {@link ContainerVariableJsonSchema}.

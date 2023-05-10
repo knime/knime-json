@@ -54,10 +54,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
 import org.junit.Test;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataValue;
@@ -68,6 +64,10 @@ import org.knime.core.data.convert.java.DataCellToJavaConverter;
 import org.knime.core.data.convert.java.DataCellToJavaConverterFactory;
 import org.knime.core.data.convert.java.DataCellToJavaConverterRegistry;
 import org.knime.core.node.ExecutionContext;
+import org.knime.core.util.JsonUtil;
+
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 /**
  * Test whether the {@link DataCellToJavaConverterFactory} and {@link JavaToDataCellConverterFactory} have been created
@@ -84,7 +84,7 @@ public class TestConverters {
      */
     @Test
     public void testJavaToDataCellConversion() throws Exception {
-        final JsonObject obj = Json.createObjectBuilder().add("name", "KNIME").build();
+        final JsonObject obj = JsonUtil.getProvider().createObjectBuilder().add("name", "KNIME").build();
 
         final Optional<JavaToDataCellConverterFactory<JsonObject>> factory = JavaToDataCellConverterRegistry
             .getInstance().getConverterFactories(JsonObject.class, JSONCell.TYPE).stream().findFirst();
@@ -105,7 +105,7 @@ public class TestConverters {
      */
     @Test
     public void testDataCellToJavaConversion() throws Exception {
-        final JsonObject obj = Json.createObjectBuilder().add("name", "KNIME").build();
+        final JsonObject obj = JsonUtil.getProvider().createObjectBuilder().add("name", "KNIME").build();
         final DataCell cell = JSONCellFactory.create(obj);
 
         final Optional<DataCellToJavaConverterFactory<? extends DataValue, JsonValue>> factory =

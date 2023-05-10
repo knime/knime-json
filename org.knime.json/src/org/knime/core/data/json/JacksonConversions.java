@@ -48,8 +48,6 @@
  */
 package org.knime.core.data.json;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.internal.JacksonConversionsImpl;
 
 import com.fasterxml.jackson.core.TreeNode;
@@ -57,6 +55,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import jakarta.json.JsonValue;
 
 /**
  * An interface to convert between JSR-353 {@link JsonValue}s and Jackson {@link JsonNode}s.

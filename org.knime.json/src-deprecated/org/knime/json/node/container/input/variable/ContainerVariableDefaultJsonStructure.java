@@ -53,12 +53,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonValue;
-
+import org.knime.core.util.JsonUtil;
 import org.knime.json.node.container.input.variable2.ContainerVariableInputNodeFactory2;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonValue;
 
 /**
  * Class that holds a hard coded prototype JSON structure for the Container Input (Variable) node.
@@ -132,7 +132,7 @@ public final class ContainerVariableDefaultJsonStructure {
      * @return the default variable input as JsonValue
      */
     public static JsonValue asJsonValue() {
-        JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        JsonBuilderFactory factory = JsonUtil.getProvider().createBuilderFactory(null);
         return factory.createObjectBuilder().add("variables", createVariables(factory)).build();
     }
 

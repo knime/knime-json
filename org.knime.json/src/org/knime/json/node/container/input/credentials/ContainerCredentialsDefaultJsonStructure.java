@@ -50,11 +50,11 @@ package org.knime.json.node.container.input.credentials;
 
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonValue;
-
+import org.knime.core.util.JsonUtil;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonValue;
 
 /**
  * Class that holds a hard coded prototype JSON structure for the Container Input (Credentials) node.
@@ -81,7 +81,7 @@ final class ContainerCredentialsDefaultJsonStructure {
      * @return the string representation of the JSON structure
      */
     public static String asString() {
-        JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        JsonBuilderFactory factory = JsonUtil.getProvider().createBuilderFactory(null);
         return
             factory.createObjectBuilder()
                 .add("isEncrypted",  false)

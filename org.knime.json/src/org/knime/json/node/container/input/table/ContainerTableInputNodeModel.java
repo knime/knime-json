@@ -52,8 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.BufferedDataTable;
@@ -70,6 +68,8 @@ import org.knime.core.node.dialog.ValueControlledNode;
 import org.knime.core.node.port.PortType;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * The model implementation of the Container Input (Table) node.

@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.json.JsonValue;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
@@ -55,6 +54,8 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.util.ColumnSelectionPanel;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the dialog for the JSON output node.

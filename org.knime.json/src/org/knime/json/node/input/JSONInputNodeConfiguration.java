@@ -51,9 +51,6 @@ package org.knime.json.node.input;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import javax.json.JsonValue;
-import javax.json.spi.JsonProvider;
-
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -64,13 +61,15 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.json.util.JSONUtil;
 
+import jakarta.json.JsonValue;
+
 /**
  * Configuration for the JSON Input node.
  *
  * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
  */
 final class JSONInputNodeConfiguration {
-    private JsonValue m_value = JsonProvider.provider().createObjectBuilder().build();
+    private JsonValue m_value = JsonValue.EMPTY_JSON_OBJECT;
     private String m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONInputNodeModel.class);
     private boolean m_useFQNParamName = false; // added in 4.3
     private String m_description = "";
@@ -193,7 +192,7 @@ final class JSONInputNodeConfiguration {
         try {
             setValue(settings.getString("json"));
         } catch (InvalidSettingsException e) {
-            m_value = JsonProvider.provider().createObjectBuilder().build();
+            m_value = JsonValue.EMPTY_JSON_OBJECT;
         }
 
         setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", false)); // added in 4.3

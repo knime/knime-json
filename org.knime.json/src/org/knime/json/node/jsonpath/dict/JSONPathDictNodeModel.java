@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -45,6 +43,8 @@ import com.github.fge.jackson.JacksonUtils;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of JSONPathDict.

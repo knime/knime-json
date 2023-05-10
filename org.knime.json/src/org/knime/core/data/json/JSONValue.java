@@ -50,12 +50,13 @@ package org.knime.core.data.json;
 
 import java.util.Objects;
 
-import javax.json.JsonValue;
 import javax.swing.Icon;
 
 import org.knime.core.data.DataValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
 import org.knime.core.data.convert.DataValueAccessMethod;
+
+import jakarta.json.JsonValue;
 
 /**
  * This value encapsulates JSR353 {@link JsonValue}.

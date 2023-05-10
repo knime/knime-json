@@ -51,10 +51,10 @@ package org.knime.core.data.json.container.credentials;
 import java.io.IOException;
 import java.util.List;
 
-import javax.json.JsonValue;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Defines a json schema for credentials being sent to Container Input (Variable) nodes.

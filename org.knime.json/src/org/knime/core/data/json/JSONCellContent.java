@@ -54,10 +54,10 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.ref.SoftReference;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.xml.XMLCellContent;
 import org.knime.core.node.NodeLogger;
+
+import jakarta.json.JsonValue;
 
 /**
  * This class encapsulates a {@link JsonValue}. It is the common content of a {@link JSONCell} and a

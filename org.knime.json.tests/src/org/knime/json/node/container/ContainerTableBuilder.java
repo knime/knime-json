@@ -53,19 +53,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
 import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
 import org.knime.core.data.json.container.table.ContainerTableSpec;
+import org.knime.core.util.JsonUtil;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 /**
  * Builder class that simplifies setting up test fixtures using {@link ContainerTableJsonSchema}.
@@ -163,7 +163,7 @@ public class ContainerTableBuilder {
      * @throws IOException if parsing to JsonValue is not succesful
      */
     public JsonValue buildAsJson() throws IOException {
-        JsonBuilderFactory factory = Json.createBuilderFactory(null);
+        JsonBuilderFactory factory = JsonUtil.getProvider().createBuilderFactory(null);
         JsonObjectBuilder builder = factory.createObjectBuilder();
 
         if (m_columnSpecs != null) {

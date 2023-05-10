@@ -4,12 +4,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -29,8 +23,14 @@ import org.knime.core.node.streamable.simple.SimpleStreamableFunctionNodeModel;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.util.filter.InputFilter;
 import org.knime.core.node.util.filter.column.DataColumnSpecFilterConfiguration;
+import org.knime.core.util.JsonUtil;
 import org.knime.json.util.JSR353Util;
 import org.knime.json.util.RootKeyType;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of ColumnCombineJson. Combines multiple JSON columns to a single.
@@ -82,8 +82,8 @@ class ColumnCombineJsonNodeModel extends SimpleStreamableFunctionNodeModel {
 
             @Override
             public DataCell getCell(final DataRow row) {
-                JsonObjectBuilder builder = Json.createObjectBuilder();
-                JsonArrayBuilder array = Json.createArrayBuilder();
+                JsonObjectBuilder builder = JsonUtil.getProvider().createObjectBuilder();
+                JsonArrayBuilder array = JsonUtil.getProvider().createArrayBuilder();
                 for (int idx : m_arrayColumnIndices) {
                     DataCell cell = row.getCell(idx);
                     try {

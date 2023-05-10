@@ -54,11 +54,6 @@ import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.TreeMap;
 
-import javax.json.Json;
-import javax.json.stream.JsonLocation;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
-
 import org.knime.core.util.Pair;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,6 +61,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+
+import jakarta.json.Json;
+import jakarta.json.stream.JsonLocation;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 
 /**
  * The JSR-353-based JSONPath to/from positions ({@link JsonLocation}) within documents.

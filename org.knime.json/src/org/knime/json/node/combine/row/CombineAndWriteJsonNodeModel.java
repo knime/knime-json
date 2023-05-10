@@ -11,9 +11,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.json.spi.JsonProvider;
-import javax.json.stream.JsonGenerator;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
@@ -29,6 +26,9 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.FileUtil;
+import org.knime.core.util.JsonUtil;
+
+import jakarta.json.stream.JsonGenerator;
 
 /**
  * This is the model implementation of CombineAndWriteJson. Combines the values from a JSON column to a single JSON
@@ -73,10 +73,9 @@ class CombineAndWriteJsonNodeModel extends NodeModel {
         }
         final String[] keys = m_settings.getKeys(), values = m_settings.getValues();
         try {
-            try (final JsonGenerator generator =
-                JsonProvider.provider()
-                    .createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, Boolean.TRUE))
-                    .createGenerator(stream)) {
+            try (final JsonGenerator generator = JsonUtil.getProvider()
+                .createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, Boolean.TRUE))
+                .createGenerator(stream)) {
                 switch (m_settings.getObjectOrArray()) {
                     case Array:
                         if (m_settings.isAddRootKey()) {

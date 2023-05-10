@@ -59,18 +59,19 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.crypto.NoSuchPaddingException;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 import org.junit.Test;
 import org.knime.core.node.workflow.Credentials;
 import org.knime.core.node.workflow.ICredentials;
+import org.knime.core.util.JsonUtil;
 import org.knime.core.util.crypto.Encrypter;
 import org.knime.core.util.crypto.IEncrypter;
 import org.knime.json.node.container.input.credentials.ContainerCredentialMapper;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 /**
  * Test suite for mapping JsonValues to {@link ContainerCredentialsJsonSchema}.
@@ -286,7 +287,7 @@ public final class ContainerCredentialMapperTest {
         }
 
         JsonValue build() {
-            JsonBuilderFactory factory = Json.createBuilderFactory(null);
+            JsonBuilderFactory factory = JsonUtil.getProvider().createBuilderFactory(null);
 
             return
                 factory.createObjectBuilder()

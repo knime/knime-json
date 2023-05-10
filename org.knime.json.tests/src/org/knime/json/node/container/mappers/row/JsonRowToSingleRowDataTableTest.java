@@ -51,8 +51,6 @@ package org.knime.json.node.container.mappers.row;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import javax.json.JsonValue;
-
 import org.junit.Test;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
@@ -72,6 +70,8 @@ import org.knime.json.node.container.mappers.BufferedDataTableToContainerTableTe
 import org.knime.json.node.container.mappers.row.inputhandling.ContainerRowMapperInputHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingColumnHandling;
 import org.knime.json.node.container.mappers.row.inputhandling.MissingValuesHandling;
+
+import jakarta.json.JsonValue;
 
 /**
  * Tests suite for mapping {@link JsonValue} representing a single row of data to a single row {@link DataTable}.

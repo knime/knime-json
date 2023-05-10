@@ -22,13 +22,13 @@ package org.knime.json.node.output;
 
 import java.awt.Dimension;
 
-import javax.json.JsonValue;
-
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.knime.core.node.NodeView;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the view of the JSON Output node. It shows the resulting pretty-printed JSON structure.

@@ -52,13 +52,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
 import org.knime.core.node.DefaultNodeProgressMonitor;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.Node;
@@ -67,7 +60,14 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
+import org.knime.core.util.JsonUtil;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 /**
  * Marker class for easy look up for {@link ContainerRowMapper} test classes.
@@ -99,7 +99,7 @@ abstract class ContainerRowMapperTest {
         private final JsonArrayBuilder m_arrayBuilder;
 
         JsonValueBuilder() {
-            m_factory = Json.createBuilderFactory(null);
+            m_factory = JsonUtil.getProvider().createBuilderFactory(null);
             m_builder = m_factory.createObjectBuilder();
             m_arrayBuilder = m_factory.createArrayBuilder();
         }

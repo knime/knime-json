@@ -52,12 +52,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import javax.json.JsonValue;
-
 import org.apache.commons.io.IOUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.util.FileUtil;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * Class responsible for reading a file from its path or URL and parsing it to a {@link JsonValue}.

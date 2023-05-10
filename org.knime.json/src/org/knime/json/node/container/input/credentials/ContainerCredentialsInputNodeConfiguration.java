@@ -51,8 +51,6 @@ package org.knime.json.node.container.input.credentials;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.json.container.credentials.ContainerCredentialsJsonSchema;
 import org.knime.core.node.InvalidSettingsException;
@@ -62,6 +60,8 @@ import org.knime.core.node.dialog.DialogNode;
 import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * Configuration of the Container Input (Credentials) node.

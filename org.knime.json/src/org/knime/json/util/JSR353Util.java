@@ -50,10 +50,6 @@ package org.knime.json.util;
 
 import java.io.IOException;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DoubleValue;
@@ -64,9 +60,13 @@ import org.knime.core.data.collection.CollectionDataValue;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.vector.bytevector.ByteVectorValue;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.util.JsonUtil;
 import org.knime.json.node.jsonpath.util.JsonPathUtils;
 
 import com.fasterxml.jackson.core.Base64Variants;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 /**
  * Some helper methods to work with JSR-353 ({@code javax.json}) values.
@@ -130,7 +130,7 @@ public class JSR353Util {
      * @return The {@link JsonArrayBuilder} with the transformed content of {@code cdv}.
      */
     public static JsonArrayBuilder fromCollectionCell(final CollectionDataValue cdv) {
-        JsonArrayBuilder ret = Json.createArrayBuilder();
+        JsonArrayBuilder ret = JsonUtil.getProvider().createArrayBuilder();
         for (DataCell cell : cdv) {
             try {
                 addToArrayFromCell(ret, cell);

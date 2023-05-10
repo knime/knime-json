@@ -53,19 +53,19 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
-
 import org.knime.core.data.json.JacksonConversions;
+import org.knime.core.util.JsonUtil;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
+import com.fasterxml.jackson.datatype.jsonp.JSONPModule;
+
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 
 /**
  * Various utility function for processing JSON.
@@ -75,7 +75,7 @@ import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
  */
 public final class JSONUtil {
     private static final ObjectMapper MAPPER = JacksonConversions.getInstance().newMapper()
-        .registerModule(new JSR353Module());
+        .registerModule(new JSONPModule(JsonUtil.getProvider()));
 
     /**
      * Returns a pretty-printed string representation of the given JSON object.
@@ -86,8 +86,8 @@ public final class JSONUtil {
     public static String toPrettyJSONString(final JsonValue json) {
         if (json instanceof JsonStructure) {
             StringWriter stringWriter = new StringWriter();
-            JsonWriterFactory writerFactory =
-                Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+            JsonWriterFactory writerFactory = JsonUtil.getProvider()
+                .createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
             try (JsonWriter jsonWriter = writerFactory.createWriter(stringWriter)) {
                 jsonWriter.write((JsonStructure) json);
             }

@@ -23,8 +23,6 @@ package org.knime.json.node.output;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import javax.json.JsonValue;
-
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
@@ -37,6 +35,8 @@ import org.knime.core.node.dialog.InputNode;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.json.util.JSONUtil;
+
+import jakarta.json.JsonValue;
 
 /**
  * Configuration for the JSON Output node.

@@ -55,11 +55,6 @@ import static org.junit.Assert.fail;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
 import org.junit.Test;
 import org.knime.base.node.io.variablecreator.DialogComponentVariables;
 import org.knime.base.node.io.variablecreator.SettingsModelVariables;
@@ -68,9 +63,14 @@ import org.knime.core.node.NodeSettings;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
+import org.knime.core.util.JsonUtil;
 import org.knime.json.node.container.input.file.ContainerNodeSharedConfiguration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 /**
  * Tests for the variable mapping of “Container Input (Variable)” 2 and pushing of the variables.
@@ -84,7 +84,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public class ContainerInputVariable2MappingTest {
 
-    private static final JsonBuilderFactory FACTORY = Json.createBuilderFactory(null);
+    private static final JsonBuilderFactory FACTORY = JsonUtil.getProvider().createBuilderFactory(null);
 
     private static final ContainerVariableInputNodeModel2 MODEL_COMPLEX =
         new ContainerVariableInputNodeFactory2().createNodeModel();
@@ -362,13 +362,13 @@ public class ContainerInputVariable2MappingTest {
     private final static JsonValue toJsonValue(final Object value) {
         final var clazz = value.getClass();
         if (String.class.equals(clazz)) {
-            return Json.createValue((String)value);
+            return JsonUtil.getProvider().createValue((String)value);
         } else if (Integer.class.equals(clazz)) {
-            return Json.createValue((Integer)value);
+            return JsonUtil.getProvider().createValue((Integer)value);
         } else if (Long.class.equals(clazz)) {
-            return Json.createValue((Long)value);
+            return JsonUtil.getProvider().createValue((Long)value);
         } else if (Double.class.equals(clazz)) {
-            return Json.createValue((Double)value);
+            return JsonUtil.getProvider().createValue((Double)value);
         } else if (Boolean.class.equals(clazz)) {
             return ((Boolean)value).booleanValue() ? JsonValue.TRUE : JsonValue.FALSE;
         } else {

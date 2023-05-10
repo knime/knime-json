@@ -56,8 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.json.JsonValue;
-
 import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
@@ -88,6 +86,8 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.json.util.JSONUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Class that converts a {@link BufferedDataTable} to a {@link ContainerTableJsonSchema}.

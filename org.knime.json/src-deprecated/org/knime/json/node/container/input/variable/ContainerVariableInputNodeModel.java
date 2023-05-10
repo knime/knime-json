@@ -58,8 +58,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.json.container.variables.ContainerVariableJsonSchema;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -80,6 +78,8 @@ import org.knime.json.node.container.input.variable2.ContainerVariableJsonSchema
 import org.knime.json.node.container.input.variable2.ContainerVariableMapper2;
 import org.knime.json.node.container.io.FilePathOrURLReader;
 import org.knime.json.node.container.mappers.ContainerVariableMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * The node model for the Container Input (Variable) node.

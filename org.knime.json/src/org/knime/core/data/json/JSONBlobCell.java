@@ -49,8 +49,6 @@ package org.knime.core.data.json;
 
 import java.io.IOException;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataCellDataInput;
 import org.knime.core.data.DataCellDataOutput;
@@ -60,6 +58,8 @@ import org.knime.core.data.DataValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.BlobDataCell;
 import org.knime.core.data.xml.XMLBlobCell;
+
+import jakarta.json.JsonValue;
 
 /**
  * {@link BlobDataCell}, {@link JSONValue}, {@link StringValue} implementation that encapsulates a

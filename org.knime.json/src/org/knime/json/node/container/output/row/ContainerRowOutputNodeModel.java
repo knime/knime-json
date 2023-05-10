@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import javax.json.JsonValue;
-
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.node.BufferedDataContainer;
@@ -22,6 +20,8 @@ import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.OutputNode;
 import org.knime.json.node.container.io.FilePathOrURLWriter;
 import org.knime.json.node.container.mappers.row.ContainerRowMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * This is the model implementation of ContainerRowOutput.

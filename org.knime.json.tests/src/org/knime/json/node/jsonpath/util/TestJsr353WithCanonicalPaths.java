@@ -56,14 +56,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.json.stream.JsonLocation;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.knime.core.util.Pair;
+
+import jakarta.json.stream.JsonLocation;
 
 /**
  * Tests for {@link Jsr353WithCanonicalPaths}.

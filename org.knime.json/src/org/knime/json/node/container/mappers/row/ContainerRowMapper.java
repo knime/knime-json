@@ -59,8 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.json.JsonValue;
-
 import org.knime.base.node.io.filereader.DataCellFactory;
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
@@ -98,6 +96,8 @@ import org.knime.json.util.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.json.JsonValue;
 
 /**
  * Class that converts simple {@link JsonValue} to {@link DataTable} and vice versa.

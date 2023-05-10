@@ -5,10 +5,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
@@ -29,6 +25,10 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.util.JsonUtil;
+
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 /**
  * This is the model implementation of RowCombineJson. Appends JSON values in the rows to a single JSON value.
@@ -56,8 +56,8 @@ class RowCombineJsonNodeModel extends NodeModel {
         int counter = 0;
         final double all = table.size();
         final int idx = table.getSpec().findColumnIndex(m_settings.getInputColumn());
-        final JsonArrayBuilder builder = Json.createArrayBuilder();
-        final JsonObjectBuilder innerObjectBuilder = Json.createObjectBuilder();
+        final JsonArrayBuilder builder = JsonUtil.getProvider().createArrayBuilder();
+        final JsonObjectBuilder innerObjectBuilder = JsonUtil.getProvider().createObjectBuilder();
         final String[] keys = m_settings.getKeys();
         final String[] values = m_settings.getValues();
         final int objectKeyIndex = table.getSpec().findColumnIndex(m_settings.getObjectKeyColumn());
@@ -106,7 +106,7 @@ class RowCombineJsonNodeModel extends NodeModel {
         }
         final DataCell cell;
         if (m_settings.isAddRootKey()) {
-            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder objectBuilder = JsonUtil.getProvider().createObjectBuilder();
             switch (m_settings.getObjectOrArray()) {
                 case Array:
                     objectBuilder.add(m_settings.getRootKey(), builder.build());

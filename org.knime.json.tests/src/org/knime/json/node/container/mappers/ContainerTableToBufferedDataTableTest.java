@@ -53,8 +53,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.json.JsonValue;
-
 import org.junit.Test;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
@@ -84,6 +82,8 @@ import org.knime.core.node.workflow.SingleNodeContainer;
 import org.knime.core.node.workflow.virtual.parchunk.VirtualParallelizedChunkPortObjectInNodeFactory;
 import org.knime.json.node.container.ContainerTableBuilder;
 import org.knime.json.node.container.DataTableAssert;
+
+import jakarta.json.JsonValue;
 
 /**
  * Test suite for converting a {@link ContainerTableJsonSchema} to a {@link BufferedDataTable}.

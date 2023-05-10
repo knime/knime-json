@@ -51,13 +51,13 @@ package org.knime.core.data.json;
 import static org.junit.Assert.assertEquals;
 import static org.knime.core.data.json.TestJSONCell.norm;
 
-import javax.json.JsonValue;
-import javax.json.spi.JsonProvider;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.knime.core.util.JsonUtil;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import jakarta.json.JsonValue;
 
 /**
  * Tests {@link JacksonConversions} implementation using the OSGi service.
@@ -77,11 +77,11 @@ public class TestJacksonConversions {
     }
 
     /**
-     * Test method for {@link org.knime.core.data.json.internal.JacksonConversionsImpl#toJackson(javax.json.JsonValue)}.
+     * Test method for {@link org.knime.core.data.json.internal.JacksonConversionsImpl#toJackson(jakarta.json.JsonValue)}.
      */
     @Test
     public void testToJackson() {
-        JsonValue input = JsonProvider.provider().createObjectBuilder().add("hello", "world").build();
+        JsonValue input = JsonUtil.getProvider().createObjectBuilder().add("hello", "world").build();
         JsonNode node = m_conversions.toJackson(input);
         assertEquals(norm(input.toString()), norm(node.toString()));
     }
