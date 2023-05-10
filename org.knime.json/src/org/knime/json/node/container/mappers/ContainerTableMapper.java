@@ -111,6 +111,7 @@ public final class ContainerTableMapper {
      * @param exec context in which the call has been made
      * @return a Buffered data table corresponding to the json input
      * @throws InvalidSettingsException
+     * @since 5.1
      */
     public static BufferedDataTable[] toBufferedDataTable(
             final JsonValue json,
@@ -124,7 +125,7 @@ public final class ContainerTableMapper {
      * @param json json value to be mapped
      * @return a {@link ContainerTableJsonSchema} of the json value, if well formed
      * @throws InvalidSettingsException if the json value does not conform to {@link ContainerTableJsonSchema}
-     * @since 3.7
+     * @since 5.1
      */
     public static ContainerTableJsonSchema toContainerTableJsonSchema(final JsonValue json) throws InvalidSettingsException {
         try {
@@ -158,7 +159,7 @@ public final class ContainerTableMapper {
      * @param exec the execution context
      * @return a BufferedDataTable array with the mapped table
      * @throws InvalidSettingsException if any of the json inputs are not well formed
-     * @since 3.7
+     * @since 5.1
      */
     public static BufferedDataTable[] toBufferedDataTable(
             final JsonValue inputTable,
@@ -192,7 +193,7 @@ public final class ContainerTableMapper {
      * @param json json representation of a {@link ContainerTableJsonSchema}
      * @return a CloseableTable[] corresponding to the json input
      * @throws InvalidSettingsException if the json input does not conform to {@link ContainerTableJsonSchema}
-     * @since 4.2
+     * @since 5.1
      */
     public static CloseableTable[] toDataTable(final JsonValue json) throws InvalidSettingsException {
         return toDataTable(toContainerTableJsonSchema(json));
@@ -225,7 +226,7 @@ public final class ContainerTableMapper {
      * @param fallback json representing a fall back table
      * @return DataTableSpec of the input if present, of the fall back otherwise
      * @throws InvalidSettingsException if the mapping of either of the json inputs fails
-     * @since 3.7
+     * @since 5.1
      */
     public static DataTableSpec toTableSpec(final JsonValue input, final JsonValue fallback)
             throws InvalidSettingsException {
@@ -243,6 +244,7 @@ public final class ContainerTableMapper {
      * @param jsonInput input of which the table spec is created from
      * @return a DataTableSpec from the json input
      * @throws InvalidSettingsException
+     * @since 5.1
      */
     public static DataTableSpec toTableSpec(final JsonValue jsonInput) throws InvalidSettingsException {
         return toTableSpec(toContainerTableJsonSchema(jsonInput));
@@ -337,6 +339,7 @@ public final class ContainerTableMapper {
      * @param table table to be converted to a json value
      * @return json value representing the input table, conforming to {@link ContainerTableJsonSchema}
      * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
+     * @since 5.1
      */
     public static JsonValue toContainerTableJsonValue(final BufferedDataTable table) throws InvalidSettingsException {
         return toContainerTableJsonValueFromDataTable(table);
@@ -348,7 +351,7 @@ public final class ContainerTableMapper {
      * @param table table to be converted to a json value
      * @return json value representing the input table, conforming to {@link ContainerTableJsonSchema}
      * @throws InvalidSettingsException if the table could not be mapped to a conforming Json value
-     * @since 3.7
+     * @since 5.1
      */
     public static JsonValue toContainerTableJsonValueFromDataTable(final DataTable table)
             throws InvalidSettingsException {

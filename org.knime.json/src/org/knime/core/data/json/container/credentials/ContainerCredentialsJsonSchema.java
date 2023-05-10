@@ -103,6 +103,7 @@ public final class ContainerCredentialsJsonSchema {
      * Checks if a string conforms to the json schema outlined by this class.
      * @param json the json string to be checked
      * @return true if the given string conforms to this schema
+     * @since 5.1
      */
     public static boolean hasValidSchema(final JsonValue json) {
         return hasValidSchema(json.toString());

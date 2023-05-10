@@ -111,6 +111,7 @@ public class ContainerTableJsonSchema {
      *
      * @param jsonValue the json value under question
      * @return true if the supplied Json value conforms to {@link ContainerTableJsonSchema}
+     * @since 5.1
      */
     public static boolean hasContainerTableJsonSchema(final JsonValue jsonValue) {
         try {

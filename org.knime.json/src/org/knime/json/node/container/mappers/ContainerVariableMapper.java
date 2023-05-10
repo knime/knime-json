@@ -83,6 +83,7 @@ public class ContainerVariableMapper {
      * @param flowVariables the flow variables
      * @return a JsonValue representing the flow variables
      * @throws InvalidSettingsException if variables cannot be mapped to {@link ContainerVariableJsonSchema}
+     * @since 5.1
      */
     public static JsonValue toContainerVariableJsonValue(final Collection<FlowVariable> flowVariables)
         throws InvalidSettingsException {

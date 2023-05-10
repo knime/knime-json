@@ -85,12 +85,14 @@ public abstract class JacksonConversions {
     /**
      * @param input A JSR-353 {@link JsonValue}.
      * @return The converted Jackson {@link JsonNode}.
+     * @since 5.1
      */
     public abstract JsonNode toJackson(JsonValue input);
 
     /**
      * @param input A Jackson {@link TreeNode}.
      * @return The converted JSR-353 {@link JsonValue}.
+     * @since 5.1
      */
     public abstract JsonValue toJSR353(TreeNode input);
 

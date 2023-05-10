@@ -130,6 +130,7 @@ public final class ContainerVariableDefaultJsonStructure {
      * Returns a JsonValue of the default structure.
      *
      * @return the default variable input as JsonValue
+     * @since 5.1
      */
     public static JsonValue asJsonValue() {
         JsonBuilderFactory factory = JsonUtil.getProvider().createBuilderFactory(null);

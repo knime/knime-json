@@ -98,6 +98,7 @@ public final class ContainerCredentialMapper {
      * @param json value to be mapped
      * @return the mapped credentials
      * @throws InvalidSettingsException if mapping or decryption goes wrong
+     * @since 5.1
      */
     public static List<ContainerCredential> toContainerCredentials(final JsonValue json)
             throws InvalidSettingsException {
@@ -112,6 +113,7 @@ public final class ContainerCredentialMapper {
      * @param encrypter encrypter that decrypts the passwords, if encrypted
      * @return the mapped credentials
      * @throws InvalidSettingsException if mapping or decryption goes wrong
+     * @since 5.1
      */
     public static List<ContainerCredential> toContainerCredentials(final JsonValue json, final IEncrypter encrypter)
             throws InvalidSettingsException {
@@ -155,6 +157,7 @@ public final class ContainerCredentialMapper {
      * @param credentials to be mapped
      * @return a json value of the input credentials, conforming to {@link ContainerCredentialsJsonSchema}
      * @throws InvalidSettingsException if mapping to json value fails
+     * @since 5.1
      */
     public static JsonValue toContainerCredentialsJsonValue(final List<ICredentials> credentials)
             throws InvalidSettingsException {

@@ -90,6 +90,7 @@ public class JSR353Util {
      * @param builder A {@link JsonObjectBuilder}.
      * @return The input {@code builder}.
      * @throws IOException When the there was a problem reading {@link BinaryObjectDataValue}s.
+     * @since 5.1
      */
     public static JsonObjectBuilder fromCell(final String key, final DataCell cell, final JsonObjectBuilder builder)
         throws IOException {
@@ -128,6 +129,7 @@ public class JSR353Util {
     /**
      * @param cdv A {@link CollectionDataValue} to convert.
      * @return The {@link JsonArrayBuilder} with the transformed content of {@code cdv}.
+     * @since 5.1
      */
     public static JsonArrayBuilder fromCollectionCell(final CollectionDataValue cdv) {
         JsonArrayBuilder ret = JsonUtil.getProvider().createArrayBuilder();
@@ -149,6 +151,7 @@ public class JSR353Util {
      * @param array A {@link JsonArrayBuilder}.
      * @param cell The {@link DataCell} to transform.
      * @throws IOException When cannot read binary object data values.
+     * @since 5.1
      */
     public static void addToArrayFromCell(final JsonArrayBuilder array, final DataCell cell) throws IOException {
         if (cell.isMissing()) {

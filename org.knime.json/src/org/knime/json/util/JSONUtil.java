@@ -82,6 +82,7 @@ public final class JSONUtil {
      *
      * @param json a JSON structure
      * @return a JSON string
+     * @since 5.1
      */
     public static String toPrettyJSONString(final JsonValue json) {
         if (json instanceof JsonStructure) {
@@ -104,6 +105,7 @@ public final class JSONUtil {
      * @param s a JSON string
      * @return a new JSON value
      * @throws IOException if parsing the presumed JSON string fails (usually no I/O error but an invalid string)
+     * @since 5.1
      */
     public static JsonValue parseJSONValue(final String s) throws IOException {
         final Thread currentThread = Thread.currentThread();

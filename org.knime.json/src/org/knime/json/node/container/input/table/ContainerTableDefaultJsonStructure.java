@@ -70,6 +70,7 @@ public final class ContainerTableDefaultJsonStructure {
      * Creates a JsonValue object of the hard coded structure.
      *
      * @return a JsonValue of the structure
+     * @since 5.1
      */
     public static JsonValue asJsonValue() {
         try {

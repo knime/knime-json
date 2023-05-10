@@ -87,6 +87,7 @@ public final class ContainerVariableMapper2 {
      * @return a JsonValue representing the flow variables
      * @param trySimplifiedJson output the json in simplified form if only one variable is defined
      * @throws InvalidSettingsException if variables cannot be mapped to {@link ContainerVariableJsonSchema2}
+     * @since 5.1
      */
     public static JsonValue toContainerVariableJsonValue(final Map<String, FlowVariable> flowVariables,
         final boolean trySimplifiedJson) throws InvalidSettingsException {

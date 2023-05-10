@@ -157,6 +157,7 @@ public final class JSONCellFactory implements FromSimpleString, FromComplexStrin
      * @param json the returned data cell encapsulates this {@link JsonValue}.
      * @return DataCell representing the JSON
      * @throws NullPointerException if argument is null
+     * @since 5.1
      */
     @DataCellFactoryMethod(name = "JsonValue")
     public static DataCell create(final JsonValue json) {

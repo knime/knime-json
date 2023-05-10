@@ -100,6 +100,7 @@ public class ContainerVariableJsonSchema {
      *
      * @param jsonValue the json value under question
      * @return true if the supplied Json value conforms to {@link ContainerVariableJsonSchema}
+     * @since 5.1
      */
     public static boolean hasContainerVariablesJsonSchema(final JsonValue jsonValue) {
         if (jsonValue.toString().equals("{}")) {
