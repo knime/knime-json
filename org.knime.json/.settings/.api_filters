@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component id="org.knime.json" version="2">
+    <resource path="META-INF/MANIFEST.MF">
+        <filter id="933232702">
+            <message_arguments>
+                <message_argument value="5.1.0"/>
+                <message_argument value="org.glassfish.javax.json"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.Json">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.Json"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonArray">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonArray"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonArrayBuilder">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonArrayBuilder"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonBuilderFactory">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonBuilderFactory"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonException">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonException"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonMergePatch">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonMergePatch"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonNumber">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonNumber"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonObject">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonObject"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonObjectBuilder">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonObjectBuilder"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonPatch">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonPatch"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonPatchBuilder">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonPatchBuilder"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonPointer">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonPointer"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonReader">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonReader"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonReaderFactory">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonReaderFactory"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonString">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonString"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonStructure">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonStructure"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonValue">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonValue"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonWriter">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonWriter"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.JsonWriterFactory">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.JsonWriterFactory"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.spi.JsonProvider">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.spi.JsonProvider"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonCollectors">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonCollectors"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonGenerationException">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonGenerationException"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonGenerator">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonGenerator"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonGeneratorFactory">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonGeneratorFactory"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonLocation">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonLocation"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonParser">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonParser"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonParserFactory">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonParserFactory"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="javax.json.stream.JsonParsingException">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="javax.json.stream.JsonParsingException"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="META-INF/MANIFEST.MF" type="org.glassfish.json.api.BufferPool">
+        <filter id="305422471">
+            <message_arguments>
+                <message_argument value="org.glassfish.json.api.BufferPool"/>
+                <message_argument value="org.knime.json_5.0.0"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src-deprecated/org/knime/json/node/container/input/variable/ContainerVariableDefaultJsonStructure.java" type="org.knime.json.node.container.input.variable.ContainerVariableDefaultJsonStructure">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.input.variable.ContainerVariableDefaultJsonStructure"/>
+                <message_argument value="asJsonValue()"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/JSONBlobCell.java" type="org.knime.core.data.json.JSONBlobCell">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JSONBlobCell"/>
+                <message_argument value="getJsonValue()"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/JSONCell.java" type="org.knime.core.data.json.JSONCell">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JSONCell"/>
+                <message_argument value="getJsonValue()"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/JSONCellContent.java" type="org.knime.core.data.json.JSONCellContent">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JSONCellContent"/>
+                <message_argument value="getJsonValue()"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/JSONCellFactory.java" type="org.knime.core.data.json.JSONCellFactory">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JSONCellFactory"/>
+                <message_argument value="create(JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/JSONValue.java" type="org.knime.core.data.json.JSONValue">
+        <filter id="403804204">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JSONValue"/>
+                <message_argument value="getJsonValue()"/>
+            </message_arguments>
+        </filter>
+        <filter id="405901410">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JSONValue"/>
+                <message_argument value="getJsonValue()"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/JacksonConversions.java" type="org.knime.core.data.json.JacksonConversions">
+        <filter id="336695337">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JacksonConversions"/>
+                <message_argument value="toJSR353(TreeNode)"/>
+            </message_arguments>
+        </filter>
+        <filter id="336695337">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JacksonConversions"/>
+                <message_argument value="toJackson(JsonValue)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JacksonConversions"/>
+                <message_argument value="toJSR353(TreeNode)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.JacksonConversions"/>
+                <message_argument value="toJackson(JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/container/credentials/ContainerCredentialsJsonSchema.java" type="org.knime.core.data.json.container.credentials.ContainerCredentialsJsonSchema">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.container.credentials.ContainerCredentialsJsonSchema"/>
+                <message_argument value="hasValidSchema(JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/container/table/ContainerTableJsonSchema.java" type="org.knime.core.data.json.container.table.ContainerTableJsonSchema">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.container.table.ContainerTableJsonSchema"/>
+                <message_argument value="hasContainerTableJsonSchema(JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/core/data/json/container/variables/ContainerVariableJsonSchema.java" type="org.knime.core.data.json.container.variables.ContainerVariableJsonSchema">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.core.data.json.container.variables.ContainerVariableJsonSchema"/>
+                <message_argument value="hasContainerVariablesJsonSchema(JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/input/credentials/ContainerCredentialMapper.java" type="org.knime.json.node.container.input.credentials.ContainerCredentialMapper">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.input.credentials.ContainerCredentialMapper"/>
+                <message_argument value="toContainerCredentials(JsonValue)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.input.credentials.ContainerCredentialMapper"/>
+                <message_argument value="toContainerCredentials(JsonValue, IEncrypter)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.input.credentials.ContainerCredentialMapper"/>
+                <message_argument value="toContainerCredentialsJsonValue(List&lt;ICredentials&gt;)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/input/table/ContainerTableDefaultJsonStructure.java" type="org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.input.table.ContainerTableDefaultJsonStructure"/>
+                <message_argument value="asJsonValue()"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/input/variable2/ContainerVariableMapper2.java" type="org.knime.json.node.container.input.variable2.ContainerVariableMapper2">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.input.variable2.ContainerVariableMapper2"/>
+                <message_argument value="toContainerVariableJsonValue(Map&lt;String,FlowVariable&gt;, boolean)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/mappers/ContainerTableMapper.java" type="org.knime.json.node.container.mappers.ContainerTableMapper">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toBufferedDataTable(JsonValue, ExecutionContext)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toBufferedDataTable(JsonValue, JsonValue, ExecutionContext)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toContainerTableJsonSchema(JsonValue)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toContainerTableJsonValue(BufferedDataTable)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toContainerTableJsonValueFromDataTable(DataTable)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toDataTable(JsonValue)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toTableSpec(JsonValue)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerTableMapper"/>
+                <message_argument value="toTableSpec(JsonValue, JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/node/container/mappers/ContainerVariableMapper.java" type="org.knime.json.node.container.mappers.ContainerVariableMapper">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.node.container.mappers.ContainerVariableMapper"/>
+                <message_argument value="toContainerVariableJsonValue(Collection&lt;FlowVariable&gt;)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/util/JSONUtil.java" type="org.knime.json.util.JSONUtil">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.JSONUtil"/>
+                <message_argument value="parseJSONValue(String)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.JSONUtil"/>
+                <message_argument value="toPrettyJSONString(JsonValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/knime/json/util/JSR353Util.java" type="org.knime.json.util.JSR353Util">
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.JSR353Util"/>
+                <message_argument value="addToArrayFromCell(JsonArrayBuilder, DataCell)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.JSR353Util"/>
+                <message_argument value="fromCell(String, DataCell, JsonObjectBuilder)"/>
+            </message_arguments>
+        </filter>
+        <filter id="338792546">
+            <message_arguments>
+                <message_argument value="org.knime.json.util.JSR353Util"/>
+                <message_argument value="fromCollectionCell(CollectionDataValue)"/>
+            </message_arguments>
+        </filter>
+    </resource>
+</component>
