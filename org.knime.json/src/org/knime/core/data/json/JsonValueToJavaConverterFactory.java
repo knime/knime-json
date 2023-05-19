@@ -44,83 +44,41 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   9 Sept. 2014 (Gabor): created
+ *   May 16, 2023 (wiswedel): created
  */
 package org.knime.core.data.json;
 
-import java.util.Objects;
+import java.util.List;
 
-import javax.swing.Icon;
-
-import org.knime.core.data.DataValue;
-import org.knime.core.data.ExtensibleUtilityFactory;
+import org.knime.core.data.convert.java.SimpleDataCellToJavaConverterFactory;
 
 import jakarta.json.JsonValue;
 
 /**
- * This value encapsulates JSR353 {@link JsonValue}.
+ * Custom converter factory for <code>org.knime.core.data.json.JSONValue</code> to <code>jakarta.json.JsonValue</code>.
+ * Prior 5.1 this used to be contributed by a annotation-based converter on
+ * {@link org.knime.core.data.json.JSONValue#getJsonValue()}. Due to a library update the package name changed from
+ * <i>javax.json</i> to <i>jakarta.json</i>, hence this custom converter became necessary.
  *
- * @see JSONCellFactory
- * @since 2.11
- *
- * @author Gabor Bakos
+ * @noreference This class is not intended to be referenced by clients.
+ * @author Bernd Wiswedel, KNIME
+ * @since 5.1
  */
-public interface JSONValue extends DataValue {
-    /**
-     * @return The parsed {@link JsonValue}. This is a read-only view of the data. (Can be {@code null} when parsing
-     *         failed, though that is considered an illegal state.)
-     * @since 5.1
-     */
-    public JsonValue getJsonValue();
+// details are also in AP-20486
+public final class JsonValueToJavaConverterFactory extends SimpleDataCellToJavaConverterFactory<JSONValue, JsonValue> {
 
-    /**
-     * Meta information to this value type.
-     *
-     * @see DataValue#UTILITY
-     */
-    public static final UtilityFactory UTILITY = new JacksonUtilityFactory();
-
-    /**
-     * Returns whether the two data values have the same content.
-     *
-     * @param v1 the first data value
-     * @param v2 the second data value
-     * @return <code>true</code> if both values are equal, <code>false</code> otherwise
-     * @since 3.0
-     */
-    static boolean equalContent(final JSONValue v1, final JSONValue v2) {
-        return Objects.equals(v1.getJsonValue(), v2.getJsonValue());
+    /** Constructor invoked via extension point collection. Not to be used by clients. */
+    public JsonValueToJavaConverterFactory() {
+        super(JSONValue.class, JsonValue.class, JSONValue::getJsonValue, JsonValue.class.getSimpleName());
     }
 
-    /** Implementations of the meta information of this value class. */
-    class JacksonUtilityFactory extends ExtensibleUtilityFactory {
-        /** Singleton icon to be used to display this cell type. */
-        private static final Icon ICON = loadIcon(JSONValue.class, "/icons/jsonicon.png");
-
-        /** Only subclasses are allowed to instantiate this class. */
-        protected JacksonUtilityFactory() {
-            super(JSONValue.class);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Icon getIcon() {
-            if (null != ICON) {
-                return ICON;
-            } else {
-                return super.getIcon();
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getName() {
-            return "JSON";
-        }
-
+    @Override
+    public Iterable<String> getIdentifierAliases() {
+        // historic identifier, used to be defined via method annotation on
+        //    org.knime.core.data.json.JSONValue.getJsonValue()
+        // retired as part of the "javax.json" -> "jakarta.json" library update (AP-20486)
+        return List.of("org.knime.core.data.convert.java.SimpleDataCellToJavaConverterFactory("
+            + "JSONValue,interface javax.json.JsonValue,JsonValue)");
     }
+
 }

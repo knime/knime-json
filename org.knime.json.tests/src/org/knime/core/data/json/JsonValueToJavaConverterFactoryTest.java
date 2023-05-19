@@ -44,83 +44,56 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   9 Sept. 2014 (Gabor): created
+ *   May 19, 2023 (wiswedel): created
  */
 package org.knime.core.data.json;
 
-import java.util.Objects;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.util.IterableUtil;
+import org.junit.jupiter.api.Test;
 
-import javax.swing.Icon;
-
-import org.knime.core.data.DataValue;
-import org.knime.core.data.ExtensibleUtilityFactory;
-
-import jakarta.json.JsonValue;
+import jakarta.json.Json;
 
 /**
- * This value encapsulates JSR353 {@link JsonValue}.
- *
- * @see JSONCellFactory
- * @since 2.11
- *
- * @author Gabor Bakos
+ * Tests {@link JsonValueToJavaConverterFactory}, especially backward compatibility of identifiers.
+ * @author wiswedel
  */
-public interface JSONValue extends DataValue {
-    /**
-     * @return The parsed {@link JsonValue}. This is a read-only view of the data. (Can be {@code null} when parsing
-     *         failed, though that is considered an illegal state.)
-     * @since 5.1
-     */
-    public JsonValue getJsonValue();
+@SuppressWarnings("static-method")
+final class JsonValueToJavaConverterFactoryTest {
 
     /**
-     * Meta information to this value type.
-     *
-     * @see DataValue#UTILITY
+     * Test method for {@link org.knime.core.data.json.JsonValueToJavaConverterFactory#getIdentifierAliases()}.
      */
-    public static final UtilityFactory UTILITY = new JacksonUtilityFactory();
-
-    /**
-     * Returns whether the two data values have the same content.
-     *
-     * @param v1 the first data value
-     * @param v2 the second data value
-     * @return <code>true</code> if both values are equal, <code>false</code> otherwise
-     * @since 3.0
-     */
-    static boolean equalContent(final JSONValue v1, final JSONValue v2) {
-        return Objects.equals(v1.getJsonValue(), v2.getJsonValue());
+    @Test
+    final void testGetIdentifierAliases() {
+        var instance = new JsonValueToJavaConverterFactory();
+        Assertions.assertThat(IterableUtil.toArray(instance.getIdentifierAliases(), String.class)) //
+            .as("Number of aliases").hasSize(1) //
+            .as("Old alias before moving to jakarta.json").contains(
+                // eh, why copy it from JsonValueToJavaConverterFactory? Because the name/identifier is stored in
+                // old workflows and is therefore a constant
+                "org.knime.core.data.convert.java.SimpleDataCellToJavaConverterFactory("
+                    + "JSONValue,interface javax.json.JsonValue,JsonValue)");
     }
 
-    /** Implementations of the meta information of this value class. */
-    class JacksonUtilityFactory extends ExtensibleUtilityFactory {
-        /** Singleton icon to be used to display this cell type. */
-        private static final Icon ICON = loadIcon(JSONValue.class, "/icons/jsonicon.png");
-
-        /** Only subclasses are allowed to instantiate this class. */
-        protected JacksonUtilityFactory() {
-            super(JSONValue.class);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Icon getIcon() {
-            if (null != ICON) {
-                return ICON;
-            } else {
-                return super.getIcon();
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getName() {
-            return "JSON";
-        }
-
+    /**
+     * Test method for {@link org.knime.core.data.convert.java.SimpleDataCellToJavaConverterFactory#getIdentifier()}.
+     */
+    @Test
+    final void testGetIdentifier() {
+        var instance = new JsonValueToJavaConverterFactory();
+        Assertions.assertThat(instance.getIdentifier()).as("Backward compatible identifier")
+            .isEqualTo("org.knime.core.data.json.JsonValueToJavaConverterFactory("
+                + "JSONValue,interface jakarta.json.JsonValue,JsonValue)");
     }
+
+    /** Tests basic conversion logic. */
+    @Test
+    final void testConversion() throws Exception {
+        var instance = new JsonValueToJavaConverterFactory();
+        var converter = instance.create();
+        Assertions.assertThat(converter.convertUnsafe(JSONCellFactory.create("{\"foo\":\"bar\"}"))) //
+        .as("simple converted json").isEqualTo(Json.createObjectBuilder().add("foo", "bar").build());
+    }
+
 }
