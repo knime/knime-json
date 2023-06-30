@@ -74,9 +74,9 @@
 			<url>${knime.javasnippet.p2}</url>
 		</repository>
 		<repository>
-			<id>p2-knime-python</id>
+			<id>p2-knime-python-types</id>
 			<layout>p2</layout>
-			<url>${knime.python.p2}</url>
+			<url>${knime.python.types.p2}</url>
 		</repository>
 	</repositories>
 </project>
