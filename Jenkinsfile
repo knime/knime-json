@@ -21,7 +21,19 @@ try {
         "Workflowtests" : {
             workflowTests.runTests(
                 dependencies: [
-                    repositories: ['knime-json', 'knime-xml', 'knime-filehandling', 'knime-jep', 'knime-productivity-oss', 'knime-reporting', 'knime-kerberos', 'knime-datageneration', 'knime-rest', 'knime-filehandling'],
+                    repositories: [
+                        'knime-credentials-base',
+                        'knime-gateway',
+                        'knime-json',
+                        'knime-xml',
+                        'knime-filehandling',
+                        'knime-jep',
+                        'knime-productivity-oss',
+                        'knime-reporting',
+                        'knime-kerberos',
+                        'knime-datageneration',
+                        'knime-rest',
+                        'knime-filehandling'],
                     ius: ['org.knime.json.tests']
                 ]
             )
