@@ -110,6 +110,11 @@ public class JSONFileStoreCell extends ObjectSerializerFileStoreCell<JSONCellCon
         return getContent().getJsonValue();
     }
 
+    @Override
+    public String toString() {
+        return getStringValue();
+    }
+
     /**
      * Serializer for {@link JSONFileStoreCell}s
      *
