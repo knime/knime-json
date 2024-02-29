@@ -77,7 +77,7 @@ import org.knime.filehandling.core.node.table.reader.util.StagedMultiTableRead;
  */
 final class JSONMultiTableReadFactory implements MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> {
 
-    private final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> m_multiTableReadFactory;
+    private final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> m_defaultFactory;
 
     private static IllegalArgumentException createNoRowsException() {
         return new IllegalArgumentException("Nothing found for JSON Path ");
@@ -86,25 +86,34 @@ final class JSONMultiTableReadFactory implements MultiTableReadFactory<FSPath, J
     @Override
     public StagedMultiTableRead<FSPath, DataType> create(final SourceGroup<FSPath> sourceGroup,
         final MultiTableReadConfig<JSONReaderConfig, DataType> config, final ExecutionMonitor exec) throws IOException {
-        final StagedMultiTableRead<FSPath, DataType> stagedultiTableReadFactory =
-            m_multiTableReadFactory.create(sourceGroup, config, exec);
-        return new JSONStagedMultiTableRead(stagedultiTableReadFactory,
+
+        final var defaultRead = m_defaultFactory.create(sourceGroup, config, exec);
+        return new JSONStagedMultiTableRead(defaultRead,
             config.getTableReadConfig().getReaderSpecificConfig());
     }
 
     JSONMultiTableReadFactory(
         final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiTableReadFactory) {
-        m_multiTableReadFactory = multiTableReadFactory;
+        m_defaultFactory = multiTableReadFactory;
     }
 
     @Override
     public StagedMultiTableRead<FSPath, DataType> createFromConfig(final SourceGroup<FSPath> sourceGroup,
         final MultiTableReadConfig<JSONReaderConfig, DataType> config) {
-        final StagedMultiTableRead<FSPath, DataType> stagedultiTableReadFactory =
-            m_multiTableReadFactory.createFromConfig(sourceGroup, config);
-        return new JSONStagedMultiTableRead(stagedultiTableReadFactory,
+
+        final var defaultRead = m_defaultFactory.createFromConfig(sourceGroup, config);
+        return new JSONStagedMultiTableRead(defaultRead,
             config.getTableReadConfig().getReaderSpecificConfig());
     }
+
+    @Override
+    public StagedMultiTableRead<FSPath, DataType> createFromConfig(final SourceGroup<FSPath> sourceGroup,
+        final MultiTableReadConfig<JSONReaderConfig, DataType> config, final ExecutionMonitor exec) throws IOException {
+
+        // we are not doing any table spec sanity checks because the table spec is always the same
+        return createFromConfig(sourceGroup, config);
+    }
+
 
     private static final class JSONStagedMultiTableRead implements StagedMultiTableRead<FSPath, DataType> {
 
