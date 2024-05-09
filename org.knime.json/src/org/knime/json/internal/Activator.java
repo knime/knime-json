@@ -75,7 +75,7 @@ public class Activator implements BundleActivator {
         INSTANCE = this;
         Bundle jsonBundle = null, schemaCoreBundle = null, schemaValidatorBundle = null;
         for (Bundle b : ctx.getBundles()) {
-            if ("com.jayway.jsonpath.json-path".equals(b.getSymbolicName())) {
+            if ("json-path".equals(b.getSymbolicName())) {
                 jsonBundle = b;
                 //                } else if ("com.github.fge.json-schema-validator".equals(b.getSymbolicName())) {
             } else if ("com.github.java-json-tools.json-schema-core".equals(b.getSymbolicName())) {

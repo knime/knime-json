@@ -72,7 +72,7 @@ public class SimplePathParser {
     }
 
     /**
-     * Represents a canonical {@link JsonPath} path. Similar to {@link com.jayway.jsonpath.internal.Path}.
+     * Represents a canonical {@link JsonPath} path.
      */
     public static class Path implements Comparable<Path> {
         private final List<PathPart> m_parts;
