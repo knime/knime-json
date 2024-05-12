@@ -75,7 +75,7 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
 
     static final ObjectSerializer<JSONValue> SERIALIZER = (out, value) -> out.writeUTF(value.toString());
 
-    static final ObjectDeserializer<JSONValue> DESERIALIZER = in -> new JSONCellContent(in.readUTF(), true);
+    static final ObjectDeserializer<JSONValue> DESERIALIZER = in -> new JSONCellContent(in.readUTF(), false);
 
     /**
      * Create an instance of the {@link JSONValueFactory}
