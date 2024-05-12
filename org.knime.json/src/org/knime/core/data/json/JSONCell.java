@@ -72,7 +72,7 @@ import jakarta.json.JsonValue;
  * @author Gabor Bakos
  */
 @SuppressWarnings("serial")
-public final class JSONCell extends DataCell implements JSONValue, StringValue {
+public final class JSONCell extends DataCell implements JSONValue, StringValue, JSONCellContentProvider {
     /**
      * Type for this cell implementation. Convenience access member for {@link JSONCellFactory#TYPE}.
      */
@@ -164,5 +164,10 @@ public final class JSONCell extends DataCell implements JSONValue, StringValue {
     @Override
     public String getStringValue() {
         return m_content.getStringValue();
+    }
+
+    @Override
+    public JSONCellContent getJSONCellContent() {
+        return m_content;
     }
 }

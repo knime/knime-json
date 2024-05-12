@@ -72,7 +72,7 @@ import jakarta.json.JsonValue;
  * @author Heiko Hofer
  * @author Gabor Bakos
  */
-public class JSONCellContent implements JSONValue {
+public class JSONCellContent implements JSONValue, JSONCellContentProvider {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONCellContent.class);
 
     private final String m_jsonString;
@@ -172,6 +172,11 @@ public class JSONCellContent implements JSONValue {
             }
         }
         return json;
+    }
+
+    @Override
+    public JSONCellContent getJSONCellContent() {
+        return this;
     }
 
     /**

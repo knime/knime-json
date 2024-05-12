@@ -84,7 +84,7 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
         super(SERIALIZER, DESERIALIZER);
     }
 
-    private class JSONReadValue extends TableOrFileStoreReadValue implements JSONValue {
+    private class JSONReadValue extends TableOrFileStoreReadValue implements JSONValue, JSONCellContentProvider {
         protected JSONReadValue(final StructReadAccess access) {
             super(access);
         }
@@ -95,8 +95,22 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
         }
 
         @Override
+        public JSONCellContent getJSONCellContent() {
+            return ((JSONCell)getDataCell()).getJSONCellContent();
+        }
+
+        @Override
         protected DataCell createCell(final JSONValue data) {
-            return new JSONCell(new JSONCellContent(data.getJsonValue()));
+            final JSONCellContent cellContent;
+            // (DE)SERIALIZER is typed to JSONValue but is effectively JSONCellContent (see above), which represents
+            // the Json string and only creates jakarta.json.JsonValue on access.
+            if (data instanceof JSONCellContentProvider) {
+                cellContent = ((JSONCellContentProvider)data).getJSONCellContent();
+            } else {
+                // of no practical relevance; 'real' JSONValue implementations also implement JSONCellContentProvider
+                cellContent = new JSONCellContent(data.getJsonValue());
+            }
+            return new JSONCell(cellContent);
         }
 
         @Override

@@ -68,7 +68,7 @@ import jakarta.json.JsonValue;
  * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
  */
 public class JSONFileStoreCell extends ObjectSerializerFileStoreCell<JSONCellContent>
-    implements JSONValue, StringValue {
+    implements JSONValue, StringValue, JSONCellContentProvider {
 
     private static final ObjectSerializer<JSONCellContent> SERIALIZER =
         (output, object) -> JSONValueFactory.SERIALIZER.serialize(output, object);
@@ -113,6 +113,11 @@ public class JSONFileStoreCell extends ObjectSerializerFileStoreCell<JSONCellCon
     @Override
     public String toString() {
         return getStringValue();
+    }
+
+    @Override
+    public JSONCellContent getJSONCellContent() {
+        return getContent();
     }
 
     /**

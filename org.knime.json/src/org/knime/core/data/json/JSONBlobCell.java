@@ -73,7 +73,7 @@ import jakarta.json.JsonValue;
  * @author Gabor Bakos
  */
 @SuppressWarnings("serial")
-public final class JSONBlobCell extends BlobDataCell implements JSONValue, StringValue {
+public final class JSONBlobCell extends BlobDataCell implements JSONValue, StringValue, JSONCellContentProvider {
     /**
      * Serializer for {@link JSONBlobCell}s.
      *
@@ -169,10 +169,8 @@ public final class JSONBlobCell extends BlobDataCell implements JSONValue, Strin
         return m_hash;
     }
 
-    /**
-     * For use in the {@link JSONValueFactory}
-     */
-    JSONCellContent getContent() {
+    @Override
+    public JSONCellContent getJSONCellContent() {
         return m_content;
     }
 
