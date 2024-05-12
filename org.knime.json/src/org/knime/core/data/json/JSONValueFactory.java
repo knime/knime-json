@@ -104,8 +104,8 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
             final JSONCellContent cellContent;
             // (DE)SERIALIZER is typed to JSONValue but is effectively JSONCellContent (see above), which represents
             // the Json string and only creates jakarta.json.JsonValue on access.
-            if (data instanceof JSONCellContentProvider) {
-                cellContent = ((JSONCellContentProvider)data).getJSONCellContent();
+            if (data instanceof JSONCellContentProvider jccp) {
+                cellContent = jccp.getJSONCellContent();
             } else {
                 // of no practical relevance; 'real' JSONValue implementations also implement JSONCellContentProvider
                 cellContent = new JSONCellContent(data.getJsonValue());
@@ -131,8 +131,8 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
 
         @Override
         protected JSONFileStoreCell getFileStoreCell(final JSONValue value) throws IOException {
-            if (value instanceof JSONFileStoreCell) {
-                return (JSONFileStoreCell)value;
+            if (value instanceof JSONFileStoreCell jfsc) {
+                return jfsc;
             } else if (value instanceof JSONBlobCell) {
                 // Explicitly convert legacy blob cells to file store cells
                 return new JSONFileStoreCell(createFileStore(), value);
