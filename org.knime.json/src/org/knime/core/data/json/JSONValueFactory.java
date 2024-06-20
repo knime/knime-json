@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.nio.file.FileStore;
 
 import org.knime.core.data.DataCell;
+import org.knime.core.data.StringValue;
 import org.knime.core.data.v2.ValueFactory;
 import org.knime.core.data.v2.filestore.TableOrFileStoreValueFactory;
 import org.knime.core.table.access.StructAccess.StructReadAccess;
@@ -84,7 +85,8 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
         super(SERIALIZER, DESERIALIZER);
     }
 
-    private class JSONReadValue extends TableOrFileStoreReadValue implements JSONValue, JSONCellContentProvider {
+    private class JSONReadValue extends TableOrFileStoreReadValue
+        implements JSONValue, StringValue, JSONCellContentProvider {
         protected JSONReadValue(final StructReadAccess access) {
             super(access);
         }
@@ -116,6 +118,11 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
         @Override
         protected ObjectSerializerFileStoreCell<?> createFileStoreCell(final Integer hashCode) {
             return new JSONFileStoreCell(hashCode);
+        }
+
+        @Override
+        public String getStringValue() {
+            return getJSONCellContent().getStringValue();
         }
     }
 
