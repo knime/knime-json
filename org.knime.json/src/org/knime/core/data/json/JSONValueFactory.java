@@ -98,7 +98,11 @@ public class JSONValueFactory extends TableOrFileStoreValueFactory<JSONValue> {
 
         @Override
         public JSONCellContent getJSONCellContent() {
-            return ((JSONCell)getDataCell()).getJSONCellContent();
+            // NB: The cell can be either
+            // - JSONCell from createCell
+            // - JSONFileStoreCell from createFileStoreCell
+            // both implement JSONCellContentProvider
+            return ((JSONCellContentProvider)getDataCell()).getJSONCellContent();
         }
 
         @Override
