@@ -149,4 +149,9 @@ public class MountPointFileSystemAccessMock implements MountPointFileSystemAcces
     public boolean isServerMountPoint(final String mountId) {
         return false;
     }
+
+    @Override
+    public boolean isAuthenticated(final URI uri) {
+        return false;
+    }
 }
