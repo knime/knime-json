@@ -64,8 +64,12 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.AbstractAction;
@@ -88,6 +92,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -110,14 +115,14 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 import org.knime.base.data.aggregation.dialogutil.BooleanCellRenderer;
 import org.knime.core.data.DataCell;
-import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
-import org.knime.core.data.container.CloseableRowIterator;
+import org.knime.core.data.StringValue;
 import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.DataAwareNodeDialogPane;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
@@ -129,6 +134,7 @@ import org.knime.json.node.jsonpath.util.JsonPathUtils;
 import org.knime.json.node.jsonpath.util.Jsr353WithCanonicalPaths;
 import org.knime.json.node.jsonpath.util.OutputKind;
 import org.knime.json.node.util.GUIFactory;
+import org.knime.json.util.JsonTruncator;
 import org.knime.json.util.OutputType;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -237,6 +243,8 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
     private RSyntaxTextArea m_preview = new RSyntaxTextArea(8, 80);
 
     private RTextScrollPane m_previewContainer = new RTextScrollPane(m_preview, true);
+
+    private JSONPathPreviewUpdateWorker m_previewUpdateWorker;
 
     private Jsr353WithCanonicalPaths m_paths;
 
@@ -920,40 +928,113 @@ class JSONPathNodeDialog extends DataAwareNodeDialogPane {
         updatePreview();
     }
 
-    /**
-     *
-     */
-    public void updatePreview() {
+    private void updatePreview() {
         m_previewContainer.setVisible(m_inputTable != null);
         if (m_inputTable == null || m_inputTable.size() == 0L) {
             m_preview.setText("No input");
-            m_paths = new Jsr353WithCanonicalPaths("{}"/*new JsonNodeFactory(true).nullNode()*/);
+            m_paths = new Jsr353WithCanonicalPaths("{}");
             return;
         }
         int idx = m_inputTable.getDataTableSpec().findColumnIndex(m_inputColumn.getSelectedColumn());
         if (idx >= 0) {
-            m_paths = new Jsr353WithCanonicalPaths("{}"/*new JsonNodeFactory(true).nullNode()*/);
-            try (CloseableRowIterator it = m_inputTable.iteratorFailProve()) {
-                JSONValue value = null;
-                while (it.hasNext() && value == null) {
-                    DataRow row = it.next();
-                    DataCell cell = row.getCell(idx);
-                    if (cell.isMissing()) {
-                        continue;
+            if (m_previewUpdateWorker != null && !m_previewUpdateWorker.isDone()) {
+                m_previewUpdateWorker.cancel(true);
+            }
+            m_preview.setText("Loading preview...");
+            m_paths = new Jsr353WithCanonicalPaths("{}");
+            m_previewUpdateWorker = new JSONPathPreviewUpdateWorker(m_inputTable, idx);
+            m_previewUpdateWorker.execute();
+        }
+    }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+        if (m_previewUpdateWorker != null && !m_previewUpdateWorker.isDone()) {
+            m_previewUpdateWorker.cancel(true);
+        }
+    }
+
+    private final class JSONPathPreviewUpdateWorker extends SwingWorker<Pair<String, Jsr353WithCanonicalPaths>, Void> {
+
+        private static final int MAX_PREVIEW_BYTES = 32 * 1024;
+
+        private static final int MAX_STRING_PREVIEW_LENGTH = 256;
+
+        private static final NodeLogger LOGGER = NodeLogger.getLogger(JSONPathPreviewUpdateWorker.class);
+
+        private final BufferedDataTable m_nonNullInputTable;
+
+        private final int m_column;
+
+        JSONPathPreviewUpdateWorker(final BufferedDataTable table, final int column) {
+            m_nonNullInputTable = Objects.requireNonNull(table);
+            m_column = column;
+        }
+
+        @Override
+        protected Pair<String, Jsr353WithCanonicalPaths> doInBackground() throws Exception {
+            String json = null;
+            try (final var it = m_nonNullInputTable.iterator()) {
+                while (it.hasNext()) {
+                    final var cell = it.next().getCell(m_column);
+                    json = valueFromCell(cell);
+                    if (json != null) {
+                        break;
                     }
-                    if (cell instanceof JSONValue) {
-                        JSONValue json = (JSONValue)cell;
-                        value = json;
-                    }
-                }
-                if (value == null) {
-                    m_preview.setText("?");
-                    m_paths = new Jsr353WithCanonicalPaths("{}"/*NullNode.getInstance()*/);
-                } else {
-                    m_preview.setText(value.toString());
-                    m_paths = new Jsr353WithCanonicalPaths(value.toString());
                 }
             }
+            if (json == null) {
+                // only missing cells or unavailable data
+                return Pair.create("?", new Jsr353WithCanonicalPaths("{}"));
+            } else {
+                final var jsonIn = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+                final var trunc = JsonTruncator.abbreviate(jsonIn, MAX_PREVIEW_BYTES, MAX_STRING_PREVIEW_LENGTH, true);
+                return Pair.create(trunc, new Jsr353WithCanonicalPaths(trunc));
+            }
+        }
+
+        /**
+         * @param cell
+         * @return JSON String or {@code null} if the cell is missing
+         */
+        private static String valueFromCell(final DataCell cell) {
+            if (cell.isMissing()) {
+                return null;
+            }
+            if (cell instanceof JSONValue value) {
+                if (cell instanceof StringValue sv) {
+                    // Getting the JSON as a StringValue straight away might save a de-/serialisation
+                    return sv.getStringValue();
+                } else {
+                    return value.toString();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            if (isCancelled()) {
+                return; // do not update if the worker has been cancelled (probably while creating a newer worker)
+            }
+            String prev;
+            Jsr353WithCanonicalPaths paths;
+            try {
+                final var result = get();
+                prev = result.getFirst();
+                paths = result.getSecond();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (ExecutionException e) {
+                LOGGER.warn("Error while generating JSON preview", e);
+                prev = "Error: " + e.getCause().getMessage();
+                paths = new Jsr353WithCanonicalPaths("{}");
+            }
+            m_preview.setText(prev);
+            m_preview.setCaretPosition(0);
+            m_paths = paths;
         }
     }
 
