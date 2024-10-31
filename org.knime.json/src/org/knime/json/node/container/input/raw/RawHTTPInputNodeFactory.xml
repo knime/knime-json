@@ -10,9 +10,15 @@
 	<fullDescription>
 		<intro>
 			<p>
-				When an external caller executes the workflow with this node via an HTTP call to the KNIME Server's REST API,
+				When an external caller executes the workflow with this node via an HTTP call to the KNIME Server / Hub REST API,
 				the HTTP body, headers, and query parameters are captured and exposed as tables.
 				The body is outputted in binary, whereas the header and parameter tables are outputted as data tables.
+			</p>
+			<p>
+				This node works only with the <tt>raw-execution</tt> endpoint of the KNIME Server / Hub REST API.
+				To learn more, check out the
+				<a href="https://api.hub.knime.com/api-doc/?service=execution-service#/Jobs/post_raw_execution">Hub API
+				documentation</a> or the API documentation of your KNIME Server.
 			</p>
 			<p>
 				Other container input nodes rely on body data to be provided in a JSON format.
