@@ -52,6 +52,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -105,7 +106,9 @@ final class InteractiveKeyValueTable extends JPanel {
         m_keyValueTblModel = new DefaultTableModel(0, 2);
         m_keyValueTblModel.setColumnIdentifiers(new String[]{keyLabel, valueLabel});
         m_tablePanel.setModel(m_keyValueTblModel);
-        this.add(m_tablePanel, gbc);
+        final var scrollingTable = new ScrollPane();
+        scrollingTable.add(m_tablePanel);
+        this.add(scrollingTable, gbc);
 
         gbc.fill = GridBagConstraints.NONE;
         gbc.weighty = 0.0;
