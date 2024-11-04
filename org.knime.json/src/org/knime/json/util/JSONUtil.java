@@ -53,6 +53,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 
+import org.apache.commons.lang3.StringUtils;
+import org.knime.core.data.json.JSONValue;
 import org.knime.core.data.json.JacksonConversions;
 import org.knime.core.util.JsonUtil;
 
@@ -74,8 +76,28 @@ import jakarta.json.stream.JsonGenerator;
  * @since 2.12
  */
 public final class JSONUtil {
-    private static final ObjectMapper MAPPER = JacksonConversions.getInstance().newMapper()
-        .registerModule(new JSONPModule(JsonUtil.getProvider()));
+    private static final ObjectMapper MAPPER =
+        JacksonConversions.getInstance().newMapper().registerModule(new JSONPModule(JsonUtil.getProvider()));
+
+    /**
+     *
+     * @param jsonValue a JSON structure
+     * @param maxRenderChars the maximum amount of chars for which to pretty-print the json, else the json is
+     *            abbreviated without pretty-printing
+     * @since 5.4
+     * @return a json string
+     */
+    public static String abbreviateOrToPrettyJSONString(final JSONValue jsonValue, final int maxRenderChars) {
+        String s;
+        s = jsonValue.toString();
+        if (s.length() < maxRenderChars) {
+            JsonValue v = jsonValue.getJsonValue();
+            if (v instanceof JsonStructure) {
+                s = JSONUtil.toPrettyJSONString(v);
+            }
+        }
+        return StringUtils.abbreviate(s, maxRenderChars);
+    }
 
     /**
      * Returns a pretty-printed string representation of the given JSON object.
@@ -90,14 +112,13 @@ public final class JSONUtil {
             JsonWriterFactory writerFactory = JsonUtil.getProvider()
                 .createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
             try (JsonWriter jsonWriter = writerFactory.createWriter(stringWriter)) {
-                jsonWriter.write((JsonStructure) json);
+                jsonWriter.write((JsonStructure)json);
             }
             return stringWriter.toString();
         } else {
             return json.toString();
         }
     }
-
 
     /**
      * Parses the given string into a JSON value.

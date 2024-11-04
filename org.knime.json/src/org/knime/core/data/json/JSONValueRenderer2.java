@@ -46,16 +46,12 @@
  */
 package org.knime.core.data.json;
 
-import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.renderer.AbstractDataValueRendererFactory;
 import org.knime.core.data.renderer.DataValueRenderer;
 import org.knime.core.data.renderer.MultiLineStringValueRenderer;
 import org.knime.core.data.xml.XMLValueRenderer;
 import org.knime.json.util.JSONUtil;
-
-import jakarta.json.JsonStructure;
-import jakarta.json.JsonValue;
 
 /**
  * Default (multi-line String) renderer for JSON values. <br/>
@@ -71,7 +67,7 @@ public final class JSONValueRenderer2 extends MultiLineStringValueRenderer {
     /**
      * Maximum number of characters to render
      */
-    final int MAX_RENDER_CHARS = 10000;
+    private static final int MAX_RENDER_CHARS = 1000;
 
     /**
      * Factory for {@link JSONValueRenderer2}.
@@ -105,19 +101,10 @@ public final class JSONValueRenderer2 extends MultiLineStringValueRenderer {
      */
     @Override
     protected void setValue(final Object value) {
-        if (!(value instanceof JSONValue)) {
+        if (!(value instanceof JSONValue jsonValue)) {
             super.setValue(value);
             return;
         }
-        String s;
-        s = ((JSONValue)value).toString();
-        if (s.length() < MAX_RENDER_CHARS) {
-            JsonValue v = ((JSONValue)value).getJsonValue();
-            if (v instanceof JsonStructure) {
-                s = JSONUtil.toPrettyJSONString(v);
-            }
-        }
-        s = StringUtils.abbreviate(s, MAX_RENDER_CHARS);
-        super.setValue(s);
+        super.setValue(JSONUtil.abbreviateOrToPrettyJSONString(jsonValue, MAX_RENDER_CHARS));
     }
 }
