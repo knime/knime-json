@@ -94,4 +94,10 @@
          </PythonValueFactory>
       </Module>
    </extension>
+   <extension
+         point="org.knime.core.ui.dataValueViewProvider">
+      <DataValueViewProvider
+            dataValueViewProvider="org.knime.json.extensions.datavalueview.JSONCodeValueViewProvider">
+      </DataValueViewProvider>
+   </extension>
 </plugin>
