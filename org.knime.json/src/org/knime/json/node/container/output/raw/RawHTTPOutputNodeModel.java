@@ -52,6 +52,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnName;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
+import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 import org.knime.core.node.dialog.ExternalNodeData;
 import org.knime.core.node.dialog.ExternalNodeData.ExternalNodeDataBuilder;
 import org.knime.core.node.dialog.OutputNode;
@@ -96,7 +97,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     }
 
     static SettingsModelInteger createStatusCodeSettingsModel() {
-        return new SettingsModelInteger(CFG_STATUS_CODE, 200);
+        return new SettingsModelIntegerBounded(CFG_STATUS_CODE, 200, 200, 599);
     }
 
     static SettingsModelColumnName createBodyColumnSettingsModel() {

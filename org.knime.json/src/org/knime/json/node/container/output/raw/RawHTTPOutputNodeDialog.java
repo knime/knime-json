@@ -52,12 +52,12 @@ import org.knime.core.data.StringValue;
 import org.knime.core.data.blob.BinaryObjectDataValue;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
+import org.knime.core.node.defaultnodesettings.DialogComponentLabel;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
-import org.knime.core.node.defaultnodesettings.SettingsModelColumnName;
-import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 
 /**
  * Dialog for the Container Output (Raw HTTP) node.
+ *
  * @author Alexander Fillbrunn, KNIME GmbH, Konstanz, Germany
  */
 final class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
@@ -70,14 +70,18 @@ final class RawHTTPOutputNodeDialog extends DefaultNodeSettingsPane {
     }
 
     private void createLayout() {
-        SettingsModelInteger statusCode = RawHTTPOutputNodeModel.createStatusCodeSettingsModel();
-        addDialogComponent(new DialogComponentNumber(statusCode, "Status code:", 1));
+        // hack to center the two dialog components below, it seems like the
+        // first component always gets attached to the top of the dialog (no vertical centering)
+        addDialogComponent(new DialogComponentLabel(""));
+
+        final var statusCode =
+            new DialogComponentNumber(RawHTTPOutputNodeModel.createStatusCodeSettingsModel(), "Status code:", 1);
+        addDialogComponent(statusCode);
 
         // we support the selection of simple StringCell or any BinaryObjectDataValue columns
-        var columnTypeFilter = new Class[]{StringValue.class, BinaryObjectDataValue.class};
-
-        SettingsModelColumnName colName = RawHTTPOutputNodeModel.createBodyColumnSettingsModel();
-        addDialogComponent(
-            new DialogComponentColumnNameSelection(colName, "Body column:", 0, false, true, columnTypeFilter));
+        final var columnTypeFilter = new Class[]{StringValue.class, BinaryObjectDataValue.class};
+        final var columnName = new DialogComponentColumnNameSelection(
+            RawHTTPOutputNodeModel.createBodyColumnSettingsModel(), "Body column:", 0, false, true, columnTypeFilter);
+        addDialogComponent(columnName);
     }
 }

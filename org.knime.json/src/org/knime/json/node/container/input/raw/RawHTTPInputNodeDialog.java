@@ -122,7 +122,8 @@ final class RawHTTPInputNodeDialog extends NodeDialogPane {
         m_headerTable = new InteractiveKeyValueTable("Name", "Value");
         m_qpTable = new InteractiveKeyValueTable("Name", "Value");
 
-        addTab("Data", createLayout(), false);
+        // ensure consistent naming of main tab (between raw HTTP I/O nodes)
+        addTab("Options", createLayout(), false);
     }
 
     private JPanel createLayout() {
