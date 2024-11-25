@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -84,8 +85,9 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     private static final String CFG_BODY_COLUMN = "bodyColumn";
 
     private static final String PARAMETER_NAME = "raw-http-output";
+
     private URI m_resourceURI;
-    private boolean m_isDataURI = false;
+    private boolean m_isDataURI;
     private JsonObject m_json;
 
     static final String TEMP_FILE_PREFIX = "knimetemp-";
@@ -189,7 +191,7 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
         for (var i = 0; i < headerInSpec.getNumColumns(); i++) {
             DataColumnSpec cspec = headerInSpec.getColumnSpec(i);
             if (cspec.getType().isCompatible(StringValue.class)) {
-                String name = cspec.getName().toLowerCase();
+                String name = cspec.getName().toLowerCase(Locale.ENGLISH);
                 var value = ((StringValue)row.getCell(i)).getStringValue();
                 if (name.equals("content-type")) {
                     mimetype = value;
@@ -263,17 +265,17 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
     @Override
     protected void reset() {
         m_json = null;
-        cleanup();
+        cleanupResource();
         m_resourceURI = null;
     }
 
     @Override
     protected void onDispose() {
         super.onDispose();
-        cleanup();
+        cleanupResource();
     }
 
-    private void cleanup() {
+    private void cleanupResource() {
         if(!m_isDataURI && m_resourceURI != null) {
             deleteAsync(Path.of(m_resourceURI));
         }
@@ -343,7 +345,8 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
      * @return
      * @throws IOException
      */
-    private static URI createDataURI(final InputStream stream, final String mimetype, final int size) throws IOException {
+    private static URI createDataURI(final InputStream stream, final String mimetype, final int size)
+        throws IOException {
         var bytes = new byte[size];
         stream.read(bytes, 0, bytes.length);
 
@@ -429,6 +432,6 @@ final class RawHTTPOutputNodeModel extends NodeModel implements OutputNode {
      */
     @FunctionalInterface
     private interface IOSupplier<T> {
-        public abstract T getWithException() throws IOException;
+        T getWithException() throws IOException;
     }
 }

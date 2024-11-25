@@ -57,6 +57,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -123,8 +124,10 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
     private JsonObject m_headers;
     private JsonObject m_queryParams;
 
-    // Regex to use for a data URI and extracting the base64 data
-    private static final String DATA_URI_REGEX = "^data:(?<mediatype>[^;,]+(?:;charset=[^;,]+)?)?(?:;(?<encoding>[^,]+))?,(?<data>.*)$";
+    // regex to use for a data URI and extracting the base64 data
+    private static final String DATA_URI_REGEX =
+        "^data:(?<mediatype>[^;,]+(?:;charset=[^;,]+)?)?(?:;(?<encoding>[^,]+))?,(?<data>.*)$";
+
     private static final Pattern DATA_URI_PATTERN = Pattern.compile(DATA_URI_REGEX);
 
     /**
@@ -307,7 +310,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         var creator = new DataTableSpecCreator();
         var index = 0;
         for (Entry<String, JsonValue> key : o.entrySet()) {
-            String name = lowerCase ? key.getKey().toLowerCase() : key.getKey();
+            String name = lowerCase ? key.getKey().toLowerCase(Locale.ENGLISH) : key.getKey();
             if (name.isEmpty()) {
                 name = "<empty_" + index + ">";
             }
@@ -325,7 +328,7 @@ final class RawHTTPInputNodeModel extends NodeModel implements InputNode {
         var creator = new DataTableSpecCreator();
         var index = 0;
         for (Entry<String, String> header : m_configuration.getHeaders().entrySet()) {
-            String name = header.getKey().toLowerCase();
+            String name = header.getKey().toLowerCase(Locale.ENGLISH);
             if (name.isEmpty()) {
                 name = "<empty_" + index + ">";
             }
