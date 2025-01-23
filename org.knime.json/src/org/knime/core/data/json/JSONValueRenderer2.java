@@ -51,6 +51,7 @@ import org.knime.core.data.renderer.AbstractDataValueRendererFactory;
 import org.knime.core.data.renderer.DataValueRenderer;
 import org.knime.core.data.renderer.MultiLineStringValueRenderer;
 import org.knime.core.data.xml.XMLValueRenderer;
+import org.knime.core.util.EclipseUtil;
 import org.knime.json.util.JSONUtil;
 
 /**
@@ -67,7 +68,9 @@ public final class JSONValueRenderer2 extends MultiLineStringValueRenderer {
     /**
      * Maximum number of characters to render
      */
-    private static final int MAX_RENDER_CHARS = 1000;
+    private static final int MAX_RENDER_CHARS_MODERN_UI = 1_000;
+
+    private static final int MAX_RENDER_CHARS_CLASSIC_UI = 10_000;
 
     /**
      * Factory for {@link JSONValueRenderer2}.
@@ -105,6 +108,8 @@ public final class JSONValueRenderer2 extends MultiLineStringValueRenderer {
             super.setValue(value);
             return;
         }
-        super.setValue(JSONUtil.abbreviateOrToPrettyJSONString(jsonValue, MAX_RENDER_CHARS));
+        final var maxRenderChars =
+            EclipseUtil.determineClassicUIUsage() ? MAX_RENDER_CHARS_CLASSIC_UI : MAX_RENDER_CHARS_MODERN_UI;
+        super.setValue(JSONUtil.abbreviateOrToPrettyJSONString(jsonValue, maxRenderChars));
     }
 }
