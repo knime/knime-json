@@ -73,6 +73,7 @@ import org.knime.core.data.json.container.table.ContainerTableColumnSpec;
 import org.knime.core.data.json.container.table.ContainerTableData;
 import org.knime.core.data.json.container.table.ContainerTableJsonSchema;
 import org.knime.core.data.json.container.table.ContainerTableRow;
+import org.knime.core.data.json.container.table.ContainerTableValidDataTypes;
 import org.knime.core.data.time.duration.DurationCellFactory;
 import org.knime.core.data.time.localdate.LocalDateCellFactory;
 import org.knime.core.data.time.localdatetime.LocalDateTimeCellFactory;
@@ -225,7 +226,7 @@ public class BufferedDataTableToContainerTableTest extends ContainerTableMapperT
      * @throws Exception
      */
     @Test
-    public void testNonPrimitiveColumnSpecUsesTheirNameAsColumnSpecType() throws Exception {
+    public void testNonPrimitiveColumnSpecUsesTheirIdentifierAsColumnSpecType() throws Exception {
         ExecutionContext exec = getTestExecutionContext();
 
         BufferedDataTable table = //
@@ -235,11 +236,27 @@ public class BufferedDataTableToContainerTableTest extends ContainerTableMapperT
                 .build(exec); //
 
         ContainerTableJsonSchema containerTable = ContainerTableMapper.toContainerTable(table);
-        List<ContainerTableColumnSpec> tableSpecs = containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
+        List<ContainerTableColumnSpec> tableSpecs =
+            containerTable.getContainerTableSpec().getContainerTableColumnSpecs();
 
         ContainerTableColumnSpec durationColumnSpec = tableSpecs.get(0);
         assertThat(durationColumnSpec.getName(), equalTo("column-duration"));
-        assertThat(durationColumnSpec.getType(), equalTo("Duration"));
+        assertThat(durationColumnSpec.getType(), equalTo(DurationCellFactory.TYPE.getIdentifier()));
+    }
+
+    /**
+     * Checks that non primitive types can be loaded using both their legacy name and identifier, see AP-23571.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testNonPrimitiveTypesCanBeLoadedUsingBothTheirLegacyNameAndIdentifier() throws Exception {
+        final var parsedByIdentifier = ContainerTableValidDataTypes.parse(DurationCellFactory.TYPE.getIdentifier());
+        final var parsedByLegacyName = ContainerTableValidDataTypes.parse(DurationCellFactory.TYPE.getLegacyName());
+        final var expected = DurationCellFactory.TYPE;
+
+        assertThat(parsedByIdentifier, is(expected));
+        assertThat(parsedByLegacyName, is(expected));
     }
 
     /**

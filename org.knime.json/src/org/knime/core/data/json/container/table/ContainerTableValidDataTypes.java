@@ -105,7 +105,7 @@ public class ContainerTableValidDataTypes {
             case LOCAL_DATE_TIME_NAME : return LocalDateTimeCellFactory.TYPE;
             case ZONED_DATE_TIME_NAME : return ZonedDateTimeCellFactory.TYPE;
 
-            default : return getDataTypeByName(dataType);
+            default : return getDataTypeByIdentifier(dataType);
         }
     }
 
@@ -116,13 +116,15 @@ public class ContainerTableValidDataTypes {
      * @param dataType the string representation of the data type
      * @throws InvalidSettingsException if the given data type is not supported
      */
-    private static DataType getDataTypeByName(final String dataType) throws InvalidSettingsException {
+    private static DataType getDataTypeByIdentifier(final String dataType) throws InvalidSettingsException {
         DataType result = null;
         for (DataType type : DataTypeRegistry.getInstance().availableDataTypes()) {
-            String name = type.getName();
-            if (name.equals(dataType)) {
+            final var identifier = type.getIdentifier();
+            final var legacyName = type.getLegacyName();
+            if (identifier.equals(dataType) || legacyName.equals(dataType)) {
                 if (result != null) {
-                    throw new InvalidSettingsException("Ambiguous return for value: \"" + dataType + "\". Two or more data types use this name.");
+                    throw new InvalidSettingsException("Ambiguous return for value: \"" + dataType
+                        + "\". Two or more data types use this name / identifier.");
                 }
                 result = type;
             }
@@ -167,7 +169,7 @@ public class ContainerTableValidDataTypes {
         } else if (cellClass.equals(ZonedDateTimeCell.class)) {
             return ZONED_DATE_TIME_NAME;
         } else {
-            return dataType.getName();
+            return dataType.getIdentifier();
         }
     }
 
