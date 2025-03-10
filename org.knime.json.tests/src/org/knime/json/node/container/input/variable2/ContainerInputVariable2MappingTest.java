@@ -56,8 +56,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Test;
-import org.knime.base.node.io.variablecreator.DialogComponentVariables;
-import org.knime.base.node.io.variablecreator.SettingsModelVariables;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettings;
 import org.knime.core.node.dialog.ExternalNodeData;
@@ -65,6 +63,8 @@ import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
 import org.knime.core.util.JsonUtil;
 import org.knime.json.node.container.input.file.ContainerNodeSharedConfiguration;
+import org.knime.json.node.util.DialogComponentVariables;
+import org.knime.json.node.util.SettingsModelVariables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

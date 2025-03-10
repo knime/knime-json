@@ -58,8 +58,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.knime.base.node.io.variablecreator.SettingsModelVariables;
-import org.knime.base.node.io.variablecreator.SettingsModelVariables.Type;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
@@ -78,6 +76,8 @@ import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
 import org.knime.core.util.Pair;
 import org.knime.json.node.container.input.file.ContainerNodeSharedConfiguration;
+import org.knime.json.node.util.SettingsModelVariables;
+import org.knime.json.node.util.SettingsModelVariables.Type;
 
 import jakarta.json.JsonValue;
 

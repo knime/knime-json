@@ -66,9 +66,6 @@ import javax.swing.JRadioButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.knime.base.node.io.variablecreator.DialogComponentVariables;
-import org.knime.base.node.io.variablecreator.SettingsModelVariables;
-import org.knime.base.node.io.variablecreator.SettingsModelVariables.Type;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeSettingsRO;
@@ -77,6 +74,9 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.workflow.FlowVariable;
 import org.knime.json.node.container.input.file.ContainerNodeSharedDialogPanel;
+import org.knime.json.node.util.DialogComponentVariables;
+import org.knime.json.node.util.SettingsModelVariables;
+import org.knime.json.node.util.SettingsModelVariables.Type;
 
 /**
  * Node dialog for the Container Input (Variable) node.
