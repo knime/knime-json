@@ -143,7 +143,7 @@ public class JsonLikeParser extends ReaderBasedJsonParser {
             ++position;
             if (_inputPtr >= _inputEnd) {
                 if (!loadMore()) {
-                    _reportInvalidEOF(": was expecting closing quote for a string value");
+                    _reportInvalidEOF(": was expecting closing quote for a string value", _currToken);
                 }
             }
             char c = _inputBuffer[_inputPtr++];
