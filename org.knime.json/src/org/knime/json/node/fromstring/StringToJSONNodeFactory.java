@@ -56,7 +56,6 @@ import java.util.Map;
 import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeFactory.NodeType;
 import org.knime.core.node.NodeView;
 import org.knime.core.webui.node.dialog.NodeDialog;
 import org.knime.core.webui.node.dialog.NodeDialogFactory;
@@ -73,8 +72,7 @@ import org.knime.node.impl.description.PortDescription;
  * <code>NodeFactory</code> for the "StringToJSON" Node. Converts String values to JSON values.
  *
  * @author Gabor Bakos
- * @author GitHub Copilot
- * @author AI Migration Pipeline v1.1
+ * @author Ali Asghar Marvi, KNIME Gmbh, Konstanz, Germany
  */
 
 @SuppressWarnings("restriction")

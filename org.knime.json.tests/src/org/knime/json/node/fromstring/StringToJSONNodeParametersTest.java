@@ -62,7 +62,7 @@ import org.knime.testing.node.dialog.SnapshotTestConfiguration;
 /**
  * Snapshot tests for StringToJSONNodeParameters.
  *
- * @author GitHub Copilot
+ * @author Ali Asghar Marvi, KNIME Gmbh, Konstanz, Germany
  */
 @SuppressWarnings("restriction")
 final class StringToJSONNodeParametersTest extends DefaultNodeSettingsSnapshotTest {
@@ -100,7 +100,7 @@ final class StringToJSONNodeParametersTest extends DefaultNodeSettingsSnapshotTe
 
     private static DataTableSpec createDefaultTestTableSpec() {
         return new DataTableSpec(
-            new String[]{"JSON", "Column2", "Column3"}, 
+            new String[]{"JSON", "Column2", "Column3"},
             new DataType[]{DataType.getType(StringCell.class), DataType.getType(StringCell.class), DataType.getType(StringCell.class)}
         );
     }

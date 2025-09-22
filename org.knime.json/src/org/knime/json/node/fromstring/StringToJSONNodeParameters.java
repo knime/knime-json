@@ -69,8 +69,7 @@ import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 /**
  * Node parameters for String to JSON.
  *
- * @author GitHub Copilot
- * @author AI Migration Pipeline v1.1
+ * @author Ali Asghar Marvi, KNIME Gmbh, Konstanz, Germany
  */
 @SuppressWarnings("restriction")
 final class StringToJSONNodeParameters implements NodeParameters {
