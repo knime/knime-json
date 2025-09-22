@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="test">
+    <entry key="input.column" type="xstring" value="JSON"/>
+    <entry key="remove.input.column" type="xboolean" value="false"/>
+    <entry key="new.column.name" type="xstring" value="JSON12345"/>
+    <entry key="allow.comments" type="xboolean" value="true"/>
+    <entry key="fail.on.error" type="xboolean" value="true"/>
+</config>
