@@ -2,7 +2,7 @@
   "data" : {
     "model" : {
       "inputColumn" : "JSON",
-      "outputColumnMode" : "INPUT_COLUMN",
+      "outputColumnMode" : "APPEND",
       "newColumnName" : "JSON12345",
       "allowComments" : true,
       "failOnError" : true
@@ -30,7 +30,7 @@
             "type" : "string",
             "title" : "Input column",
             "description" : "Select the String column containing JSON content.",
-            "default" : ""
+            "default" : "JSON"
           },
           "newColumnName" : {
             "type" : "string",
@@ -40,15 +40,15 @@
           },
           "outputColumnMode" : {
             "oneOf" : [ {
-              "const" : "REMOVE_SOURCE",
+              "const" : "REPLACE",
               "title" : "Replace input column"
             }, {
-              "const" : "INPUT_COLUMN",
+              "const" : "APPEND",
               "title" : "Append new column"
             } ],
             "title" : "Output column",
             "description" : "Choose whether to replace the input column or append a new column.\n<ul>\n<li><b>Replace input column</b>: Replace the input column with the JSON column, keeping its name.</li>\n<li><b>Append new column</b>: Add a new column with the JSON values.</li>\n</ul>",
-            "default" : "REMOVE_SOURCE"
+            "default" : "REPLACE"
           }
         }
       }
@@ -56,53 +56,45 @@
   },
   "ui_schema" : {
     "elements" : [ {
-      "label" : "Input column",
-      "type" : "Section",
-      "elements" : [ {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/inputColumn",
-        "options" : {
-          "format" : "dropDown"
-        },
-        "providedOptions" : [ "possibleValues" ]
-      }, {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/outputColumnMode",
-        "options" : {
-          "format" : "radio",
-          "radioLayout" : "vertical"
-        }
-      }, {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/newColumnName",
-        "rule" : {
-          "effect" : "SHOW",
-          "condition" : {
-            "scope" : "#/properties/model/properties/outputColumnMode",
-            "schema" : {
-              "oneOf" : [ {
-                "const" : "INPUT_COLUMN"
-              } ]
-            }
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/inputColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/outputColumnMode",
+      "options" : {
+        "format" : "radio",
+        "radioLayout" : "vertical"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/newColumnName",
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/outputColumnMode",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "APPEND"
+            } ]
           }
         }
-      } ]
+      }
     }, {
-      "label" : "",
-      "type" : "Section",
-      "elements" : [ {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/allowComments",
-        "options" : {
-          "format" : "checkbox"
-        }
-      }, {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/failOnError",
-        "options" : {
-          "format" : "checkbox"
-        }
-      } ]
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/allowComments",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/failOnError",
+      "options" : {
+        "format" : "checkbox"
+      }
     } ]
   },
   "persist" : {

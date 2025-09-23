@@ -47,12 +47,11 @@
 package org.knime.json.node.fromstring;
 
 import org.knime.base.node.util.EnumBooleanPersistor;
-import org.knime.core.data.StringValue;
+import org.knime.core.data.DataColumnSpec;
 import org.knime.node.parameters.NodeParameters;
+import org.knime.node.parameters.NodeParametersInput;
 import org.knime.node.parameters.Widget;
-import org.knime.node.parameters.layout.After;
-import org.knime.node.parameters.layout.Layout;
-import org.knime.node.parameters.layout.Section;
+import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
 import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.persistence.Persistor;
 import org.knime.node.parameters.updates.Effect;
@@ -64,27 +63,23 @@ import org.knime.node.parameters.updates.ValueReference;
 import org.knime.node.parameters.widget.choices.ChoicesProvider;
 import org.knime.node.parameters.widget.choices.Label;
 import org.knime.node.parameters.widget.choices.RadioButtonsWidget;
-import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
+import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
+import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider.StringColumnsProvider;
 
 /**
  * Node parameters for String to JSON.
  *
  * @author Ali Asghar Marvi, KNIME Gmbh, Konstanz, Germany
  */
-@SuppressWarnings("restriction")
+@LoadDefaultsForAbsentFields
 final class StringToJSONNodeParameters implements NodeParameters {
 
     StringToJSONNodeParameters() {
-        // Default constructor
     }
 
-    @Section(title = "Input column")
-    interface InputSection {
-    }
-
-    @Section
-    @After(InputSection.class)
-    interface JsonProcessingSection {
+    StringToJSONNodeParameters(final NodeParametersInput input) {
+        m_inputColumn = input.getInTableSpec(0).flatMap(ColumnSelectionUtil::getFirstStringColumn)
+            .map(DataColumnSpec::getName).orElse("");
     }
 
     /**
@@ -92,34 +87,31 @@ final class StringToJSONNodeParameters implements NodeParameters {
      */
     enum OutputColumnMode {
             @Label(value = "Replace input column",
-                description = "Replace the input column with the JSON column, " + "keeping its name.")
-            REMOVE_SOURCE,
+                description = "Replace the input column with the JSON column, keeping its name.")
+            REPLACE,
 
             @Label(value = "Append new column", description = "Add a new column with the JSON values.")
-            INPUT_COLUMN
+            APPEND
     }
 
     static final class OutputColumnModePersistor extends EnumBooleanPersistor<OutputColumnMode> {
         OutputColumnModePersistor() {
-            super("remove.input.column", OutputColumnMode.class, OutputColumnMode.REMOVE_SOURCE);
+            super("remove.input.column", OutputColumnMode.class, OutputColumnMode.REPLACE);
         }
     }
 
     @Widget(title = "Input column", description = "Select the String column containing JSON content.")
-    @ChoicesProvider(StringColumnChoicesProvider.class)
-    @Layout(InputSection.class)
+    @ChoicesProvider(StringColumnsProvider.class)
     @Persist(configKey = "input.column")
     String m_inputColumn = "";
 
     @Widget(title = "Output column", description = "Choose whether to replace the input column or append a new column.")
-    @Layout(InputSection.class)
     @RadioButtonsWidget
     @Persistor(OutputColumnModePersistor.class)
     @ValueReference(OutputColumnModeRef.class)
-    OutputColumnMode m_outputColumnMode = OutputColumnMode.REMOVE_SOURCE;
+    OutputColumnMode m_outputColumnMode = OutputColumnMode.REPLACE;
 
     @Widget(title = "New column name", description = "Name of the new JSON column.")
-    @Layout(InputSection.class)
     @Persist(configKey = "new.column.name")
     @Effect(predicate = IsColumnAppend.class, type = EffectType.SHOW)
     String m_newColumnName = "JSON";
@@ -127,14 +119,12 @@ final class StringToJSONNodeParameters implements NodeParameters {
     @Widget(title = "Allow comments",
         description = "Allow comments (/* */, // and #) within JSON strings. "
             + "Note: Comments are not part of the JSON specification but are sometimes used.")
-    @Layout(JsonProcessingSection.class)
     @Persist(configKey = "allow.comments")
     boolean m_allowComments = true;
 
     @Widget(title = "Fail on error",
         description = "If checked, the node fails when encountering invalid JSON. "
             + "Otherwise, missing values are generated for invalid JSON strings.")
-    @Layout(JsonProcessingSection.class)
     @Persist(configKey = "fail.on.error")
     boolean m_failOnError = true;
 
@@ -142,7 +132,6 @@ final class StringToJSONNodeParameters implements NodeParameters {
      * Reference for the output column mode
      */
     interface OutputColumnModeRef extends ParameterReference<OutputColumnMode> {
-
     }
 
     /**
@@ -151,16 +140,7 @@ final class StringToJSONNodeParameters implements NodeParameters {
     static final class IsColumnAppend implements EffectPredicateProvider {
         @Override
         public EffectPredicate init(final PredicateInitializer i) {
-            return i.getEnum(OutputColumnModeRef.class).isOneOf(OutputColumnMode.INPUT_COLUMN);
-        }
-    }
-
-    /**
-     * Provider for String column choices
-     */
-    static class StringColumnChoicesProvider extends CompatibleColumnsProvider {
-        StringColumnChoicesProvider() {
-            super(StringValue.class);
+            return i.getEnum(OutputColumnModeRef.class).isOneOf(OutputColumnMode.APPEND);
         }
     }
 }

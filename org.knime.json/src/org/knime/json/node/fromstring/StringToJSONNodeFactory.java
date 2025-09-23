@@ -80,23 +80,24 @@ public final class StringToJSONNodeFactory extends NodeFactory<StringToJSONNodeM
     implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     private static final String NODE_NAME = "String to JSON";
+
     private static final String NODE_ICON = "./str2json.png";
+
     private static final String SHORT_DESCRIPTION = """
             Converts String values to JSON values.
             """;
+
     private static final String FULL_DESCRIPTION = """
             Converts the String values to JSON values.
             """;
-    private static final List<PortDescription> INPUT_PORTS = List.of(
-            fixedPort("table with String", """
-                Contains a String column with JSON content
-                """)
-    );
-    private static final List<PortDescription> OUTPUT_PORTS = List.of(
-            fixedPort("table with JSON", """
-                Table with converted JSON values
-                """)
-    );
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(fixedPort("table with String", """
+            Contains a String column with JSON content
+            """));
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(fixedPort("table with JSON", """
+            Table with converted JSON values
+            """));
 
     /**
      * {@inheritDoc}
@@ -145,20 +146,9 @@ public final class StringToJSONNodeFactory extends NodeFactory<StringToJSONNodeM
 
     @Override
     public NodeDescription createNodeDescription() {
-        return DefaultNodeDescriptionUtil.createNodeDescription(
-            NODE_NAME,
-            NODE_ICON,
-            INPUT_PORTS,
-            OUTPUT_PORTS,
-            SHORT_DESCRIPTION,
-            FULL_DESCRIPTION,
-            List.of(),
-            StringToJSONNodeParameters.class,
-            null,
-            NodeType.Manipulator,
-            List.of(),
-            null
-        );
+        return DefaultNodeDescriptionUtil.createNodeDescription(NODE_NAME, NODE_ICON, INPUT_PORTS, OUTPUT_PORTS,
+            SHORT_DESCRIPTION, FULL_DESCRIPTION, List.of(), StringToJSONNodeParameters.class, null,
+            NodeType.Manipulator, List.of(), null);
     }
 
     @Override
