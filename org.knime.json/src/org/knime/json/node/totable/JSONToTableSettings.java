@@ -67,9 +67,10 @@ final class JSONToTableSettings {
     private static final String REMOVE_SOURCE_COLUMN = "removeSourceColumn";
     /** Default number of levels to expand up to. */
     static final int DEFAULT_UP_TO_N_LEVELS = 1;
+    /** Default path segment separator. */
+    static final String DEFAULT_PATH_SEGMENT_SEPARATOR = ".";
     private static final String INPUT_COLUMN = "input.column", COLUMN_NAME_STRATEGY = "column.name.strategy", ARRAY_HANDLING = "array.handling", EXPANSION = "expansion", PATH_SEGMENT_SEPARATOR = "column.segment.separator";
     private static final String UP_TO_N = "up.to.n.levels";
-    private static final String DEFAULT_PATH_SEGMENT_SEPARATOR = ".";
     private static final String OMIT_NESTED_OBJECTS = "omit.nested.objects";
     /** Default value for removing source column. */
     static final boolean DEFAULT_REMOVE_SOURCE_COLUMN = true;

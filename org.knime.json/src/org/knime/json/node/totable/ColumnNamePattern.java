@@ -50,6 +50,9 @@ package org.knime.json.node.totable;
 
 import org.knime.core.data.DataTableSpec;
 import org.knime.node.parameters.widget.choices.Label;
+import org.knime.node.parameters.updates.EffectPredicate;
+import org.knime.node.parameters.updates.EffectPredicateProvider;
+import org.knime.node.parameters.updates.ParameterReference;
 
 /**
  * How should the output column names generated?
@@ -66,4 +69,20 @@ public enum ColumnNamePattern {
      */
     @Label("Use leaf name (uniquified with (#1)/(#2)/...)")
     UniquifiedLeafNames;
+    
+    /**
+     * Predicate to show path separator field only when JsonPathWithCustomSeparator is selected.
+     */
+    static final class IsPathWithSeparator implements EffectPredicateProvider {
+        @Override
+        public EffectPredicate init(final PredicateInitializer i) {
+            return i.getEnum(ValueRef.class).isOneOf(JsonPathWithCustomSeparator);
+        }
+    }
+    
+    /**
+     * Reference interface for the column name pattern value.
+     */
+    public interface ValueRef extends ParameterReference<ColumnNamePattern> {
+    }
 }

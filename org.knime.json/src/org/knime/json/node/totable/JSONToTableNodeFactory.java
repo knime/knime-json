@@ -14,9 +14,9 @@ import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
 import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
 import org.knime.core.node.NodeDescription;
 import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
-import java.util.Map;
 import org.knime.node.impl.description.PortDescription;
 import java.util.List;
+import java.util.Map;
 import static org.knime.node.impl.description.PortDescription.fixedPort;
 
 /**
@@ -117,20 +117,9 @@ public class JSONToTableNodeFactory
 
     @Override
     public NodeDescription createNodeDescription() {
-        return DefaultNodeDescriptionUtil.createNodeDescription(
-            NODE_NAME,
-            NODE_ICON,
-            INPUT_PORTS,
-            OUTPUT_PORTS,
-            SHORT_DESCRIPTION,
-            FULL_DESCRIPTION,
-            List.of(),
-            JSONToTableNodeParameters.class,
-            null,
-            NodeType.Manipulator,
-            List.of(),
-            null
-        );
+        return DefaultNodeDescriptionUtil.createNodeDescription(NODE_NAME, NODE_ICON, INPUT_PORTS, OUTPUT_PORTS,
+            SHORT_DESCRIPTION, FULL_DESCRIPTION, List.of(), JSONToTableNodeParameters.class, null, NodeType.Manipulator,
+            List.of(), null);
     }
 
     @Override
@@ -139,4 +128,3 @@ public class JSONToTableNodeFactory
     }
 
 }
-

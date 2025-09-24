@@ -50,6 +50,9 @@ package org.knime.json.node.totable;
 
 import org.knime.core.data.json.JSONValue;
 import org.knime.node.parameters.widget.choices.Label;
+import org.knime.node.parameters.updates.EffectPredicate;
+import org.knime.node.parameters.updates.EffectPredicateProvider;
+import org.knime.node.parameters.updates.ParameterReference;
 
 /**
  * How to expand the {@link JSONValue} for possible KNIME values?
@@ -66,4 +69,20 @@ public enum Expansion {
      */
     @Label("Only up to level")
     OnlyUpTo;
+    
+    /**
+     * Predicate to show maximum depth level field only when OnlyUpTo is selected.
+     */
+    static final class IsOnlyUpTo implements EffectPredicateProvider {
+        @Override
+        public EffectPredicate init(final PredicateInitializer i) {
+            return i.getEnum(ValueRef.class).isOneOf(OnlyUpTo);
+        }
+    }
+    
+    /**
+     * Reference interface for the expansion value.
+     */
+    public interface ValueRef extends ParameterReference<Expansion> {
+    }
 }
