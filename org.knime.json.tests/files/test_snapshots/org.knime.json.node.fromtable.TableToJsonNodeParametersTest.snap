@@ -1,0 +1,367 @@
+{
+  "data" : {
+    "model" : {
+      "selectedColumns" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : false,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : false
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "rowKeyOption" : "omit",
+      "rowKeyKey" : "key",
+      "direction" : "RowsOutside",
+      "removeSourceColumns" : false,
+      "outputColumnName" : "JSON",
+      "columnNamesAsPath" : false,
+      "columnNameSeparator" : ".",
+      "missingsAreOmitted" : true,
+      "booleansAsNumbers" : true
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "booleansAsNumbers" : {
+            "type" : "boolean",
+            "default" : true
+          },
+          "columnNameSeparator" : {
+            "type" : "string",
+            "title" : "Path separator",
+            "description" : "The character used to separate path components in column names.",
+            "default" : "."
+          },
+          "columnNamesAsPath" : {
+            "type" : "boolean",
+            "title" : "Column names as paths",
+            "description" : "When enabled, column names are treated as hierarchical paths using the specified separator.",
+            "default" : false
+          },
+          "direction" : {
+            "oneOf" : [ {
+              "const" : "RowsOutside",
+              "title" : "Row-oriented (n input rows → 1 output cell)"
+            }, {
+              "const" : "KeepRows",
+              "title" : "Column-oriented (n input rows → 1 output cell)"
+            }, {
+              "const" : "ColumnsOutside",
+              "title" : "Keep rows (n input rows → n output cells)"
+            } ],
+            "title" : "Aggregation direction",
+            "description" : "Configure how to aggregate the selected columns into JSON.",
+            "default" : "RowsOutside"
+          },
+          "missingsAreOmitted" : {
+            "type" : "boolean",
+            "title" : "Missing values are omitted",
+            "description" : "Missing values from the input table do not generate a key in the resulting JSON structure, they are omitted completely. Note that in a column-oriented transformation missing cells will still be inserted as null values in the column's array to maintain row alignment.",
+            "default" : true
+          },
+          "outputColumnName" : {
+            "type" : "string",
+            "title" : "Output column name",
+            "description" : "Name of the resulting JSON column.",
+            "default" : "JSON"
+          },
+          "removeSourceColumns" : {
+            "type" : "boolean",
+            "title" : "Remove source columns",
+            "description" : "When checked, the source columns are removed when the rows are kept. It has no effect for the other aggregation direction options, when all columns are removed.",
+            "default" : false
+          },
+          "rowKeyKey" : {
+            "type" : "string",
+            "title" : "Row key name",
+            "description" : "The key name to use when row keys are included as JSON values.",
+            "default" : "key"
+          },
+          "rowKeyOption" : {
+            "oneOf" : [ {
+              "const" : "omit",
+              "title" : "Omit row key"
+            }, {
+              "const" : "asValue",
+              "title" : "Row key as JSON key"
+            }, {
+              "const" : "asKey",
+              "title" : "Row key as JSON value with key"
+            } ],
+            "title" : "Row keys",
+            "description" : "Configure how row keys should be handled in the JSON output.",
+            "default" : "omit"
+          },
+          "selectedColumns" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Input columns",
+            "description" : "The selected columns will be transformed.",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/selectedColumns",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list.",
+        "includedLabel" : "Selected",
+        "excludedLabel" : "Available"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/rowKeyOption",
+      "options" : {
+        "format" : "radio",
+        "radioLayout" : "vertical"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/rowKeyKey",
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/rowKeyOption",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "asValue"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/direction",
+      "options" : {
+        "format" : "radio",
+        "radioLayout" : "vertical"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeSourceColumns",
+      "options" : {
+        "format" : "checkbox"
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/direction",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "KeepRows"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnNamesAsPath",
+      "options" : {
+        "format" : "checkbox",
+        "isAdvanced" : true
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnNameSeparator",
+      "options" : {
+        "isAdvanced" : true
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/columnNamesAsPath",
+          "schema" : {
+            "const" : true
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/missingsAreOmitted",
+      "options" : {
+        "format" : "checkbox",
+        "isAdvanced" : true
+      }
+    }, {
+      "label" : "Output",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputColumnName"
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "selectedColumns" : {
+            "configPaths" : [ [ "selectedColumns", "filter-type" ], [ "selectedColumns", "included_names" ], [ "selectedColumns", "excluded_names" ], [ "selectedColumns", "enforce_option" ], [ "selectedColumns", "name_pattern", "pattern" ], [ "selectedColumns", "name_pattern", "type" ], [ "selectedColumns", "name_pattern", "caseSensitive" ], [ "selectedColumns", "name_pattern", "excludeMatching" ] ]
+          },
+          "rowKeyOption" : {
+            "configKey" : "row<dot>key<dot>option"
+          },
+          "rowKeyKey" : {
+            "configKey" : "rowkey<dot>key"
+          },
+          "direction" : {
+            "configKey" : "direction"
+          },
+          "removeSourceColumns" : {
+            "configKey" : "remove<dot>source<dot>columns"
+          },
+          "outputColumnName" : {
+            "configKey" : "output<dot>column<dot>name"
+          },
+          "columnNamesAsPath" : {
+            "configKey" : "column<dot>names<dot>as<dot>path"
+          },
+          "columnNameSeparator" : {
+            "configKey" : "column<dot>name<dot>separator"
+          },
+          "missingsAreOmitted" : {
+            "configKey" : "missing<dot>values<dot>are<dot>omitted"
+          },
+          "booleansAsNumbers" : {
+            "deprecatedConfigKeys" : [ {
+              "deprecated" : [ ]
+            } ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/selectedColumns",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ ]
+    } ]
+  } ]
+}

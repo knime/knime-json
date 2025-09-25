@@ -41,6 +41,7 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.JsonUtil;
 import org.knime.core.util.Pair;
 import org.knime.json.util.JSR353Util;
+import org.knime.node.parameters.widget.choices.Label;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -57,10 +58,13 @@ class TableToJsonNodeModel extends NodeModel {
      */
     protected enum Direction {
         /** aggregate by rows later */
+        @Label("Row-oriented (n input rows → 1 output cell)")
         RowsOutside,
         /** do not aggregate by rows */
+        @Label("Column-oriented (n input rows → 1 output cell)")
         KeepRows,
         /** aggregate by columns later */
+        @Label("Keep rows (n input rows → n output cells)")
         ColumnsOutside;
     }
 
@@ -69,13 +73,16 @@ class TableToJsonNodeModel extends NodeModel {
      */
     protected enum RowKeyOption {
         /** row keys are not included in the output */
+        @Label("Omit row key")
         omit,
         /** row keys are values just as if they were regular columns. */
+        @Label("Row key as JSON key")
         asValue,
         /**
          * row keys are keys, as if they were data bound keys, create objects instead of array, not applicable to
          * {@link Direction#ColumnsOutside}.
          */
+        @Label("Row key as JSON value with key")
         asKey;
     }
 
