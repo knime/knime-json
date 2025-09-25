@@ -41,6 +41,7 @@ import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.JsonUtil;
 import org.knime.core.util.Pair;
 import org.knime.json.util.JSR353Util;
+import org.knime.node.parameters.widget.choices.Label;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -56,27 +57,67 @@ class TableToJsonNodeModel extends NodeModel {
      * The possible directions of how the JSON should be combined.
      */
     protected enum Direction {
-        /** aggregate by rows later */
-        RowsOutside,
-        /** do not aggregate by rows */
-        KeepRows,
-        /** aggregate by columns later */
-        ColumnsOutside;
+            /** aggregate by rows later */
+            @Label(value = "Row-oriented (n input rows → 1 output cell)",
+                description = "The values from the selected columns are collected "
+                    + "and concatenated row-wise to a JSON object/array, "
+                    + "after that these are combined by the rows to a single JSON value.")
+            RowsOutside, // NOSONAR
+            /** do not aggregate by rows */
+            @Label(value = "Keep rows (n input rows → n output cells)",
+                description = "The selected columns are combined to a new JSON column containing "
+                    + "the values from the columns and the name of the columns as keys. "
+                    + "This option does not combine the rows of the input table.")
+            KeepRows, // NOSONAR
+            /** aggregate by columns later */
+            @Label(value = "Column-oriented (n input rows → 1 output cell)",
+                description = "The values from the selected columns are collected "
+                    + "and concatenated column-wise to a JSON object/array, "
+                    + "after that these are combined by the columns to a single JSON value.")
+            ColumnsOutside; // NOSONAR
     }
 
     /**
      * Possible options how the row keys should be handled.
      */
     protected enum RowKeyOption {
-        /** row keys are not included in the output */
-        omit,
-        /** row keys are values just as if they were regular columns. */
-        asValue,
-        /**
-         * row keys are keys, as if they were data bound keys, create objects instead of array, not applicable to
-         * {@link Direction#ColumnsOutside}.
-         */
-        asKey;
+            /** row keys are not included in the output */
+            @Label(value = "Omit row key",
+                description = "The row keys will be omitted, not used in the generated JSON value "
+                    + "(which are arrays when the rows are not kept).")
+            omit, // NOSONAR
+            /** row keys are values just as if they were regular columns. */
+            @Label(value = "Row key as JSON value with key",
+                description = "The row keys will be included in the generated JSON (array) "
+                    + "value with the specified key.")
+            asValue, // NOSONAR
+            /**
+             * row keys are keys, as if they were data bound keys, create objects instead of array, not applicable to
+             * {@link Direction#ColumnsOutside}.
+             */
+            @Label(value = "Row key as JSON key",
+                description = "The row keys are added to the generated JSON value as a key, "
+                    + "in this case not an array, but an object is created.")
+            asKey; // NOSONAR
+    }
+
+    /**
+     * Enum for handling missing values in the JSON output.
+     */
+    protected enum MissingValueHandling {
+            /** Missing values are omitted from the JSON output */
+            @Label(value = "are omitted",
+                description = "Missing values from the input table do not generate a key in the resulting "
+                    + "JSON structure, they are omitted completely. "
+                    + "Note that in a column-oriented transformation missing cells will still be inserted "
+                    + "as null values in the column's array because otherwise the row arrays for different "
+                    + "columns may have different numbers of entries. This would make it impossible to "
+                    + "reconstruct the original table.")
+            OMITTED,
+            /** Missing values are inserted as null values */
+            @Label(value = "are inserted as 'null'",
+                description = "Missing values from the input table are inserted as null values.")
+            AS_NULL;
     }
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(TableToJsonNodeModel.class);
