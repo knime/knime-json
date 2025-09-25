@@ -49,6 +49,7 @@
 package org.knime.json.node.totable;
 
 import org.knime.core.data.json.JSONValue;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * How to expand the {@link JSONValue} for possible KNIME values?
@@ -57,10 +58,12 @@ import org.knime.core.data.json.JSONValue;
  */
 public enum Expansion {
     /** Only the leaves are extracted, no inner {@link JSONValue} columns are generated. */
+    @Label("Only leaves")
     OnlyLeaves,
     /**
      * Expansion stops at level specified in another property (it might generate mostly {@link JSONValue} columns for
      * non-leaves).
      */
+    @Label("Only up to level")
     OnlyUpTo;
 }

@@ -49,6 +49,7 @@
 package org.knime.json.node.totable;
 
 import org.knime.core.data.DataTableSpec;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * How should the output column names generated?
@@ -57,10 +58,12 @@ import org.knime.core.data.DataTableSpec;
  */
 public enum ColumnNamePattern {
     /** JSONPath without {@code $} and {@code [}, {@code ]}, but with custom separator. */
+    @Label("Use path with separator")
     JsonPathWithCustomSeparator,
     /**
      * Using the leaves' key as a name, but make them unique with
      * {@link DataTableSpec#getUniqueColumnName(DataTableSpec, String)}.
      */
+    @Label("Use leaf name (uniquified with (#1)/(#2)/...)")
     UniquifiedLeafNames;
 }

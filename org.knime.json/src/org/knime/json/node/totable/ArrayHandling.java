@@ -49,6 +49,7 @@
 package org.knime.json.node.totable;
 
 import org.knime.core.data.collection.CollectionDataValue;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * How to handle JSON array values?
@@ -57,9 +58,12 @@ import org.knime.core.data.collection.CollectionDataValue;
  */
 public enum ArrayHandling {
     /** Array elements are kept as JSON array. */
+    @Label("Keep as JSON array")
     KeepAllArrayAsJsonArray,
     /** Array elements are translated to KNIME {@link CollectionDataValue}.  */
+    @Label("Keep as collection elements")
     GenerateCollectionCells,
     /** Generate columns for each possible array element. */
+    @Label("Expand to columns (may generate many)")
     GenerateColumns;
 }
