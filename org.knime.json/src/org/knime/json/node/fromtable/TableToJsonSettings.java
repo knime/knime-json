@@ -98,7 +98,9 @@ class TableToJsonSettings {
 
     static final boolean DEFAULT_REMOVE_SOURCE_COLUMNS = false;
 
-    static final boolean COMPAT_MISSINGS_ARE_OMITTED = false, DEFAULT_MISSINGS_ARE_OMITTED = true;
+    static final boolean COMPAT_MISSINGS_ARE_OMITTED = false;
+
+    static final boolean DEFAULT_MISSINGS_ARE_OMITTED = true;
 
     private final DataColumnSpecFilterConfiguration m_selectedColumns = new DataColumnSpecFilterConfiguration(
         CFGKEY_SELECTED_COLUMNS, new DataTypeColumnFilter(JsonPathUtils.supportedInputDataValuesAsArray()));
@@ -107,7 +109,9 @@ class TableToJsonSettings {
 
     private Direction m_direction = DEFAULT_DIRECTION;
 
-    private boolean m_columnNamesAsPath = DEFAULT_COLUMN_NAMES_AS_PATH, m_removeSourceColumns = DEFAULT_REMOVE_SOURCE_COLUMNS;
+    private boolean m_columnNamesAsPath = DEFAULT_COLUMN_NAMES_AS_PATH;
+
+    private boolean m_removeSourceColumns = DEFAULT_REMOVE_SOURCE_COLUMNS;
 
     private RowKeyOption m_rowKey = DEFAULT_ROW_KEY_OPTION;
 
@@ -311,36 +315,4 @@ class TableToJsonSettings {
     final void setMissingsAreOmitted(final boolean missingsAreOmitted) {
         m_missingsAreOmitted = missingsAreOmitted;
     }
-
-
-
-//    /**
-//     * Autoconfigures the input column based on the input {@code dataTableSpec}.
-//     *
-//     * @param dataTableSpec The input {@link DataTableSpec}.
-//     * @return The warning or an empty {@link String}.
-//     * @throws InvalidSettingsException When there are no JSON columns.
-//     */
-//    protected String autoConfigure(final DataTableSpec dataTableSpec) throws InvalidSettingsException {
-//        if (null == getInputColumn()) {
-//            List<String> compatibleCols = new ArrayList<String>();
-//            for (DataColumnSpec c : dataTableSpec) {
-//                if (c.getType().isCompatible(JSONValue.class)) {
-//                    compatibleCols.add(c.getName());
-//                }
-//            }
-//            if (compatibleCols.size() == 1) {
-//                // auto-configure
-//                setInputColumn(compatibleCols.get(0));
-//            } else if (compatibleCols.size() > 1) {
-//                // auto-guessing
-//                setInputColumn(compatibleCols.get(0));
-//                return "Auto guessing: using column \"" + compatibleCols.get(0) + "\".";
-//            } else {
-//                throw new InvalidSettingsException("No JSON " + "column in input table."
-//                    + " Try using the Columns to JSON node before this node.");
-//            }
-//        }
-//        return "";
-//    }
 }
