@@ -64,25 +64,25 @@ import org.knime.json.node.jsonpath.util.JsonPathUtils;
  * @author Gabor Bakos
  */
 class TableToJsonSettings {
-    private static final String CFGKEY_SELECTED_COLUMNS = "selectedColumns";
+    static final String CFGKEY_SELECTED_COLUMNS = "selectedColumns";
 
-    private static final String CFGKEY_ROWKEY_KEY = "rowkey.key";
+    static final String CFGKEY_ROWKEY_KEY = "rowkey.key";
 
-    private static final String CFGKEY_DIRECTION = "direction";
+    static final String CFGKEY_DIRECTION = "direction";
 
-    private static final String CFGKEY_COLUMN_NAMES_AS_PATH = "column.names.as.path";
+    static final String CFGKEY_COLUMN_NAMES_AS_PATH = "column.names.as.path";
 
-    private static final String CFGKEY_ROW_KEY_OPTION = "row.key.option";
+    static final String CFGKEY_ROW_KEY_OPTION = "row.key.option";
 
-    private static final String CFGKEY_COLUMN_NAME_SEPARATOR = "column.name.separator";
+    static final String CFGKEY_COLUMN_NAME_SEPARATOR = "column.name.separator";
 
-    private static final String CFGKEY_OUTPUT_COLUMN_NAME = "output.column.name";
+    static final String CFGKEY_OUTPUT_COLUMN_NAME = "output.column.name";
 
-    private static final String CFGKEY_REMOVE_SOURCE_COLUMNS = "remove.source.columns";
+    static final String CFGKEY_REMOVE_SOURCE_COLUMNS = "remove.source.columns";
 
-    private static final String CFGKEY_BOOLEANS_AS_NUMBERS = "output.boolean.asNumbers";
+    static final String CFGKEY_BOOLEANS_AS_NUMBERS = "output.boolean.asNumbers";
 
-    private static final String CFGKEY_MISSINGS_ARE_OMITTED = "missing.values.are.omitted";
+    static final String CFGKEY_MISSINGS_ARE_OMITTED = "missing.values.are.omitted";
 
     static final String DEFAULT_ROWKEY_KEY = "key";
 

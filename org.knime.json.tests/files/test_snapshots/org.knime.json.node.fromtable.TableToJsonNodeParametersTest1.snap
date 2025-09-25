@@ -1,0 +1,386 @@
+{
+  "data" : {
+    "model" : {
+      "selectedColumns" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : true,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : true
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "rowKeyOption" : "omit",
+      "rowKeyKey" : "key",
+      "columnNamesAsPath" : false,
+      "columnNameSeparator" : ".",
+      "direction" : "RowsOutside",
+      "removeSourceColumns" : false,
+      "missingValueHandling" : "OMITTED",
+      "outputColumnName" : "JSON",
+      "booleansAsNumbers" : false
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "booleansAsNumbers" : {
+            "type" : "boolean",
+            "default" : false
+          },
+          "columnNameSeparator" : {
+            "type" : "string",
+            "title" : "Path separator",
+            "description" : "When column names as paths is enabled, this value will be used to find the keys for JSON columns based on the column names.",
+            "default" : "."
+          },
+          "columnNamesAsPath" : {
+            "type" : "boolean",
+            "title" : "Column names as paths",
+            "description" : "When enabled, column names are treated as hierarchical paths using the specified separator.",
+            "default" : false
+          },
+          "direction" : {
+            "oneOf" : [ {
+              "const" : "RowsOutside",
+              "title" : "Row-oriented (n input rows → 1 output cell)"
+            }, {
+              "const" : "KeepRows",
+              "title" : "Keep rows (n input rows → n output cells)"
+            }, {
+              "const" : "ColumnsOutside",
+              "title" : "Column-oriented (n input rows → 1 output cell)"
+            } ],
+            "title" : "Aggregation direction",
+            "description" : "Configure how to aggregate the selected columns into JSON.\n<ul>\n<li><b>Row-oriented (n input rows → 1 output cell)</b>: The values from the selected columns are collected and concatenated row-wise to a JSON object/array, after that these are combined by the rows to a single JSON value.</li>\n<li><b>Keep rows (n input rows → n output cells)</b>: The selected columns are combined to a new JSON column containing the values from the columns and the name of the columns as keys. This option does not combine the rows of the input table.</li>\n<li><b>Column-oriented (n input rows → 1 output cell)</b>: The values from the selected columns are collected and concatenated column-wise to a JSON object/array, after that these are combined by the columns to a single JSON value.</li>\n</ul>",
+            "default" : "RowsOutside"
+          },
+          "missingValueHandling" : {
+            "oneOf" : [ {
+              "const" : "OMITTED",
+              "title" : "are omitted"
+            }, {
+              "const" : "AS_NULL",
+              "title" : "are inserted as 'null'"
+            } ],
+            "title" : "Missing values",
+            "description" : "Configure how missing values should be handled in the JSON output.\n<ul>\n<li><b>are omitted</b>: Missing values from the input table do not generate a key in the resulting JSON structure, they are omitted completely. Note that in a column-oriented transformation missing cells will still be inserted as null values in the column's array because otherwise the row arrays for different columns may have different numbers of entries. This would make it impossible to reconstruct the original table.</li>\n<li><b>are inserted as &#x27;null&#x27;</b>: Missing values from the input table are inserted as null values.</li>\n</ul>",
+            "default" : "OMITTED"
+          },
+          "outputColumnName" : {
+            "type" : "string",
+            "title" : "Output column name",
+            "description" : "Name of the resulting JSON column.",
+            "default" : "JSON"
+          },
+          "removeSourceColumns" : {
+            "type" : "boolean",
+            "title" : "Remove source columns",
+            "description" : "When checked, the source columns are removed when the rows are kept. It has no effect for the other aggregation direction options, when all columns are removed.",
+            "default" : false
+          },
+          "rowKeyKey" : {
+            "type" : "string",
+            "title" : "Row key name",
+            "description" : "The key name to use when row keys are included as JSON values.",
+            "default" : "key"
+          },
+          "rowKeyOption" : {
+            "oneOf" : [ {
+              "const" : "omit",
+              "title" : "Omit row key"
+            }, {
+              "const" : "asValue",
+              "title" : "Row key as JSON value with key"
+            }, {
+              "const" : "asKey",
+              "title" : "Row key as JSON key"
+            } ],
+            "title" : "Row keys",
+            "description" : "Configure how row keys should be handled in the JSON output.\n<ul>\n<li><b>Omit row key</b>: The row keys will be omitted, not used in the generated JSON value (which are arrays when the rows are not kept).</li>\n<li><b>Row key as JSON value with key</b>: The row keys will be included in the generated JSON (array) value with the specified key.</li>\n<li><b>Row key as JSON key</b>: The row keys are added to the generated JSON value as a key, in this case not an array, but an object is created.</li>\n</ul>",
+            "default" : "omit"
+          },
+          "selectedColumns" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Input columns",
+            "description" : "The selected columns will be transformed.",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/selectedColumns",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list."
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/rowKeyOption",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/rowKeyKey",
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/rowKeyOption",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "asValue"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnNamesAsPath",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnNameSeparator",
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/columnNamesAsPath",
+          "schema" : {
+            "const" : true
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/direction",
+      "options" : {
+        "format" : "radio",
+        "radioLayout" : "vertical"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeSourceColumns",
+      "options" : {
+        "format" : "checkbox"
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/direction",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "KeepRows"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/missingValueHandling",
+      "options" : {
+        "format" : "radio",
+        "radioLayout" : "vertical"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/outputColumnName"
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "selectedColumns" : {
+            "configPaths" : [ [ "selectedColumns", "filter-type" ], [ "selectedColumns", "included_names" ], [ "selectedColumns", "excluded_names" ], [ "selectedColumns", "enforce_option" ], [ "selectedColumns", "name_pattern", "pattern" ], [ "selectedColumns", "name_pattern", "type" ], [ "selectedColumns", "name_pattern", "caseSensitive" ], [ "selectedColumns", "name_pattern", "excludeMatching" ] ]
+          },
+          "rowKeyOption" : {
+            "configKey" : "row<dot>key<dot>option"
+          },
+          "rowKeyKey" : {
+            "configKey" : "rowkey<dot>key"
+          },
+          "columnNamesAsPath" : {
+            "configKey" : "column<dot>names<dot>as<dot>path"
+          },
+          "columnNameSeparator" : {
+            "configKey" : "column<dot>name<dot>separator"
+          },
+          "direction" : {
+            "configKey" : "direction"
+          },
+          "removeSourceColumns" : {
+            "configKey" : "remove<dot>source<dot>columns"
+          },
+          "missingValueHandling" : {
+            "configPaths" : [ [ "missing<dot>values<dot>are<dot>omitted" ] ],
+            "deprecatedConfigKeys" : [ {
+              "deprecated" : [ ]
+            } ]
+          },
+          "outputColumnName" : {
+            "configKey" : "output<dot>column<dot>name"
+          },
+          "booleansAsNumbers" : {
+            "configKey" : "output<dot>boolean<dot>asNumbers"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/rowKeyOption",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "omit",
+        "text" : "Omit row key"
+      }, {
+        "id" : "asValue",
+        "text" : "Row key as JSON value with key"
+      }, {
+        "id" : "asKey",
+        "text" : "Row key as JSON key"
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/selectedColumns",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/direction"
+    },
+    "dependencies" : [ "#/properties/model/properties/direction", "#/properties/model/properties/rowKeyOption" ]
+  } ]
+}
