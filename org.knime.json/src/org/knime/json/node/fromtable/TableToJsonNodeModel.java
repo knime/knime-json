@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,17 +121,6 @@ class TableToJsonNodeModel extends NodeModel {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(TableToJsonNodeModel.class);
 
-    //    private final SettingsModelColumnFilter2 m_selectedColumns = createSelectedColumns();
-    //
-    //    private final SettingsModelString m_direction = createDirection();
-    //
-    //    private final SettingsModelString m_colNameSeparator = createColumnNameSeparator();
-    //
-    //    private final SettingsModelString m_outputColumnName = createOutputColumnName();
-    //
-    //    private final SettingsModelString m_rowKeyKey = createRowKeyKey();
-    //
-    //    private final SettingsModelBoolean m_includeRowKey = createIncludeRowKey();
     private final TableToJsonSettings m_settings = new TableToJsonSettings();
 
     /**
@@ -142,57 +130,14 @@ class TableToJsonNodeModel extends NodeModel {
         super(1, 1);
     }
 
-    //    /**
-    //     * @return The {@link SettingsModelString} for row key keys.
-    //     */
-    //    protected static SettingsModelString createRowKeyKey() {
-    //        return new SettingsModelString("rowkey.key", "ROWID");
-    //    }
-    //
-    //    /**
-    //     * @return The {@link SettingsModelBoolean} to indicate whether row keys should be included in JSON.
-    //     */
-    //    protected static SettingsModelBoolean createIncludeRowKey() {
-    //        return new SettingsModelBoolean("include.rowkeys", false);
-    //    }
-    //
-    //    /**
-    //     * @return The {@link SettingsModelString} for the output column name.
-    //     */
-    //    protected static SettingsModelString createOutputColumnName() {
-    //        return new SettingsModelString("output.column.name", "JSON");
-    //    }
-    //
-    //    /**
-    //     * @return The column name separator when the column name should define a path.
-    //     */
-    //    protected static SettingsModelString createColumnNameSeparator() {
-    //        return new SettingsModelString("column.name.separator", ".");
-    //    }
-    //
-    //    /**
-    //     * @return The {@link SettingsModelString} for the direction (possible values are the {@link Direction#name() names}
-    //     *         of {@link Direction#values() values}).
-    //     */
-    //    protected static SettingsModelString createDirection() {
-    //        return new SettingsModelString("direction", Direction.RowsOutside.name());
-    //    }
-    //
-    //    /**
-    //     * @return The selected columns' values to convert to JSON.
-    //     */
-    //    protected static SettingsModelColumnFilter2 createSelectedColumns() {
-    //        return new SettingsModelColumnFilter2("selectedColumns", JsonPathUtils.supportedInputDataValuesAsArray());
-    //    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
         throws Exception {
+        final var direction = m_settings.getDirection();
         BufferedDataTable ret;
-        Direction direction = m_settings.getDirection();
         switch (direction) {
             case RowsOutside:
                 ret = rowsOutside(inData[0], exec);
@@ -203,9 +148,6 @@ class TableToJsonNodeModel extends NodeModel {
             case ColumnsOutside:
                 ret = columnsOutside(inData[0], exec);
                 break;
-            //            case FromColumnNamesKeepRows:
-            //                ret = rowwiseFromColumns(inData[0], exec);
-            //                break;
             default:
                 throw new UnsupportedOperationException("Unknown direction: " + direction);
         }
@@ -303,36 +245,6 @@ class TableToJsonNodeModel extends NodeModel {
         }
         ColumnRearranger rearranger = createRearranger(data.getSpec());
         return exec.createColumnRearrangeTable(data, rearranger, exec);
-        //        BufferedDataContainer container = exec.createDataContainer(configure(new DataTableSpec[]{data.getSpec()})[0]);
-        //        int rowIndex = 0;
-        //        final int rowCount = data.getRowCount();
-        //        for (DataRow dataRow : data) {
-        //            exec.checkCanceled();
-        //            exec.setProgress(rowIndex++ / (double)rowCount,
-        //                String.format("Row %d/%d (\"%s\")", rowIndex, rowCount, dataRow.getKey()));
-        //            JsonObjectBuilder row = Json.createObjectBuilder();
-        //            for (int i = 0; i < indices.length; i++) {
-        //                final int index = indices[i];
-        //                DataCell cell = dataRow.getCell(index);
-        //                JSR353Util.fromCell(includes[i], cell, row);
-        //            }
-        //            switch (m_settings.getRowKey()) {
-        //                case asKey:
-        //                    container.addRowToTable(new DefaultRow(dataRow.getKey(), JSONCellFactory.create(Json
-        //                        .createObjectBuilder().add(dataRow.getKey().getString(), row.build()).build())));
-        //                    break;
-        //                case asValue:
-        //                    row.add(m_settings.getRowKeyKey(), dataRow.getKey().getString());
-        //                    //intentional fall through
-        //                case omit:
-        //                    container.addRowToTable(new DefaultRow(dataRow.getKey(), JSONCellFactory.create(row.build())));
-        //                    break;
-        //                default:
-        //                    CheckUtils.checkState(false, "Unsupported row key option: " + m_settings.getRowKey());
-        //            }
-        //        }
-        //        container.close();
-        //        return container.getTable();
     }
 
     /**
@@ -439,9 +351,6 @@ class TableToJsonNodeModel extends NodeModel {
      */
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-        //        if (m_settings.getDirection() == Direction.FromColumnNamesKeepRows) {
-        //            return null;
-        //        }
         if (m_settings.getDirection() == Direction.KeepRows) {
             return new DataTableSpec[]{createRearranger(inSpecs[0]).createSpec()};
         }
@@ -466,8 +375,8 @@ class TableToJsonNodeModel extends NodeModel {
 
             private final SortedMap<List<String>, Integer> m_keysSplit = createListKeySortedMap();
 
-            private final Map<String, Object/*Map<String, rec> | Integer | Pair<Integer, Map<String, rec>*/> m_structure =
-                new LinkedHashMap<>();
+            private final Map<String, Object/*Map<String, rec> | Integer | Pair<Integer, Map<String, rec>*/>
+                m_structure = new LinkedHashMap<>();
             {
                 fillStructures(spec, m_settings.getColumnNameSeparator(), m_includes, m_indices, m_keys, m_keysSplit,
                     m_structure);
@@ -485,17 +394,6 @@ class TableToJsonNodeModel extends NodeModel {
                     visitStructure(m_structure, dataRow, root);
                 } else {
                     visitSimple(m_includes, m_indices, dataRow, root);
-                    //                    JsonObjectBuilder row = Json.createObjectBuilder();
-                    //                    for (int i = 0; i < m_indices.length; i++) {
-                    //                        final int index = m_indices[i];
-                    //                        DataCell cell = dataRow.getCell(index);
-                    //                        try {
-                    //                            JSR353Util.fromCell(m_includes[i], cell, row);
-                    //                        } catch (IOException e) {
-                    //                            LOGGER.warn("Failed to read binary object data value (row: " + dataRow.getKey()+ ")", e);
-                    //                            row.addNull(m_includes[i]);
-                    //                        }
-                    //                    }
                 }
                 switch (m_settings.getRowKey()) {
                     case omit:
@@ -539,12 +437,10 @@ class TableToJsonNodeModel extends NodeModel {
                 for (String key : list.subList(0, list.size() - 1)) {
                     if (current.containsKey(key)) {
                         Object object = current.get(key);
-                        if (object instanceof Integer) {
-                            Integer colIndex = (Integer)object;
+                        if (object instanceof Integer colIndex) {
                             current.put(key, Pair.create(colIndex, new LinkedHashMap<String, Object>()));
                         }
-                        if (object instanceof Map<?, ?>) {
-                            Map<?, ?> map = (Map<?, ?>)object;
+                        if (object instanceof Map<?, ?> map) {
                             @SuppressWarnings("unchecked")
                             Map<String, Object> casted = (Map<String, Object>)map;
                             current = casted;
@@ -583,34 +479,9 @@ class TableToJsonNodeModel extends NodeModel {
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         TableToJsonSettings tmp = new TableToJsonSettings();
         tmp.loadSettingsModel(settings);
-        //        m_selectedColumns.validateSettings(settings);
-        //        m_direction.validateSettings(settings);
-        //        m_colNameSeparator.validateSettings(settings);
-        //        m_outputColumnName.validateSettings(settings);
-        //        m_includeRowKey.validateSettings(settings);
-        //        m_rowKeyKey.validateSettings(settings);
         if (tmp.isColumnNamesAsPath()) {
             CheckUtils.checkSetting(!tmp.getColumnNameSeparator().isEmpty(),
                 "The separator cannot be empty when column names are hierarchical.");
-        }
-        Direction direction = tmp.getDirection();
-        switch (direction) {
-        //            case FromColumnNamesKeepRows:
-        //                if (tmp.getColumnNameSeparator().isEmpty()) {
-        //                    throw new InvalidSettingsException("The separator cannot be empty for this direction setting.");
-        //                }
-        //                break;
-            case ColumnsOutside:
-                //Nothing to check.
-                break;
-            case RowsOutside:
-                //Nothing to check.
-                break;
-            case KeepRows:
-                //Nothing to check.
-                break;
-            default:
-                break;
         }
     }
 
@@ -638,10 +509,10 @@ class TableToJsonNodeModel extends NodeModel {
         return new TreeMap<>(new Comparator<List<String>>() {
             @Override
             public int compare(final List<String> o1, final List<String> o2) {
-                if (o1.size() == 0) {
+                if (o1.isEmpty()) {
                     return o2.size() - o1.size();
                 }
-                if (o2.size() == 0) {
+                if (o2.isEmpty()) {
                     return -1;
                 }
                 String v1 = o1.get(0), v2 = o2.get(0);
@@ -659,16 +530,14 @@ class TableToJsonNodeModel extends NodeModel {
         final DataRow row, final JsonObjectBuilder root) {
         for (Entry<String, Object> entry : structure.entrySet()) {
             Object object = entry.getValue();
-            if (object instanceof Map<?, ?>) {
-                Map<?, ?> map = (Map<?, ?>)object;
+            if (object instanceof Map<?, ?> map) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> casted = (Map<String, Object>)map;
                 JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
                 visitStructure(casted, row, newBuilder);
                 root.add(entry.getKey(), newBuilder);
             }
-            if (object instanceof Pair<?, ?>) {
-                Pair<?, ?> pair = (Pair<?, ?>)object;
+            if (object instanceof Pair<?, ?> pair) {
                 Integer index = (Integer)pair.getFirst();
                 Map<?, ?> map = (Map<?, ?>)pair.getSecond();
                 @SuppressWarnings("unchecked")
@@ -684,8 +553,7 @@ class TableToJsonNodeModel extends NodeModel {
                     newBuilder.addNull(entry.getKey());
                 }
             }
-            if (object instanceof Integer) {
-                Integer index = (Integer)object;
+            if (object instanceof Integer index) {
                 DataCell cell = row.getCell(index);
                 try {
                     fromCell(root, entry.getKey(), cell);
@@ -697,14 +565,14 @@ class TableToJsonNodeModel extends NodeModel {
         }
     }
 
-    private static IntCell TRUE = new IntCell(1);
-    private static IntCell FALSE = new IntCell(0);
+    private static final IntCell TRUE = new IntCell(1);
+    private static final IntCell FALSE = new IntCell(0);
 
     private void fromCell(final JsonObjectBuilder root, final String key, final DataCell cell)
         throws IOException {
         if (!m_settings.isMissingsAreOmitted() || !cell.isMissing()) {
-            if (m_settings.isBooleansAsNumbers() && (cell instanceof BooleanValue)) {
-                JSR353Util.fromCell(key, ((BooleanValue) cell).getBooleanValue() ? TRUE : FALSE, root);
+            if (m_settings.isBooleansAsNumbers() && (cell instanceof BooleanValue bool)) {
+                JSR353Util.fromCell(key, bool.getBooleanValue() ? TRUE : FALSE, root);
             } else {
                 JSR353Util.fromCell(key, cell, root);
             }
@@ -718,27 +586,25 @@ class TableToJsonNodeModel extends NodeModel {
             Object object = entry.getValue();
             List<String> newCurrentKeys = new ArrayList<>(currentKeys);
             newCurrentKeys.add(entry.getKey());
-            if (object instanceof Map<?, ?>) {
-                Map<?, ?> map = (Map<?, ?>)object;
+            if (object instanceof Map<?, ?> map) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> casted = (Map<String, Object>)map;
                 JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
                 visitStructure(casted, newBuilder, result, newCurrentKeys);
                 root.add(entry.getKey(), newBuilder);
             }
-                if (object instanceof Pair<?, ?>) {
-                    Pair<?, ?> pair = (Pair<?, ?>)object;
-                    Map<?, ?> map = (Map<?, ?>)pair.getSecond();
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> casted = (Map<String, Object>)map;
-                    JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
-                    visitStructure(casted, newBuilder, result, newCurrentKeys);
-                    root.add(entry.getKey(), newBuilder);
-                    newBuilder.add(entry.getKey(), result.get(join(newCurrentKeys)));
-                }
-                if (object instanceof Integer) {
-                    root.add(entry.getKey(), result.get(join(newCurrentKeys)));
-                }
+            if (object instanceof Pair<?, ?> pair) {
+                Map<?, ?> map = (Map<?, ?>)pair.getSecond();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> casted = (Map<String, Object>)map;
+                JsonObjectBuilder newBuilder = JsonUtil.getProvider().createObjectBuilder();
+                visitStructure(casted, newBuilder, result, newCurrentKeys);
+                root.add(entry.getKey(), newBuilder);
+                newBuilder.add(entry.getKey(), result.get(join(newCurrentKeys)));
+            }
+            if (object instanceof Integer) {
+                root.add(entry.getKey(), result.get(join(newCurrentKeys)));
+            }
         }
     }
 
@@ -747,16 +613,6 @@ class TableToJsonNodeModel extends NodeModel {
      * @return The parts of {@code list} joined by the {@link TableToJsonSettings#getColumnNameSeparator()}.
      */
     private String join(final List<String> list) {
-        //TODO use StringJoiner when Java8 is available.
-        final StringBuilder sb = new StringBuilder();
-        final String colSeparator = m_settings.getColumnNameSeparator();
-        for (Iterator<String> it = list.iterator(); it.hasNext();) {
-            String next = it.next();
-            sb.append(next);
-            if (it.hasNext()) {
-                sb.append(colSeparator);
-            }
-        }
-        return sb.toString();
+        return String.join(m_settings.getColumnNameSeparator(), list);
     }
 }
