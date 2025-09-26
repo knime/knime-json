@@ -57,6 +57,7 @@ import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * Common base class for row combining node's settings.
@@ -65,21 +66,26 @@ import org.knime.core.node.NodeSettingsWO;
  */
 public class RowCombineSettings {
     enum ObjectOrArray {
-        Array, Object;
+            @Label(value = "Collect into array", description = "The rows are collected to a JSON array.")
+            Array,
+            @Label(value = "Collect into object with key",
+                description = "The rows become an object within another object "
+                    + "with the keys specified by the selected column's values (will fail if there are duplicates).")
+            Object
     }
 
-    private static final String INPUT_COLUMN = "inputColumn";
-    private static final String ADD_ROOT_KEY = "addRootKey";
-    private static final String ROOT_KEY = "rootKey";
-    private static final String KEYS = "keys";
-    private static final String VALUES = "values";
-    private static final String OBJECT_OR_ARRAY = "objectOrArray";
-    private static final String OBJECT_KEY_COLUMN = "objectKeyColumn";
-    private static final String OBJECT_KEY_ROW_ID = "objectKeyRowID";
+    static final String INPUT_COLUMN = "inputColumn";
+    static final String ADD_ROOT_KEY = "addRootKey";
+    static final String ROOT_KEY = "rootKey";
+    static final String KEYS = "keys";
+    static final String VALUES = "values";
+    static final String OBJECT_OR_ARRAY = "objectOrArray";
+    static final String OBJECT_KEY_COLUMN = "objectKeyColumn";
+    static final String OBJECT_KEY_ROW_ID = "objectKeyRowID";
     static final boolean DEFAULT_ADD_ROOT_KEY = true;
     static final boolean DEFAULT_OBJECT_KEY_ROW_ID = true;
     static final ObjectOrArray DEFAULT_OBJECT_OR_ARRAY = ObjectOrArray.Array;
-    private static final String DEFAULT_ROOT_KEY = "root";
+    static final String DEFAULT_ROOT_KEY = "root";
     private String m_inputColumn = null;
     private String m_rootKey = DEFAULT_ROOT_KEY;
     private boolean m_addRootKey = DEFAULT_ADD_ROOT_KEY;

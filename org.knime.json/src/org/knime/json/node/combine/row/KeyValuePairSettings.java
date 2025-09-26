@@ -44,63 +44,43 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   20 Dec 2014 (Gabor): created
+ *   Sep 26, 2025 (magnus): created
  */
 package org.knime.json.node.combine.row;
 
-import org.knime.core.data.DataTableSpec;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
+import org.knime.node.parameters.NodeParameters;
+import org.knime.node.parameters.Widget;
+import org.knime.node.parameters.layout.HorizontalLayout;
+import org.knime.node.parameters.layout.Layout;
+import org.knime.node.parameters.widget.text.TextInputWidget;
 
 /**
- * Node settings for JSON Row Combiner.
+ * Node parameters for the key/value pair settings in the JSON Row Combiner node dialog.
  *
- * @author Gabor Bakos
+ * @author Magnus Gohm, KNIME AG, Konstanz, Germany
  */
-class RowCombineJsonSettings extends RowCombineSettings {
-    static final String NEW_COLUMN = "newColumn";
+final class KeyValuePairSettings implements NodeParameters {
 
-    private String m_newColumn = "JSON";
-
-    /**
-     * @return the newColumn
-     */
-    String getNewColumn() {
-        return m_newColumn;
+    public KeyValuePairSettings() {
     }
 
-    /**
-     * @param newColumn the newColumn to set
-     */
-    void setNewColumn(final String newColumn) {
-        m_newColumn = newColumn;
+    public KeyValuePairSettings(final String key, final String value) {
+        m_key = key;
+        m_value = value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadSettingsDialog(final NodeSettingsRO settings, final DataTableSpec inSpec) {
-        m_newColumn = settings.getString(NEW_COLUMN, null);
-        super.loadSettingsDialog(settings, inSpec);
+    @HorizontalLayout
+    interface KeyValuePairLayout {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadSettingsModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_newColumn = settings.getString(NEW_COLUMN);
-        super.loadSettingsModel(settings);
-    }
+    @Layout(KeyValuePairLayout.class)
+    @Widget(title = "Key", description = "The key name.")
+    @TextInputWidget
+    String m_key;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettings(final NodeSettingsWO settings) {
-        settings.addString(NEW_COLUMN, m_newColumn);
-        super.saveSettings(settings);
-    }
+    @Layout(KeyValuePairLayout.class)
+    @Widget(title = "Value", description = "The key value.")
+    @TextInputWidget
+    String m_value;
+
 }

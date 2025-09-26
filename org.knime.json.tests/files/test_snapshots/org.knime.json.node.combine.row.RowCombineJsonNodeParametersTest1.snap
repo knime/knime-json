@@ -1,0 +1,283 @@
+{
+  "data" : {
+    "model" : {
+      "inputColumn" : "json",
+      "newColumn" : "JSON",
+      "rootType" : "ADD_ROOT",
+      "rootKey" : "root",
+      "keyValuePairs" : [ ],
+      "collectType" : "Array",
+      "objectKeyColumn" : {
+        "specialChoice" : "ROW_ID"
+      }
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "collectType" : {
+            "oneOf" : [ {
+              "const" : "Array",
+              "title" : "Collect into array"
+            }, {
+              "const" : "Object",
+              "title" : "Collect into object with key"
+            } ],
+            "title" : "Collection type",
+            "description" : "Configure how to collect the JSON values.\n<ul>\n<li><b>Collect into array</b>: The rows are collected to a JSON array.</li>\n<li><b>Collect into object with key</b>: The rows become an object within another object with the keys specified by the selected column's values (will fail if there are duplicates).</li>\n</ul>",
+            "default" : "Array"
+          },
+          "inputColumn" : {
+            "type" : "string",
+            "title" : "JSON column",
+            "description" : "The JSON column providing the values for the array.",
+            "default" : "json"
+          },
+          "keyValuePairs" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "key" : {
+                  "type" : "string",
+                  "title" : "Key",
+                  "description" : "The key name."
+                },
+                "value" : {
+                  "type" : "string",
+                  "title" : "Value",
+                  "description" : "The key value."
+                }
+              }
+            },
+            "title" : "Custom key/value pairs",
+            "description" : "Additional key/value pairs to the root object.",
+            "default" : [ ]
+          },
+          "newColumn" : {
+            "type" : "string",
+            "title" : "New column name",
+            "description" : "Name of the new (single, JSON) column in the output table.",
+            "default" : "JSON"
+          },
+          "objectKeyColumn" : {
+            "type" : "object",
+            "properties" : {
+              "regularChoice" : {
+                "type" : "string"
+              },
+              "specialChoice" : {
+                "oneOf" : [ {
+                  "const" : "ROW_ID",
+                  "title" : "RowID"
+                } ]
+              }
+            },
+            "title" : "Object key column",
+            "description" : "The column providing the keys for the object when collecting into object. The rows become an object within another object with the keys specified by the selected column's values (will fail if there are duplicates). Select \"RowID\" to use the Row IDs as object keys.",
+            "default" : {
+              "specialChoice" : "ROW_ID"
+            }
+          },
+          "rootKey" : {
+            "type" : "string",
+            "title" : "Root key",
+            "description" : "Key to the JSON values object or array in the root object.",
+            "default" : "root"
+          },
+          "rootType" : {
+            "oneOf" : [ {
+              "const" : "OMIT_ROOT",
+              "title" : "Omit root"
+            }, {
+              "const" : "ADD_ROOT",
+              "title" : "Add root object with key"
+            } ],
+            "title" : "Root configuration",
+            "description" : "Configure how to handle the root object.\n<ul>\n<li><b>Omit root</b>: When selected, only the object or the array is returned (custom key/value pairs are not applicable).</li>\n<li><b>Add root object with key</b>: When selected, the object or the array is added to a root object with the specified key. Custom key/value pairs can also be added to the root object.</li>\n</ul>",
+            "default" : "ADD_ROOT"
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/inputColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/newColumn",
+      "options" : {
+        "validation" : {
+          "pattern" : {
+            "errorMessage" : "The field cannot be blank (it must contain at least one non-whitespace character).",
+            "parameters" : {
+              "pattern" : ".*\\S.*"
+            }
+          }
+        }
+      }
+    }, {
+      "label" : "Root",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/rootType",
+        "options" : {
+          "format" : "radio",
+          "radioLayout" : "vertical"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/rootKey",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/rootType",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "ADD_ROOT"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/keyValuePairs",
+        "options" : {
+          "detail" : [ {
+            "type" : "HorizontalLayout",
+            "elements" : [ {
+              "type" : "Control",
+              "scope" : "#/properties/key"
+            }, {
+              "type" : "Control",
+              "scope" : "#/properties/value"
+            } ]
+          } ],
+          "addButtonText" : "Add custom key/value pair",
+          "elementLayout" : "HORIZONTAL_SINGLE_LINE"
+        },
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/rootType",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "ADD_ROOT"
+              } ]
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Object or Array",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/collectType",
+        "options" : {
+          "format" : "radio",
+          "radioLayout" : "vertical"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/objectKeyColumn",
+        "options" : {
+          "format" : "singleSelection",
+          "specialChoices" : [ {
+            "id" : "ROW_ID",
+            "text" : "RowID"
+          } ]
+        },
+        "providedOptions" : [ "possibleValues" ],
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/collectType",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "Object"
+              } ]
+            }
+          }
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "configKey" : "inputColumn"
+          },
+          "newColumn" : {
+            "configKey" : "newColumn"
+          },
+          "rootType" : {
+            "configPaths" : [ [ "addRootKey" ] ]
+          },
+          "rootKey" : {
+            "configKey" : "rootKey"
+          },
+          "keyValuePairs" : {
+            "configPaths" : [ [ "keys" ], [ "values" ] ]
+          },
+          "collectType" : {
+            "configKey" : "objectOrArray"
+          },
+          "objectKeyColumn" : {
+            "configPaths" : [ [ "objectKeyRowID" ], [ "objectKeyColumn" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/inputColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      }, {
+        "id" : "other_column",
+        "text" : "other_column",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/objectKeyColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "string_column",
+        "text" : "string_column",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  } ]
+}

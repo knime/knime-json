@@ -42,65 +42,67 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   20 Dec 2014 (Gabor): created
  */
 package org.knime.json.node.combine.row;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
+import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.NodeSettings;
+import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.NodeParametersUtil;
+import org.knime.testing.node.dialog.DefaultNodeSettingsSnapshotTest;
+import org.knime.testing.node.dialog.SnapshotTestConfiguration;
 
 /**
- * Node settings for JSON Row Combiner.
+ * Snapshot tests for RowCombineJsonNodeParameters.
  *
- * @author Gabor Bakos
+ * @author AI Migration Pipeline v1.1
  */
-class RowCombineJsonSettings extends RowCombineSettings {
-    static final String NEW_COLUMN = "newColumn";
+@SuppressWarnings("restriction")
+final class RowCombineJsonNodeParametersTest extends DefaultNodeSettingsSnapshotTest {
 
-    private String m_newColumn = "JSON";
-
-    /**
-     * @return the newColumn
-     */
-    String getNewColumn() {
-        return m_newColumn;
+    RowCombineJsonNodeParametersTest() {
+        super(getConfig());
     }
 
-    /**
-     * @param newColumn the newColumn to set
-     */
-    void setNewColumn(final String newColumn) {
-        m_newColumn = newColumn;
+    private static SnapshotTestConfiguration getConfig() {
+        return SnapshotTestConfiguration.builder() //
+            .withInputPortObjectSpecs(createInputPortSpecs()) //
+            .testJsonFormsForModel(RowCombineJsonNodeParameters.class) //
+            .testJsonFormsWithInstance(SettingsType.MODEL, () -> readSettings()) //
+            .testNodeSettingsStructure(() -> readSettings()) //
+            .build();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadSettingsDialog(final NodeSettingsRO settings, final DataTableSpec inSpec) {
-        m_newColumn = settings.getString(NEW_COLUMN, null);
-        super.loadSettingsDialog(settings, inSpec);
+    private static RowCombineJsonNodeParameters readSettings() {
+        try {
+            var path = getSnapshotPath(RowCombineJsonNodeParameters.class).getParent().resolve("node_settings")
+                .resolve("RowCombineJsonNodeParameters.xml");
+            try (var fis = new FileInputStream(path.toFile())) {
+                var nodeSettings = NodeSettings.loadFromXML(fis);
+                return NodeParametersUtil.loadSettings(nodeSettings.getNodeSettings(SettingsType.MODEL.getConfigKey()),
+                    RowCombineJsonNodeParameters.class);
+            }
+        } catch (IOException | InvalidSettingsException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadSettingsModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_newColumn = settings.getString(NEW_COLUMN);
-        super.loadSettingsModel(settings);
+    private static PortObjectSpec[] createInputPortSpecs() {
+        return new PortObjectSpec[]{createDefaultTestTableSpec()};
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettings(final NodeSettingsWO settings) {
-        settings.addString(NEW_COLUMN, m_newColumn);
-        super.saveSettings(settings);
+    private static DataTableSpec createDefaultTestTableSpec() {
+        return new DataTableSpec(
+            new String[]{"json", "other_column", "string_column"},
+            new DataType[]{DataType.getType(JSONCell.class), DataType.getType(JSONCell.class), DataType.getType(StringCell.class)}
+        );
     }
 }
