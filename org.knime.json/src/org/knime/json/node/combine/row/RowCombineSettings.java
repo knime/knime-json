@@ -68,14 +68,14 @@ public class RowCombineSettings {
         Array, Object;
     }
 
-    private static final String INPUT_COLUMN = "inputColumn";
-    private static final String ADD_ROOT_KEY = "addRootKey";
-    private static final String ROOT_KEY = "rootKey";
-    private static final String KEYS = "keys";
-    private static final String VALUES = "values";
-    private static final String OBJECT_OR_ARRAY = "objectOrArray";
-    private static final String OBJECT_KEY_COLUMN = "objectKeyColumn";
-    private static final String OBJECT_KEY_ROW_ID = "objectKeyRowID";
+    static final String INPUT_COLUMN = "inputColumn";
+    static final String ADD_ROOT_KEY = "addRootKey";
+    static final String ROOT_KEY = "rootKey";
+    static final String KEYS = "keys";
+    static final String VALUES = "values";
+    static final String OBJECT_OR_ARRAY = "objectOrArray";
+    static final String OBJECT_KEY_COLUMN = "objectKeyColumn";
+    static final String OBJECT_KEY_ROW_ID = "objectKeyRowID";
     static final boolean DEFAULT_ADD_ROOT_KEY = true;
     static final boolean DEFAULT_OBJECT_KEY_ROW_ID = true;
     static final ObjectOrArray DEFAULT_OBJECT_OR_ARRAY = ObjectOrArray.Array;
