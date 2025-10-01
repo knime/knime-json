@@ -1,0 +1,440 @@
+{
+  "data" : {
+    "model" : {
+      "inputColumn" : "",
+      "appendOrReplace" : "REPLACE",
+      "newColumnName" : "XML",
+      "specifyNamespace" : false,
+      "keepTypeInformation" : false,
+      "arrayPrefix" : "Array",
+      "booleanPrefix" : "Boolean",
+      "decimalPrefix" : "Decimal",
+      "integerPrefix" : "Integer",
+      "nullPrefix" : "null",
+      "stringPrefix" : "String",
+      "rootElementName" : "root",
+      "arrayItemName" : "item",
+      "useParentKeyAsElementName" : false,
+      "createTextForSpecificKeys" : true,
+      "keyForText" : "#text",
+      "hashCommentHandling" : "ELEMENT",
+      "questionPrefixHandling" : "ELEMENT",
+      "removeInvalidChars" : true
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "appendOrReplace" : {
+            "oneOf" : [ {
+              "const" : "REPLACE",
+              "title" : "Replace input column"
+            }, {
+              "const" : "APPEND",
+              "title" : "Append new column"
+            } ],
+            "title" : "Output column",
+            "default" : "REPLACE"
+          },
+          "arrayItemName" : {
+            "type" : "string",
+            "title" : "Array item name",
+            "description" : "Array items not always can be represented as trees (for example arrays within arrays, or\nprimitive types within arrays). In this case an XML element with the specified name will be\ncreated for each array entry.\n",
+            "default" : "item"
+          },
+          "arrayPrefix" : {
+            "type" : "string",
+            "title" : "Empty list (https://www.w3.org/2001/XMLSchema/list)",
+            "description" : "Only used for the <code>[]</code> JSON array when the Omit type information is unchecked. Otherwise it is\nnot possible to distinguish between <code>[]</code> and <code>{}</code>.\n",
+            "default" : "Array"
+          },
+          "booleanPrefix" : {
+            "type" : "string",
+            "title" : "Boolean (https://www.w3.org/2001/XMLSchema/boolean)",
+            "description" : "Prefix for the boolean values.",
+            "default" : "Boolean"
+          },
+          "createTextForSpecificKeys" : {
+            "type" : "boolean",
+            "title" : "Represent values as XML text if key is",
+            "description" : "When checked, simple values with the specified key will not create attributes, but provide the\nsingle text of the surrounding element.\n",
+            "default" : true
+          },
+          "decimalPrefix" : {
+            "type" : "string",
+            "title" : "Decimal (https://www.w3.org/2001/XMLSchema/decimal)",
+            "description" : "Prefix for the floating point/decimal values.",
+            "default" : "Decimal"
+          },
+          "hashCommentHandling" : {
+            "oneOf" : [ {
+              "const" : "ELEMENT",
+              "title" : "an element (<comment>content</comment>)"
+            }, {
+              "const" : "COMMENT",
+              "title" : "a comment (<!--content-->)"
+            } ],
+            "title" : "Translate JSON keys starting with # to",
+            "description" : "JSON objects with keys starting with a hash sign such as\n<pre><code>{\"#comment\": \"content\"}</code></pre>\ncan either be translated to XML elements\n<pre><code>&lt;comment\n ns:originalKey=\"#comment\"&gt;\n  content\n&lt;/comment&gt;\n</code></pre>\nor to XML comments\n<pre><code>&lt;!--content--&gt;</code></pre>\n",
+            "default" : "ELEMENT"
+          },
+          "inputColumn" : {
+            "type" : "string",
+            "title" : "Input column",
+            "description" : "Column containing JSON values",
+            "default" : ""
+          },
+          "integerPrefix" : {
+            "type" : "string",
+            "title" : "Integer (https://www.w3.org/2001/XMLSchema/integer)",
+            "description" : "Prefix for the integer values.",
+            "default" : "Integer"
+          },
+          "keepTypeInformation" : {
+            "type" : "boolean",
+            "title" : "Keep type information by adding namespace",
+            "description" : "When checked, the JSON type information will be preserved, numbers, booleans, ... will be\nrepresented as text, but their node will have a prefix identifying its type. Otherwise all kind\nof values will be represented as text.\n",
+            "default" : false
+          },
+          "keyForText" : {
+            "type" : "string",
+            "title" : "Key for text",
+            "description" : "The key name to represent as XML text",
+            "default" : "#text"
+          },
+          "namespace" : {
+            "type" : "string",
+            "title" : "Namespace",
+            "description" : "The base namespace"
+          },
+          "newColumnName" : {
+            "type" : "string",
+            "title" : "New column name",
+            "description" : "Name of the new (XML) column",
+            "default" : "XML"
+          },
+          "nullPrefix" : {
+            "type" : "string",
+            "title" : "Null (https://www.w3.org/2001/XMLSchema)",
+            "description" : "Prefix for the null values.",
+            "default" : "null"
+          },
+          "questionPrefixHandling" : {
+            "oneOf" : [ {
+              "const" : "ELEMENT",
+              "title" : "an element (<pi>content</pi>)"
+            }, {
+              "const" : "PROCESSING_INSTRUCTION",
+              "title" : "a processing instruction (<?pi content?>)"
+            } ],
+            "title" : "Translate JSON keys starting with ? to",
+            "description" : "JSON objects with keys starting with a question mark such as\n<pre><code>{\"?pi\": \"content\"}</code></pre>\ncan either be translated to XML elements\n<pre><code>&lt;pi ns:originalKey=\"?pi\"&gt;\n content\n&lt;/pi&gt;\n</code></pre>\nor to XML processing instructions\n<pre><code>&lt;?pi content?&gt;</code></pre>\n",
+            "default" : "ELEMENT"
+          },
+          "removeInvalidChars" : {
+            "type" : "boolean",
+            "title" : "Remove invalid XML characters from values",
+            "description" : "XML 1.0 supports only a limited set of characters (see RFC). When checked, invalid characters\nwill be removed from values.\n",
+            "default" : true
+          },
+          "rootElementName" : {
+            "type" : "string",
+            "title" : "Root element name",
+            "description" : "There is always a root element, you can specify its name.",
+            "default" : "root"
+          },
+          "specifyNamespace" : {
+            "type" : "boolean",
+            "title" : "Specify namespace",
+            "description" : "If unchecked, no base namespace will be set.",
+            "default" : false
+          },
+          "stringPrefix" : {
+            "type" : "string",
+            "title" : "String (https://www.w3.org/2001/XMLSchema/string)",
+            "description" : "Prefix for the String/text values.",
+            "default" : "String"
+          },
+          "useParentKeyAsElementName" : {
+            "type" : "boolean",
+            "title" : "Use parent keys as element name for arrays",
+            "description" : "When checked, JSON such as <pre><code>{\n    \"a\" : [\n        {\"b\" : 2},\n        {\"c\" : 3}\n    ]\n}</code></pre> gets translated to\n<pre><code>&lt;a&gt;\n &lt;b&gt;2&lt;/b&gt;\n&lt;/a&gt;\n&lt;a&gt;\n &lt;c&gt;3&lt;/c&gt;\n&lt;/a&gt;\n</code></pre> otherwise, it is translated to:\n<pre><code>&lt;a&gt;\n &lt;item&gt;\n  &lt;b&gt;2&lt;/b&gt;\n &lt;/item&gt;\n &lt;item&gt;\n  &lt;c&gt;3&lt;/c&gt;\n &lt;/item&gt;\n&lt;/a&gt;\n</code></pre>\n",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/inputColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/appendOrReplace",
+      "options" : {
+        "format" : "valueSwitch"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/newColumnName",
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/appendOrReplace",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "APPEND"
+            } ]
+          }
+        }
+      }
+    }, {
+      "label" : "Namespace Configuration",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/specifyNamespace",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/namespace",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/specifyNamespace",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/keepTypeInformation",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/arrayPrefix",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/keepTypeInformation",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/booleanPrefix",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/keepTypeInformation",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/decimalPrefix",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/keepTypeInformation",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/integerPrefix",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/keepTypeInformation",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/nullPrefix",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/keepTypeInformation",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/stringPrefix",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/keepTypeInformation",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Translation Configuration",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/rootElementName"
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/arrayItemName"
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/useParentKeyAsElementName",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/createTextForSpecificKeys",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/keyForText",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/createTextForSpecificKeys",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/hashCommentHandling",
+        "options" : {
+          "format" : "radio",
+          "radioLayout" : "vertical"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/questionPrefixHandling",
+        "options" : {
+          "format" : "radio",
+          "radioLayout" : "vertical"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/removeInvalidChars",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "configKey" : "input<dot>column"
+          },
+          "appendOrReplace" : {
+            "configPaths" : [ [ "remove<dot>input<dot>column" ] ]
+          },
+          "newColumnName" : {
+            "configKey" : "new<dot>column<dot>name"
+          },
+          "specifyNamespace" : {
+            "configKey" : "specify<dot>namespace"
+          },
+          "namespace" : {
+            "configKey" : "namespace"
+          },
+          "keepTypeInformation" : {
+            "configKey" : "keep<dot>type<dot>information"
+          },
+          "arrayPrefix" : {
+            "configKey" : "array<dot>prefix"
+          },
+          "booleanPrefix" : {
+            "configKey" : "boolean<dot>prefix"
+          },
+          "decimalPrefix" : {
+            "configKey" : "decimal<dot>prefix"
+          },
+          "integerPrefix" : {
+            "configKey" : "integer<dot>prefix"
+          },
+          "nullPrefix" : {
+            "configKey" : "null<dot>prefix"
+          },
+          "stringPrefix" : {
+            "configKey" : "string<dot>prefix"
+          },
+          "rootElementName" : {
+            "configKey" : "root<dot>element"
+          },
+          "arrayItemName" : {
+            "configKey" : "array<dot>item<dot>element"
+          },
+          "useParentKeyAsElementName" : {
+            "configKey" : "parent<dot>key<dot>as<dot>element<dot>name"
+          },
+          "createTextForSpecificKeys" : {
+            "configKey" : "create<dot>text<dot>for<dot>specific<dot>keys"
+          },
+          "keyForText" : {
+            "configKey" : "key<dot>for<dot>text"
+          },
+          "hashCommentHandling" : {
+            "configPaths" : [ [ "translate<dot>#comment<dot>as<dot>element" ] ]
+          },
+          "questionPrefixHandling" : {
+            "configPaths" : [ [ "translate<dot>#comment<dot>as<dot>element" ] ]
+          },
+          "removeInvalidChars" : {
+            "configKey" : "value<dot>remove<dot>invalid<dot>chars"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/inputColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  } ]
+}

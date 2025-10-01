@@ -67,75 +67,77 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
     //How to handle invalid keys (like @a, #text, ...), currently invalid characters are removed.
     //binary values prefix
 
-    private static final String SPECIFY_NAMESPACE = "specify.namespace";
+    static final String SPECIFY_NAMESPACE = "specify.namespace";
 
-    private static final boolean DEFAULT_SPECIFY_NAMESPACE = false;
+    static final boolean DEFAULT_SPECIFY_NAMESPACE = false;
 
-    private static final String NAMESPACE = "namespace";
+    static final String NAMESPACE = "namespace";
 
-    private static final String DEFAULT_NAMESPACE = null;
+    static final String DEFAULT_NAMESPACE = null;
 
-    private static final String ROOT_ELEMENT = "root.element";
+    static final String ROOT_ELEMENT = "root.element";
 
-    private static final String DEFAULT_ROOT_ELEMENT = "root";
+    static final String DEFAULT_ROOT_ELEMENT = "root";
 
-    private static final String ITEM_ELEMENT = "array.item.element";
+    static final String ITEM_ELEMENT = "array.item.element";
 
-    private static final String DEFAULT_ITEM_ELEMENT = "item";
+    static final String DEFAULT_ITEM_ELEMENT = "item";
 
-    private static final String ARRAY_PREFIX = "array.prefix";
+    static final String ARRAY_PREFIX = "array.prefix";
 
-    private static final String DEFAULT_ARRAY_PREFIX = "Array";
+    static final String DEFAULT_ARRAY_PREFIX = "Array";
 
-    private static final String BOOLEAN_PREFIX = "boolean.prefix";
+    static final String BOOLEAN_PREFIX = "boolean.prefix";
 
-    private static final String DEFAULT_BOOLEAN_PREFIX = "Boolean";
+    static final String DEFAULT_BOOLEAN_PREFIX = "Boolean";
 
-    private static final String INTEGER_PREFIX = "integer.prefix";
+    static final String INTEGER_PREFIX = "integer.prefix";
 
-    private static final String DEFAULT_INTEGER_PREFIX = "Integer";
+    static final String DEFAULT_INTEGER_PREFIX = "Integer";
 
-    private static final String NULL_PREFIX = "null.prefix";
+    static final String NULL_PREFIX = "null.prefix";
 
-    private static final String DEFAULT_NULL_PREFIX = "null";
+    static final String DEFAULT_NULL_PREFIX = "null";
 
-    private static final String DECIMAL_PREFIX = "decimal.prefix";
+    static final String DECIMAL_PREFIX = "decimal.prefix";
 
-    private static final String DEFAULT_DECIMAL_PREFIX = "Decimal";
+    static final String DEFAULT_DECIMAL_PREFIX = "Decimal";
 
-    private static final String STRING_PREFIX = "string.prefix";
+    static final String STRING_PREFIX = "string.prefix";
 
-    private static final String DEFAULT_STRING_PREFIX = "String";
+    static final String DEFAULT_STRING_PREFIX = "String";
 
-    private static final String KEEP_TYPE_INFORMATION = "keep.type.information";
+    static final String KEEP_TYPE_INFORMATION = "keep.type.information";
 
-    private static final boolean DEFAULT_KEEP_TYPE_INFORMATION = false;
+    static final boolean DEFAULT_KEEP_TYPE_INFORMATION = false;
 
-    private static final String CREATE_TEXT_FOR_SPECIFIC_KEYS = "create.text.for.specific.keys";
+    static final String CREATE_TEXT_FOR_SPECIFIC_KEYS = "create.text.for.specific.keys";
 
-    private static final boolean DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS = true;
+    static final boolean DEFAULT_CREATE_TEXT_FOR_SPECIFIC_KEYS = true;
 
-    private static final String KEY_FOR_TEXT = "key.for.text";
+    static final String KEY_FOR_TEXT = "key.for.text";
 
-    private static final String DEFAULT_KEY_FOR_TEXT = "#text";
+    static final String DEFAULT_KEY_FOR_TEXT = "#text";
 
-    private static final String PARENT_KEY_AS_ELEMENT_NAME = "parent.key.as.element.name";
+    static final String PARENT_KEY_AS_ELEMENT_NAME = "parent.key.as.element.name";
 
-    private static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = false;
+    static final boolean DEFAULT_PARENT_KEY_AS_ELEMENT_NAME = false;
 
-    private static final String TRANSLATE_HASHCOMMENT_AS_ELEMENT = "translate.#comment.as.element";
+    static final String TRANSLATE_HASHCOMMENT_AS_ELEMENT = "translate.#comment.as.element";
 
-    private static final boolean DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT = true;
+    static final boolean DEFAULT_TRANSLATE_HASHCOMMENT_AS_ELEMENT = true;
 
-    private static final String TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = "translate.?prefix.as.element";
+    static final String TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = "translate.?prefix.as.element";
 
-    private static final boolean DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = true;
+    static final boolean DEFAULT_TRANSLATE_QUESTIONPREFIX_AS_ELEMENT = true;
 
-    private static final String VALUE_REMOVE_INVALID_CHARS = "value.remove.invalid.chars";
+    static final String VALUE_REMOVE_INVALID_CHARS = "value.remove.invalid.chars";
 
-    private static final boolean DEFAULT_VALUE_REMOVE_INVALID_CHARS = true;
+    static final boolean DEFAULT_VALUE_REMOVE_INVALID_CHARS = true;
 
-    private static final boolean DEFAULT_VALUE_REMOVE_INVALID_CHARS_BACKWARD = false;
+    static final boolean DEFAULT_VALUE_REMOVE_INVALID_CHARS_BACKWARD = false;
+
+    static final String DEFAULT_NEW_COLUMN_NAME = "XML";
 
     private String m_namespace = DEFAULT_NAMESPACE, m_root = DEFAULT_ROOT_ELEMENT, m_item = DEFAULT_ITEM_ELEMENT,
             m_array = DEFAULT_ARRAY_PREFIX, m_boolean = DEFAULT_BOOLEAN_PREFIX,
@@ -161,7 +163,7 @@ final class JSONToXMLSettings extends ReplaceColumnSettings {
      */
     public JSONToXMLSettings() {
         super(JSONValue.class);
-        setNewColumnName("XML");
+        setNewColumnName(DEFAULT_NEW_COLUMN_NAME);
     }
 
     /**

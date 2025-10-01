@@ -79,17 +79,17 @@ public abstract class SingleColumnReplaceOrAddNodeModel<S extends RemoveOrAddCol
     /**
      * The key for the remove or not the source/input column boolean value ({@code true} means remove).
      */
-    protected static final String REMOVE_SOURCE = "remove.input.column";
+    public static final String REMOVE_SOURCE = "remove.input.column";
 
     /**
      * The key for the input column.
      */
-    protected static final String INPUT_COLUMN = "input.column";
+    public static final String INPUT_COLUMN = "input.column";
 
     /**
      * The key for the new output column name.
      */
-    protected static final String NEW_COLUMN_NAME = "new.column.name";
+    public static final String NEW_COLUMN_NAME = "new.column.name";
 
     private final S m_settings = createSettings();
 
