@@ -48,55 +48,119 @@
  */
 package org.knime.json.node.toxml;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
- * <code>NodeFactory</code> for the "JSONToXML" Node.
- *
+ * Node factory for the JSON to XML Node.
  *
  * @author Gabor Bakos
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.1
  */
-public class JSONToXMLNodeFactory extends NodeFactory<JSONToXMLNodeModel> {
+@SuppressWarnings("restriction")
+public class JSONToXMLNodeFactory extends NodeFactory<JSONToXMLNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public JSONToXMLNodeModel createNodeModel() {
         return new JSONToXMLNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<JSONToXMLNodeModel> createNodeView(final int viewIndex, final JSONToXMLNodeModel nodeModel) {
         throw new IllegalStateException("No views: " + viewIndex);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private static final String NODE_NAME = "JSON to XML";
+    private static final String NODE_ICON = "./json2xml.png";
+    private static final String SHORT_DESCRIPTION = """
+            Converts JSON values to XML documents.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            Converts JSON values to XML documents. The json values might contain multiple objects/values in which
+                case these cannot be represented using XML without an artificial root node. For this reason we always
+                create a root node. You can use the XPath node to remove it when possible (or to create a collection of
+                XML values). In general object keys starting with @ and having simple values get translated to xml
+                attributes, the only exception could be for the key of the text if specified (which case it will be XML
+                text). Every non-letter or number or _ character will be removed from the keys, which might cause
+                ambiguity or create empty names, but will be kept as an attribute with key: <code>ns:originalKey</code>
+                , so it is recommended to stick to English letters in JSON object keys.
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("table with JSON", """
+                A table with JSON column
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("table with XML", """
+                Table with the converted XML column
+                """)
+    );
+
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new JSONToXMLNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.8
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, JSONToXMLNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            JSONToXMLNodeParameters.class,
+            null,
+            NodeType.Manipulator,
+            List.of(),
+            null
+        );
+    }
+
+    /**
+     * @since 5.8
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONToXMLNodeParameters.class));
     }
 }
