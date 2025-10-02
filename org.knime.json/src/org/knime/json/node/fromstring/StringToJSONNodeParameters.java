@@ -46,7 +46,6 @@
 
 package org.knime.json.node.fromstring;
 
-import org.knime.base.node.util.EnumBooleanPersistor;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.node.parameters.NodeParameters;
 import org.knime.node.parameters.NodeParametersInput;
@@ -54,6 +53,7 @@ import org.knime.node.parameters.Widget;
 import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
 import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.persistence.Persistor;
+import org.knime.node.parameters.persistence.legacy.EnumBooleanPersistor;
 import org.knime.node.parameters.updates.Effect;
 import org.knime.node.parameters.updates.Effect.EffectType;
 import org.knime.node.parameters.updates.EffectPredicate;
