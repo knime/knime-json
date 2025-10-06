@@ -1,0 +1,517 @@
+{
+  "data" : {
+    "model" : {
+      "outputColumnName" : "JSON",
+      "removeSourceColumns" : false,
+      "rootKeyType" : "Unnamed",
+      "customKey" : "cell",
+      "manualSelection" : [ ],
+      "automaticSelection" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : false,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : false
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "keyValuePairs" : [ ],
+      "dataBoundValueType" : 0
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "automaticSelection" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Automatic column selection",
+            "description" : "The keys are the column names and the actual value in the selected columns will provide the keys and values in the object",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "customKey" : {
+            "type" : "string",
+            "title" : "Custom key name",
+            "description" : "Specify the constant key to use for the root object.",
+            "default" : "cell"
+          },
+          "dataBoundKeyColumn" : {
+            "type" : "string",
+            "title" : "Data bound key column",
+            "description" : "Select the column whose values will be used as the root keys."
+          },
+          "dataBoundValueType" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          },
+          "keyValuePairs" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "key" : {
+                  "type" : "string",
+                  "title" : "Key",
+                  "description" : "The key name."
+                },
+                "value" : {
+                  "type" : "string",
+                  "title" : "Value",
+                  "description" : "The key value."
+                }
+              }
+            },
+            "title" : "Custom key/value pairs",
+            "description" : "Additional key/value pairs within the object",
+            "default" : [ ]
+          },
+          "manualSelection" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "column" : {
+                  "type" : "string",
+                  "title" : "Value",
+                  "description" : "The key value."
+                },
+                "key" : {
+                  "type" : "string",
+                  "title" : "Key",
+                  "description" : "The key name."
+                }
+              }
+            },
+            "title" : "Manual column selection",
+            "description" : "The predefined key and the actual value in the selected columns will provide the keys and values in the object",
+            "default" : [ ]
+          },
+          "outputColumnName" : {
+            "type" : "string",
+            "title" : "New column name",
+            "description" : "Name of the new JSON column",
+            "default" : "JSON"
+          },
+          "removeSourceColumns" : {
+            "type" : "boolean",
+            "title" : "Remove source columns",
+            "description" : "The source columns include the Data bound key column too (when that is selected)",
+            "default" : false
+          },
+          "rootKeyType" : {
+            "oneOf" : [ {
+              "const" : "Unnamed",
+              "title" : "Unamed root elements"
+            }, {
+              "const" : "Constant",
+              "title" : "Custom key"
+            }, {
+              "const" : "DataBound",
+              "title" : "Data bound key"
+            } ],
+            "title" : "Root key type",
+            "description" : "How to create the root of the JSON value\n<ul>\n<li><b>Unamed root elements</b>: Generate JSON without a wrapping key.</li>\n<li><b>Custom key</b>: Use a constant key for all rows.</li>\n<li><b>Data bound key</b>: Use a column value from each row as the key.</li>\n</ul>",
+            "default" : "Unnamed"
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/outputColumnName"
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeSourceColumns",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "label" : "Root Key Configuration",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/rootKeyType",
+        "options" : {
+          "format" : "radio",
+          "radioLayout" : "vertical"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/customKey",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/rootKeyType",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "Constant"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/dataBoundKeyColumn",
+        "options" : {
+          "format" : "dropDown"
+        },
+        "providedOptions" : [ "possibleValues" ],
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/rootKeyType",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "DataBound"
+              } ]
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Manual Selection",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/manualSelection",
+        "options" : {
+          "detail" : [ {
+            "type" : "HorizontalLayout",
+            "elements" : [ {
+              "type" : "Control",
+              "scope" : "#/properties/key"
+            }, {
+              "type" : "Control",
+              "scope" : "#/properties/column",
+              "options" : {
+                "format" : "dropDown"
+              },
+              "providedOptions" : [ "possibleValues" ]
+            } ]
+          } ],
+          "addButtonText" : "Add key/data bound value pair",
+          "elementLayout" : "HORIZONTAL_SINGLE_LINE"
+        },
+        "providedOptions" : [ "elementDefaultValue" ]
+      } ]
+    }, {
+      "label" : "Automatic Selection",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/automaticSelection",
+        "options" : {
+          "format" : "typedStringFilter",
+          "unknownValuesText" : "Any unknown column",
+          "emptyStateLabel" : "No columns in this list.",
+          "hideTypeFilter" : true
+        },
+        "providedOptions" : [ "possibleValues" ]
+      } ]
+    }, {
+      "label" : "Custom Key-Value Pairs",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/keyValuePairs",
+        "options" : {
+          "detail" : [ {
+            "type" : "HorizontalLayout",
+            "elements" : [ {
+              "type" : "Control",
+              "scope" : "#/properties/key"
+            }, {
+              "type" : "Control",
+              "scope" : "#/properties/value"
+            } ]
+          } ],
+          "addButtonText" : "Add custom key/value pair",
+          "elementLayout" : "HORIZONTAL_SINGLE_LINE"
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "outputColumnName" : {
+            "configKey" : "newColumn"
+          },
+          "removeSourceColumns" : {
+            "configKey" : "removeSourceColumns"
+          },
+          "rootKeyType" : {
+            "configKey" : "rootKeyType"
+          },
+          "customKey" : {
+            "configKey" : "keyName"
+          },
+          "dataBoundKeyColumn" : {
+            "configKey" : "keyNameColumn"
+          },
+          "manualSelection" : {
+            "configPaths" : [ [ "dataBoundKeyNames" ], [ "dataBoundKeyColumns" ] ]
+          },
+          "automaticSelection" : {
+            "configPaths" : [ [ "dataBoundValueColumns", "filter-type" ], [ "dataBoundValueColumns", "included_names" ], [ "dataBoundValueColumns", "excluded_names" ], [ "dataBoundValueColumns", "enforce_option" ], [ "dataBoundValueColumns", "name_pattern", "pattern" ], [ "dataBoundValueColumns", "name_pattern", "type" ], [ "dataBoundValueColumns", "name_pattern", "caseSensitive" ], [ "dataBoundValueColumns", "name_pattern", "excludeMatching" ] ]
+          },
+          "keyValuePairs" : {
+            "configPaths" : [ [ "keyNames" ], [ "keyValues" ] ]
+          },
+          "dataBoundValueType" : {
+            "configKey" : "dataBoundValueType",
+            "deprecatedConfigKeys" : [ {
+              "deprecated" : [ [ "dataBoundValueType" ] ]
+            } ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/automaticSelection",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/dataBoundKeyColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/manualSelection/items/properties/column",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/manualSelection",
+    "providedOptionName" : "elementDefaultValue",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "key" : "Universe_0_0",
+        "column" : "Universe_0_0"
+      }
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/dataBoundKeyColumn", "#/properties/model/properties/rootKeyType" ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/manualSelection"
+    },
+    "dependencies" : [ "#/properties/model/properties/manualSelection" ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/rootKeyType"
+    },
+    "dependencies" : [ "#/properties/model/properties/dataBoundKeyColumn", "#/properties/model/properties/rootKeyType" ]
+  } ]
+}

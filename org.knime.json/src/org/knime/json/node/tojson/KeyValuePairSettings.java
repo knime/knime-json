@@ -44,21 +44,32 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   3 Febr 2015 (Gabor): created
+ *   Oct 2, 2025 (magnus): created
  */
-package org.knime.json.util;
+package org.knime.json.node.tojson;
 
-import org.knime.node.parameters.widget.choices.Label;
+import org.knime.node.parameters.NodeParameters;
+import org.knime.node.parameters.Widget;
 
-/** How to create the root of the JSON value */
-public enum RootKeyType {
-    /** Create no additional root */
-    @Label(value = "Unamed root elements", description = "Generate JSON without a wrapping key.")
-    Unnamed,
-    /** Provide a constant key */
-    @Label(value = "Custom key", description = "Use a constant key for all rows.")
-    Constant,
-    /** Use the values of a column for the key */
-    @Label(value = "Data bound key", description = "Use a column value from each row as the key.")
-    DataBound;
+/**
+ * Node parameters for the key/value pair settings in the Column to JSON node dialog.
+ *
+ * @author Magnus Gohm, KNIME AG, Konstanz, Germany
+ */
+final class KeyValuePairSettings implements NodeParameters {
+
+    KeyValuePairSettings() {
+    }
+
+    KeyValuePairSettings(final String key, final String value) {
+        m_key = key;
+        m_value = value;
+    }
+
+    @Widget(title = "Key", description = "The key name.")
+    String m_key;
+
+    @Widget(title = "Value", description = "The key value.")
+    String m_value;
+
 }

@@ -48,6 +48,7 @@
  */
 package org.knime.json.node.tojson;
 
+import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataValue;
@@ -73,18 +74,35 @@ import org.knime.json.util.RootKeyType;
  * @author Gabor Bakos
  */
 final class ColumnsToJsonSettings {
-    private static String NEW_COLUMN = "newColumn", ROOT_KEY_TYPE = "rootKeyType", KEY_NAME = "keyName",
-            KEY_NAME_COLUMN = "keyNameColumn", REMOVE_SOURCE_COLUMNS = "removeSourceColumns",
-            DATA_BOUND_KEY_NAMES = "dataBoundKeyNames", DATA_BOUND_KEY_COLUMNS = "dataBoundKeyColumns",
-            KEY_NAMES = "keyNames", KEY_VALUES = "keyValues", DATA_BOUND_VALUE_TYPE = "dataBoundValueType",
-            DATA_BOUND_VALUE_COLUMNS = "dataBoundValueColumns";
 
-    private String m_outputColumnName = "JSON", m_keyNameColumn = "", m_keyName = "cell";
+    static final String NEW_COLUMN = "newColumn";
+    static final String ROOT_KEY_TYPE = "rootKeyType";
+    static final String KEY_NAME = "keyName";
+    static final String KEY_NAME_COLUMN = "keyNameColumn";
+    static final String REMOVE_SOURCE_COLUMNS = "removeSourceColumns";
+    static final String DATA_BOUND_KEY_NAMES = "dataBoundKeyNames";
+    static final String DATA_BOUND_KEY_COLUMNS = "dataBoundKeyColumns";
+    static final String KEY_NAMES = "keyNames";
+    static final String KEY_VALUES = "keyValues";
+    static final String DATA_BOUND_VALUE_TYPE = "dataBoundValueType";
+    static final String DATA_BOUND_VALUE_COLUMNS = "dataBoundValueColumns";
+    static final String DEFAULT_OUTPUT_COLUMN_NAME = "JSON";
+    static final String DEFAULT_KEY_NAME = "cell";
+    static final String DEFAULT_KEY_NAME_COLUMN = StringUtils.EMPTY;
 
-    private boolean m_removeSourceColumns = false, m_notConfigured = true;
+    static final boolean DEFAULT_REMOVE_SOURCE_COLUMNS = false;
 
-    private String[] m_dataBoundKeyNames = new String[0], m_dataBoundKeyColumns = new String[0],
-            m_keyNames = new String[0], m_keyValues = new String[0];
+    private String m_outputColumnName = DEFAULT_KEY_NAME;
+    private String m_keyNameColumn = DEFAULT_KEY_NAME_COLUMN;
+    private String m_keyName = DEFAULT_KEY_NAME;
+
+    private boolean m_removeSourceColumns = DEFAULT_REMOVE_SOURCE_COLUMNS;
+    private boolean m_notConfigured = true;
+
+    private String[] m_dataBoundKeyNames = new String[0];
+    private String[] m_dataBoundKeyColumns = new String[0];
+    private String[] m_keyNames = new String[0];
+    private String[] m_keyValues = new String[0];
 
     private RootKeyType m_rootKeyType = RootKeyType.Unnamed;
 
