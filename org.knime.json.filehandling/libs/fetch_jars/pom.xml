@@ -12,22 +12,22 @@
 
 
 	<!-- NOTE ABOUT DEALING WITH DEPENDENCIES:
-	
+
 	For *large* dependencies that are *already* part of KNIME we should avoid duplicating
 	them (for small dependencies it is usually not worth the hassle).
-	
+
 	*Large* in this context means: They contain a lot of classes (e.g. scala-library) or
 	they have a lot of transitive dependencies (e.g. hadoop), or both.
-	
+
 	How to avoid duplication?
-	
+
 	Option (1)
 	  Exclude them via build>plugins>plugin(maven-dependency-plugin)>executions>configuration (see at the bottom
 	  of this file).
 	  Pro: This leaves the maven dependency tree intact (for browsing), but prevents them from being copied to the libs/ directory.
 	  Contra: A lot of work when dependencies have themselves have a lot of transitive dependencies, because you need to
 	          exclude them manually too, then.
-	  
+
 	Option (2):
 	  Exclude them via dependencies>dependency>exclusions.
 	  Pro: Works well for dependencies that themselves have a lot of transitive dependencies.
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>com.github.jsurfer</groupId>
 			<artifactId>jsurfer-jackson</artifactId>
-			<version>1.6.0</version>
+			<version>1.6.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
@@ -54,10 +54,6 @@
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.antlr</groupId>
-					<artifactId>antlr4-runtime</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
