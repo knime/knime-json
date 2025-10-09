@@ -105,14 +105,16 @@ public class JSONToXMLNodeFactory extends NodeFactory<JSONToXMLNodeModel>
             Converts JSON values to XML documents.
             """;
     private static final String FULL_DESCRIPTION = """
-            Converts JSON values to XML documents. The json values might contain multiple objects/values in which
+            <p>Converts JSON values to XML documents.</p>
+            <p>The json values might contain multiple objects/values in which
                 case these cannot be represented using XML without an artificial root node. For this reason we always
-                create a root node. You can use the XPath node to remove it when possible (or to create a collection of
-                XML values). In general object keys starting with @ and having simple values get translated to xml
+                create a root node. You can use the <tt>XPath</tt> node to remove it when possible (or to create a collection of
+                XML values).</p>
+                <p>In general object keys starting with <tt>@</tt> and having simple values get translated to xml
                 attributes, the only exception could be for the key of the text if specified (which case it will be XML
-                text). Every non-letter or number or _ character will be removed from the keys, which might cause
-                ambiguity or create empty names, but will be kept as an attribute with key: <code>ns:originalKey</code>
-                , so it is recommended to stick to English letters in JSON object keys.
+                text). Every non-letter or number or <tt>_</tt> character will be removed from the keys, which might cause
+                ambiguity or create empty names, but will be kept as an attribute with key: <tt>ns:originalKey</tt>
+                , so it is recommended to stick to English letters in JSON object keys.</p>
             """;
     private static final List<PortDescription> INPUT_PORTS = List.of(
             fixedPort("table with JSON", """

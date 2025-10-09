@@ -59,9 +59,15 @@ public class ColumnsToJsonNodeFactory
             Converts contents of columns to JSON values row-wise.
             """;
     private static final String FULL_DESCRIPTION = """
+            <p>
             The columns values are transformed to JSON objects for each row. When there are conflicting keys, the
-                result is undefined, might vary between different versions of KNIME. An example transformation: From
-                table:
+                result is undefined, might vary between different versions of KNIME.
+                </p>
+                <p>
+                An example transformation:
+                <br />
+                From table:
+                </p>
                 <table><tr><th>Main</th><th>Num</th><th>text</th></tr>
                 <tr><td>main1</td><td>2</td><td>Hello</td></tr>
                 <tr><td>main2</td><td>1</td><td>World</td></tr>

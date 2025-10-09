@@ -138,7 +138,7 @@
           "removeInvalidChars" : {
             "type" : "boolean",
             "title" : "Remove invalid XML characters from values",
-            "description" : "XML 1.0 supports only a limited set of characters (see RFC). When checked, invalid characters\nwill be removed from values.\n",
+            "description" : "XML 1.0 supports only a limited set of characters (see\n<a href=\"https://www.w3.org/TR/xml/#charsets\">RFC</a>\n). When checked, invalid characters\nwill be removed from values.\n",
             "default" : true
           },
           "rootElementName" : {

@@ -273,9 +273,11 @@ class JSONToXMLNodeParameters implements NodeParameters {
 
     @Layout(TranslationSection.class)
     @Widget(title = "Remove invalid XML characters from values", description = """
-                   XML 1.0 supports only a limited set of characters (see RFC). When checked, invalid characters
-                   will be removed from values.
-                   """)
+            XML 1.0 supports only a limited set of characters (see
+            <a href="https://www.w3.org/TR/xml/#charsets">RFC</a>
+            ). When checked, invalid characters
+            will be removed from values.
+            """)
     @Persist(configKey = JSONToXMLSettings.VALUE_REMOVE_INVALID_CHARS)
     boolean m_removeInvalidChars = JSONToXMLSettings.DEFAULT_VALUE_REMOVE_INVALID_CHARS;
 
