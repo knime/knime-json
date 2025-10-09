@@ -1,0 +1,182 @@
+{
+  "data" : {
+    "model" : {
+      "parameterName" : "json-output",
+      "useFullyQualifiedName" : false,
+      "jsonColumnName" : null,
+      "description" : "",
+      "keepOneRowTablesSimple" : true,
+      "exampleJson" : "{}"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "title" : "Description",
+            "description" : "A description for the output parameter. The description is shown in the API specification of the REST interface.",
+            "default" : ""
+          },
+          "exampleJson" : {
+            "type" : "string",
+            "title" : "Example",
+            "description" : "A JSON representing an example of what output received by this node may look like. Mainly used for populating the \"example\" field of the generated OpenAPI output parameter specification, which is presented to end users for documentation purposes. The content of this node can be filled from input data (if preceding nodes are executed.)",
+            "default" : "{}"
+          },
+          "fillExampleButton" : {
+            "type" : "object",
+            "title" : "Fill example JSON from input data",
+            "description" : "Fill the example JSON field below with data from the input table. This requires that preceding nodes have been executed and that a JSON column is selected above."
+          },
+          "jsonColumnName" : {
+            "type" : "string",
+            "title" : "JSON Column",
+            "description" : "The column containing the JSON result. All other columns are ignored."
+          },
+          "keepOneRowTablesSimple" : {
+            "type" : "boolean",
+            "title" : "Keep single-row tables simple",
+            "description" : "For the special case that the input table contains one row with a non-missing JSON value this value is taken as result and not wrapped into a JSON array.",
+            "default" : true
+          },
+          "parameterName" : {
+            "type" : "string",
+            "title" : "Parameter Name",
+            "description" : "A name, which serves as key in the resulting JSON object. This is used to assert uniqueness in case multiple output results (nodes) are present in workflow.",
+            "default" : "json-output"
+          },
+          "useFullyQualifiedName" : {
+            "type" : "boolean",
+            "title" : "Append unique ID to parameter name",
+            "description" : "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names. Usually it's a good idea to have this box not checked and instead make sure to use meaningful and unique names in all container nodes present in a workflow.",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/parameterName"
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/useFullyQualifiedName",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/jsonColumnName",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/description",
+      "options" : {
+        "rows" : 5,
+        "format" : "textArea"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/keepOneRowTablesSimple",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/fillExampleButton",
+      "options" : {
+        "format" : "simpleButton",
+        "triggerId" : "org.knime.json.node.output.JSONOutputNodeParameters$FillExampleRef"
+      },
+      "rule" : {
+        "effect" : "ENABLE",
+        "condition" : {
+          "type" : "AND",
+          "conditions" : [ {
+            "schema" : {
+              "not" : { }
+            }
+          }, {
+            "type" : "AND",
+            "conditions" : [ {
+              "scope" : "#/properties/model/properties/jsonColumnName",
+              "schema" : {
+                "not" : {
+                  "const" : ""
+                }
+              }
+            }, {
+              "scope" : "#/properties/model/properties/jsonColumnName",
+              "schema" : {
+                "not" : {
+                  "const" : null
+                }
+              }
+            } ]
+          } ]
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/exampleJson",
+      "options" : {
+        "rows" : 10,
+        "format" : "textArea"
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "parameterName" : { },
+          "useFullyQualifiedName" : { },
+          "jsonColumnName" : { },
+          "description" : { },
+          "keepOneRowTablesSimple" : { },
+          "fillExampleButton" : { },
+          "exampleJson" : {
+            "configKey" : "exampleJson"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/jsonColumnName",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/jsonColumnName" ]
+  }, {
+    "trigger" : {
+      "id" : "org.knime.json.node.output.JSONOutputNodeParameters$FillExampleRef"
+    },
+    "dependencies" : [ "#/properties/model/properties/jsonColumnName", "#/properties/model/properties/keepOneRowTablesSimple" ]
+  } ]
+}
