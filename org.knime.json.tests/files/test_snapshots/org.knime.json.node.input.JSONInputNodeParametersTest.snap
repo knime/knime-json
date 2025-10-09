@@ -1,0 +1,84 @@
+{
+  "data" : {
+    "model" : {
+      "parameterName" : "json-input",
+      "useFullyQualifiedName" : false,
+      "description" : "",
+      "json" : "{}"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "title" : "Description",
+            "description" : "A description for the input parameter. The description is shown in the API specification of the REST interface.",
+            "default" : ""
+          },
+          "json" : {
+            "type" : "string",
+            "title" : "Default JSON value",
+            "description" : "The text representing a default JSON value. It might contain comments between <pre>/* */</pre> or after <tt>#</tt> or <tt>//</tt> until the end of line.",
+            "default" : "{}"
+          },
+          "parameterName" : {
+            "type" : "string",
+            "title" : "Parameter name",
+            "description" : "A unique name for the input parameter. This name is exposed in the REST interface and in the Call Workflow node.",
+            "default" : "json-input"
+          },
+          "useFullyQualifiedName" : {
+            "type" : "boolean",
+            "title" : "Append unique ID to parameter name",
+            "description" : "If checked, the name set above will be amended by the node's ID to guarantee unique parameter names. Usually it's a good idea to have this box <i>not</i> checked and instead make sure to use meaningful and unique names in all container nodes present in a workflow.",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/parameterName"
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/useFullyQualifiedName",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/description",
+      "options" : {
+        "rows" : 5,
+        "format" : "textArea"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/json",
+      "options" : {
+        "rows" : 10,
+        "format" : "textArea"
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "parameterName" : { },
+          "useFullyQualifiedName" : { },
+          "description" : { },
+          "json" : { }
+        }
+      }
+    }
+  }
+}

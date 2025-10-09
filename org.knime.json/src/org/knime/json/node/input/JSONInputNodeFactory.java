@@ -48,17 +48,36 @@
  */
 package org.knime.json.node.input;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * <code>NodeFactory</code> for the "JSONInput" Node. Allows to read a text and return it as a JSON value.
  *
  * @author Gabor Bakos
  * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
+ * @author Paul Baernreuther, KNIME GmbH, Germany
+ * @author AI Migration Pipeline v1.1
  */
-public class JSONInputNodeFactory extends NodeFactory<JSONInputNodeModel> {
+@SuppressWarnings("restriction")
+public class JSONInputNodeFactory extends NodeFactory<JSONInputNodeModel> implements NodeDialogFactory, KaiNodeInterfaceFactory {
     /**
      * {@inheritDoc}
      */
@@ -91,11 +110,53 @@ public class JSONInputNodeFactory extends NodeFactory<JSONInputNodeModel> {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private static final String NODE_NAME = "Container Input (JSON)";
+    private static final String NODE_ICON = "./json-in.png";
+    private static final String SHORT_DESCRIPTION = """
+            Specify a text in the dialog and return it as a JSON value.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            This nodes allows injecting a JSON value from outside, e.g. via the advanced batch executor or
+                server-exposed workflow, into the workflow. The JSON value is returned as a single JSON cell in the
+                column <tt>json</tt>.
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of();
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("JSON", """
+                Table containing a single JSON value in the column <tt>json</tt>.
+                """)
+    );
+
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new JSONInputNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, JSONInputNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            JSONInputNodeParameters.class,
+            null,
+            NodeType.Container,
+            List.of(),
+            null
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONInputNodeParameters.class));
     }
 }
