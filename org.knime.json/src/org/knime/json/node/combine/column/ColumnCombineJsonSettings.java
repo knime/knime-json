@@ -63,17 +63,23 @@ import org.knime.json.util.RootKeyType;
  * @author Gabor Bakos
  */
 public class ColumnCombineJsonSettings {
-    private static final String NEW_COLUMN = "newColumn";
+    static final String NEW_COLUMN = "newColumn";
 
-    private static final String ROOT_KEY_NAME = "rootKeyName", ROOT_KEY_TYPE = "rootKeyType";
+    static final String ROOT_KEY_NAME = "rootKeyName";
 
-    private static final String KEY_NAME_COLUMN = "keyNameColumn";
+    static final String ROOT_KEY_TYPE = "rootKeyType";
 
-    private static final String REMOVE_SOURCE_COLUMNS = "removeSourceColumns";
+    static final String KEY_NAME_COLUMN = "keyNameColumn";
 
-    private String m_newColumn = "JSON";
+    static final String REMOVE_SOURCE_COLUMNS = "removeSourceColumns";
 
-    private String m_rootName = "array";
+    static final String DEFAULT_NEW_COLUMN = "JSON";
+
+    static final String DEFAULT_ROOT_NAME = "array";
+
+    private String m_newColumn = DEFAULT_NEW_COLUMN;
+
+    private String m_rootName = DEFAULT_ROOT_NAME;
 
     private RootKeyType m_rootKeyType = RootKeyType.Unnamed;
 

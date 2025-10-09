@@ -1,0 +1,323 @@
+{
+  "data" : {
+    "model" : {
+      "newColumn" : "JSON",
+      "removeSourceColumns" : false,
+      "rootKeyType" : "Unnamed",
+      "rootKeyName" : "array",
+      "keyNameColumn" : "Cluster Membership",
+      "selectedColumns" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : true,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ "json" ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : true
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      }
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "keyNameColumn" : {
+            "type" : "string",
+            "title" : "Data bound key column",
+            "description" : "The column name, whose values become the key for the array of JSON values selected (Selected JSON columns)"
+          },
+          "newColumn" : {
+            "type" : "string",
+            "title" : "New column name",
+            "description" : "Name of the new JSON column",
+            "default" : "JSON"
+          },
+          "removeSourceColumns" : {
+            "type" : "boolean",
+            "title" : "Remove source columns",
+            "description" : "When checked, the included columns and the data bound key/value columns will be removed from the resulting table",
+            "default" : false
+          },
+          "rootKeyName" : {
+            "type" : "string",
+            "title" : "Custom key name",
+            "description" : "The constant key for the array of JSON values selected (Selected JSON columns)",
+            "default" : "array"
+          },
+          "rootKeyType" : {
+            "oneOf" : [ {
+              "const" : "Unnamed",
+              "title" : "Unamed root elements"
+            }, {
+              "const" : "Constant",
+              "title" : "Custom key"
+            }, {
+              "const" : "DataBound",
+              "title" : "Data bound key"
+            } ],
+            "title" : "Root key type",
+            "description" : "How to create the root of the JSON value: Unnamed root elements generate JSON without a wrapping key, Custom key uses a constant key for all rows, Data bound key uses a column value from each row as the key\n<ul>\n<li><b>Unamed root elements</b>: Generate JSON without a wrapping key.</li>\n<li><b>Custom key</b>: Use a constant key for all rows.</li>\n<li><b>Data bound key</b>: Use a column value from each row as the key.</li>\n</ul>",
+            "default" : "Unnamed"
+          },
+          "selectedColumns" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Selected JSON columns",
+            "description" : "The included columns will be combined to a new JSON value for each row",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/newColumn"
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeSourceColumns",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/rootKeyType",
+      "options" : {
+        "format" : "radio",
+        "radioLayout" : "vertical"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/rootKeyName",
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/rootKeyType",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "Constant"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/keyNameColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ],
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/rootKeyType",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "DataBound"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/selectedColumns",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list.",
+        "hideTypeFilter" : true
+      },
+      "providedOptions" : [ "possibleValues" ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "newColumn" : {
+            "configKey" : "newColumn"
+          },
+          "removeSourceColumns" : {
+            "configKey" : "removeSourceColumns"
+          },
+          "rootKeyType" : {
+            "configKey" : "rootKeyType"
+          },
+          "rootKeyName" : {
+            "configKey" : "rootKeyName"
+          },
+          "keyNameColumn" : {
+            "configKey" : "keyNameColumn"
+          },
+          "selectedColumns" : {
+            "configPaths" : [ [ "column_filter", "filter-type" ], [ "column_filter", "included_names" ], [ "column_filter", "excluded_names" ], [ "column_filter", "enforce_option" ], [ "column_filter", "name_pattern", "pattern" ], [ "column_filter", "name_pattern", "type" ], [ "column_filter", "name_pattern", "caseSensitive" ], [ "column_filter", "name_pattern", "excludeMatching" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/keyNameColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      }, {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/selectedColumns",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/keyNameColumn", "#/properties/model/properties/rootKeyType" ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/rootKeyType"
+    },
+    "dependencies" : [ "#/properties/model/properties/keyNameColumn", "#/properties/model/properties/rootKeyType" ]
+  } ]
+}

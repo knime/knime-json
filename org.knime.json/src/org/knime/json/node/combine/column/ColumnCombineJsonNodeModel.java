@@ -38,6 +38,8 @@ import jakarta.json.JsonValue;
  * @author Gabor Bakos
  */
 class ColumnCombineJsonNodeModel extends SimpleStreamableFunctionNodeModel {
+    static final String COLUMN_FILTER_CONFIG_KEY = "column_filter";
+
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ColumnCombineJsonNodeModel.class);
 
     private final ColumnCombineJsonSettings m_settings = new ColumnCombineJsonSettings();
@@ -166,7 +168,7 @@ class ColumnCombineJsonNodeModel extends SimpleStreamableFunctionNodeModel {
      * @return filter configuration
      */
     static final DataColumnSpecFilterConfiguration createDCSFilterConfiguration() {
-        return new DataColumnSpecFilterConfiguration("column_filter", new InputFilter<DataColumnSpec>() {
+        return new DataColumnSpecFilterConfiguration(COLUMN_FILTER_CONFIG_KEY, new InputFilter<DataColumnSpec>() {
 
             @Override
             public boolean include(final DataColumnSpec name) {
