@@ -1,0 +1,292 @@
+{
+  "data" : {
+    "model" : {
+      "inputColumn" : "json",
+      "removeSourceColumn" : true,
+      "outputSettings" : [ {
+        "outputColumnName" : "column",
+        "jsonPath" : "$..*",
+        "outputMode" : "VALUE",
+        "outputType" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.json.JSONCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "resultIsList" : true
+      }, {
+        "outputColumnName" : "some",
+        "jsonPath" : "$['some']",
+        "outputMode" : "VALUE",
+        "outputType" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.def.StringCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "resultIsList" : false
+      } ]
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "type" : "string",
+            "title" : "Source column",
+            "description" : "The JSON column to select the paths from.",
+            "default" : "json"
+          },
+          "outputSettings" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "jsonPath" : {
+                  "type" : "string",
+                  "title" : "JSONPath",
+                  "description" : "The JSONPath expression to extract data from the JSON input. Examples:\n<ul>\n<li>$.book[0] - Select the first book</li>\n<li>$.book[*].title - Select all book titles</li>\n<li>$.book[?(@.year>2000)] - Select books published after 2000</li>\n</ul>\n",
+                  "default" : "$..*"
+                },
+                "outputColumnName" : {
+                  "type" : "string",
+                  "title" : "Output column name",
+                  "description" : "The name for the output column."
+                },
+                "outputMode" : {
+                  "oneOf" : [ {
+                    "const" : "VALUE",
+                    "title" : "Value"
+                  }, {
+                    "const" : "PATH",
+                    "title" : "Path"
+                  } ],
+                  "title" : "Output mode",
+                  "description" : "Define what the output should contain.\n\n<ul>\n<li><b>Value</b>: Return the values found at the JSON paths.</li>\n<li><b>Path</b>: Return the JSONPath expressions that lead to the values instead of the values themselves.</li>\n</ul>",
+                  "default" : "VALUE"
+                },
+                "outputType" : {
+                  "type" : "string",
+                  "title" : "Output type",
+                  "description" : "The data type for the output column.\n",
+                  "default" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.json.JSONCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}"
+                },
+                "resultIsList" : {
+                  "type" : "boolean",
+                  "title" : "Result is list",
+                  "description" : "When enabled, the result will be returned as a list value.\n",
+                  "default" : true
+                }
+              }
+            },
+            "title" : "Output columns",
+            "description" : "Configure the JSON paths to extract from the input column. Each element defines one output\ncolumn from one JSONPath expression.\n",
+            "default" : [ ]
+          },
+          "removeSourceColumn" : {
+            "type" : "boolean",
+            "title" : "Remove source column",
+            "description" : "When checked, the source column will be removed.",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "label" : "Input",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/inputColumn",
+        "options" : {
+          "format" : "dropDown"
+        },
+        "providedOptions" : [ "possibleValues" ]
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/removeSourceColumn",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    }, {
+      "label" : "Outputs",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputSettings",
+        "options" : {
+          "detail" : [ {
+            "type" : "Control",
+            "scope" : "#/properties/outputColumnName",
+            "options" : {
+              "validation" : {
+                "pattern" : {
+                  "errorMessage" : "The string must start and end with a non-whitespace character.",
+                  "parameters" : {
+                    "pattern" : "\\S(.*\\S)?"
+                  }
+                }
+              }
+            }
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/jsonPath"
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/outputMode",
+            "options" : {
+              "format" : "valueSwitch"
+            }
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/outputType",
+            "options" : {
+              "format" : "dropDown"
+            },
+            "providedOptions" : [ "possibleValues", "possibleValues" ],
+            "rule" : {
+              "effect" : "SHOW",
+              "condition" : {
+                "scope" : "#/properties/outputMode",
+                "schema" : {
+                  "oneOf" : [ {
+                    "const" : "VALUE"
+                  } ]
+                }
+              }
+            }
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/resultIsList",
+            "options" : {
+              "format" : "checkbox"
+            },
+            "rule" : {
+              "effect" : "SHOW",
+              "condition" : {
+                "scope" : "#/properties/outputMode",
+                "schema" : {
+                  "oneOf" : [ {
+                    "const" : "VALUE"
+                  } ]
+                }
+              }
+            }
+          } ],
+          "addButtonText" : "Add JSONPath",
+          "arrayElementTitle" : "JSONPath"
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "configKey" : "input<dot>column"
+          },
+          "removeSourceColumn" : {
+            "configKey" : "remove<dot>input<dot>column"
+          },
+          "outputSettings" : {
+            "configPaths" : [ [ "newColumnName" ], [ "jsonpath" ], [ "result<dot>is<dot>list" ], [ "return<dot>paths<dot>instead<dot>of<dot>values" ], [ "returnType" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/inputColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      }, {
+        "id" : "other_column",
+        "text" : "other_column",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/outputSettings/items/properties/outputType",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.blob.BinaryObjectDataCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "Binary Object",
+        "type" : {
+          "id" : "org.knime.core.data.blob.BinaryObjectDataValue",
+          "text" : "Binary Object"
+        }
+      }, {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.def.BooleanCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "Boolean",
+        "type" : {
+          "id" : "org.knime.core.data.BooleanValue",
+          "text" : "Boolean"
+        }
+      }, {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.json.JSONCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "JSON",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      }, {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.def.DoubleCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "Number (Float)",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.def.IntCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "Number (Integer)",
+        "type" : {
+          "id" : "org.knime.core.data.IntValue",
+          "text" : "Number (Integer)"
+        }
+      }, {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.def.LongCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "Number (Long Integer)",
+        "type" : {
+          "id" : "org.knime.core.data.LongValue",
+          "text" : "Number (Long Integer)"
+        }
+      }, {
+        "id" : "{\"name\":\"serialized_data_type_settings\",\"value\":{\"dataType\":{\"type\":\"tree\",\"value\":{\"cell_class\":{\"type\":\"string\",\"value\":\"org.knime.core.data.def.StringCell\"},\"is_null\":{\"type\":\"boolean\",\"value\":false}}}}}",
+        "text" : "String",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/inputColumn", "#/properties/model/properties/outputSettings/items/properties/outputMode", "#/properties/model/properties/outputSettings/items/properties/resultIsList" ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/outputSettings/items/properties/outputMode"
+    },
+    "dependencies" : [ "#/properties/model/properties/outputSettings/items/properties/outputMode", "#/properties/model/properties/outputSettings/items/properties/resultIsList" ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/outputSettings/items/properties/resultIsList"
+    },
+    "dependencies" : [ "#/properties/model/properties/outputSettings/items/properties/outputMode", "#/properties/model/properties/outputSettings/items/properties/resultIsList" ]
+  } ]
+}

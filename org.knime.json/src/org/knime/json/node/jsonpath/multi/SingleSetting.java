@@ -170,7 +170,7 @@ class SingleSetting {
      * @return The parsed {@link OutputType}.
      * @throws InvalidSettingsException Wrong format, or {@code null}.
      */
-    private OutputType toOutputType(final String outputType) throws InvalidSettingsException {
+    static OutputType toOutputType(final String outputType) throws InvalidSettingsException {
         try {
             return OutputType.valueOf(outputType);
         } catch (RuntimeException e) {
@@ -216,17 +216,14 @@ class SingleSetting {
         m_newColumnName =
             colNames.length > index ? colNames[index] : SingleSetting.<String> notEnoughArguments("output column name");
         String[] outputTypes = settings.getStringArray(RETURN_TYPE);
-        m_returnType =
-            outputTypes.length > index ? toOutputType(outputTypes[index]) : SingleSetting
-                .<OutputType> notEnoughArguments("result type");
+        m_returnType = outputTypes.length > index ? toOutputType(outputTypes[index])
+            : SingleSetting.<OutputType> notEnoughArguments("result type");
         boolean[] resultIsListArray = settings.getBooleanArray(RESULT_IS_LIST);
-        m_resultIsList =
-            resultIsListArray.length > index ? resultIsListArray[index] : SingleSetting
-                .<Boolean> notEnoughArguments("result is array");
+        m_resultIsList = resultIsListArray.length > index ? resultIsListArray[index]
+            : SingleSetting.<Boolean> notEnoughArguments("result is array");
         boolean[] returnPaths = settings.getBooleanArray(RETURN_PATHS);
-        m_returnPaths =
-            returnPaths.length > index ? returnPaths[index] : SingleSetting
-                .<Boolean> notEnoughArguments("return paths");
+        m_returnPaths = returnPaths.length > index ? returnPaths[index]
+            : SingleSetting.<Boolean> notEnoughArguments("return paths");
     }
 
     private static <T> T notEnoughArguments(final String text) throws InvalidSettingsException {
@@ -238,7 +235,7 @@ class SingleSetting {
      */
     @Override
     public String toString() {
-        return String.format("SingleSetting [%s, %s, %s, returnPaths=%s, resultIsList=%s]", m_newColumnName,
-            m_jsonPath, m_returnType, m_returnPaths, m_resultIsList);
+        return String.format("SingleSetting [%s, %s, %s, returnPaths=%s, resultIsList=%s]", m_newColumnName, m_jsonPath,
+            m_returnType, m_returnPaths, m_resultIsList);
     }
 }
