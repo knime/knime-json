@@ -168,12 +168,14 @@
                 "key" : {
                   "type" : "string",
                   "title" : "Key",
-                  "description" : "The key name."
+                  "description" : "The key name.",
+                  "default" : ""
                 },
                 "value" : {
                   "type" : "string",
                   "title" : "Value",
-                  "description" : "The key value."
+                  "description" : "The key value.",
+                  "default" : ""
                 }
               }
             },
@@ -321,8 +323,7 @@
         "options" : {
           "format" : "typedStringFilter",
           "unknownValuesText" : "Any unknown column",
-          "emptyStateLabel" : "No columns in this list.",
-          "hideTypeFilter" : true
+          "emptyStateLabel" : "No columns in this list."
         },
         "providedOptions" : [ "possibleValues" ]
       } ]

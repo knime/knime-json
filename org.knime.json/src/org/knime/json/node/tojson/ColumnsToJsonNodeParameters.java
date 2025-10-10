@@ -55,10 +55,11 @@ import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.StringValue;
+import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.webui.node.dialog.defaultdialog.internal.widget.TypedStringFilterWidgetInternal;
 import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.json.util.RootKeyType;
 import org.knime.node.parameters.NodeParameters;
@@ -86,11 +87,11 @@ import org.knime.node.parameters.updates.StateProvider;
 import org.knime.node.parameters.updates.ValueProvider;
 import org.knime.node.parameters.updates.ValueReference;
 import org.knime.node.parameters.widget.choices.ChoicesProvider;
+import org.knime.node.parameters.widget.choices.ColumnChoicesProvider;
 import org.knime.node.parameters.widget.choices.RadioButtonsWidget;
 import org.knime.node.parameters.widget.choices.filter.ColumnFilter;
 import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
-import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider.StringColumnsProvider;
 
 /**
  * Node parameters for Columns to JSON.
@@ -169,7 +170,6 @@ class ColumnsToJsonNodeParameters implements NodeParameters {
     @Widget(title = "Automatic column selection",
         description = "The keys are the column names and the actual value in"
             + " the selected columns will provide the keys and values in the object")
-    @TypedStringFilterWidgetInternal(hideTypeFilter = true)
     @ChoicesProvider(SupportedValueClassesProvider.class)
     ColumnFilter m_automaticSelection = new ColumnFilter();
 
@@ -208,6 +208,21 @@ class ColumnsToJsonNodeParameters implements NodeParameters {
         @Override
         public EffectPredicate init(final PredicateInitializer i) {
             return i.getEnum(RootKeyTypeReference.class).isOneOf(RootKeyType.DataBound);
+        }
+
+    }
+
+    public static class StringColumnsProvider implements ColumnChoicesProvider {
+
+        @Override
+        public List<DataColumnSpec> columnChoices(final NodeParametersInput context) {
+            final var tableSpec = context.getInTableSpec(0);
+            if (tableSpec.isEmpty()) {
+                return List.of();
+            }
+            return tableSpec.get().stream().filter(colSpec ->
+                StringCell.TYPE.isASuperTypeOf(colSpec.getType())
+                && !JSONCell.TYPE.isASuperTypeOf(colSpec.getType())).toList();
         }
 
     }

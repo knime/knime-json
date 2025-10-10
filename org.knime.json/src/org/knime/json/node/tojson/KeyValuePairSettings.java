@@ -67,9 +67,9 @@ final class KeyValuePairSettings implements NodeParameters {
     }
 
     @Widget(title = "Key", description = "The key name.")
-    String m_key;
+    String m_key = "";
 
     @Widget(title = "Value", description = "The key value.")
-    String m_value;
+    String m_value = "";
 
 }
