@@ -1,0 +1,201 @@
+{
+  "data" : {
+    "model" : {
+      "inputColumn" : "json",
+      "removeSourceColumn" : true,
+      "outputSettings" : [ {
+        "outputColumnName" : "column",
+        "jsonPath" : "$..*",
+        "outputType" : "Json",
+        "resultIsList" : true,
+        "returnPaths" : false
+      }, {
+        "outputColumnName" : "some",
+        "jsonPath" : "$['some']",
+        "outputType" : "String",
+        "resultIsList" : false,
+        "returnPaths" : false
+      } ]
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "type" : "string",
+            "title" : "Source column",
+            "description" : "The JSON column to select the paths from.",
+            "default" : "json"
+          },
+          "outputSettings" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "jsonPath" : {
+                  "type" : "string",
+                  "title" : "JSONPath",
+                  "description" : "The JSONPath expression to extract data from the JSON input. Examples:\n• $.book[0] - Select the first book\n• $.book[*].title - Select all book titles\n• $.book[?(@.year>2000)] - Select books published after 2000\n",
+                  "default" : "$..*"
+                },
+                "outputColumnName" : {
+                  "type" : "string",
+                  "title" : "Output column name",
+                  "description" : "The name for the output column."
+                },
+                "outputType" : {
+                  "oneOf" : [ {
+                    "const" : "String",
+                    "title" : "String"
+                  }, {
+                    "const" : "Json",
+                    "title" : "Json"
+                  }, {
+                    "const" : "Base64",
+                    "title" : "Base64"
+                  }, {
+                    "const" : "Boolean",
+                    "title" : "Boolean"
+                  }, {
+                    "const" : "Integer",
+                    "title" : "Integer"
+                  }, {
+                    "const" : "Double",
+                    "title" : "Double"
+                  }, {
+                    "const" : "Long",
+                    "title" : "Long"
+                  } ],
+                  "title" : "Output type",
+                  "description" : "The data type for the output column. When 'Return paths' is enabled, this is automatically set to String.\n",
+                  "default" : "Json"
+                },
+                "resultIsList" : {
+                  "type" : "boolean",
+                  "title" : "Result is list",
+                  "description" : "When enabled, the result will be returned as a list even if only one value is found.\nThis is automatically enabled when 'Return paths' is selected.\n",
+                  "default" : true
+                },
+                "returnPaths" : {
+                  "type" : "boolean",
+                  "title" : "Return paths",
+                  "description" : "When enabled, returns the JSONPath expressions that lead to the values instead of the values themselves.\nThis automatically enables 'Result is list' and sets the output type to String.\n",
+                  "default" : false
+                }
+              }
+            },
+            "title" : "Output columns",
+            "description" : "Configure the JSON paths to extract from the input column. Each row defines one output column with its\nJSONPath expression, output data type, and whether to return a list of values or paths instead of values.\nNote: The Modern UI does not yet support an interactive JSON path chooser component - you will need to\nmanually enter JSONPath expressions.\n",
+            "default" : [ ]
+          },
+          "removeSourceColumn" : {
+            "type" : "boolean",
+            "title" : "Remove source column",
+            "description" : "When checked, the source column will be removed.",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/inputColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeSourceColumn",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "label" : "Output",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputSettings",
+        "options" : {
+          "detail" : [ {
+            "type" : "Control",
+            "scope" : "#/properties/outputColumnName"
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/jsonPath"
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/outputType"
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/resultIsList",
+            "options" : {
+              "format" : "checkbox"
+            }
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/returnPaths",
+            "options" : {
+              "format" : "checkbox"
+            }
+          } ],
+          "addButtonText" : "Add JSONPath",
+          "arrayElementTitle" : "JSONPath Configuration"
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "configKey" : "input<dot>column"
+          },
+          "removeSourceColumn" : {
+            "configKey" : "remove<dot>input<dot>column"
+          },
+          "outputSettings" : {
+            "configPaths" : [ [ "newColumnName" ], [ "jsonpath" ], [ "result<dot>is<dot>list" ], [ "return<dot>paths<dot>instead<dot>of<dot>values" ], [ "returnType" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/inputColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      }, {
+        "id" : "other_column",
+        "text" : "other_column",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/inputColumn" ]
+  } ]
+}
