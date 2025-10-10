@@ -62,7 +62,7 @@ public class ColumnsToJsonNodeFactory
             <p>
             The columns values are transformed to JSON objects for each row. When there are conflicting keys, the
                 result is undefined, might vary between different versions of KNIME.
-                </p>
+                </p></br>
                 <p>
                 An example transformation:
                 <br />
