@@ -18,5 +18,6 @@
     <entry key="create.text.for.specific.keys" type="xboolean" value="true"/>
     <entry key="key.for.text" type="xstring" value="#text"/>
     <entry key="translate.#comment.as.element" type="xboolean" value="true"/>
+    <entry key="translate.?prefix.as.element" type="xboolean" value="true"/>
     <entry key="value.remove.invalid.chars" type="xboolean" value="true"/>
 </config>

@@ -124,6 +124,7 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         super.validateSettings(settings);
         JSONToXMLSettings s = getSettings();
+        s.loadSettingsFrom(settings);
         if (!s.isKeepTypeInfo()) {
             CheckUtils.checkSetting(!s.getArray().trim().isEmpty(), "The empty list prefix is missing.");
             CheckUtils.checkSetting(!s.getBoolean().trim().isEmpty(), "The boolean prefix is missing.");
@@ -134,9 +135,9 @@ public class JSONToXMLNodeModel extends SingleColumnReplaceOrAddNodeModel<JSONTo
         }
         CheckUtils.checkSetting(!s.getItem().trim().isEmpty(), "The array item name is missing.");
         CheckUtils.checkSetting(!s.getRoot().trim().isEmpty(), "The root item name is missing.");
-        CheckUtils.checkSetting(!s.isSpecifyNamespace() || !s.getNamespace().trim().isEmpty(),
+        final var isEmptyNamespace = s.getNamespace() == null ? true : s.getNamespace().trim().isEmpty();
+        CheckUtils.checkSetting(!s.isSpecifyNamespace() || !isEmptyNamespace,
             "The namespace information is missing.");
-
     }
 
     /**

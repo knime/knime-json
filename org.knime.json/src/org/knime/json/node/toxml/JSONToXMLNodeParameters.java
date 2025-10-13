@@ -53,7 +53,9 @@ import org.knime.node.parameters.Widget;
 import org.knime.node.parameters.layout.After;
 import org.knime.node.parameters.layout.Layout;
 import org.knime.node.parameters.layout.Section;
+import org.knime.node.parameters.migration.DefaultProvider;
 import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
+import org.knime.node.parameters.migration.Migration;
 import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.persistence.Persistor;
 import org.knime.node.parameters.persistence.legacy.EnumBooleanPersistor;
@@ -279,6 +281,7 @@ class JSONToXMLNodeParameters implements NodeParameters {
             will be removed from values.
             """)
     @Persist(configKey = JSONToXMLSettings.VALUE_REMOVE_INVALID_CHARS)
+    @Migration(value = RemoveInvalidCharsMigration.class)
     boolean m_removeInvalidChars = JSONToXMLSettings.DEFAULT_VALUE_REMOVE_INVALID_CHARS;
 
     enum HashCommentHandling {
@@ -366,7 +369,7 @@ class JSONToXMLNodeParameters implements NodeParameters {
     static final class QuestionPrefixHandlingPersistor extends EnumBooleanPersistor<QuestionPrefixHandling> {
 
         protected QuestionPrefixHandlingPersistor() {
-            super(JSONToXMLSettings.TRANSLATE_HASHCOMMENT_AS_ELEMENT , QuestionPrefixHandling.class,
+            super(JSONToXMLSettings.TRANSLATE_QUESTIONPREFIX_AS_ELEMENT, QuestionPrefixHandling.class,
                 QuestionPrefixHandling.ELEMENT);
         }
 
@@ -376,6 +379,15 @@ class JSONToXMLNodeParameters implements NodeParameters {
 
         protected JSONColumnsProvider() {
             super(JSONValue.class);
+        }
+
+    }
+
+    static final class RemoveInvalidCharsMigration implements DefaultProvider<Boolean> {
+
+        @Override
+        public Boolean getDefault() {
+            return JSONToXMLSettings.DEFAULT_VALUE_REMOVE_INVALID_CHARS_BACKWARD;
         }
 
     }

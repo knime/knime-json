@@ -414,10 +414,13 @@
             "configPaths" : [ [ "translate<dot>#comment<dot>as<dot>element" ] ]
           },
           "questionPrefixHandling" : {
-            "configPaths" : [ [ "translate<dot>#comment<dot>as<dot>element" ] ]
+            "configPaths" : [ [ "translate<dot>?prefix<dot>as<dot>element" ] ]
           },
           "removeInvalidChars" : {
-            "configKey" : "value<dot>remove<dot>invalid<dot>chars"
+            "configKey" : "value<dot>remove<dot>invalid<dot>chars",
+            "deprecatedConfigKeys" : [ {
+              "deprecated" : [ ]
+            } ]
           }
         }
       }
