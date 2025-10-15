@@ -61,25 +61,17 @@ import org.knime.json.node.util.ReplaceColumnSettings;
  * @author Gabor Bakos
  */
 final class XMLToJSONSettings extends ReplaceColumnSettings {
-    /**
-     * The default value for key of the text node translation to json.
-     */
-    private static final String DEFAULT_TEXT = "text";
 
-    /**
-     * The configuration key for key of the text node translation to json.
-     */
-    private static final String TEXT = "text.key";
+    static final String TEXT_KEY = "text.key";
+    static final String TRANSLATE_COMMENTS_KEY = "translate.comments";
+    static final String TRANSLATE_PROCESSING_INSTRUCTIONS_KEY = "translate.processing.instructions";
+
+    static final String DEFAULT_TEXT = "text";
+    static final String DEFAULT_NEW_CLOUMN_NAME = "JSON";
+    static final boolean DEFAULT_TRANSLATE_COMMENTS = false;
+    static final boolean DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS = false;
 
     private String m_textKey = DEFAULT_TEXT;
-
-    private static final String TRANSLATE_COMMENTS = "translate.comments";
-    private static final String TRANSLATE_PROCESSING_INSTRUCTIONS = "translate.processing.instructions";
-
-    private static final boolean DEFAULT_TRANSLATE_COMMENTS = false;
-
-    private static final boolean DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS = false;
-
     private boolean m_translateComments = DEFAULT_TRANSLATE_COMMENTS;
     private boolean m_translateProcessingInstructions = DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS;
 
@@ -88,7 +80,7 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
      */
     XMLToJSONSettings() {
         super(XMLValue.class);
-        setNewColumnName("JSON");
+        setNewColumnName(DEFAULT_NEW_CLOUMN_NAME);
     }
 
     /**
@@ -142,9 +134,10 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
      */
     @Override
     protected void loadSettingsForDialogs(final NodeSettingsRO settings, final PortObjectSpec[] specs) {
-        m_textKey = settings.getString(TEXT, DEFAULT_TEXT);
-        m_translateComments = settings.getBoolean(TRANSLATE_COMMENTS, DEFAULT_TRANSLATE_COMMENTS);
-        m_translateProcessingInstructions = settings.getBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS, DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS);
+        m_textKey = settings.getString(TEXT_KEY, DEFAULT_TEXT);
+        m_translateComments = settings.getBoolean(TRANSLATE_COMMENTS_KEY, DEFAULT_TRANSLATE_COMMENTS);
+        m_translateProcessingInstructions =
+                settings.getBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS_KEY, DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS);
         super.loadSettingsForDialogs(settings, specs);
     }
 
@@ -153,15 +146,15 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
      */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_textKey = settings.getString(TEXT);
+        m_textKey = settings.getString(TEXT_KEY);
         try {
-            m_translateComments = settings.getBoolean(TRANSLATE_COMMENTS);
+            m_translateComments = settings.getBoolean(TRANSLATE_COMMENTS_KEY);
         } catch (InvalidSettingsException e) {
             //For compatibility
             m_translateComments = true;
         }
         try {
-            m_translateProcessingInstructions = settings.getBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS);
+            m_translateProcessingInstructions = settings.getBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS_KEY);
         } catch (InvalidSettingsException e) {
             //For compatibility
             m_translateProcessingInstructions = true;
@@ -174,9 +167,9 @@ final class XMLToJSONSettings extends ReplaceColumnSettings {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
-        settings.addString(TEXT, m_textKey);
-        settings.addBoolean(TRANSLATE_COMMENTS, m_translateComments);
-        settings.addBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS, m_translateProcessingInstructions);
+        settings.addString(TEXT_KEY, m_textKey);
+        settings.addBoolean(TRANSLATE_COMMENTS_KEY, m_translateComments);
+        settings.addBoolean(TRANSLATE_PROCESSING_INSTRUCTIONS_KEY, m_translateProcessingInstructions);
         super.saveSettingsTo(settings);
     }
 

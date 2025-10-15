@@ -48,55 +48,121 @@
  */
 package org.knime.json.node.fromxml;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * <code>NodeFactory</code> for the "XMLToJSON" Node. Converts XML values to JSON values.
  *
  * @author Gabor Bakos
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public class XMLToJSONNodeFactory extends NodeFactory<XMLToJSONNodeModel> {
+@SuppressWarnings("restriction")
+public class XMLToJSONNodeFactory extends NodeFactory<XMLToJSONNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public XMLToJSONNodeModel createNodeModel() {
         return new XMLToJSONNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<XMLToJSONNodeModel> createNodeView(final int viewIndex, final XMLToJSONNodeModel nodeModel) {
         throw new IllegalStateException("No views: " + viewIndex);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "XML to JSON";
+    private static final String NODE_ICON = "./xml2json.png";
+    private static final String SHORT_DESCRIPTION = """
+            Converts XML values to JSON values.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            Converts XML values to JSON values. <p>Attributes are translated with prefix <tt>@</tt>, processing
+                instructions with <tt>?</tt> prefix to their name as a key in a JSON object. </p><p> When there are
+                multiple texts surrounding inner elements, those are translated as JSON array elements instead of an
+                object with the specified key. </p> <p>Example:<tt>&lt;a b="2"&gt;&lt;v&gt;some
+                text&lt;/v&gt;&lt;/a&gt;</tt> gets translated to:<tt>{"a": {"@b": "2", "v": {"#text": "some text"} }
+                }</tt> </p>
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("table with XML", """
+                Table with an XML column.
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("table with JSON", """
+                Table containing the converted JSON column.
+                """)
+    );
+
     /**
-     * {@inheritDoc}
+     * @since 5.8
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new XMLToJSONNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.8
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, XMLToJSONNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            XMLToJSONNodeParameters.class,
+            null,
+            NodeType.Manipulator,
+            List.of(),
+            null
+        );
+    }
+
+    /**
+     * @since 5.8
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, XMLToJSONNodeParameters.class));
     }
 
 }
