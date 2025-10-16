@@ -22,7 +22,7 @@
           "json" : {
             "type" : "string",
             "title" : "Default JSON value",
-            "description" : "The text representing a default JSON value. It might contain comments between <pre>/* */</pre> or after <tt>#</tt> or <tt>//</tt> until the end of line.",
+            "description" : "The text representing a default JSON value. It might contain comments between <pre><code>/* */</code></pre> or after <tt>#</tt> or <tt>//</tt> until the end of line.",
             "default" : "{}"
           },
           "parameterName" : {
