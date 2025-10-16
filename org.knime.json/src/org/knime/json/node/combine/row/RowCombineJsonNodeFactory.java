@@ -60,13 +60,13 @@ public class RowCombineJsonNodeFactory
             """;
     private static final String FULL_DESCRIPTION = """
             Combines JSON values in a column to a single JSON value (with an array for the JSON values from the
-            column). The output looks like this:<br/> <pre>{
+            column). The output looks like this:<br/> <pre><code>{
                 "JSON key": [
                   {"json":"from Row1"},
                   {"json":"from Row2"}
                 ],
                 "custom key":"custom value"
-            }</pre> where the <tt>JSON key</tt> can be specified with the <i>Add root object with key</i> parameter, the
+            }</code></pre> where the <tt>JSON key</tt> can be specified with the <i>Add root object with key</i> parameter, the
             <tt>"custom key":"custom value"</tt> is specified with the <i>Custom key/value pairs</i> and the <tt>Collect
              into array</tt> options.<br/> All columns and rows will be removed or collapsed to a single cell.
             """;

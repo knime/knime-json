@@ -136,7 +136,7 @@ public class JSONPathNodeFactory extends NodeFactory<JSONPathNodeModel> implemen
                 selected KNIME type, a missing value will be returned. </p> <p> JSONPath queries can be automatically
                 generated via the node configuration dialog.
                 Alternatively, you can write your own JSONPath query by clicking the "Add JSONPath" button. </p> Example
-                input: <pre>
+                input: <pre><code>
                 {"book": [
                     {"year": 1999,
                     "title": "Timeline",
@@ -145,7 +145,7 @@ public class JSONPathNodeFactory extends NodeFactory<JSONPathNodeModel> implemen
                      "title": "Plain Truth",
                      "author": "Jodi Picoult"}
                 ]}
-                </pre> <p> Example JSONPath queries and
+                </code></pre> <p> Example JSONPath queries and
                 evaluation results:<br /> <b>$.book[0]</b><br /><tt>{"year": 1999, "title": "Timeline", "author":
                 "Michael Crichton"}</tt> (<i>JSON</i> or <i>String</i> single value)<br /> <b>$.book[*].year</b><br
                 /><tt>[1999,2000]</tt> (<i>JSON</i>, <i>Int</i> or <i>Real</i> list)<br /> <b>$.book[2].year</b><br
