@@ -81,7 +81,7 @@ class JSONInputNodeParameters implements NodeParameters {
 
     @Widget(title = "Default JSON value",
         description = "The text representing a default JSON value. It might contain comments "
-            + "between <pre><code>/* */</code></pre> or after <tt>#</tt> or <tt>//</tt> until the end of line.")
+            + "between <pre>/* */</pre> or after <tt>#</tt> or <tt>//</tt> until the end of line.")
     @TextAreaWidget(rows = 10)
     String m_json = "{}";
 }
