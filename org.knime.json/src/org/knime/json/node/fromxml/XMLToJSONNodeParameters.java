@@ -51,6 +51,7 @@ import java.util.Optional;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.xml.XMLValue;
 import org.knime.json.node.util.SingleColumnReplaceOrAddNodeModel;
+import org.knime.node.parameters.Advanced;
 import org.knime.node.parameters.NodeParameters;
 import org.knime.node.parameters.NodeParametersInput;
 import org.knime.node.parameters.Widget;
@@ -91,11 +92,12 @@ class XMLToJSONNodeParameters implements NodeParameters {
     @ValueProvider(InputColumnProvider.class)
     String m_inputColumn;
 
-    @Widget(title = "Output column", description = "Whether to replace the input column or append a new column")
+    @Widget(title = "Output handling",
+            description = "Select how the output JSON column should be handled.")
     @ValueSwitchWidget
     @ValueReference(ReplaceInputOrAppendOutputColumnRef.class)
     @Persistor(ReplaceOrAppendInputColumnPersistor.class)
-    ReplaceInputOrAppendOutputColumn m_appendOrReplace = ReplaceInputOrAppendOutputColumn.REPLACE;
+    ReplaceInputOrAppendOutputColumn m_appendOrReplace = ReplaceInputOrAppendOutputColumn.APPEND;
 
     @Widget(title = "New column name", description = "Name of the new (JSON) column")
     @Effect(predicate = IsAppendColumn.class, type = EffectType.SHOW)
@@ -112,6 +114,7 @@ class XMLToJSONNodeParameters implements NodeParameters {
             + "otherwise they are omitted in the JSON output")
     @Persist(configKey = XMLToJSONSettings.TRANSLATE_COMMENTS_KEY)
     @Migration(TranslateCommentsMigration.class)
+    @Advanced
     boolean m_translateComments = XMLToJSONSettings.DEFAULT_TRANSLATE_COMMENTS;
 
     @Widget(title = "Translate processing instructions",
@@ -119,13 +122,14 @@ class XMLToJSONNodeParameters implements NodeParameters {
             + "otherwise they are omitted in the JSON output")
     @Persist(configKey = XMLToJSONSettings.TRANSLATE_PROCESSING_INSTRUCTIONS_KEY)
     @Migration(TranslateProcessingInstructionsMigration.class)
+    @Advanced
     boolean m_translateProcessingInstructions = XMLToJSONSettings.DEFAULT_TRANSLATE_PROCESSING_INSTRUCTIONS;
 
     enum ReplaceInputOrAppendOutputColumn {
-        @Label(value = "Replace input column", description = "Replace input column, keep its name")
-        REPLACE, //
-        @Label(value = "Append new column", description = "Name of the new (JSON) column")
-        APPEND;
+        @Label(value = "Append", description = "Adds a new JSON column.")
+        APPEND, //
+        @Label(value = "Replace", description = "Replaces the original column with the JSON column.")
+        REPLACE;
     }
 
     static final class InputColumnRef implements ParameterReference<String> {

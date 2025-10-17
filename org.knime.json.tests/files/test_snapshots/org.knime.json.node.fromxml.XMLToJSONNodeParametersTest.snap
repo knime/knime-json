@@ -1,7 +1,7 @@
 {
   "data" : {
     "model" : {
-      "appendOrReplace" : "REPLACE",
+      "appendOrReplace" : "APPEND",
       "newColumnName" : "JSON",
       "textKey" : "text",
       "translateComments" : false,
@@ -16,15 +16,15 @@
         "properties" : {
           "appendOrReplace" : {
             "oneOf" : [ {
-              "const" : "REPLACE",
-              "title" : "Replace input column"
-            }, {
               "const" : "APPEND",
-              "title" : "Append new column"
+              "title" : "Append"
+            }, {
+              "const" : "REPLACE",
+              "title" : "Replace"
             } ],
-            "title" : "Output column",
-            "description" : "Whether to replace the input column or append a new column\n<ul>\n<li><b>Replace input column</b>: Replace input column, keep its name</li>\n<li><b>Append new column</b>: Name of the new (JSON) column</li>\n</ul>",
-            "default" : "REPLACE"
+            "title" : "Output handling",
+            "description" : "Select how the output JSON column should be handled.\n<ul>\n<li><b>Append</b>: Adds a new JSON column.</li>\n<li><b>Replace</b>: Replaces the original column with the JSON column.</li>\n</ul>",
+            "default" : "APPEND"
           },
           "inputColumn" : {
             "type" : "string",
@@ -94,13 +94,15 @@
       "type" : "Control",
       "scope" : "#/properties/model/properties/translateComments",
       "options" : {
-        "format" : "checkbox"
+        "format" : "checkbox",
+        "isAdvanced" : true
       }
     }, {
       "type" : "Control",
       "scope" : "#/properties/model/properties/translateProcessingInstructions",
       "options" : {
-        "format" : "checkbox"
+        "format" : "checkbox",
+        "isAdvanced" : true
       }
     } ]
   },
