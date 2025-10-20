@@ -59,8 +59,8 @@ import org.knime.core.data.json.JSONValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.core.webui.node.dialog.defaultdialog.widget.validation.custom.CustomValidation;
+import org.knime.core.webui.node.dialog.defaultdialog.widget.validation.custom.CustomValidationProvider;
 import org.knime.core.webui.node.dialog.defaultdialog.widget.validation.custom.ValidationCallback;
 import org.knime.json.node.jsonpath.util.JsonPathUtils;
 import org.knime.json.util.OutputType;
@@ -80,7 +80,6 @@ import org.knime.node.parameters.updates.Effect.EffectType;
 import org.knime.node.parameters.updates.EffectPredicate;
 import org.knime.node.parameters.updates.EffectPredicateProvider;
 import org.knime.node.parameters.updates.ParameterReference;
-import org.knime.node.parameters.updates.StateProvider;
 import org.knime.node.parameters.updates.ValueProvider;
 import org.knime.node.parameters.updates.ValueReference;
 import org.knime.node.parameters.updates.legacy.ColumnNameAutoGuessValueProvider;
@@ -203,7 +202,7 @@ class JSONPathNodeParameters implements NodeParameters {
         @CustomValidation(JSONPathValidatorProvider.class)
         String m_jsonPath = SingleSetting.DEFAULT_JSON_PATH;
 
-        static final class JSONPathValidatorProvider implements StateProvider<ValidationCallback<String>> {
+        static final class JSONPathValidatorProvider implements CustomValidationProvider<String> {
 
             private Supplier<ValueOrPath> m_valueOrPathSupplier;
 
@@ -218,8 +217,7 @@ class JSONPathNodeParameters implements NodeParameters {
             }
 
             @Override
-            public ValidationCallback<String> computeState(final NodeParametersInput parametersInput)
-                throws StateComputationFailureException {
+            public ValidationCallback<String> computeValidationCallback(final NodeParametersInput parametersInput) {
                 if (resultIsList()) {
                     return JSONPathValidatorProvider::parseToJsonPath;
                 } else {

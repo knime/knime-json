@@ -81,7 +81,7 @@ public class JSONPathNodeFactory extends NodeFactory<JSONPathNodeModel> implemen
      * Feature flag for webUI configuration dialogs in local AP.
      */
     private static final boolean JSON_PATH_WEBUI_DIALOG =
-        !"js".equals(System.getProperty("org.knime.jsonpath.webuidialog"));
+        "js".equals(System.getProperty("org.knime.jsonpath.webuidialog"));
 
     /**
      * {@inheritDoc}
