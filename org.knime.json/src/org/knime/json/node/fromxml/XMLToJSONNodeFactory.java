@@ -105,12 +105,30 @@ public class XMLToJSONNodeFactory extends NodeFactory<XMLToJSONNodeModel>
             Converts XML values to JSON values.
             """;
     private static final String FULL_DESCRIPTION = """
-            Converts XML values to JSON values. <p>Attributes are translated with prefix <tt>@</tt>, processing
-                instructions with <tt>?</tt> prefix to their name as a key in a JSON object. </p><p> When there are
-                multiple texts surrounding inner elements, those are translated as JSON array elements instead of an
-                object with the specified key. </p> <p>Example:<tt>&lt;a b="2"&gt;&lt;v&gt;some
-                text&lt;/v&gt;&lt;/a&gt;</tt> gets translated to:<tt>{"a": {"@b": "2", "v": {"#text": "some text"} }
-                }</tt> </p>
+            Reads values from an XML column and converts them into JSON format.
+            <ul>
+                <li>XML <b>attributes</b> are converted to JSON keys with an <code>@</code> prefix.</li>
+                <li>XML <b>processing instructions</b> are converted to JSON keys with a <code>?</code> prefix.</li>
+                <li>If there are <b>multiple pieces of text</b> around inner elements, they are translated into
+                    elements of a JSON array.</li>
+                <li>Text content inside XML elements is stored under a specified key (default key is <code>text</code>).
+                </li>
+            </ul>
+            <b>Example</b>:<br/><br/>
+            The XML
+            <pre><code>&lt;a&gt;Hello &lt;b&gt;world&lt;/b&gt;!&lt;/a&gt;</code></pre>
+            becomes:
+            <pre><code>{
+               "a": [
+                 "Hello ",
+                 {
+                   "b": {
+                     "text": "world"
+                   }
+                 },
+                 "!"
+               ]
+            }</code></pre>
             """;
     private static final List<PortDescription> INPUT_PORTS = List.of(
             fixedPort("table with XML", """
