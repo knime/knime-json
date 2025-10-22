@@ -107,12 +107,13 @@ public class XMLToJSONNodeFactory extends NodeFactory<XMLToJSONNodeModel>
     private static final String FULL_DESCRIPTION = """
             Reads values from an XML column and converts them into JSON format.
             <ul>
-                <li>XML <b>attributes</b> are converted to JSON keys with an <code>@</code> prefix.</li>
-                <li>XML <b>processing instructions</b> are converted to JSON keys with a <code>?</code> prefix.</li>
                 <li>If there are <b>multiple pieces of text</b> around inner elements, they are translated into
                     elements of a JSON array.</li>
                 <li>Text content inside XML elements is stored under a specified key (default key is <code>text</code>).
                 </li>
+                <li>If enabled, XML <b>attributes</b> are converted to JSON keys with an <code>@</code> prefix.</li>
+                <li>If enabled, XML <b>processing instructions</b> are converted to JSON keys with a <code>?</code>
+                prefix.</li>
             </ul>
             <b>Example</b>:<br/><br/>
             The XML
