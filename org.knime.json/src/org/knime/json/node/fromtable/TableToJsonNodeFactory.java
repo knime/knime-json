@@ -93,9 +93,9 @@ public class TableToJsonNodeFactory
                 Converts some columns of a table to a single JSON cell.
                 """) //
             .fullDescription("""
-                Converts the selected columns content to a JSON value row-wise or column-wise. It also have an option \
-                to "undo" -with some limitations- the JSON to Table transformation and create JSON values for each row \
-                based on the column names.<br/>
+                Converts the selected columns content to a JSON value row-wise or column-wise. It also has an option \
+                to "undo" - with some limitations - the JSON to Table transformation, and can create JSON values \
+                for each row based on the column names.<br/>
                 Example input table:
                 <table>
                 <tr><th>a.b</th><th>a.c</th><th>d</th></tr>
@@ -103,7 +103,7 @@ public class TableToJsonNodeFactory
                 <tr><td>b1</td><td>c1</td><td>d1</td></tr>
                 </table>
                 With the different parameters, the following JSON values are generated:<br/>
-                <b>Row-oriented</b>
+                <b>Row-oriented</b> (datatable as one JSON value):
                 <pre>
                 [ {
                   "a.b" : "b0",
@@ -113,17 +113,8 @@ public class TableToJsonNodeFactory
                   "a.b" : "b1",
                   "a.c" : "c1",
                   "d" : "d1"
-                } ]
-                </pre>
-                <b>Column-oriented</b> (with Row keys as JSON value with key: "ROWID"):
-                <pre>
-                {
-                  "ROWID" : [ "Row0", "Row1" ],
-                  "a.b" : [ "b0", "b1" ],
-                  "a.c" : [ "c0", "c1" ],
-                  "d" : [ "d0", "d1" ]
-                }</pre>
-                <b>Keep rows</b> (with <b>Column names as paths</b>, separator: <tt>.</tt>):
+                } ]</pre>
+                <b>Keep rows</b> (column names treated as paths, default separator: <tt>.</tt>):
                 <pre>
                 {
                   "a" : {
@@ -139,6 +130,15 @@ public class TableToJsonNodeFactory
                     "c" : "c1"
                   },
                   "d" : "d1"
+                }
+                </pre>
+                <b>Column-oriented</b> (row keys as JSON value, with the key: "ROWID"):
+                <pre>
+                {
+                  "ROWID" : [ "Row0", "Row1" ],
+                  "a.b" : [ "b0", "b1" ],
+                  "a.c" : [ "c0", "c1" ],
+                  "d" : [ "d0", "d1" ]
                 }</pre>
                 """) //
             .modelSettingsClass(TableToJsonNodeParameters.class) //
