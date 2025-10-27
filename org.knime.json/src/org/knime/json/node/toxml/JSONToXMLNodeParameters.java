@@ -225,7 +225,7 @@ class JSONToXMLNodeParameters implements NodeParameters {
     boolean m_useParentKeyAsElementName = JSONToXMLSettings.DEFAULT_PARENT_KEY_AS_ELEMENT_NAME;
 
     @Layout(TranslationSection.class)
-    @Widget(title = "Represent values as XML text if key is", description = """
+    @Widget(title = "Use a key to represent values as XML text", description = """
                    When checked, simple values with the specified key will not create attributes, but provide the
                    single text of the surrounding element.
                    """)
@@ -299,10 +299,10 @@ class JSONToXMLNodeParameters implements NodeParameters {
     }
 
     enum ReplaceInputOrAppendOutputColumn {
-        @Label(value = "Replace input column", description = "Replace input column, keep its name")
-        REPLACE, //
         @Label(value = "Append new column", description = "Name of the new (XML) column")
-        APPEND;
+        APPEND, //
+        @Label(value = "Replace input column", description = "Replace input column, keep its name")
+        REPLACE;
     }
 
     static final class ReplaceInputOrAppendOutputColumnRef

@@ -30,11 +30,11 @@
         "properties" : {
           "appendOrReplace" : {
             "oneOf" : [ {
-              "const" : "REPLACE",
-              "title" : "Replace input column"
-            }, {
               "const" : "APPEND",
               "title" : "Append new column"
+            }, {
+              "const" : "REPLACE",
+              "title" : "Replace input column"
             } ],
             "title" : "Output column",
             "default" : "REPLACE"
@@ -59,7 +59,7 @@
           },
           "createTextForSpecificKeys" : {
             "type" : "boolean",
-            "title" : "Represent values as XML text if key is",
+            "title" : "Use a key to represent values as XML text",
             "description" : "When checked, simple values with the specified key will not create attributes, but provide the\nsingle text of the surrounding element.\n",
             "default" : true
           },
