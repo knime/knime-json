@@ -48,56 +48,127 @@
  */
 package org.knime.json.node.container.output.table;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * Factory for the Container Output (Table) node.
  *
  * @author Tobias Urhaug, KNIME GmbH, Berlin, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  * @since 3.6
  */
-public final class ContainerTableOutputNodeFactory extends NodeFactory<ContainerTableOutputNodeModel> {
+@SuppressWarnings("restriction")
+public final class ContainerTableOutputNodeFactory extends NodeFactory<ContainerTableOutputNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ContainerTableOutputNodeModel createNodeModel() {
         return new ContainerTableOutputNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public NodeView<ContainerTableOutputNodeModel> createNodeView(final int viewIndex, final ContainerTableOutputNodeModel nodeModel) {
+    public NodeView<ContainerTableOutputNodeModel> createNodeView(
+        final int viewIndex, final ContainerTableOutputNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "Container Output (Table)";
+
+    private static final String NODE_ICON = "./service-out.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            Reads the content of a table and makes it available to an external caller (e.g a Call Workflow node).
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            This node sends a table to an external caller (i.e. the <i>Call Workflow (Table Based)</i> node or an
+                external REST client). A configured parameter makes the <i>Container Output (Table)</i> visible from the
+                external caller and enables the external caller to fetch a table from the <i>Container Output
+                (Table)</i> node.<br /> <br /> If a data table is connected to the input port, the node will simply
+                forward this table to the output port.
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Any input table", """
+                Table which defines the output of the workflow.
+                """)
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("The forwarded input table", """
+                The input table directly forwarded without changes.
+                """)
+    );
+
     /**
-     * {@inheritDoc}
+     * @since 5.9
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new ContainerTableOutputNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, ContainerTableOutputNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            ContainerTableOutputNodeParameters.class,
+            null,
+            NodeType.Container,
+            List.of(),
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, ContainerTableOutputNodeParameters.class));
     }
 }
 

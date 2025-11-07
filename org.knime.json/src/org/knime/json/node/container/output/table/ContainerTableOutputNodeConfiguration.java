@@ -70,12 +70,19 @@ import jakarta.json.JsonValue;
  */
 final class ContainerTableOutputNodeConfiguration {
 
-    private static final String DEFAULT_PARAMETER_NAME = "table-output";
-    private static final String DEFAULT_DESCRIPTION = "";
-    private static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
+    static final String CFG_PARAMETER_NAME = "parameterName";
+    static final String CFG_USE_FULLY_QUALIFIED_NAME = "useFullyQualifiedName";
+    static final String CFG_DESCRIPTION = "description";
+    static final String CFG_OUTPUT_PATH_OR_URL = "outputPathOrUrl";
+    static final String CFG_TEMPLATE_TABLE_KEY = "exampleOutput";
+
+    static final String DEFAULT_PARAMETER_NAME = "table-output";
+    static final String DEFAULT_DESCRIPTION = "";
+    static final String DEFAULT_OUTPUT_PATH_OR_URL = null;
+    static final boolean DEFAULT_USE_FULLY_QUALIFIED_NAME = false;
 
     private String m_parameterName;
-    private boolean m_useFQNParamName = false; // added in 4.3
+    private boolean m_useFQNParamName = DEFAULT_USE_FULLY_QUALIFIED_NAME; // added in 4.3
     private String m_description;
     private String m_outputPathOrUrl;
     private ContainerTemplateTableConfiguration m_templateConfiguration;
@@ -87,7 +94,7 @@ final class ContainerTableOutputNodeConfiguration {
         m_parameterName = DEFAULT_PARAMETER_NAME;
         m_description = DEFAULT_DESCRIPTION;
         m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
-        m_templateConfiguration = new ContainerTemplateTableConfiguration("exampleOutput");
+        m_templateConfiguration = new ContainerTemplateTableConfiguration(CFG_TEMPLATE_TABLE_KEY);
     }
 
     /**
@@ -208,7 +215,8 @@ final class ContainerTableOutputNodeConfiguration {
      */
     void setTemplateConfiguration(final ContainerTemplateTablePanel templateOutputPanel)
             throws InvalidSettingsException {
-        ContainerTemplateTableConfiguration templateConfig = new ContainerTemplateTableConfiguration("exampleOutput");
+        ContainerTemplateTableConfiguration templateConfig =
+                new ContainerTemplateTableConfiguration(CFG_TEMPLATE_TABLE_KEY);
         templateConfig.setTemplate(templateOutputPanel.getTemplateTableJson());
         templateConfig.setUseEntireTable(templateOutputPanel.getUseEntireTable());
         templateConfig.setNumberOfRows(templateOutputPanel.getNumberOfRows());
@@ -224,11 +232,11 @@ final class ContainerTableOutputNodeConfiguration {
      * @throws InvalidSettingsException if settings are missing or invalid
      */
     ContainerTableOutputNodeConfiguration loadInModel(final NodeSettingsRO settings) throws InvalidSettingsException {
-        setParameterName(settings.getString("parameterName"));
-        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", true)); // added in 4.3
-        setDescription(settings.getString("description"));
-        setOutputPathOrUrl(settings.getString("outputPathOrUrl"));
-        setTemplateConfiguration(new ContainerTemplateTableConfiguration("exampleOutput").loadInModel(settings));
+        setParameterName(settings.getString(CFG_PARAMETER_NAME));
+        setUseFQNParamName(settings.getBoolean(CFG_USE_FULLY_QUALIFIED_NAME, true)); // added in 4.3
+        setDescription(settings.getString(CFG_DESCRIPTION));
+        setOutputPathOrUrl(settings.getString(CFG_OUTPUT_PATH_OR_URL));
+        setTemplateConfiguration(new ContainerTemplateTableConfiguration(CFG_TEMPLATE_TABLE_KEY).loadInModel(settings));
         return this;
     }
 
@@ -241,15 +249,16 @@ final class ContainerTableOutputNodeConfiguration {
      */
     ContainerTableOutputNodeConfiguration loadInDialog(final NodeSettingsRO settings) {
         try {
-            setParameterName(settings.getString("parameterName", DEFAULT_PARAMETER_NAME));
-            setOutputPathOrUrl(settings.getString("outputPathOrUrl", DEFAULT_OUTPUT_PATH_OR_URL));
+            setParameterName(settings.getString(CFG_PARAMETER_NAME, DEFAULT_PARAMETER_NAME));
+            setOutputPathOrUrl(settings.getString(CFG_OUTPUT_PATH_OR_URL, DEFAULT_OUTPUT_PATH_OR_URL));
         } catch (InvalidSettingsException e) {
             m_parameterName = DEFAULT_PARAMETER_NAME;
             m_outputPathOrUrl = DEFAULT_OUTPUT_PATH_OR_URL;
         }
-        setUseFQNParamName(settings.getBoolean("useFullyQualifiedName", false)); // added in 4.3
-        setDescription(settings.getString("description", DEFAULT_DESCRIPTION));
-        setTemplateConfiguration(new ContainerTemplateTableConfiguration("exampleOutput").loadInDialog(settings));
+        setUseFQNParamName(settings.getBoolean(CFG_USE_FULLY_QUALIFIED_NAME, false)); // added in 4.3
+        setDescription(settings.getString(CFG_DESCRIPTION, DEFAULT_DESCRIPTION));
+        setTemplateConfiguration(new ContainerTemplateTableConfiguration(CFG_TEMPLATE_TABLE_KEY)
+            .loadInDialog(settings));
         return this;
     }
 
@@ -260,10 +269,10 @@ final class ContainerTableOutputNodeConfiguration {
      * @return this object
      */
     ContainerTableOutputNodeConfiguration save(final NodeSettingsWO settings) {
-        settings.addString("parameterName", m_parameterName);
-        settings.addBoolean("useFullyQualifiedName", m_useFQNParamName); // added in 4.3
-        settings.addString("description", m_description);
-        settings.addString("outputPathOrUrl", m_outputPathOrUrl);
+        settings.addString(CFG_PARAMETER_NAME, m_parameterName);
+        settings.addBoolean(CFG_USE_FULLY_QUALIFIED_NAME, m_useFQNParamName); // added in 4.3
+        settings.addString(CFG_DESCRIPTION, m_description);
+        settings.addString(CFG_OUTPUT_PATH_OR_URL, m_outputPathOrUrl);
         m_templateConfiguration.save(settings);
         return this;
     }

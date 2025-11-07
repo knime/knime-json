@@ -69,10 +69,23 @@ import jakarta.json.JsonValue;
  */
 final public class ContainerTemplateTableConfiguration {
 
-    private static final JsonValue DEFAULT_TEMPLATE = ContainerTableDefaultJsonStructure.asJsonValue();
-    private static final boolean DEFAULT_USE_ENTIRE_TABLE = true;
-    private static final int DEFAULT_NUMBER_OF_ROWS = 10;
-    private static final boolean DEFAULT_OMIT_TABLE_SPEC = false;
+    /** Setting key for use entire table flag. */
+    public static final String CFG_USE_ENTIRE_TABLE = "useEntireTable";
+    /** Setting key for number of rows. */
+    public static final String CFG_NUMBER_OF_ROWS = "numberOfRows";
+    /** Setting key for omit table spec flag. */
+    public static final String CFG_OMIT_TABLE_SPEC = "omitTableSpec";
+
+    static final JsonValue DEFAULT_TEMPLATE_JSON = ContainerTableDefaultJsonStructure.asJsonValue();
+
+    /** Default value for template string @since 5.9 */
+    public static final String DEFAULT_TEMPLATE_STRING = ContainerTableDefaultJsonStructure.asString();
+    /** Default value for use entire table flag @since 5.9 */
+    public static final boolean DEFAULT_USE_ENTIRE_TABLE = true;
+    /** Default value for number of rows @since 5.9 */
+    public static final int DEFAULT_NUMBER_OF_ROWS = 10;
+    /** Default value for omit table spec flag @since 5.9 */
+    public static final boolean DEFAULT_OMIT_TABLE_SPEC = false;
 
     private JsonValue m_template;
     private boolean m_useEntireTable;
@@ -90,7 +103,7 @@ final public class ContainerTemplateTableConfiguration {
      * @param templateTableKey the settings key for the template table
      */
     public ContainerTemplateTableConfiguration(final String templateTableKey) {
-        m_template = DEFAULT_TEMPLATE;
+        m_template = DEFAULT_TEMPLATE_JSON;
         m_useEntireTable = DEFAULT_USE_ENTIRE_TABLE;
         m_numberOfRows = DEFAULT_NUMBER_OF_ROWS;
         m_omitTableSpec = DEFAULT_OMIT_TABLE_SPEC;
@@ -198,9 +211,9 @@ final public class ContainerTemplateTableConfiguration {
      */
     public ContainerTemplateTableConfiguration loadInModel(final NodeSettingsRO settings)
             throws InvalidSettingsException {
-        setUseEntireTable(settings.getBoolean("useEntireTable", DEFAULT_USE_ENTIRE_TABLE));
-        setNumberOfRows(settings.getInt("numberOfRows", DEFAULT_NUMBER_OF_ROWS));
-        setOmitTableSpec(settings.getBoolean("omitTableSpec", DEFAULT_OMIT_TABLE_SPEC));
+        setUseEntireTable(settings.getBoolean(CFG_USE_ENTIRE_TABLE, DEFAULT_USE_ENTIRE_TABLE));
+        setNumberOfRows(settings.getInt(CFG_NUMBER_OF_ROWS, DEFAULT_NUMBER_OF_ROWS));
+        setOmitTableSpec(settings.getBoolean(CFG_OMIT_TABLE_SPEC, DEFAULT_OMIT_TABLE_SPEC));
         String jsonString = settings.getString(m_templateTableKey, ContainerTableDefaultJsonStructure.asString());
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
@@ -220,15 +233,15 @@ final public class ContainerTemplateTableConfiguration {
      * @return the updated configuration
      */
     public ContainerTemplateTableConfiguration loadInDialog(final NodeSettingsRO settings) {
-        setUseEntireTable(settings.getBoolean("useEntireTable", DEFAULT_USE_ENTIRE_TABLE));
-        setNumberOfRows(settings.getInt("numberOfRows", DEFAULT_NUMBER_OF_ROWS));
-        setOmitTableSpec(settings.getBoolean("omitTableSpec", DEFAULT_OMIT_TABLE_SPEC));
+        setUseEntireTable(settings.getBoolean(CFG_USE_ENTIRE_TABLE, DEFAULT_USE_ENTIRE_TABLE));
+        setNumberOfRows(settings.getInt(CFG_NUMBER_OF_ROWS, DEFAULT_NUMBER_OF_ROWS));
+        setOmitTableSpec(settings.getBoolean(CFG_OMIT_TABLE_SPEC, DEFAULT_OMIT_TABLE_SPEC));
         String jsonString = settings.getString(m_templateTableKey, ContainerTableDefaultJsonStructure.asString());
         try {
             JsonValue jsonValue = JSONUtil.parseJSONValue(jsonString);
             setTemplate(jsonValue);
         } catch (IOException | InvalidSettingsException e) {
-            m_template = DEFAULT_TEMPLATE;
+            m_template = DEFAULT_TEMPLATE_JSON;
         }
         return this;
     }
@@ -240,9 +253,9 @@ final public class ContainerTemplateTableConfiguration {
      * @return this object
      */
     public ContainerTemplateTableConfiguration save(final NodeSettingsWO settings) {
-        settings.addBoolean("useEntireTable", m_useEntireTable);
-        settings.addInt("numberOfRows", m_numberOfRows);
-        settings.addBoolean("omitTableSpec", m_omitTableSpec);
+        settings.addBoolean(CFG_USE_ENTIRE_TABLE, m_useEntireTable);
+        settings.addInt(CFG_NUMBER_OF_ROWS, m_numberOfRows);
+        settings.addBoolean(CFG_OMIT_TABLE_SPEC, m_omitTableSpec);
         if (m_template != null ) {
             settings.addString(m_templateTableKey, JSONUtil.toPrettyJSONString(m_template));
         }
