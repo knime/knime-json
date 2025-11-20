@@ -22,7 +22,7 @@ Export-Package: org.knime.core.data.json,
  org.knime.json.node.util;x-internal:=true,
  org.knime.json.util
 Require-Bundle: org.knime.workbench.repository;bundle-version="[5.9.0,6.0.0)",
- json-path;bundle-version="[2.9.0,3.0.0)",
+ json-path;bundle-version="[2.10.0,3.0.0)",
  org.knime.core.util;bundle-version="[6.9.0,7.0.0)",
  org.knime.core;bundle-version="[5.9.0,6.0.0)",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.5.2,3.0.0)",
