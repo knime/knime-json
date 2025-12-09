@@ -395,11 +395,20 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
      * @return The {@link Pair} of {@link OutputType} and the depth of nesting.
      * @throws UnsupportedOperationException Not supported column type.
      */
-    private Pair<OutputType, Integer> outputType(final DataType type, final int depth) {
-        if (type.isCollectionType()) {
+    private static Pair<OutputType, Integer> outputType(final DataType type, final int depth) {
+        if (type.isCollectionType() && !type.isMissingValueType()) {
+            // make sure that the element type is non-null here
             return outputType(type.getCollectionElementType(), depth + 1);
         }
-        OutputType oType;
+        final var oType = findCompatibleOutputType(type);
+        if (type.isMissingValueType() || oType == null) {
+            throw new UnsupportedOperationException("Not supported type: " + type);
+        }
+        return Pair.create(oType, depth);
+    }
+
+    private static OutputType findCompatibleOutputType(final DataType type) {
+        OutputType oType = null;
         if (type.isCompatible(BooleanValue.class)) {
             oType = OutputType.Boolean;
         } else if (type.isCompatible(IntValue.class)) {
@@ -416,9 +425,8 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
             oType = OutputType.Base64;
         } else if (type.isCompatible(BinaryObjectDataValue.class)) {
             oType = OutputType.Base64;
-        } else {
-            throw new UnsupportedOperationException("Not supported type: " + type);
         }
-        return Pair.create(oType, depth);
+        return oType;
     }
+
 }
