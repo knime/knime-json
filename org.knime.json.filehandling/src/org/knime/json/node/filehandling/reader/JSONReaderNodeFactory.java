@@ -48,13 +48,28 @@
  */
 package org.knime.json.node.filehandling.reader;
 
+import static org.knime.node.impl.description.PortDescription.dynamicPort;
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCell;
+import org.knime.core.node.NodeDescription;
+import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.context.NodeCreationConfiguration;
 import org.knime.core.node.context.url.URLConfiguration;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
 import org.knime.filehandling.core.connections.FSLocationUtil;
 import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.defaultnodesettings.EnumConfig;
@@ -71,13 +86,19 @@ import org.knime.filehandling.core.node.table.reader.type.hierarchy.TreeTypeHier
 import org.knime.filehandling.core.node.table.reader.type.hierarchy.TypeHierarchy;
 import org.knime.filehandling.core.node.table.reader.type.hierarchy.TypeTester;
 import org.knime.json.node.filehandling.reader.api.JSONReadAdapterFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * Node factory for the JSON reader node.
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
+ * @author Paul Baernreuther, KNIME GmbH, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<JSONReaderConfig, DataType, DataValue> {
+@SuppressWarnings("restriction")
+public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<JSONReaderConfig, DataType, DataValue>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     private static final TypeHierarchy<DataType, DataType> TYPE_HIERARCHY =
         TreeTypeHierarchy.builder(createTypeTester(JSONCell.TYPE)).build();
@@ -89,7 +110,8 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
     @Override
     protected MultiTableReadFactory<FSPath, JSONReaderConfig, DataType>
         createMultiTableReadFactory(final GenericTableReader<FSPath, JSONReaderConfig, DataType, DataValue> reader) {
-        final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiTableReadFactory = super.createMultiTableReadFactory(reader);
+        final MultiTableReadFactory<FSPath, JSONReaderConfig, DataType> multiTableReadFactory =
+            super.createMultiTableReadFactory(reader);
         return new JSONMultiTableReadFactory(multiTableReadFactory);
     }
 
@@ -115,8 +137,7 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
             EnumConfig.create(FilterMode.FILE, FilterMode.FILES_IN_FOLDERS));
         final Optional<? extends URLConfiguration> urlConfig = nodeCreationConfig.getURLConfig();
         if (urlConfig.isPresent()) {
-            settingsModel
-                .setLocation(FSLocationUtil.createFromURL(urlConfig.get().getUrl().toString()));
+            settingsModel.setLocation(FSLocationUtil.createFromURL(urlConfig.get().getUrl().toString()));
         }
         return settingsModel;
     }
@@ -139,6 +160,66 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
     @Override
     protected JSONMultiTableReadConfig createConfig(final NodeCreationConfiguration nodeCreationConfig) {
         return new JSONMultiTableReadConfig();
+    }
+
+    private static final String NODE_NAME = "JSON Reader";
+
+    private static final String NODE_ICON = "./jsonreader.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            Reads .json files to JSON values.
+            """;
+
+    private static final String FULL_DESCRIPTION =
+        """
+                <p> This node reads the .json file and parses it as JSON value. </p> <p> <i>This node can access a
+                    variety of different</i> <a
+                    href="https://docs.knime.com/2021-06/analytics_platform_file_handling_guide/index.html#analytics-platform-file-systems"><i>file
+                    systems.</i></a> <i>More information about file handling in KNIME can be found in the official</i> <a
+                    href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html"><i>File Handling
+                    Guide.</i></a> </p>
+                """;
+
+    private static final List<PortDescription> INPUT_PORTS =
+        List.of(dynamicPort("File System Connection", "File system connection", """
+                The file system connection.
+                """));
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(fixedPort("JSON table", """
+            Table with the read JSON values
+            """));
+
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, JSONReaderNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription( //
+            NODE_NAME, //
+            NODE_ICON, //
+            INPUT_PORTS, //
+            OUTPUT_PORTS, //
+            SHORT_DESCRIPTION, //
+            FULL_DESCRIPTION, //
+            List.of(), //
+            JSONReaderNodeParameters.class, //
+            null, //
+            NodeType.Source, //
+            List.of(), //
+            null //
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONReaderNodeParameters.class));
     }
 
 }
