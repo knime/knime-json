@@ -78,38 +78,38 @@ enum JSONReaderMultiTableReadConfigSerializer
 
     private static final String KEY = "json_reader";
 
-    private static final String CFG_DEFAULT_COLUMN_NAME = "json";
+    static final String DEFAULT_COLUMN_NAME = "json";
 
-    private static final String CFG_COLUMN_NAME = "column_name";
+    static final String CFG_COLUMN_NAME = "column_name";
 
     /**
      * remove the internal suffix after enabling autodetect
      */
-    private static final String CFG_READ_MODE = "read_mode" + SettingsModel.CFGKEY_INTERNAL;
+    static final String CFG_READ_MODE = "read_mode" + SettingsModel.CFGKEY_INTERNAL;
 
-    private static final String CFG_ALLOW_COMMENTS = "allow_comments";
+    static final String CFG_ALLOW_COMMENTS = "allow_comments";
 
-    private static final String CFG_USE_PATH = "use_path";
+    static final String CFG_USE_PATH = "use_path";
 
-    private static final String CFG_JSON_PATH = "json_path";
+    static final String CFG_JSON_PATH = "json_path";
 
-    private static final String CFG_FAIL_IF_NOT_FOUND = "fail_if_not_found";
+    static final String CFG_FAIL_IF_NOT_FOUND = "fail_if_not_found";
 
-    private static final String CFG_DEFAULT_JSON_PATH = "$";
+    static final String DEFAULT_JSON_PATH = "$";
 
-    private static final String CFG_LIMIT_ROWS_TAB = "limit_rows";
+    static final String CFG_LIMIT_ROWS_TAB = "limit_rows";
 
-    private static final String CFG_MAX_ROWS = "max_rows";
+    static final String CFG_MAX_ROWS = "max_rows";
 
-    private static final String CFG_LIMIT_DATA_ROWS = "limit_data_rows";
+    static final String CFG_LIMIT_DATA_ROWS = "limit_data_rows";
 
-    private static final String CFG_NUMBER_OF_ROWS_TO_SKIP = "number_of_rows_to_skip";
+    static final String CFG_NUMBER_OF_ROWS_TO_SKIP = "number_of_rows_to_skip";
 
-    private static final String CFG_SKIP_DATA_ROWS = "skip_data_rows";
+    static final String CFG_SKIP_DATA_ROWS = "skip_data_rows";
 
-    private static final String CFG_APPEND_PATH_COLUMN = "append_path_column" + SettingsModel.CFGKEY_INTERNAL;
+    static final String CFG_APPEND_PATH_COLUMN = "append_path_column" + SettingsModel.CFGKEY_INTERNAL;
 
-    private static final String CFG_PATH_COLUMN_NAME = "path_column_name" + SettingsModel.CFGKEY_INTERNAL;
+    static final String CFG_PATH_COLUMN_NAME = "path_column_name" + SettingsModel.CFGKEY_INTERNAL;
 
     @Override
     public ConfigID createFromSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -155,12 +155,12 @@ enum JSONReaderMultiTableReadConfigSerializer
         tc.setLimitRowsForSpec(false);
         tc.setUseColumnHeaderIdx(false);
         final JSONReaderConfig jsonReaderCfg = config.getReaderSpecificConfig();
-        jsonReaderCfg.setColumnName(settings.getString(CFG_COLUMN_NAME, CFG_DEFAULT_COLUMN_NAME));
+        jsonReaderCfg.setColumnName(settings.getString(CFG_COLUMN_NAME, DEFAULT_COLUMN_NAME));
         jsonReaderCfg
             .setJsonReadMode(JSONReadMode.valueOf(settings.getString(CFG_READ_MODE, JSONReadMode.LEGACY.name())));
         jsonReaderCfg.setAllowComments(settings.getBoolean(CFG_ALLOW_COMMENTS, false));
         jsonReaderCfg.setFailIfNotFound(settings.getBoolean(CFG_FAIL_IF_NOT_FOUND, false));
-        jsonReaderCfg.setJSONPath(settings.getString(CFG_JSON_PATH, CFG_DEFAULT_JSON_PATH));
+        jsonReaderCfg.setJSONPath(settings.getString(CFG_JSON_PATH, DEFAULT_JSON_PATH));
         jsonReaderCfg.setUseJSONPath(settings.getBoolean(CFG_USE_PATH, false));
 
         config.setAppendItemIdentifierColumn(
