@@ -327,6 +327,10 @@ final class ContainerVariableInputNodeModel2 extends NodeModel implements InputN
         ContainerNodeSharedConfiguration.validateSettings(settings);
         m_configuration.loadInModel(settings);
         m_variableSelection.validateSettings(settings);
+        if (settings.getBoolean("performNewValidation", false)) {
+            // only perform new validation if explicitly requested (to not break old workflows)
+            SettingsModelVariables.checkSettings(settings);
+        }
     }
 
     /**

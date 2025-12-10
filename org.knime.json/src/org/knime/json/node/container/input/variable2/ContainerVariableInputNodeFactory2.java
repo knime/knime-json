@@ -48,57 +48,125 @@
  */
 package org.knime.json.node.container.input.variable2;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.ExternalResource;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * Factory for the Container Input (Variable) node.
  *
  * @author Jannik Löscher, KNIME GmbH, Konstanz, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  * @since 4.4
  */
-public final class ContainerVariableInputNodeFactory2 extends NodeFactory<ContainerVariableInputNodeModel2> {
+@SuppressWarnings("restriction")
+public final class ContainerVariableInputNodeFactory2 extends NodeFactory<ContainerVariableInputNodeModel2>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ContainerVariableInputNodeModel2 createNodeModel() {
         return new ContainerVariableInputNodeModel2();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<ContainerVariableInputNodeModel2> createNodeView(final int viewIndex,
         final ContainerVariableInputNodeModel2 nodeModel) {
         throw new UnsupportedOperationException("No views! " + viewIndex);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private static final String NODE_NAME = "Container Input (Variable)";
+    private static final String NODE_ICON = "./service-in.png";
+    private static final String SHORT_DESCRIPTION = """
+            Injects flow variables optionally defined by a specification to the workflow.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            This node receives flow variables from an external caller (i.e. the Call Workflow (Table Based) node or
+                an external REST client) and makes them available to the workflow. A configured parameter makes the
+                <i>Container Input (Variable)</i> visible from the external caller and enables the external caller to
+                send the variables to the <i>Container Input (Variable)</i> node.<br /> <br /> If no variables are send
+                to this node and template variables are defined, their value will be exposed to the workflow.
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Any input variables", """
+                An optional input that is directly forwarded to the output of the node, unless overwritten by supplying
+                variables via the REST API.
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("The injected variables", """
+                The injected variables, default values of the template variables if no variables have been injected.
+                """)
+    );
+    private static final List<ExternalResource> LINKS = List.of(
+         new ExternalResource("https://docs.knime.com/latest/analytics_platform_workflow_invocation_guide/index.html"
+                 + "#workflow-invocation-nodes", "KNIME Workflow Invocation (external clients)")
+    );
+
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new ContainerVariableInputNodeDialog2();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.10
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, ContainerVariableInputNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            LINKS,
+            ContainerVariableInputNodeParameters.class,
+            null,
+            NodeType.Container,
+            List.of(),
+            null
+        );
+    }
+
+    /**
+     * @since 5.10
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, ContainerVariableInputNodeParameters.class));
     }
 
 }

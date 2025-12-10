@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.knime.core.node.InvalidSettingsException;
@@ -71,6 +72,7 @@ import org.knime.core.node.workflow.FlowVariable;
 import org.knime.core.node.workflow.VariableType;
 import org.knime.core.node.workflow.VariableTypeRegistry;
 import org.knime.core.util.Pair;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * A representation of the variables set by the user. The state of this table is always valid (except for unset (empty)
@@ -128,14 +130,19 @@ public final class SettingsModelVariables extends SettingsModel {
      */
     public enum Type {
             /** The representation of {@link org.knime.core.node.workflow.VariableType.StringType}. */
+            @Label(value = "String")
             STRING(VariableType.StringType.INSTANCE, "str", ""),
             /** The representation of {@link org.knime.core.node.workflow.VariableType.IntType}. */
+            @Label(value = "Integer")
             INTEGER(VariableType.IntType.INSTANCE, "int", "0"),
             /** The representation of {@link org.knime.core.node.workflow.VariableType.LongType}. */
+            @Label(value = "Long")
             LONG(VariableType.LongType.INSTANCE, "long", "0"),
             /** The representation of {@link org.knime.core.node.workflow.VariableType.DoubleType}. */
+            @Label(value = "Double")
             DOUBLE(VariableType.DoubleType.INSTANCE, "double", "0.0"),
             /** The representation of {@link org.knime.core.node.workflow.VariableType.BooleanType}. */
+            @Label(value = "Boolean")
             BOOLEAN(VariableType.BooleanType.INSTANCE, "bool", "false");
 
         /** The associated variable type. */
@@ -209,7 +216,7 @@ public final class SettingsModelVariables extends SettingsModel {
          * @param type the {@link VariableType} of the type
          * @return the type with that {@link VariableType} or <code>null</code> if no such type was found.
          */
-        static Type getTypeFromVariableType(final VariableType<?> type) {
+        public static Type getTypeFromVariableType(final VariableType<?> type) {
             for (Type t : Type.values()) {
                 if (t.m_type.equals(type)) {
                     return t;
@@ -232,6 +239,29 @@ public final class SettingsModelVariables extends SettingsModel {
          */
         public static VariableType<?>[] getAllTypes() { // NOSONAR: cannot be expressed in any other way without causing an error
             return VariableTypeRegistry.getInstance().getAllTypes();
+        }
+
+        /**
+         * Retrieves the {@link Type} given it's string representation.
+         *
+         * @param value the string representation
+         * @return {@link Type}
+         * @throws InvalidSettingsException if the string representation is invalid
+         */
+        public static Type getFromStringRepresentation(final String value) throws InvalidSettingsException {
+            for (final Type type : values()) {
+                if (type.getStrRepresentation().equals(value)) {
+                    return type;
+                }
+            }
+            throw new InvalidSettingsException(createInvalidSettingsExceptionMessage(value));
+        }
+
+        private static String createInvalidSettingsExceptionMessage(final String name) {
+            var values = List.of(Type.STRING.getStrRepresentation(), Type.INTEGER.getStrRepresentation(),
+                Type.LONG.getStrRepresentation(), Type.DOUBLE.getStrRepresentation(),
+                Type.BOOLEAN.getStrRepresentation()).stream().collect(Collectors.joining(", "));
+            return String.format("Invalid value '%s'. Possible values: %s", name, values);
         }
     }
 
@@ -651,9 +681,20 @@ public final class SettingsModelVariables extends SettingsModel {
      */
     @Override
     protected void validateSettingsForModel(final NodeSettingsRO settings) throws InvalidSettingsException {
+        checkSettings(settings);
+    }
+
+    /**
+     * Checks whether the given settings are valid.
+     *
+     * @param settings the settings to be checked
+     * @throws InvalidSettingsException if the settings could not be parsed
+     */
+    public static void checkSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         final NodeSettingsRO tableSettings = settings.getNodeSettings(SETTINGS_KEY);
+        // backwards compatibility
         final String[] supportedTypes = tableSettings.getStringArray(SETTINGS_SUPPORTED_TYPES,
-            Arrays.stream(Type.values()).map(Type::getStrRepresentation).toArray(String[]::new)); // backwards compatibility
+            Arrays.stream(Type.values()).map(Type::getStrRepresentation).toArray(String[]::new));
         final String[] typeStrings = tableSettings.getStringArray(SETTINGS_COL_TYPE);
         final String[] nameStrings = tableSettings.getStringArray(SETTINGS_COL_NAME);
         final String[] valStrings = tableSettings.getStringArray(SETTINGS_COL_VAL);
