@@ -30,6 +30,7 @@
 		<module>org.knime.update.json</module>
 		<module>org.knime.json.tests</module>
 		<module>org.knime.json.filehandling </module>
+		<module>org.knime.json.filehandling.tests</module>
 	</modules>
 
 	<repositories>
