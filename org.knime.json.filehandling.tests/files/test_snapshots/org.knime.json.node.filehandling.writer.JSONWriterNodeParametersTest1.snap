@@ -1,0 +1,351 @@
+{
+  "data" : {
+    "model" : {
+      "outputLocation" : {
+        "file" : {
+          "path" : {
+            "fsCategory" : "LOCAL",
+            "path" : "/tmp/json_output",
+            "timeout" : 10000,
+            "context" : {
+              "fsToString" : "(LOCAL, /tmp/json_output)"
+            }
+          }
+        },
+        "createMissingFolders" : false,
+        "overwritePolicy" : "fail"
+      },
+      "jsonColumn" : "json_col",
+      "removeJSONColumn" : false,
+      "compressJSONFiles" : false,
+      "fileGenerationMode" : "GENERATE",
+      "fileNamePattern" : "File_?",
+      "fileNameColumn" : {
+        "regularChoice" : "filename_col"
+      }
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "compressJSONFiles" : {
+            "type" : "boolean",
+            "title" : "Compress JSON files (gzip)",
+            "description" : "If checked, the JSON files will be compressed to gzip.",
+            "default" : false
+          },
+          "fileGenerationMode" : {
+            "oneOf" : [ {
+              "const" : "GENERATE",
+              "title" : "Generate"
+            }, {
+              "const" : "FROM_COLUMN",
+              "title" : "From column"
+            } ],
+            "title" : "File generation mode",
+            "description" : "Select how output file names should be determined.\n<ul>\n<li><b>Generate</b>: Generate file names using a pattern with an incrementing counter.</li>\n<li><b>From column</b>: Use file names from a selected column.</li>\n</ul>",
+            "default" : "GENERATE"
+          },
+          "fileNameColumn" : {
+            "type" : "object",
+            "properties" : {
+              "regularChoice" : {
+                "type" : "string"
+              },
+              "specialChoice" : {
+                "oneOf" : [ {
+                  "const" : "ROW_ID",
+                  "title" : "RowID"
+                } ]
+              }
+            },
+            "title" : "File name column",
+            "description" : "Column containing the file names under which the corresponding JSON files will be stored.",
+            "default" : {
+              "specialChoice" : "ROW_ID"
+            }
+          },
+          "fileNamePattern" : {
+            "type" : "string",
+            "title" : "File names",
+            "description" : "The file names will be generated using the provided pattern. The pattern must contain a single \"?\" symbol. This symbol will, during execution, be replaced by an incrementing counter to make the filenames unique. The file extension will be detected automatically and must not be specified.",
+            "default" : "File_?"
+          },
+          "jsonColumn" : {
+            "type" : "string",
+            "title" : "JSON column",
+            "description" : "Column containing the JSON to write.",
+            "default" : ""
+          },
+          "outputLocation" : {
+            "type" : "object",
+            "properties" : {
+              "createMissingFolders" : {
+                "type" : "boolean",
+                "title" : "Create missing folders",
+                "description" : "If enabled, missing folders in the specified path will be created automatically.",
+                "default" : false
+              },
+              "file" : {
+                "type" : "object",
+                "properties" : {
+                  "path" : {
+                    "type" : "object",
+                    "default" : {
+                      "fsCategory" : "LOCAL",
+                      "path" : "",
+                      "timeout" : 10000,
+                      "context" : {
+                        "fsToString" : "(LOCAL, )"
+                      }
+                    }
+                  }
+                },
+                "title" : "Folder",
+                "description" : "The folder to write the JSON files to.",
+                "default" : {
+                  "path" : {
+                    "fsCategory" : "LOCAL",
+                    "path" : "",
+                    "timeout" : 10000,
+                    "context" : {
+                      "fsToString" : "(LOCAL, )"
+                    }
+                  }
+                }
+              },
+              "overwritePolicy" : {
+                "oneOf" : [ {
+                  "const" : "fail",
+                  "title" : "Fail"
+                }, {
+                  "const" : "overwrite",
+                  "title" : "Overwrite"
+                }, {
+                  "const" : "ignore",
+                  "title" : "Ignore"
+                } ],
+                "title" : "If exists",
+                "description" : "Specify the behavior of the node in case the output file already exists.<ul><li><b>Fail</b>: Will issue an error during the node's execution (to prevent unintentional overwrite).</li><li><b>Overwrite</b>: Will replace any existing file.</li><li><b>Ignore</b>: Will ignore if a file already exists and continues the copying process.</li></ul>",
+                "default" : "overwrite"
+              }
+            },
+            "default" : {
+              "file" : {
+                "path" : {
+                  "fsCategory" : "LOCAL",
+                  "path" : "",
+                  "timeout" : 10000,
+                  "context" : {
+                    "fsToString" : "(LOCAL, )"
+                  }
+                }
+              },
+              "createMissingFolders" : false,
+              "overwritePolicy" : "overwrite"
+            }
+          },
+          "removeJSONColumn" : {
+            "type" : "boolean",
+            "title" : "Remove JSON column",
+            "description" : "If checked, the column containing the JSON is removed from the output table.",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "label" : "JSON",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/jsonColumn",
+        "options" : {
+          "format" : "dropDown"
+        },
+        "providedOptions" : [ "possibleValues" ]
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/removeJSONColumn",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/compressJSONFiles",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    }, {
+      "label" : "File Names",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/fileGenerationMode",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/fileNamePattern",
+        "options" : {
+          "validation" : {
+            "pattern" : {
+              "errorMessage" : "The pattern must contain a single '?' symbol.",
+              "parameters" : {
+                "pattern" : "[^?/\\00]*\\?[^?/\\00]*"
+              }
+            }
+          }
+        },
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/fileGenerationMode",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "GENERATE"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/fileNameColumn",
+        "options" : {
+          "format" : "singleSelection",
+          "specialChoices" : [ {
+            "id" : "ROW_ID",
+            "text" : "RowID"
+          } ]
+        },
+        "providedOptions" : [ "possibleValues" ],
+        "rule" : {
+          "effect" : "HIDE",
+          "condition" : {
+            "scope" : "#/properties/model/properties/fileGenerationMode",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "GENERATE"
+              } ]
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Output Location",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputLocation/properties/file",
+        "options" : {
+          "fileSystems" : [ "LOCAL", "SPACE", "EMBEDDED", "CONNECTED" ],
+          "isLocal" : true,
+          "isWriter" : true,
+          "selectionMode" : "FOLDER",
+          "spaceFSOptions" : {
+            "mountId" : "Local space"
+          },
+          "format" : "fileChooser"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputLocation/properties/createMissingFolders",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputLocation/properties/overwritePolicy",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "outputLocation" : {
+            "type" : "object",
+            "properties" : {
+              "file" : {
+                "configPaths" : [ [ "path" ] ]
+              },
+              "createMissingFolders" : {
+                "configKey" : "create_missing_folders"
+              },
+              "overwritePolicy" : {
+                "configKey" : "if_path_exists"
+              }
+            },
+            "configKey" : "output_location"
+          },
+          "jsonColumn" : {
+            "configKey" : "json_column"
+          },
+          "removeJSONColumn" : {
+            "configKey" : "remove_json_column"
+          },
+          "compressJSONFiles" : {
+            "configKey" : "compress_json_files"
+          },
+          "fileGenerationMode" : {
+            "configPaths" : [ [ "generate_file_names" ] ]
+          },
+          "fileNamePattern" : {
+            "configKey" : "filename_pattern"
+          },
+          "fileNameColumn" : {
+            "configPaths" : [ [ "filename_column", "useRowID" ], [ "filename_column", "columnName" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/fileNameColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json_col",
+        "text" : "json_col",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/jsonColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json_col",
+        "text" : "json_col",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/fileNameColumn" ]
+  } ]
+}
