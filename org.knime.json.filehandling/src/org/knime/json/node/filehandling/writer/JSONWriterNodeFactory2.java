@@ -106,9 +106,16 @@ public class JSONWriterNodeFactory2 extends AbstractMultiTableWriterNodeFactory<
     private static final String SHORT_DESCRIPTION = "Writes JSON Documents to a directory.";
 
     private static final String FULL_DESCRIPTION = """
-            The node takes the JSON documents of the selected column and writes them, each in a separate file,
-            into a directory. It will append the paths of the written files to the input table as well as the
-            corresponding write status.""";
+            The node takes the JSON documents of the selected column and writes
+            them, each in a separate file, into a directory. It will append the paths of the written files to the
+            input table as well as the corresponding write status (created, unmodified, overwritten).
+            
+            This node can access a variety of different
+            <a href="https://docs.knime.com/2021-06/analytics_platform_file_handling_guide/index.html#analytics-platform-file-systems">
+            file systems.</a>
+            More information about file handling in KNIME can be found in the official
+            <a href="https://docs.knime.com/latest/analytics_platform_file_handling_guide/index.html">
+            File Handling Guide.</a>""";
 
     private static final List<PortDescription> INPUT_PORTS =
         List.of(fixedPort("Data Table", "Input table containing at least one JSON column."),
