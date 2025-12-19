@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.knime.base.node.io.filehandling.webui.reader2.MultiFileSelectionParameters;
 import org.knime.core.data.DataType;
 import org.knime.core.data.DataValue;
 import org.knime.core.data.json.JSONCell;
@@ -70,7 +71,6 @@ import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
 import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
 import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
 import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
-import org.knime.filehandling.core.connections.FSLocationUtil;
 import org.knime.filehandling.core.connections.FSPath;
 import org.knime.filehandling.core.defaultnodesettings.EnumConfig;
 import org.knime.filehandling.core.defaultnodesettings.filechooser.reader.SettingsModelReaderFileChooser;
@@ -137,7 +137,7 @@ public final class JSONReaderNodeFactory extends AbstractTableReaderNodeFactory<
             EnumConfig.create(FilterMode.FILE, FilterMode.FILES_IN_FOLDERS));
         final Optional<? extends URLConfiguration> urlConfig = nodeCreationConfig.getURLConfig();
         if (urlConfig.isPresent()) {
-            settingsModel.setLocation(FSLocationUtil.createFromURL(urlConfig.get().getUrl().toString()));
+            settingsModel.setLocation(MultiFileSelectionParameters.urlToSupportedFSLocation(urlConfig.get().getUrl()));
         }
         return settingsModel;
     }
