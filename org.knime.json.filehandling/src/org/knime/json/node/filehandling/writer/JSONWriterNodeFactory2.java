@@ -48,16 +48,38 @@
  */
 package org.knime.json.node.filehandling.writer;
 
+import static org.knime.node.impl.description.PortDescription.dynamicPort;
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
 import org.knime.core.data.json.JSONValue;
+import org.knime.core.node.NodeDescription;
+import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.context.ports.PortsConfiguration;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
 import org.knime.filehandling.core.node.table.writer.AbstractMultiTableWriterNodeFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  *
  * @author Moditha Hewasinghage, KNIME GmbH, Berlin, Germany
+ * @author Jochen Reißinger, TNG Technology Consulting GmbH
+ * @author AI Migration Pipeline v1.2
  */
+@SuppressWarnings("restriction")
 public class JSONWriterNodeFactory2 extends AbstractMultiTableWriterNodeFactory<JSONValue, //
-        JSONMultiTableWriterNodeConfig, JSONMultiTableWriterNodeModel, JSONMultiTableWriterNodeDialog> {
+        JSONMultiTableWriterNodeConfig, JSONMultiTableWriterNodeModel, JSONMultiTableWriterNodeDialog> //
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     @Override
     protected JSONMultiTableWriterNodeConfig getNodeConfig(final PortsConfiguration portConfig, final String portGroupName) {
@@ -74,5 +96,53 @@ public class JSONWriterNodeFactory2 extends AbstractMultiTableWriterNodeFactory<
     protected JSONMultiTableWriterNodeDialog getDialog(final JSONMultiTableWriterNodeConfig nodeConfig,
         final int dataTableInputIdx) {
         return new JSONMultiTableWriterNodeDialog(nodeConfig, dataTableInputIdx);
+    }
+    private static final String NODE_NAME = "JSON Writer";
+    private static final String NODE_ICON = "./jsonwriter.png";
+    private static final String SHORT_DESCRIPTION = "Writes JSON Documents to a directory.";
+    private static final String FULL_DESCRIPTION = """
+            The node takes the JSON documents of the selected column and writes them, each in a separate file,
+            into a directory. It will append the paths of the written files to the input table as well as the
+            corresponding write status.""";
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+        fixedPort("Data Table", "Input table containing at least one JSON column."),
+        dynamicPort(CONNECTION_INPUT_PORT_GRP_NAME, CONNECTION_INPUT_PORT_GRP_NAME, "The file system connection.")
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(fixedPort("Output Table",
+        "Input table with an additional path column that contains the paths of the written files, "
+        + "as well as another String column\n which holds the write status (created, unmodified, overwritten)."));
+
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, JSONWriterNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            JSONWriterNodeParameters.class,
+            null,
+            NodeType.Sink,
+            List.of(),
+            null
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONWriterNodeParameters.class));
     }
 }
