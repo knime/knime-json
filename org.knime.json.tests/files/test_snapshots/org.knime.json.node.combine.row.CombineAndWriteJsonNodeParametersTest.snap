@@ -1,0 +1,369 @@
+{
+  "data" : {
+    "model" : {
+      "outputFile" : "",
+      "overwriteExistingFile" : "PREVENT",
+      "jsonFormat" : "PRETTY",
+      "objectOrArray" : "Array",
+      "objectKeyColumn" : {
+        "specialChoice" : "ROW_ID"
+      },
+      "jsonStructure" : "NESTED",
+      "rootKey" : "",
+      "keyValuePairs" : [ ]
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "type" : "string",
+            "title" : "JSON column",
+            "description" : "The JSON column providing the values for the resulting JSON."
+          },
+          "invalidSchemeMessage" : {
+            "type" : "object"
+          },
+          "jsonFormat" : {
+            "oneOf" : [ {
+              "const" : "DENSE",
+              "title" : "Dense"
+            }, {
+              "const" : "PRETTY",
+              "title" : "Pretty print"
+            } ],
+            "title" : "Format",
+            "description" : "Format for the resulting JSON.\n<ul>\n<li><b>Dense</b>: No whitespace.</li>\n<li><b>Pretty print</b>: Use multiple lines and indentation.</li>\n</ul>",
+            "default" : "PRETTY"
+          },
+          "jsonStructure" : {
+            "oneOf" : [ {
+              "const" : "NESTED",
+              "title" : "Under root key"
+            }, {
+              "const" : "TOP_LEVEL",
+              "title" : "At top level"
+            } ],
+            "title" : "Place resulting JSON",
+            "description" : "How to structure the resulting JSON output.\n<ul>\n<li><b>Under root key</b>: Place the resulting JSON under a root key alongside optional additional properties.</li>\n<li><b>At top level</b>: Generate resulting JSON as top level object.</li>\n</ul>",
+            "default" : "NESTED"
+          },
+          "keyValuePairs" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "key" : {
+                  "type" : "string",
+                  "title" : "Key",
+                  "description" : "Additional property key.",
+                  "default" : ""
+                },
+                "value" : {
+                  "type" : "string",
+                  "title" : "Value",
+                  "description" : "Additional property value.",
+                  "default" : ""
+                }
+              }
+            },
+            "title" : "Additional properties",
+            "description" : "Additional key/value pairs to add to the root object.",
+            "default" : [ ]
+          },
+          "objectKeyColumn" : {
+            "type" : "object",
+            "properties" : {
+              "regularChoice" : {
+                "type" : "string"
+              },
+              "specialChoice" : {
+                "oneOf" : [ {
+                  "const" : "ROW_ID",
+                  "title" : "RowID"
+                } ]
+              }
+            },
+            "title" : "Object key column",
+            "description" : "Column which provides keys when collecting rows into JSON object.",
+            "default" : {
+              "specialChoice" : "ROW_ID"
+            }
+          },
+          "objectOrArray" : {
+            "oneOf" : [ {
+              "const" : "Array",
+              "title" : "Array"
+            }, {
+              "const" : "Object",
+              "title" : "Object with key"
+            } ],
+            "title" : "Combine rows as",
+            "description" : "Configure how to collect the JSON values.\n<ul>\n<li><b>Array</b>: The rows are collected into a JSON array.</li>\n<li><b>Object with key</b>: The rows become an object within another object with the keys specified by the selected column's values (will fail if there are duplicates).</li>\n</ul>",
+            "default" : "Array"
+          },
+          "outputFile" : {
+            "type" : "string",
+            "title" : "Output file location",
+            "description" : "Location to save the file (can also be a URL).",
+            "default" : ""
+          },
+          "overwriteExistingFile" : {
+            "oneOf" : [ {
+              "const" : "PREVENT",
+              "title" : "Fail"
+            }, {
+              "const" : "OVERWRITE",
+              "title" : "Overwrite file"
+            } ],
+            "title" : "If output file already exists",
+            "description" : "How to handle output file already existing.\n<ul>\n<li><b>Fail</b>: Prevent node from executing.</li>\n<li><b>Overwrite file</b>: Replace the file if it exists.</li>\n</ul>",
+            "default" : "PREVENT"
+          },
+          "rootKey" : {
+            "type" : "string",
+            "title" : "Root object key",
+            "description" : "Key under which to place the resulting JSON.",
+            "default" : ""
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/inputColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "label" : "Output File",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/outputFile",
+        "options" : {
+          "fileExtension" : "json",
+          "fileSystem" : "LOCAL",
+          "isLocal" : true,
+          "isWriter" : true,
+          "format" : "stringFileChooser"
+        }
+      }, {
+        "type" : "Control",
+        "id" : "#/properties/model/properties/invalidSchemeMessage",
+        "options" : {
+          "format" : "textMessage"
+        },
+        "providedOptions" : [ "message" ]
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/overwriteExistingFile",
+        "options" : {
+          "format" : "valueSwitch"
+        },
+        "rule" : {
+          "effect" : "HIDE",
+          "condition" : {
+            "type" : "AND",
+            "conditions" : [ {
+              "scope" : "#/properties/model/properties/outputFile",
+              "schema" : {
+                "pattern" : "^[a-zA-Z][a-zA-Z0-9+.-]*://\\S+$"
+              }
+            }, {
+              "scope" : "#/properties/model/properties/outputFile",
+              "schema" : {
+                "not" : {
+                  "pattern" : "^(knime|file)://\\S+$"
+                }
+              }
+            } ]
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/jsonFormat",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      } ]
+    }, {
+      "label" : "JSON Structure",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/objectOrArray",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/objectKeyColumn",
+        "options" : {
+          "format" : "singleSelection",
+          "specialChoices" : [ {
+            "id" : "ROW_ID",
+            "text" : "RowID"
+          } ]
+        },
+        "providedOptions" : [ "possibleValues" ],
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/objectOrArray",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "Object"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/jsonStructure",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/rootKey",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/jsonStructure",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "NESTED"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/keyValuePairs",
+        "options" : {
+          "detail" : [ {
+            "type" : "HorizontalLayout",
+            "elements" : [ {
+              "type" : "Control",
+              "scope" : "#/properties/key"
+            }, {
+              "type" : "Control",
+              "scope" : "#/properties/value"
+            } ]
+          } ],
+          "addButtonText" : "Add property",
+          "elementLayout" : "HORIZONTAL_SINGLE_LINE"
+        },
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/jsonStructure",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "NESTED"
+              } ]
+            }
+          }
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : { },
+          "outputFile" : {
+            "configKey" : "file"
+          },
+          "invalidSchemeMessage" : { },
+          "overwriteExistingFile" : {
+            "configPaths" : [ [ "overwriteExistingFile" ] ]
+          },
+          "jsonFormat" : {
+            "configPaths" : [ [ "prettyPrint" ] ]
+          },
+          "objectOrArray" : { },
+          "objectKeyColumn" : {
+            "configPaths" : [ [ "objectKeyRowID" ], [ "objectKeyColumn" ] ]
+          },
+          "jsonStructure" : {
+            "configPaths" : [ [ "addRootKey" ] ]
+          },
+          "rootKey" : { },
+          "keyValuePairs" : {
+            "configPaths" : [ [ "keys" ], [ "values" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/inputColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      }, {
+        "id" : "other_column",
+        "text" : "other_column",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/objectKeyColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "string_column",
+        "text" : "string_column",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  }, {
+    "id" : "#/properties/model/properties/invalidSchemeMessage",
+    "providedOptionName" : "message",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "title" : "Invalid output file name",
+        "description" : "The output file name must not be blank.",
+        "type" : "INFO"
+      }
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/inputColumn" ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/outputFile"
+    },
+    "dependencies" : [ "#/properties/model/properties/outputFile" ]
+  } ]
+}
