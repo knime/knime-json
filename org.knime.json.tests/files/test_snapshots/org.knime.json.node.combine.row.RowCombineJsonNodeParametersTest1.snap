@@ -3,13 +3,13 @@
     "model" : {
       "inputColumn" : "json",
       "newColumn" : "JSON",
-      "rootType" : "ADD_ROOT",
-      "rootKey" : "root",
-      "keyValuePairs" : [ ],
       "collectType" : "Array",
       "objectKeyColumn" : {
         "specialChoice" : "ROW_ID"
-      }
+      },
+      "jsonStructure" : "NESTED",
+      "rootKey" : "root",
+      "keyValuePairs" : [ ]
     }
   },
   "schema" : {
@@ -21,13 +21,13 @@
           "collectType" : {
             "oneOf" : [ {
               "const" : "Array",
-              "title" : "Collect into array"
+              "title" : "Array"
             }, {
               "const" : "Object",
-              "title" : "Collect into object with key"
+              "title" : "Object with key"
             } ],
-            "title" : "Collection type",
-            "description" : "Configure how to collect the JSON values.\n<ul>\n<li><b>Collect into array</b>: The rows are collected to a JSON array.</li>\n<li><b>Collect into object with key</b>: The rows become an object within another object with the keys specified by the selected column's values (will fail if there are duplicates).</li>\n</ul>",
+            "title" : "Combine rows as",
+            "description" : "Configure how to collect the JSON values.\n<ul>\n<li><b>Array</b>: The rows are collected into a JSON array.</li>\n<li><b>Object with key</b>: The rows become an object within another object with the keys specified by the selected column's values (will fail if there are duplicates).</li>\n</ul>",
             "default" : "Array"
           },
           "inputColumn" : {
@@ -35,6 +35,18 @@
             "title" : "JSON column",
             "description" : "The JSON column providing the values for the array.",
             "default" : "json"
+          },
+          "jsonStructure" : {
+            "oneOf" : [ {
+              "const" : "NESTED",
+              "title" : "Under root key"
+            }, {
+              "const" : "TOP_LEVEL",
+              "title" : "At top level"
+            } ],
+            "title" : "Place resulting JSON",
+            "description" : "How to structure the resulting JSON output.\n<ul>\n<li><b>Under root key</b>: Place the resulting JSON under a root key alongside optional additional properties.</li>\n<li><b>At top level</b>: Generate resulting JSON as top level object.</li>\n</ul>",
+            "default" : "NESTED"
           },
           "keyValuePairs" : {
             "type" : "array",
@@ -44,17 +56,19 @@
                 "key" : {
                   "type" : "string",
                   "title" : "Key",
-                  "description" : "The key name."
+                  "description" : "Additional property key.",
+                  "default" : ""
                 },
                 "value" : {
                   "type" : "string",
                   "title" : "Value",
-                  "description" : "The key value."
+                  "description" : "Additional property value.",
+                  "default" : ""
                 }
               }
             },
-            "title" : "Custom key/value pairs",
-            "description" : "Additional key/value pairs to the root object.",
+            "title" : "Additional properties",
+            "description" : "Additional key/value pairs to add to the root object.",
             "default" : [ ]
           },
           "newColumn" : {
@@ -84,21 +98,9 @@
           },
           "rootKey" : {
             "type" : "string",
-            "title" : "Root key",
-            "description" : "Key to the JSON values object or array in the root object.",
+            "title" : "Root object key",
+            "description" : "Key under which to place the resulting JSON.",
             "default" : "root"
-          },
-          "rootType" : {
-            "oneOf" : [ {
-              "const" : "OMIT_ROOT",
-              "title" : "Omit root"
-            }, {
-              "const" : "ADD_ROOT",
-              "title" : "Add root object with key"
-            } ],
-            "title" : "Root configuration",
-            "description" : "Configure how to handle the root object.\n<ul>\n<li><b>Omit root</b>: When selected, only the object or the array is returned (custom key/value pairs are not applicable).</li>\n<li><b>Add root object with key</b>: When selected, the object or the array is added to a root object with the specified key. Custom key/value pairs can also be added to the root object.</li>\n</ul>",
-            "default" : "ADD_ROOT"
           }
         }
       }
@@ -126,67 +128,13 @@
         }
       }
     }, {
-      "label" : "Root",
-      "type" : "Section",
-      "elements" : [ {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/rootType",
-        "options" : {
-          "format" : "radio",
-          "radioLayout" : "vertical"
-        }
-      }, {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/rootKey",
-        "rule" : {
-          "effect" : "SHOW",
-          "condition" : {
-            "scope" : "#/properties/model/properties/rootType",
-            "schema" : {
-              "oneOf" : [ {
-                "const" : "ADD_ROOT"
-              } ]
-            }
-          }
-        }
-      }, {
-        "type" : "Control",
-        "scope" : "#/properties/model/properties/keyValuePairs",
-        "options" : {
-          "detail" : [ {
-            "type" : "HorizontalLayout",
-            "elements" : [ {
-              "type" : "Control",
-              "scope" : "#/properties/key"
-            }, {
-              "type" : "Control",
-              "scope" : "#/properties/value"
-            } ]
-          } ],
-          "addButtonText" : "Add custom key/value pair",
-          "elementLayout" : "HORIZONTAL_SINGLE_LINE"
-        },
-        "rule" : {
-          "effect" : "SHOW",
-          "condition" : {
-            "scope" : "#/properties/model/properties/rootType",
-            "schema" : {
-              "oneOf" : [ {
-                "const" : "ADD_ROOT"
-              } ]
-            }
-          }
-        }
-      } ]
-    }, {
-      "label" : "Object or Array",
+      "label" : "JSON Structure",
       "type" : "Section",
       "elements" : [ {
         "type" : "Control",
         "scope" : "#/properties/model/properties/collectType",
         "options" : {
-          "format" : "radio",
-          "radioLayout" : "vertical"
+          "format" : "valueSwitch"
         }
       }, {
         "type" : "Control",
@@ -210,6 +158,54 @@
             }
           }
         }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/jsonStructure",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/rootKey",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/jsonStructure",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "NESTED"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/keyValuePairs",
+        "options" : {
+          "detail" : [ {
+            "type" : "HorizontalLayout",
+            "elements" : [ {
+              "type" : "Control",
+              "scope" : "#/properties/key"
+            }, {
+              "type" : "Control",
+              "scope" : "#/properties/value"
+            } ]
+          } ],
+          "addButtonText" : "Add property",
+          "elementLayout" : "HORIZONTAL_SINGLE_LINE"
+        },
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/jsonStructure",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "NESTED"
+              } ]
+            }
+          }
+        }
       } ]
     } ]
   },
@@ -225,7 +221,13 @@
           "newColumn" : {
             "configKey" : "newColumn"
           },
-          "rootType" : {
+          "collectType" : {
+            "configKey" : "objectOrArray"
+          },
+          "objectKeyColumn" : {
+            "configPaths" : [ [ "objectKeyRowID" ], [ "objectKeyColumn" ] ]
+          },
+          "jsonStructure" : {
             "configPaths" : [ [ "addRootKey" ] ]
           },
           "rootKey" : {
@@ -233,12 +235,6 @@
           },
           "keyValuePairs" : {
             "configPaths" : [ [ "keys" ], [ "values" ] ]
-          },
-          "collectType" : {
-            "configKey" : "objectOrArray"
-          },
-          "objectKeyColumn" : {
-            "configPaths" : [ [ "objectKeyRowID" ], [ "objectKeyColumn" ] ]
           }
         }
       }

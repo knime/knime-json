@@ -2,6 +2,9 @@
 <config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="test">
     <entry key="inputColumn" type="xstring" value="json"/>
     <entry key="newColumn" type="xstring" value="JSON"/>
+    <entry key="objectOrArray" type="xstring" value="Array"/>
+    <entry key="objectKeyRowID" type="xboolean" value="true"/>
+    <entry key="objectKeyColumn" type="xstring" isnull="true" value=""/>
     <entry key="addRootKey" type="xboolean" value="true"/>
     <entry key="rootKey" type="xstring" value="root"/>
     <config key="keys">
@@ -10,7 +13,4 @@
     <config key="values">
         <entry key="array-size" type="xint" value="0"/>
     </config>
-    <entry key="objectOrArray" type="xstring" value="Array"/>
-    <entry key="objectKeyRowID" type="xboolean" value="true"/>
-    <entry key="objectKeyColumn" type="xstring" isnull="true" value=""/>
 </config>

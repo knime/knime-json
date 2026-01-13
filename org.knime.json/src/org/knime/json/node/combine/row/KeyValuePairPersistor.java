@@ -42,45 +42,50 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   Sep 26, 2025 (magnus): created
  */
 package org.knime.json.node.combine.row;
 
-import org.knime.node.parameters.NodeParameters;
-import org.knime.node.parameters.Widget;
-import org.knime.node.parameters.layout.HorizontalLayout;
-import org.knime.node.parameters.layout.Layout;
-import org.knime.node.parameters.widget.text.TextInputWidget;
+import java.util.Arrays;
+
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.node.parameters.persistence.NodeParametersPersistor;
 
 /**
- * Node parameters for the key/value pair settings in the JSON Row Combiner node dialog.
+ * Key Value Pair Persistor, shared by Node parameters for JSON Row Combiner and Writer
+ * and JSON Row Combiner.
  *
- * @author Magnus Gohm, KNIME AG, Konstanz, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author Tim Crundall, TNG Technology Consulting GmbH
+ * @author AI Migration Pipeline v1.2
  */
-final class KeyValuePairSettings implements NodeParameters {
+final class KeyValuePairPersistor implements NodeParametersPersistor<KeyValuePairSettings[]> {
 
-    public KeyValuePairSettings() {
+    @Override
+    public KeyValuePairSettings[] load(final NodeSettingsRO settings) throws InvalidSettingsException {
+        String[] keys = settings.getStringArray(RowCombineSettings.KEYS, new String[0]);
+        String[] values = settings.getStringArray(RowCombineSettings.VALUES, new String[0]);
+        int numPairs = Math.min(keys.length, values.length);
+        var keyValuePairs = new KeyValuePairSettings[numPairs];
+        for (int i = 0; i < numPairs; i++) {
+            keyValuePairs[i] = new KeyValuePairSettings();
+            keyValuePairs[i].m_key = keys[i];
+            keyValuePairs[i].m_value = values[i];
+        }
+        return keyValuePairs;
     }
 
-    public KeyValuePairSettings(final String key, final String value) {
-        m_key = key;
-        m_value = value;
+    @Override
+    public void save(final KeyValuePairSettings[] obj, final NodeSettingsWO settings) {
+        String[] keys = Arrays.stream(obj).map(kv -> kv.m_key).toArray(String[]::new);
+        String[] values = Arrays.stream(obj).map(kv -> kv.m_value).toArray(String[]::new);
+        settings.addStringArray(RowCombineSettings.KEYS, keys);
+        settings.addStringArray(RowCombineSettings.VALUES, values);
     }
 
-    @HorizontalLayout
-    interface KeyValuePairLayout {
+    @Override
+    public String[][] getConfigPaths() {
+        return new String[][]{{RowCombineSettings.KEYS}, {RowCombineSettings.VALUES}};
     }
-
-    @Layout(KeyValuePairLayout.class)
-    @Widget(title = "Key", description = "Additional property key.")
-    @TextInputWidget
-    String m_key = "";
-
-    @Layout(KeyValuePairLayout.class)
-    @Widget(title = "Value", description = "Additional property value.")
-    @TextInputWidget
-    String m_value = "";
-
 }
