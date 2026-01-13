@@ -66,12 +66,20 @@ import org.knime.node.parameters.widget.choices.Label;
  */
 public class RowCombineSettings {
     enum ObjectOrArray {
-            @Label(value = "Collect into array", description = "The rows are collected to a JSON array.")
+            @Label(value = "Array", description = "The rows are collected into a JSON array.")
             Array,
-            @Label(value = "Collect into object with key",
+            @Label(value = "Object with key",
                 description = "The rows become an object within another object "
                     + "with the keys specified by the selected column's values (will fail if there are duplicates).")
             Object
+    }
+
+    enum JsonStructure {
+        @Label(value = "Under root key",
+            description = "Place the resulting JSON under a root key alongside optional additional properties.")
+        NESTED,
+        @Label(value = "At top level", description = "Generate resulting JSON as top level object.")
+        TOP_LEVEL,
     }
 
     static final String INPUT_COLUMN = "inputColumn";

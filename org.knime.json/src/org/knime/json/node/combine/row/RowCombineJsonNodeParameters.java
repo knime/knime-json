@@ -48,8 +48,6 @@ package org.knime.json.node.combine.row;
 
 import static org.knime.core.webui.node.dialog.defaultdialog.setting.singleselection.RowIDChoice.ROW_ID;
 
-import java.util.Arrays;
-
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.NominalValue;
 import org.knime.core.data.json.JSONValue;
@@ -58,13 +56,13 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.webui.node.dialog.defaultdialog.setting.singleselection.RowIDChoice;
 import org.knime.core.webui.node.dialog.defaultdialog.setting.singleselection.StringOrEnum;
+import org.knime.json.node.combine.row.RowCombineSettings.JsonStructure;
 import org.knime.json.node.combine.row.RowCombineSettings.ObjectOrArray;
 import org.knime.node.parameters.NodeParameters;
 import org.knime.node.parameters.NodeParametersInput;
 import org.knime.node.parameters.Widget;
 import org.knime.node.parameters.array.ArrayWidget;
 import org.knime.node.parameters.array.ArrayWidget.ElementLayout;
-import org.knime.node.parameters.layout.After;
 import org.knime.node.parameters.layout.Layout;
 import org.knime.node.parameters.layout.Section;
 import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
@@ -78,8 +76,7 @@ import org.knime.node.parameters.updates.EffectPredicateProvider;
 import org.knime.node.parameters.updates.ParameterReference;
 import org.knime.node.parameters.updates.ValueReference;
 import org.knime.node.parameters.widget.choices.ChoicesProvider;
-import org.knime.node.parameters.widget.choices.Label;
-import org.knime.node.parameters.widget.choices.RadioButtonsWidget;
+import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
 import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 import org.knime.node.parameters.widget.text.TextInputWidget;
@@ -108,26 +105,8 @@ final class RowCombineJsonNodeParameters implements NodeParameters {
 
     // ====== Layout sections
 
-    @Section(title = "Root")
-    interface RootSection {
-    }
-
-    @Section(title = "Object or Array")
-    @After(RootSection.class)
-    interface CollectionSection {
-    }
-
-    // ====== Enums
-
-    enum RootType {
-            @Label(value = "Omit root", description = "When selected, only the object or the array is returned "
-                + "(custom key/value pairs are not applicable).")
-            OMIT_ROOT,
-            @Label(value = "Add root object with key",
-                description = "When selected, the object or the array is added "
-                    + "to a root object with the specified key. "
-                    + "Custom key/value pairs can also be added to the root object.")
-            ADD_ROOT
+    @Section(title = "JSON Structure")
+    interface JsonStructureSection {
     }
 
     // ====== Parameters
@@ -142,35 +121,14 @@ final class RowCombineJsonNodeParameters implements NodeParameters {
     @TextInputWidget(patternValidation = IsNotBlankValidation.class)
     String m_newColumn = "JSON"; // see RowCombineJsonSettings.m_newColumn
 
-    @Layout(RootSection.class)
-    @Persistor(value = RootTypePersistor.class)
-    @Widget(title = "Root configuration", description = "Configure how to handle the root object.")
-    @RadioButtonsWidget
-    @ValueReference(RootTypeRef.class)
-    RootType m_rootType = RootType.ADD_ROOT;
-
-    @Layout(RootSection.class)
-    @Persist(configKey = RowCombineSettings.ROOT_KEY)
-    @Widget(title = "Root key", description = "Key to the JSON values object or array in the root object.")
-    @Effect(predicate = RootTypeEffect.class, type = Effect.EffectType.SHOW)
-    String m_rootKey = RowCombineSettings.DEFAULT_ROOT_KEY;
-
-    @Layout(RootSection.class)
-    @Persistor(KeyValuePairPersistor.class)
-    @Widget(title = "Custom key/value pairs", description = "Additional key/value pairs to the root object.")
-    @ArrayWidget(elementLayout = ElementLayout.HORIZONTAL_SINGLE_LINE, addButtonText = "Add custom key/value pair",
-        showSortButtons = false)
-    @Effect(predicate = RootTypeEffect.class, type = Effect.EffectType.SHOW)
-    KeyValuePairSettings[] m_keyValuePairs = new KeyValuePairSettings[0];
-
-    @Layout(CollectionSection.class)
+    @Layout(JsonStructureSection.class)
     @Persist(configKey = RowCombineSettings.OBJECT_OR_ARRAY)
-    @Widget(title = "Collection type", description = "Configure how to collect the JSON values.")
-    @RadioButtonsWidget
+    @Widget(title = "Combine rows as", description = "Configure how to collect the JSON values.")
+    @ValueSwitchWidget
     @ValueReference(CollectionTypeRef.class)
     ObjectOrArray m_collectType = RowCombineSettings.DEFAULT_OBJECT_OR_ARRAY;
 
-    @Layout(CollectionSection.class)
+    @Layout(JsonStructureSection.class)
     @Persistor(ObjectKeyColumnPersistor.class)
     @Widget(title = "Object key column",
         description = "The column providing the keys for the object when collecting into object. "
@@ -181,9 +139,30 @@ final class RowCombineJsonNodeParameters implements NodeParameters {
     @Effect(predicate = ObjectCollectionTypeEffect.class, type = Effect.EffectType.SHOW)
     StringOrEnum<RowIDChoice> m_objectKeyColumn = new StringOrEnum<>(ROW_ID);
 
+    @Layout(JsonStructureSection.class)
+    @Persistor(value = JsonStructurePersistor.class)
+    @Widget(title = "Place resulting JSON", description = "How to structure the resulting JSON output.")
+    @ValueSwitchWidget
+    @ValueReference(JsonStructureRef.class)
+    JsonStructure m_jsonStructure = JsonStructure.NESTED;
+
+    @Layout(JsonStructureSection.class)
+    @Persist(configKey = RowCombineSettings.ROOT_KEY)
+    @Widget(title = "Root object key", description = "Key under which to place the resulting JSON.")
+    @Effect(predicate = JsonStructureEffect.class, type = Effect.EffectType.SHOW)
+    String m_rootKey = RowCombineSettings.DEFAULT_ROOT_KEY;
+
+    @Layout(JsonStructureSection.class)
+    @Persistor(KeyValuePairPersistor.class)
+    @Widget(title = "Additional properties", description = "Additional key/value pairs to add to the root object.")
+    @ArrayWidget(elementLayout = ElementLayout.HORIZONTAL_SINGLE_LINE, addButtonText = "Add property",
+        showSortButtons = false)
+    @Effect(predicate = JsonStructureEffect.class, type = Effect.EffectType.SHOW)
+    KeyValuePairSettings[] m_keyValuePairs = new KeyValuePairSettings[0];
+
     // ====== References for effects
 
-    interface RootTypeRef extends ParameterReference<RootType> {
+    interface JsonStructureRef extends ParameterReference<JsonStructure> {
     }
 
     interface CollectionTypeRef extends ParameterReference<ObjectOrArray> {
@@ -194,10 +173,10 @@ final class RowCombineJsonNodeParameters implements NodeParameters {
 
     // ====== State Providers
 
-    static final class RootTypeEffect implements EffectPredicateProvider {
+    static final class JsonStructureEffect implements EffectPredicateProvider {
         @Override
         public EffectPredicate init(final PredicateInitializer i) {
-            return i.getEnum(RootTypeRef.class).isOneOf(RootType.ADD_ROOT);
+            return i.getEnum(JsonStructureRef.class).isOneOf(JsonStructure.NESTED);
         }
     }
 
@@ -222,39 +201,9 @@ final class RowCombineJsonNodeParameters implements NodeParameters {
 
     // ====== Custom Persistors
 
-    static final class RootTypePersistor extends EnumBooleanPersistor<RootType> {
-        RootTypePersistor() {
-            super(RowCombineSettings.ADD_ROOT_KEY, RootType.class, RootType.ADD_ROOT);
-        }
-    }
-
-    static final class KeyValuePairPersistor implements NodeParametersPersistor<KeyValuePairSettings[]> {
-
-        @Override
-        public KeyValuePairSettings[] load(final NodeSettingsRO settings) throws InvalidSettingsException {
-            String[] keys = settings.getStringArray(RowCombineSettings.KEYS, new String[0]);
-            String[] values = settings.getStringArray(RowCombineSettings.VALUES, new String[0]);
-            int numPairs = Math.min(keys.length, values.length);
-            var keyValuePairs = new KeyValuePairSettings[numPairs];
-            for (int i = 0; i < numPairs; i++) {
-                keyValuePairs[i] = new KeyValuePairSettings();
-                keyValuePairs[i].m_key = keys[i];
-                keyValuePairs[i].m_value = values[i];
-            }
-            return keyValuePairs;
-        }
-
-        @Override
-        public void save(final KeyValuePairSettings[] obj, final NodeSettingsWO settings) {
-            String[] keys = Arrays.stream(obj).map(kv -> kv.m_key).toArray(String[]::new);
-            String[] values = Arrays.stream(obj).map(kv -> kv.m_value).toArray(String[]::new);
-            settings.addStringArray(RowCombineSettings.KEYS, keys);
-            settings.addStringArray(RowCombineSettings.VALUES, values);
-        }
-
-        @Override
-        public String[][] getConfigPaths() {
-            return new String[][]{{RowCombineSettings.KEYS}, {RowCombineSettings.VALUES}};
+    static final class JsonStructurePersistor extends EnumBooleanPersistor<JsonStructure> {
+        JsonStructurePersistor() {
+            super(RowCombineSettings.ADD_ROOT_KEY, JsonStructure.class, JsonStructure.NESTED);
         }
     }
 
