@@ -46,12 +46,15 @@
 
 package org.knime.json.node.combine.row;
 
+import static org.knime.base.node.io.filehandling.webui.OutputFileMessageProvider.LOCAL_URL_PATTERN;
+import static org.knime.base.node.io.filehandling.webui.OutputFileMessageProvider.URL_PATTERN;
 import static org.knime.core.webui.node.dialog.defaultdialog.setting.singleselection.RowIDChoice.ROW_ID;
 
 import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
+import org.knime.base.node.io.filehandling.webui.OutputFileMessageProvider;
+import org.knime.base.node.io.filehandling.webui.OutputFileMessageProvider.OutputFileRef;
+import org.knime.base.node.io.filehandling.webui.OverwritePolicy;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.NominalValue;
 import org.knime.core.data.json.JSONValue;
@@ -93,8 +96,6 @@ import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
 import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 import org.knime.node.parameters.widget.message.TextMessage;
-import org.knime.node.parameters.widget.message.TextMessage.MessageType;
-import org.knime.node.parameters.widget.message.TextMessage.SimpleTextMessageProvider;
 
 /**
  * Node parameters for JSON Row Combiner and Writer.
@@ -106,8 +107,6 @@ import org.knime.node.parameters.widget.message.TextMessage.SimpleTextMessagePro
 @SuppressWarnings("restriction")
 class CombineAndWriteJsonNodeParameters implements NodeParameters {
 
-    static final String URL_PATTERN = "^[a-zA-Z][a-zA-Z0-9+.-]*://\\S+$";
-    static final String LOCAL_URL_PATTERN = "^(knime|file)://\\S+$";
 
     @Section(title = "Output File")
     interface OutputSection {
@@ -157,60 +156,9 @@ class CombineAndWriteJsonNodeParameters implements NodeParameters {
     @ValueReference(OutputFileRef.class)
     String m_outputFile = "";
 
-    private static class OutputFileRef implements ParameterReference<String> {}
-
     @Layout(OutputSection.class)
     @TextMessage(value = OutputFileMessageProvider.class)
     Void m_invalidSchemeMessage;
-
-    private static final class OutputFileMessageProvider implements SimpleTextMessageProvider {
-
-        Supplier<String> m_outputFileSupplier;
-
-        private static boolean isRemoteUrl(final String fileLocation) {
-            return Pattern.compile(URL_PATTERN).matcher(fileLocation).matches() //
-                    && !Pattern.compile(LOCAL_URL_PATTERN).matcher(fileLocation).matches();
-        }
-
-        @Override
-        public void init(final StateProviderInitializer initializer) {
-            initializer.computeBeforeOpenDialog();
-            m_outputFileSupplier = initializer.computeFromValueSupplier(OutputFileRef.class);
-        }
-
-        @Override
-        public boolean showMessage(final NodeParametersInput context) {
-            final var outputFile = m_outputFileSupplier.get();
-            return outputFile == null || outputFile.isEmpty() || isRemoteUrl(outputFile);
-        }
-
-        @Override
-        public String title() {
-            final var outputFile = m_outputFileSupplier.get();
-            if (outputFile == null || outputFile.isEmpty()) {
-                return "Invalid output file name";
-            }
-            return "Info";
-        }
-
-        @Override
-        public String description() {
-            final var outputFile = m_outputFileSupplier.get();
-            if (outputFile == null || outputFile.isEmpty()) {
-                return "The output file name must not be blank.";
-            }
-            if (isRemoteUrl(outputFile)) {
-                return "Remote output file will be overwritten if it exists.";
-            }
-            return "";
-        }
-
-        @Override
-        public MessageType type() {
-            return MessageType.INFO;
-        }
-
-    }
 
     @Layout(OutputSection.class)
     @Widget(title = "If output file already exists", description = "How to handle output file already existing.")
@@ -226,13 +174,6 @@ class CombineAndWriteJsonNodeParameters implements NodeParameters {
             return i.getString(OutputFileRef.class).matchesPattern(URL_PATTERN)
                 .and(i.getString(OutputFileRef.class).matchesPattern(LOCAL_URL_PATTERN).negate());
         }
-    }
-
-    private enum OverwritePolicy {
-        @Label(value= "Fail", description = "Prevent node from executing.")
-        PREVENT,
-        @Label(value= "Overwrite file", description = "Replace the file if it exists.")
-        OVERWRITE,
     }
 
     private static class OverwritePolicyPersistor extends EnumBooleanPersistor<OverwritePolicy> {
