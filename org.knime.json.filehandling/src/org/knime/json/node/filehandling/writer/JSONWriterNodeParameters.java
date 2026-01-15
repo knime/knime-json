@@ -75,6 +75,7 @@ import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
 import org.knime.node.parameters.persistence.NodeParametersPersistor;
 import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.persistence.Persistor;
+import org.knime.node.parameters.persistence.legacy.EnumBooleanPersistor;
 import org.knime.node.parameters.persistence.legacy.LegacyFileWriterWithOverwritePolicyOptions;
 import org.knime.node.parameters.persistence.legacy.LegacyFileWriterWithOverwritePolicyOptions.OverwritePolicy;
 import org.knime.node.parameters.updates.Effect;
@@ -241,23 +242,9 @@ class JSONWriterNodeParameters implements NodeParameters {
             FROM_COLUMN, //
     }
 
-    private static class FileGenerationModePersistor implements NodeParametersPersistor<FileGenerationMode> {
-
-        @Override
-        public FileGenerationMode load(final NodeSettingsRO settings) throws InvalidSettingsException {
-            boolean generateFileNames = settings.getBoolean(CFG_GENERATE_FILE_NAMES, true);
-            return generateFileNames ? FileGenerationMode.GENERATE : FileGenerationMode.FROM_COLUMN;
-        }
-
-        @Override
-        public void save(final FileGenerationMode param, final NodeSettingsWO settings) {
-            boolean generateFileNames = param == FileGenerationMode.GENERATE;
-            settings.addBoolean(CFG_GENERATE_FILE_NAMES, generateFileNames);
-        }
-
-        @Override
-        public String[][] getConfigPaths() {
-            return new String[][]{{CFG_GENERATE_FILE_NAMES}};
+    private static class FileGenerationModePersistor extends EnumBooleanPersistor<FileGenerationMode> {
+        FileGenerationModePersistor() {
+            super(CFG_GENERATE_FILE_NAMES, FileGenerationMode.class, FileGenerationMode.GENERATE);
         }
     }
 
