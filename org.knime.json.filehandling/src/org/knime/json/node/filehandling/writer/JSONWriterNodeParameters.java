@@ -90,6 +90,7 @@ import org.knime.node.parameters.widget.choices.ChoicesProvider;
 import org.knime.node.parameters.widget.choices.ColumnChoicesProvider;
 import org.knime.node.parameters.widget.choices.Label;
 import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
+import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 import org.knime.node.parameters.widget.text.TextInputWidget;
 import org.knime.node.parameters.widget.text.TextInputWidgetValidation;
@@ -323,14 +324,9 @@ class JSONWriterNodeParameters implements NodeParameters {
         protected StringOrEnum<RowIDChoice> autoGuessValue(final NodeParametersInput parametersInput)
             throws StateComputationFailureException {
             var tableSpecs = parametersInput.getInPortSpecs();
-            var tableSpec = (DataTableSpec)tableSpecs[tableSpecs.length - 1];
-            if (tableSpec == null) {
-                return new StringOrEnum<>(RowIDChoice.ROW_ID);
-            }
-            return tableSpec.stream() //
-                .filter(colSpec -> colSpec.getType().isCompatible(StringValue.class)) //
-                .reduce((first, second) -> second) //
-                .map(colSpec -> new StringOrEnum<RowIDChoice>(colSpec.getName())) //
+            return ColumnSelectionUtil
+                .getFirstCompatibleColumn(parametersInput, tableSpecs.length - 1, StringValue.class)
+                .map(colSpec -> new StringOrEnum<RowIDChoice>(colSpec.getName()))
                 .orElse(new StringOrEnum<>(RowIDChoice.ROW_ID));
         }
     }
