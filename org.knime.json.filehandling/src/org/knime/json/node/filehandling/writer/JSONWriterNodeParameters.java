@@ -76,6 +76,7 @@ import org.knime.node.parameters.persistence.NodeParametersPersistor;
 import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.persistence.Persistor;
 import org.knime.node.parameters.persistence.legacy.LegacyFileWriterWithOverwritePolicyOptions;
+import org.knime.node.parameters.persistence.legacy.LegacyFileWriterWithOverwritePolicyOptions.OverwritePolicy;
 import org.knime.node.parameters.updates.Effect;
 import org.knime.node.parameters.updates.Effect.EffectType;
 import org.knime.node.parameters.updates.EffectPredicate;
@@ -190,8 +191,18 @@ class JSONWriterNodeParameters implements NodeParameters {
 
     private static class OutputLocationModification implements LegacyFileWriterWithOverwritePolicyOptions.Modifier {
 
+        private static final class OverwritePolicyChoicesProvider
+                extends LegacyFileWriterWithOverwritePolicyOptions.OverwritePolicyChoicesProvider {
+
+            @Override
+            protected List<OverwritePolicy> getChoices() {
+                return List.of(OverwritePolicy.fail, OverwritePolicy.overwrite, OverwritePolicy.ignore);
+            }
+        }
+
         @Override
         public void modify(final WidgetGroupModifier group) {
+            restrictOverwritePolicyOptions(group, OverwritePolicyChoicesProvider.class);
             findFileSelection(group) //
                 .modifyAnnotation(Widget.class) //
                 .withProperty("title", "Folder") //
