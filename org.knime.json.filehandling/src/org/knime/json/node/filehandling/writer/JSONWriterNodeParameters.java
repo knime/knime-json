@@ -121,7 +121,12 @@ class JSONWriterNodeParameters implements NodeParameters {
 
     @SuppressWarnings("java:S1176")
     interface DialogLayout {
+        @Section(title = "Output Location")
+        interface OutputLocation {
+        }
+
         @Section(title = "JSON")
+        @After(OutputLocation.class)
         interface JSON {
         }
 
@@ -130,10 +135,6 @@ class JSONWriterNodeParameters implements NodeParameters {
         interface FileNames {
         }
 
-        @Section(title = "Output Location")
-        @After(FileNames.class)
-        interface OutputLocation {
-        }
     }
 
     @Layout(DialogLayout.OutputLocation.class)
