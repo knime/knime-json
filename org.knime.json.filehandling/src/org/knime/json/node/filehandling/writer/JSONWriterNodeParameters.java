@@ -48,7 +48,9 @@ package org.knime.json.node.filehandling.writer;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.knime.base.node.io.filehandling.webui.FileSystemPortConnectionUtil;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.StringValue;
@@ -62,7 +64,6 @@ import org.knime.core.webui.node.dialog.defaultdialog.internal.file.SingleFileSe
 import org.knime.core.webui.node.dialog.defaultdialog.internal.file.WithFileSystem;
 import org.knime.core.webui.node.dialog.defaultdialog.setting.singleselection.RowIDChoice;
 import org.knime.core.webui.node.dialog.defaultdialog.setting.singleselection.StringOrEnum;
-import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.core.webui.node.dialog.defaultdialog.widget.Modification;
 import org.knime.core.webui.node.dialog.defaultdialog.widget.Modification.WidgetGroupModifier;
 import org.knime.node.parameters.NodeParameters;
@@ -91,7 +92,6 @@ import org.knime.node.parameters.widget.choices.ColumnChoicesProvider;
 import org.knime.node.parameters.widget.choices.Label;
 import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
 import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
-import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 import org.knime.node.parameters.widget.text.TextInputWidget;
 import org.knime.node.parameters.widget.text.TextInputWidgetValidation;
 
@@ -301,10 +301,22 @@ class JSONWriterNodeParameters implements NodeParameters {
         }
     }
 
-    static final class JSONColumnsProvider extends CompatibleColumnsProvider {
-        JSONColumnsProvider() {
-            super(JSONValue.class);
+    private static final class JSONColumnsProvider implements ColumnChoicesProvider {
+
+        @Override
+        public List<DataColumnSpec> columnChoices(final NodeParametersInput context) {
+            return context
+                    .getInTableSpec(FileSystemPortConnectionUtil.hasFileSystemPort(context) ? 1 : 0)
+                    .map(spec -> spec.stream().filter(this::isIncluded))
+                    .orElseGet(Stream::empty)
+                    .toList();
         }
+
+        public boolean isIncluded(final DataColumnSpec col) {
+            return Stream.of(JSONValue.class)
+                    .anyMatch(valueClass -> col.getType().isCompatible(valueClass));
+        }
+
     }
 
     private interface FileNameColumnRef extends ParameterReference<StringOrEnum<RowIDChoice>> {
@@ -321,8 +333,7 @@ class JSONWriterNodeParameters implements NodeParameters {
         }
 
         @Override
-        protected StringOrEnum<RowIDChoice> autoGuessValue(final NodeParametersInput parametersInput)
-            throws StateComputationFailureException {
+        protected StringOrEnum<RowIDChoice> autoGuessValue(final NodeParametersInput parametersInput) {
             var tableSpecs = parametersInput.getInPortSpecs();
             return ColumnSelectionUtil
                 .getFirstCompatibleColumn(parametersInput, tableSpecs.length - 1, StringValue.class)
