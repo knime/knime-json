@@ -90,6 +90,7 @@ import org.knime.node.parameters.widget.choices.ChoicesProvider;
 import org.knime.node.parameters.widget.choices.ColumnChoicesProvider;
 import org.knime.node.parameters.widget.choices.Label;
 import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
+import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 import org.knime.node.parameters.widget.text.TextInputWidget;
 import org.knime.node.parameters.widget.text.TextInputWidgetValidation;
 
@@ -193,7 +194,7 @@ class JSONWriterNodeParameters implements NodeParameters {
     private static class OutputLocationModification implements LegacyFileWriterWithOverwritePolicyOptions.Modifier {
 
         private static final class OverwritePolicyChoicesProvider
-                extends LegacyFileWriterWithOverwritePolicyOptions.OverwritePolicyChoicesProvider {
+            extends LegacyFileWriterWithOverwritePolicyOptions.OverwritePolicyChoicesProvider {
 
             @Override
             protected List<OverwritePolicy> getChoices() {
@@ -299,18 +300,9 @@ class JSONWriterNodeParameters implements NodeParameters {
         }
     }
 
-    private static class JSONColumnsProvider implements ColumnChoicesProvider {
-
-        @Override
-        public List<DataColumnSpec> columnChoices(final NodeParametersInput context) {
-            var tableSpecs = context.getInPortSpecs();
-            var tableSpec = (DataTableSpec)tableSpecs[tableSpecs.length - 1];
-            if (tableSpec == null) {
-                return List.of();
-            }
-            return tableSpec.stream() //
-                .filter(colSpec -> colSpec.getType().isCompatible(JSONValue.class)) //
-                .toList();
+    static final class JSONColumnsProvider extends CompatibleColumnsProvider {
+        JSONColumnsProvider() {
+            super(JSONValue.class);
         }
     }
 
