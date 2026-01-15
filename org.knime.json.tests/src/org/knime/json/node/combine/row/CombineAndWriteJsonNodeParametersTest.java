@@ -42,45 +42,67 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   Sep 26, 2025 (magnus): created
  */
 package org.knime.json.node.combine.row;
 
-import org.knime.node.parameters.NodeParameters;
-import org.knime.node.parameters.Widget;
-import org.knime.node.parameters.layout.HorizontalLayout;
-import org.knime.node.parameters.layout.Layout;
-import org.knime.node.parameters.widget.text.TextInputWidget;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
+import org.knime.core.data.def.StringCell;
+import org.knime.core.data.json.JSONCell;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettings;
+import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.NodeParametersUtil;
+import org.knime.testing.node.dialog.DefaultNodeSettingsSnapshotTest;
+import org.knime.testing.node.dialog.SnapshotTestConfiguration;
 
 /**
- * Node parameters for the key/value pair settings in the JSON Row Combiner node dialog.
+ * Snapshot tests for CombineAndWriteJsonNodeParameters.
  *
- * @author Magnus Gohm, KNIME AG, Konstanz, Germany
+ * @author AI Migration Pipeline v1.1
  */
-final class KeyValuePairSettings implements NodeParameters {
+@SuppressWarnings("restriction")
+final class CombineAndWriteJsonNodeParametersTest extends DefaultNodeSettingsSnapshotTest {
 
-    public KeyValuePairSettings() {
+    CombineAndWriteJsonNodeParametersTest() {
+        super(getConfig());
     }
 
-    public KeyValuePairSettings(final String key, final String value) {
-        m_key = key;
-        m_value = value;
+    private static SnapshotTestConfiguration getConfig() {
+        return SnapshotTestConfiguration.builder() //
+            .withInputPortObjectSpecs(createInputPortSpecs()) //
+            .testJsonFormsForModel(CombineAndWriteJsonNodeParameters.class) //
+            .testJsonFormsWithInstance(SettingsType.MODEL, () -> readSettings()) //
+            .testNodeSettingsStructure(() -> readSettings()) //
+            .build();
     }
 
-    @HorizontalLayout
-    interface KeyValuePairLayout {
+    private static CombineAndWriteJsonNodeParameters readSettings() {
+        try {
+            var path = getSnapshotPath(CombineAndWriteJsonNodeParameters.class).getParent().resolve("node_settings")
+                .resolve("CombineAndWriteJsonNodeParameters.xml");
+            try (var fis = new FileInputStream(path.toFile())) {
+                var nodeSettings = NodeSettings.loadFromXML(fis);
+                return NodeParametersUtil.loadSettings(nodeSettings.getNodeSettings(SettingsType.MODEL.getConfigKey()),
+                    CombineAndWriteJsonNodeParameters.class);
+            }
+        } catch (IOException | InvalidSettingsException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-    @Layout(KeyValuePairLayout.class)
-    @Widget(title = "Key", description = "Additional property key.")
-    @TextInputWidget
-    String m_key = "";
+    private static PortObjectSpec[] createInputPortSpecs() {
+        return new PortObjectSpec[]{createDefaultTestTableSpec()};
+    }
 
-    @Layout(KeyValuePairLayout.class)
-    @Widget(title = "Value", description = "Additional property value.")
-    @TextInputWidget
-    String m_value = "";
-
+    private static DataTableSpec createDefaultTestTableSpec() {
+        return new DataTableSpec(
+            new String[]{"json", "other_column", "string_column"},
+            new DataType[]{DataType.getType(JSONCell.class), DataType.getType(JSONCell.class), DataType.getType(StringCell.class)}
+        );
+    }
 }
