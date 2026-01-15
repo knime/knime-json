@@ -54,6 +54,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
+import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
 import org.knime.core.data.json.JSONCell;
 import org.knime.core.node.BufferedDataTable;
@@ -110,16 +111,16 @@ final class JSONWriterNodeParametersTest extends DefaultNodeSettingsSnapshotTest
     }
 
     private static DataTableSpec createDefaultTestTableSpec() {
-        return new DataTableSpec(new String[] { "json_col" }, new DataType[] { DataType.getType(JSONCell.class) });
+        return new DataTableSpec(new String[]{"json_col"}, new DataType[]{DataType.getType(JSONCell.class)});
     }
-    
+
     @Test
     void testAutoGuessValueWithNullTableSpec() {
         final var context = NodeParametersInputImpl.createDefaultNodeSettingsContext(
             new PortType[]{BufferedDataTable.TYPE}, new PortObjectSpec[]{null}, null, null);
 
         final var parameters = new JSONWriterNodeParameters();
-        parameters.m_fileNameColumn = new StringOrEnum<>((String) null);
+        parameters.m_fileNameColumn = new StringOrEnum<>((String)null);
         final var simulator = new DialogUpdateSimulator(Map.of(SettingsType.MODEL, parameters), context);
 
         final var result = simulator.simulateAfterOpenDialog();
@@ -127,28 +128,24 @@ final class JSONWriterNodeParametersTest extends DefaultNodeSettingsSnapshotTest
         final var valueUpdate = result.getValueUpdateAt("fileNameColumn");
         assertThat(valueUpdate).isEqualTo(new StringOrEnum<>(RowIDChoice.ROW_ID));
     }
-    
+
     @Test
     void testAutoGuessValueWithStringColumn() {
-        final var inputSpec = new DataTableSpec(
-            new String[]{"json_col", "first_string", "second_string"},
-            new DataType[]{
-                DataType.getType(JSONCell.class),
-                DataType.getType(StringCell.class),
-                DataType.getType(StringCell.class)
-            });
+        final var inputSpec = new DataTableSpec(new String[]{"an_integer", "first_string", "second_string"},
+            new DataType[]{DataType.getType(IntCell.class), DataType.getType(StringCell.class),
+                DataType.getType(StringCell.class)});
 
         final var context = NodeParametersInputImpl.createDefaultNodeSettingsContext(
             new PortType[]{BufferedDataTable.TYPE}, new PortObjectSpec[]{inputSpec}, null, null);
 
         final var parameters = new JSONWriterNodeParameters();
-        parameters.m_fileNameColumn = new StringOrEnum<>((String) null);
+        parameters.m_fileNameColumn = new StringOrEnum<>((String)null);
         final var simulator = new DialogUpdateSimulator(Map.of(SettingsType.MODEL, parameters), context);
 
         final var result = simulator.simulateAfterOpenDialog();
 
         final var valueUpdate = result.getValueUpdateAt("fileNameColumn");
-        assertThat(valueUpdate).isEqualTo(new StringOrEnum<RowIDChoice>("second_string"));
+        assertThat(valueUpdate).isEqualTo(new StringOrEnum<RowIDChoice>("first_string"));
     }
 
 }
