@@ -78,11 +78,12 @@ import org.knime.node.impl.description.PortDescription;
  */
 @SuppressWarnings("restriction")
 public class JSONWriterNodeFactory2 extends AbstractMultiTableWriterNodeFactory<JSONValue, //
-        JSONMultiTableWriterNodeConfig, JSONMultiTableWriterNodeModel, JSONMultiTableWriterNodeDialog> //
+        JSONMultiTableWriterNodeConfig, JSONMultiTableWriterNodeModel, JSONMultiTableWriterNodeDialog>
     implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     @Override
-    protected JSONMultiTableWriterNodeConfig getNodeConfig(final PortsConfiguration portConfig, final String portGroupName) {
+    protected JSONMultiTableWriterNodeConfig getNodeConfig(final PortsConfiguration portConfig,
+        final String portGroupName) {
         return new JSONMultiTableWriterNodeConfig(portConfig, portGroupName);
     }
 
@@ -97,21 +98,25 @@ public class JSONWriterNodeFactory2 extends AbstractMultiTableWriterNodeFactory<
         final int dataTableInputIdx) {
         return new JSONMultiTableWriterNodeDialog(nodeConfig, dataTableInputIdx);
     }
+
     private static final String NODE_NAME = "JSON Writer";
+
     private static final String NODE_ICON = "./jsonwriter.png";
+
     private static final String SHORT_DESCRIPTION = "Writes JSON Documents to a directory.";
+
     private static final String FULL_DESCRIPTION = """
             The node takes the JSON documents of the selected column and writes them, each in a separate file,
             into a directory. It will append the paths of the written files to the input table as well as the
             corresponding write status.""";
-    private static final List<PortDescription> INPUT_PORTS = List.of(
-        fixedPort("Data Table", "Input table containing at least one JSON column."),
-        dynamicPort(CONNECTION_INPUT_PORT_GRP_NAME, CONNECTION_INPUT_PORT_GRP_NAME, "The file system connection.")
-    );
+
+    private static final List<PortDescription> INPUT_PORTS =
+        List.of(fixedPort("Data Table", "Input table containing at least one JSON column."),
+            dynamicPort(CONNECTION_INPUT_PORT_GRP_NAME, CONNECTION_INPUT_PORT_GRP_NAME, "The file system connection."));
 
     private static final List<PortDescription> OUTPUT_PORTS = List.of(fixedPort("Output Table",
         "Input table with an additional path column that contains the paths of the written files, "
-        + "as well as another String column\n which holds the write status (created, unmodified, overwritten)."));
+            + "as well as another String column which holds the write status (created, unmodified, overwritten)."));
 
     @Override
     public NodeDialogPane createNodeDialogPane() {
@@ -125,20 +130,9 @@ public class JSONWriterNodeFactory2 extends AbstractMultiTableWriterNodeFactory<
 
     @Override
     public NodeDescription createNodeDescription() {
-        return DefaultNodeDescriptionUtil.createNodeDescription(
-            NODE_NAME,
-            NODE_ICON,
-            INPUT_PORTS,
-            OUTPUT_PORTS,
-            SHORT_DESCRIPTION,
-            FULL_DESCRIPTION,
-            List.of(),
-            JSONWriterNodeParameters.class,
-            null,
-            NodeType.Sink,
-            List.of(),
-            null
-        );
+        return DefaultNodeDescriptionUtil.createNodeDescription(NODE_NAME, NODE_ICON, INPUT_PORTS, OUTPUT_PORTS,
+            SHORT_DESCRIPTION, FULL_DESCRIPTION, List.of(), JSONWriterNodeParameters.class, null, NodeType.Sink,
+            List.of(), null);
     }
 
     @Override
