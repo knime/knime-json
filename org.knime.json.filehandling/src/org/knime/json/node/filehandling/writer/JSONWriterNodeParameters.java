@@ -307,12 +307,12 @@ class JSONWriterNodeParameters implements NodeParameters {
         public List<DataColumnSpec> columnChoices(final NodeParametersInput context) {
             return context
                     .getInTableSpec(FileSystemPortConnectionUtil.hasFileSystemPort(context) ? 1 : 0)
-                    .map(spec -> spec.stream().filter(this::isIncluded))
+                    .map(spec -> spec.stream().filter(JSONColumnsProvider::isIncluded))
                     .orElseGet(Stream::empty)
                     .toList();
         }
 
-        public boolean isIncluded(final DataColumnSpec col) {
+        private static boolean isIncluded(final DataColumnSpec col) {
             return Stream.of(JSONValue.class)
                     .anyMatch(valueClass -> col.getType().isCompatible(valueClass));
         }
