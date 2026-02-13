@@ -4,14 +4,11 @@
       "parameterName" : "table-input",
       "useFullyQualifiedName" : false,
       "description" : "",
-      "makeDialogDirty" : false,
       "templateTableRowsOption" : "USE_ENTIRE_TABLE",
       "numberOfRows" : 10,
       "omitTableSpec" : false,
       "templateTable" : "{\n    \"table-spec\": [\n        {\n            \"column-string\": \"string\"\n        },\n        {\n            \"column-int\": \"int\"\n        },\n        {\n            \"column-double\": \"double\"\n        },\n        {\n            \"column-long\": \"long\"\n        },\n        {\n            \"column-boolean\": \"boolean\"\n        },\n        {\n            \"column-localdate\": \"localdate\"\n        },\n        {\n            \"column-localdatetime\": \"localdatetime\"\n        },\n        {\n            \"column-zoneddatetime\": \"zoneddatetime\"\n        }\n    ],\n    \"table-data\": [\n        [\n            \"value1\",\n            1,\n            1.5,\n            1000,\n            true,\n            \"2018-03-27\",\n            \"2018-03-27T08:30:45.111\",\n            \"2018-03-27T08:30:45.111+01:00[Europe/Paris]\"\n        ],\n        [\n            \"value2\",\n            2,\n            2.5,\n            2000,\n            false,\n            \"2018-03-28\",\n            \"2018-03-28T08:30:45.111\",\n            \"2018-03-28T08:30:45.111+01:00[Europe/Paris]\"\n        ]\n    ]\n}",
-      "templateMatchesInputTable" : false,
-      "makeDialogDirtyInitialValue" : false,
-      "initializationDone" : false
+      "templateMatchesInputTable" : false
     }
   },
   "schema" : {
@@ -26,22 +23,11 @@
             "description" : "A description for the input parameter. The description is shown in the API specification of the\nREST interface.\n",
             "default" : ""
           },
-          "initializationDone" : {
-            "type" : "boolean",
-            "default" : false
-          },
           "inputPathOrUrl" : {
             "type" : "string"
           },
           "makeDialogDirty" : {
-            "type" : "boolean",
-            "title" : "Save new template",
-            "description" : "This option is automatically set when the user clicks on the \"Set input table as template\" button\nrequiring the node to be reconfigured. Manual changes to this setting are ignored.\n",
-            "default" : false
-          },
-          "makeDialogDirtyInitialValue" : {
-            "type" : "boolean",
-            "default" : false
+            "type" : "object"
           },
           "numberOfRows" : {
             "type" : "integer",
@@ -155,19 +141,11 @@
       }
     }, {
       "type" : "Control",
-      "scope" : "#/properties/model/properties/makeDialogDirty",
+      "id" : "#/properties/model/properties/makeDialogDirty",
       "options" : {
-        "format" : "checkbox"
+        "format" : "dirtyTracker"
       },
-      "rule" : {
-        "effect" : "SHOW",
-        "condition" : {
-          "scope" : "#/properties/model/properties/makeDialogDirtyInitialValue",
-          "schema" : {
-            "const" : true
-          }
-        }
-      }
+      "providedOptions" : [ "makeDirty" ]
     }, {
       "type" : "Control",
       "scope" : "#/properties/model/properties/templateTableRowsOption",
@@ -250,9 +228,7 @@
           },
           "setInputTableButtonSummary" : { },
           "setInputTable" : { },
-          "makeDialogDirty" : {
-            "configPaths" : [ ]
-          },
+          "makeDialogDirty" : { },
           "templateTableRowsOption" : {
             "configPaths" : [ [ "useEntireTable" ] ]
           },
@@ -273,12 +249,6 @@
           },
           "inputPathOrUrl" : {
             "configKey" : "inputPathOrUrl"
-          },
-          "makeDialogDirtyInitialValue" : {
-            "configPaths" : [ ]
-          },
-          "initializationDone" : {
-            "configPaths" : [ ]
           }
         }
       }
@@ -306,12 +276,7 @@
     "trigger" : {
       "id" : "org.knime.json.node.container.input.table.ContainerTableInputNodeParameters$SetInputTableButtonRef"
     },
-    "dependencies" : [ "#/properties/model/properties/initializationDone", "#/properties/model/properties/makeDialogDirty", "#/properties/model/properties/makeDialogDirtyInitialValue", "#/properties/model/properties/trimmedInputTable" ]
-  }, {
-    "trigger" : {
-      "scope" : "#/properties/model/properties/makeDialogDirty"
-    },
-    "dependencies" : [ "#/properties/model/properties/initializationDone", "#/properties/model/properties/makeDialogDirty", "#/properties/model/properties/makeDialogDirtyInitialValue" ]
+    "dependencies" : [ "#/properties/model/properties/trimmedInputTable" ]
   }, {
     "trigger" : {
       "scope" : "#/properties/model/properties/numberOfRows"

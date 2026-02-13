@@ -58,7 +58,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.webui.node.dialog.defaultdialog.internal.button.SimpleButtonWidget;
-import org.knime.core.webui.node.dialog.defaultdialog.internal.widget.WidgetInternal;
+import org.knime.core.webui.node.dialog.defaultdialog.internal.dirty.DirtyTracker;
 import org.knime.core.webui.node.dialog.defaultdialog.persistence.booleanhelpers.DoNotPersistBoolean;
 import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.json.node.container.mappers.ContainerTableMapper;
@@ -165,19 +165,8 @@ class ContainerTableInputNodeParameters implements NodeParameters {
     static final class SetInputTableButtonRef implements ButtonReference {
     }
 
-    @Widget(title = "Save new template", description = """
-            This option is automatically set when the user clicks on the \"Set input table as template\" button
-            requiring the node to be reconfigured. Manual changes to this setting are ignored.
-            """)
-    @WidgetInternal(hideControlInNodeDescription = "This is a helper setting to make the dialog dirty.")
-    @Persistor(DoNotPersistBoolean.class)
-    @Effect(predicate = MakeDialogDirtyInitialValue.class, type = EffectType.SHOW)
-    @ValueReference(MakeDialogDirty.class)
-    @ValueProvider(MakeDialogDirtyProvider.class)
-    boolean m_makeDialogDirty;
-
-    static final class MakeDialogDirty implements BooleanReference {
-    }
+    @DirtyTracker(MakeDialogDirtyProvider.class)
+    Void m_makeDialogDirty;
 
     @Widget(title = "Template table rows to use", description = """
             Choose how many rows of the template table to use.
@@ -242,33 +231,6 @@ class ContainerTableInputNodeParameters implements NodeParameters {
     @Persist(configKey = ContainerTableInputNodeConfiguration.CFG_INPUT_PATH_OR_URL)
     String m_inputPathOrUrl;
 
-    /**
-     * The initial computed value for the change internal dialog state. The effect of m_changeInternalDialogState is
-     * based on this setting to reduce the flickering when the user clicks the checkbox. Otherwise, the checkbox would
-     * dissapear and reappear on each click. Also, it is needed to detect whether the user clicked the checkbox or not
-     * to check the checkbox again.
-     */
-    @Persistor(DoNotPersistBoolean.class)
-    @ValueReference(MakeDialogDirtyInitialValue.class)
-    @ValueProvider(MakeDialogDirtyInitialValueProvider.class)
-    boolean m_makeDialogDirtyInitialValue;
-
-    static final class MakeDialogDirtyInitialValue implements BooleanReference {
-    }
-
-    /**
-     * Indicates whether the initialization of the "change internal dialog state" has been done. Needed to detect
-     * whether the used clicked the "change internal dialog state" checkbox (as the value provider listens to
-     * beforeOpenDialog and to a user change, but we cannot detect that in the provider).
-     */
-    @Persistor(DoNotPersistBoolean.class)
-    @ValueProvider(InitializationDoneProvider.class)
-    @ValueReference(InitializationDoneReference.class)
-    boolean m_initializationDone;
-
-    static final class InitializationDoneReference implements BooleanReference {
-    }
-
     static final class HasInputTable implements EffectPredicateProvider {
 
         @Override
@@ -283,7 +245,7 @@ class ContainerTableInputNodeParameters implements NodeParameters {
         @Override
         public EffectPredicate init(final PredicateInitializer i) {
             return i.getEnum(TemplateTableRowsOptionRef.class).isOneOf(TemplateTableRowsOption.USE_ONLY_FIRST_ROWS)
-                    .and(i.getPredicate(HasInputTable.class));
+                .and(i.getPredicate(HasInputTable.class));
         }
 
     }
@@ -299,8 +261,8 @@ class ContainerTableInputNodeParameters implements NodeParameters {
         @Override
         public void init(final StateProviderInitializer initializer) {
             initializer.computeBeforeOpenDialog();
-            m_templateTableMatchesInputTableSupplier = initializer
-                .computeFromProvidedState(TemplateMatchesInputTableProvider.class);
+            m_templateTableMatchesInputTableSupplier =
+                initializer.computeFromProvidedState(TemplateMatchesInputTableProvider.class);
             m_templateTableRowsOptionSupplier = initializer.getValueSupplier(TemplateTableRowsOptionRef.class);
             m_numberOfRowsSupplier = initializer.getValueSupplier(NumberOfRowsRef.class);
         }
@@ -351,8 +313,7 @@ class ContainerTableInputNodeParameters implements NodeParameters {
         }
 
         @Override
-        public String computeState(final NodeParametersInput parametersInput)
-            throws StateComputationFailureException {
+        public String computeState(final NodeParametersInput parametersInput) throws StateComputationFailureException {
             return m_trimmedInputTableSupplier.get();
         }
 
@@ -360,30 +321,13 @@ class ContainerTableInputNodeParameters implements NodeParameters {
 
     static final class MakeDialogDirtyProvider implements StateProvider<Boolean> {
 
-        private Supplier<Boolean> m_makeDialogDirty;
-
-        private Supplier<Boolean> m_makeDialogDirtyInitialValue;
-
-        private Supplier<Boolean> m_initializationDone;
-
         @Override
         public void init(final StateProviderInitializer initializer) {
             initializer.computeOnButtonClick(SetInputTableButtonRef.class);
-            m_initializationDone = initializer.getValueSupplier(InitializationDoneReference.class);
-            m_makeDialogDirty = initializer.computeFromValueSupplier(MakeDialogDirty.class);
-            m_makeDialogDirtyInitialValue = initializer.getValueSupplier(MakeDialogDirtyInitialValue.class);
         }
 
         @Override
         public Boolean computeState(final NodeParametersInput parametersInput) throws StateComputationFailureException {
-            if (m_initializationDone.get()) {
-                final var changeInternalDialogStateInitialValue = m_makeDialogDirtyInitialValue.get();
-                if (m_makeDialogDirty.get() != changeInternalDialogStateInitialValue) {
-                    return changeInternalDialogStateInitialValue;
-                }
-                throw new StateComputationFailureException();
-            }
-
             return true;
         }
 
@@ -403,8 +347,7 @@ class ContainerTableInputNodeParameters implements NodeParameters {
         }
 
         @Override
-        public String computeState(final NodeParametersInput parametersInput)
-            throws StateComputationFailureException {
+        public String computeState(final NodeParametersInput parametersInput) throws StateComputationFailureException {
             final var inputTableOpt = parametersInput.getInTable(0);
             if (inputTableOpt.isEmpty()) {
                 return ContainerTemplateTableConfiguration.DEFAULT_TEMPLATE_STRING;
@@ -448,36 +391,6 @@ class ContainerTableInputNodeParameters implements NodeParameters {
 
     }
 
-    static final class MakeDialogDirtyInitialValueProvider implements StateProvider<Boolean> {
-
-        private Supplier<Boolean> m_changeInternalDialogState;
-
-        @Override
-        public void init(final StateProviderInitializer initializer) {
-            m_changeInternalDialogState = initializer.computeFromProvidedState(MakeDialogDirtyProvider.class);
-        }
-
-        @Override
-        public Boolean computeState(final NodeParametersInput parametersInput) throws StateComputationFailureException {
-            return m_changeInternalDialogState.get();
-        }
-
-    }
-
-    static final class InitializationDoneProvider implements StateProvider<Boolean> {
-
-        @Override
-        public void init(final StateProviderInitializer initializer) {
-            initializer.computeFromProvidedState(MakeDialogDirtyProvider.class);
-        }
-
-        @Override
-        public Boolean computeState(final NodeParametersInput parametersInput) throws StateComputationFailureException {
-            return true;
-        }
-
-    }
-
     static final class TemplateTableOptionsPersistor extends EnumBooleanPersistor<TemplateTableRowsOption> {
 
         protected TemplateTableOptionsPersistor() {
@@ -491,9 +404,9 @@ class ContainerTableInputNodeParameters implements NodeParameters {
 
         @Override
         public String load(final NodeSettingsRO nodeSettings) throws InvalidSettingsException {
-            String jsonString = nodeSettings.getString(
-                ContainerTableInputNodeConfiguration.CFG_CONTAINER_INPUT_TABLE_TEMPLATE,
-                ContainerTableDefaultJsonStructure.asString());
+            String jsonString =
+                nodeSettings.getString(ContainerTableInputNodeConfiguration.CFG_CONTAINER_INPUT_TABLE_TEMPLATE,
+                    ContainerTableDefaultJsonStructure.asString());
             return jsonString != null ? jsonString : ContainerTemplateTableConfiguration.DEFAULT_TEMPLATE_STRING;
         }
 
@@ -530,17 +443,17 @@ class ContainerTableInputNodeParameters implements NodeParameters {
 
     enum TemplateTableRowsOption {
 
-        @Label(value = "Use entire input table", description = """
-                When selected, the entire input table will be set as the template.
-                """)
-        USE_ENTIRE_TABLE, //
+            @Label(value = "Use entire input table", description = """
+                    When selected, the entire input table will be set as the template.
+                    """)
+            USE_ENTIRE_TABLE, //
 
-        @Label(value = "Use only first rows", description = """
-                When selected, only the first n rows are used as the template table. Can be especially useful
-                when the input table serves as an example in the OpenAPI specification and you want to avoid over
-                specifying the example with too many rows.
-                """)
-        USE_ONLY_FIRST_ROWS;
+            @Label(value = "Use only first rows", description = """
+                    When selected, only the first n rows are used as the template table. Can be especially useful
+                    when the input table serves as an example in the OpenAPI specification and you want to avoid over
+                    specifying the example with too many rows.
+                    """)
+            USE_ONLY_FIRST_ROWS;
 
     }
 
