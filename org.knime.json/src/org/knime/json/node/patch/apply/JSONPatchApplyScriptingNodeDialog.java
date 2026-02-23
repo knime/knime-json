@@ -42,62 +42,62 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   24 Sept. 2014 (Gabor): created
  */
 package org.knime.json.node.patch.apply;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeView;
-import org.knime.core.webui.node.dialog.SettingsType;
-import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
-import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
-import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.base.node.util.WebUIDialogUtils;
+import org.knime.core.node.workflow.NodeContext;
 import org.knime.core.webui.node.dialog.scripting.AbstractDefaultScriptingNodeDialog;
-import org.knime.core.webui.node.dialog.scripting.AbstractFallbackScriptingNodeFactory;
+import org.knime.core.webui.node.dialog.scripting.GenericInitialDataBuilder;
+import org.knime.core.webui.node.dialog.scripting.WorkflowControl;
 
 /**
- * <code>NodeFactory</code> for the "JSONTransformer" Node. Changes JSON values.
+ * Scripting dialog for the JSON Transformer node with code editor and autocompletion.
  *
- * @author Gabor Bakos
- * @author Jannik Eurich, KNIME GmbH, Berlin, Germany
- * @author AI Migration Pipeline v1.2
+ * @author Jannik Eurich, KNIME GmbH, Konstanz, Germany
  */
 @SuppressWarnings("restriction")
-public final class JSONPatchApplyNodeFactory extends AbstractFallbackScriptingNodeFactory<JSONPatchApplyNodeModel>
-    implements KaiNodeInterfaceFactory {
+final class JSONPatchApplyScriptingNodeDialog extends AbstractDefaultScriptingNodeDialog {
 
-    @Override
-    public JSONPatchApplyNodeModel createNodeModel() {
-        return new JSONPatchApplyNodeModel();
+    JSONPatchApplyScriptingNodeDialog() {
+        super(JSONPatchApplyNodeParameters.class);
+    }
+
+    //This method is needed to allow correct auto completion in a json format.
+    private static List<StaticCompletionItem> getCompletionItemsPatch(final WorkflowControl workflowControl) {
+        List<StaticCompletionItem> items = new ArrayList<>();
+
+        // For this node: insert the full JSON template on completion.
+
+        JsonPatchManipulator.MANIPULATOR_PROVIDER.getCategories()
+            .forEach(c -> JsonPatchManipulator.MANIPULATOR_PROVIDER.getManipulators(c)
+                .forEach(m -> items.add(new StaticCompletionItem(m.getDisplayName(), // inserted text
+                    null, m.getDescription(), null))));
+
+        // Reuse default flow-variable + column completions.
+        Collections.addAll(items, WebUIDialogUtils.getCompletionItems(workflowControl, null, true));
+
+        return items;
     }
 
     @Override
-    public int getNrNodeViews() {
-        return 0;
-    }
-
-    @Override
-    public NodeView<JSONPatchApplyNodeModel> createNodeView(final int viewIndex,
-        final JSONPatchApplyNodeModel nodeModel) {
-        throw new UnsupportedOperationException("No views yet.");
-    }
-
-    @Override
-    public AbstractDefaultScriptingNodeDialog createNodeDialog() {
-        return new JSONPatchApplyScriptingNodeDialog();
-    }
-
-    @Override
-    public KaiNodeInterface createKaiNodeInterface() {
-        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONPatchApplyNodeParameters.class));
-    }
-
-    @Override
-    public NodeDialogPane createLegacyNodeDialogPane() {
-        return new JSONPatchApplyNodeDialog();
+    protected GenericInitialDataBuilder getInitialData(final NodeContext context) {
+        var workflowControl = new WorkflowControl(context.getNodeContainer());
+        return GenericInitialDataBuilder.createDefaultInitialDataBuilder(context) //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_INPUT_OBJECTS,
+                () -> WebUIDialogUtils.getFirstInputTableModel(workflowControl)) //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_FLOW_VARIABLES,
+                () -> WebUIDialogUtils.getFlowVariablesInputOutputModel(workflowControl)) //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_OUTPUT_OBJECTS, Collections::emptyList) //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_LANGUAGE, () -> "json") //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_FILE_NAME, () -> "file.json") //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_MAIN_SCRIPT_CONFIG_KEY,
+                () -> JSONPatchApplyNodeParameters.SCRIPT_FIELD_KEY) //
+            .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_STATIC_COMPLETION_ITEMS,
+                () -> getCompletionItemsPatch(workflowControl));
     }
 }
