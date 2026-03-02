@@ -45,11 +45,9 @@
  */
 package org.knime.json.node.patch.apply;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
 import org.knime.base.node.util.ManipulatorProvider;
 import org.knime.base.node.util.WebUIDialogUtils;
 import org.knime.core.node.workflow.NodeContext;
@@ -65,21 +63,8 @@ import org.knime.core.webui.node.dialog.scripting.WorkflowControl;
 @SuppressWarnings("restriction")
 final class JSONPatchApplyScriptingNodeDialog extends AbstractDefaultScriptingNodeDialog {
 
-    private static final ManipulatorProvider JSON_PATCH_MANIPULATOR_PROVIDER = new ManipulatorProvider() {
-
-        @Override
-        public Collection<? extends Manipulator> getManipulators(final String category) {
-            return Arrays.asList(new JsonPatchManipulator.ValueManipulator("add"),
-                new JsonPatchManipulator.ValueManipulator("replace"), new JsonPatchManipulator.RemoveManipulator(),
-                new JsonPatchManipulator.FromManipulator("copy"), new JsonPatchManipulator.FromManipulator("move"),
-                new JsonPatchManipulator.ValueManipulator("test"));
-        }
-
-        @Override
-        public Collection<String> getCategories() {
-            return Collections.singleton(JsonPatchManipulator.JSON_PATCH_CATEGORY);
-        }
-    };
+    private static final ManipulatorProvider JSON_PATCH_MANIPULATOR_PROVIDER =
+        JsonPatchManipulator.createManipulatorProvider();
 
     JSONPatchApplyScriptingNodeDialog() {
         super(JSONPatchApplyNodeParameters.class);

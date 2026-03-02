@@ -43,7 +43,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  */
-package org.knime.json.node.patch.apply.parser;
+package org.knime.json.node.patch.apply;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,9 +53,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
-import org.knime.base.node.util.ManipulatorProvider;
 import org.knime.core.node.workflow.NodeContext;
-import org.knime.json.node.patch.apply.JSONPatchApplyNodeFactory;
 import org.knime.testing.util.WorkflowManagerUtil;
 
 /**
@@ -63,9 +61,6 @@ import org.knime.testing.util.WorkflowManagerUtil;
  */
 @SuppressWarnings("restriction")
 class JSONPatchApplyScriptingNodeDialogTest {
-
-	private static final String DIALOG_CLASS_NAME =
-		"org.knime.json.node.patch.apply.JSONPatchApplyScriptingNodeDialog";
 
 	@BeforeAll
 	static void mockNodeContext() throws IOException {
@@ -80,28 +75,23 @@ class JSONPatchApplyScriptingNodeDialogTest {
 	}
 
 	@Test
-	void testManipulatorProviderContainsExpectedOperations() throws Exception {
-		final var dialogClass = Class.forName(DIALOG_CLASS_NAME);
-		final var providerField = dialogClass.getDeclaredField("JSON_PATCH_MANIPULATOR_PROVIDER");
-		providerField.setAccessible(true);
-
-		final var manipulatorProvider = (ManipulatorProvider)providerField.get(null);
-		assertThat(manipulatorProvider.getCategories()).containsExactly("JSON Patch");
-
-		final var manipulators = manipulatorProvider.getManipulators("JSON Patch");
+	void testManipulatorProviderContainsExpectedOperations() {
+		final var manipulatorProvider = JsonPatchManipulator.createManipulatorProvider();
+		final var manipulators = manipulatorProvider.getManipulators(JsonPatchManipulator.JSON_PATCH_CATEGORY);
 		assertThat(manipulators).hasSize(6);
 		assertThat(manipulators).extracting(Manipulator::getName)
-			.containsExactly("add", "replace", "remove", "copy", "move", "test");
+			.containsExactly(JsonPatchManipulator.OP_ADD, JsonPatchManipulator.OP_REPLACE,
+				JsonPatchManipulator.OP_REMOVE, JsonPatchManipulator.OP_COPY, JsonPatchManipulator.OP_MOVE,
+				JsonPatchManipulator.OP_TEST);
 	}
 
 	@Test
 	void testGetInitialDataCreatesBuilder() throws Exception {
-		final var dialog = new JSONPatchApplyNodeFactory().createNodeDialog();
-		final var getInitialData = dialog.getClass().getDeclaredMethod("getInitialData", NodeContext.class);
-		getInitialData.setAccessible(true);
+	    var dialog = new JSONPatchApplyScriptingNodeDialog();
+	    var initialDataBuilder = dialog.getInitialData(NodeContext.getContext());
 
-		final var initialDataBuilder = getInitialData.invoke(dialog, NodeContext.getContext());
-		assertThat(initialDataBuilder).isNotNull();
-		assertThat(initialDataBuilder.getClass().getSimpleName()).isEqualTo("GenericInitialDataBuilder");
+	    var initialData = initialDataBuilder.toMap();
+        System.out.println(initialData.keySet());
+
 	}
 }

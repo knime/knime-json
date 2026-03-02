@@ -77,6 +77,8 @@ import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
 import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider;
 import org.knime.node.parameters.widget.message.TextMessage;
+import org.knime.node.parameters.widget.text.TextInputWidget;
+import org.knime.node.parameters.widget.text.TextInputWidgetValidation.PatternValidation.IsNotEmptyValidation;
 
 /**
  * Node parameters for JSON Transformer.
@@ -102,6 +104,7 @@ class JSONPatchApplyNodeParameters implements NodeParameters {
     boolean m_removeSourceColumn = true;
 
     @Widget(title = "New column", description = "Name of the output JSON column that contains the transformed values.")
+    @TextInputWidget(minLengthValidation = IsNotEmptyValidation.class)
     @Persist(configKey = SingleColumnReplaceOrAddNodeModel.NEW_COLUMN_NAME)
     String m_newColumn = "";
 
@@ -150,9 +153,10 @@ class JSONPatchApplyNodeParameters implements NodeParameters {
 
     enum PatchType {
             @Label(value = "Patch",
-                description = "Apply a JSON Patch (RFC 6902) with operations like add, remove, replace, move, copy, "
-                    + "and test")
-            PATCH, @Label(value = "Merge and patch",
+                description = "Apply a JSON Patch (RFC 6902) with operations like add, remove, replace, move, copy, and test")
+            PATCH,
+
+            @Label(value = "Merge and patch",
                 description = "Apply a JSON Merge Patch (RFC 7386) using a partial JSON document")
             MERGE_AND_PATCH;
     }

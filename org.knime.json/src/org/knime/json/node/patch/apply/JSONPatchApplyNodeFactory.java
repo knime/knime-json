@@ -48,23 +48,21 @@
  */
 package org.knime.json.node.patch.apply;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
 import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
-import org.knime.core.webui.node.dialog.NodeDialog;
 import org.knime.core.webui.node.dialog.NodeDialogFactory;
-import org.knime.core.webui.node.dialog.NodeDialogManager;
 import org.knime.core.webui.node.dialog.SettingsType;
 import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
-import org.knime.core.node.NodeFactory.NodeType;
 import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
 import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
-import org.knime.core.node.NodeDescription;
-import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
-import java.util.Map;
+import org.knime.core.webui.node.dialog.scripting.AbstractDefaultScriptingNodeDialog;
+import org.knime.core.webui.node.dialog.scripting.AbstractFallbackScriptingNodeFactory;
 import org.knime.node.impl.description.PortDescription;
-import java.util.List;
-import static org.knime.node.impl.description.PortDescription.fixedPort;
 
 /**
  * <code>NodeFactory</code> for the "JSONTransformer" Node. Changes JSON values.
@@ -74,113 +72,82 @@ import static org.knime.node.impl.description.PortDescription.fixedPort;
  * @author AI Migration Pipeline v1.2
  */
 @SuppressWarnings("restriction")
-public final class JSONPatchApplyNodeFactory extends NodeFactory<JSONPatchApplyNodeModel> implements NodeDialogFactory, KaiNodeInterfaceFactory {
+public final class JSONPatchApplyNodeFactory extends AbstractFallbackScriptingNodeFactory<JSONPatchApplyNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public JSONPatchApplyNodeModel createNodeModel() {
         return new JSONPatchApplyNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public NodeView<JSONPatchApplyNodeModel>
-        createNodeView(final int viewIndex, final JSONPatchApplyNodeModel nodeModel) {
+    public NodeView<JSONPatchApplyNodeModel> createNodeView(final int viewIndex,
+        final JSONPatchApplyNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views yet.");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     private static final String NODE_NAME = "JSON Transformer";
+
     private static final String NODE_ICON = "./jsonpatch.png";
+
     private static final String SHORT_DESCRIPTION = """
             Applies a patch on the input JSON column.
             """;
-    private static final String FULL_DESCRIPTION = """
-            <p>Applies a <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a
-                href="http://tools.ietf.org/html/rfc7386">merge patch</a> on the input JSON column.</p><p> When a
-                (merge) patch cannot be applied, missing values will be generated, node execution will not fail.</p><p>
-                See also the node: <a
-                href="http://www.knime.com/files/node-documentation/org.knime.json.node.patch.create.JSONPatchCreateNodeFactory.html">JSON
-                Diff</a>.</p><p> Given <tt>{"a":"b","c":{"d":"e","f": "g"} }</tt> let us assume the target is
-                <tt>{"a":"z","c":{"d":"e"} }</tt> (changing <tt>a</tt>'s value to <tt>z</tt> and removing <tt>f</tt>).
-                To achieve this, either the following patch should be applied:
-                <tt>[{"op":"replace","path":"/a","value":"z"},{"op":"remove","path":"/c/f"}]</tt> or this merge and
-                patch: <tt>{"a":"z","c":{"f": null} }</tt></p><p> The following operators (<tt>op</tt>) are supported
-                for patch: <ul> <li><tt>add</tt> (<tt>path</tt>, <tt>value</tt>)</li> <li><tt>remove</tt>
-                (<tt>path</tt>)</li> <li><tt>replace</tt> (<tt>path</tt>, <tt>value</tt>)</li> <li><tt>move</tt>
-                (<tt>from</tt>, <tt>path</tt>)</li> <li><tt>copy</tt> (<tt>from</tt>, <tt>path</tt>)</li>
-                <li><tt>test</tt> (<tt>path</tt>, <tt>value</tt>)</li> </ul></p><p> The merge and patch format
-                reconstructs the parts that need to be changed (changes included), all else can be omitted.</p><p> It
-                uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p> <p>To refer
-                to flow variables, use the <tt>$${TflowVarName}$$</tt> syntax (where <tt>T</tt> is <tt>S</tt> for String
-                type, <tt>D</tt> for floating point numbers and <tt>I</tt> for integer numbers).</p> <p>To refer to
-                columns (boolean, numeric, String, JSON), use the <tt>$columnName$</tt> syntax.</p> <p>References to
-                (<tt>0</tt>-based) row index (<tt>$$ROWINDEX$$</tt>), row count (<tt>$$ROWCOUNT$$</tt>) and row keys
-                (<tt>$$ROWID$$</tt>) can also be used in values.</p>
-            """;
-    private static final List<PortDescription> INPUT_PORTS = List.of(
-            fixedPort("table with JSON", """
-                A table with JSON column to transform
-                """)
-    );
-    private static final List<PortDescription> OUTPUT_PORTS = List.of(
-            fixedPort("table with JSON", """
-                Table with the transformed JSON values
-                """)
-    );
+
+    private static final String FULL_DESCRIPTION =
+        """
+                <p>Applies a <a href="http://tools.ietf.org/html/rfc6902">patch</a> or a <a
+                    href="http://tools.ietf.org/html/rfc7386">merge patch</a> on the input JSON column.</p><p> When a
+                    (merge) patch cannot be applied, missing values will be generated, node execution will not fail.</p><p>
+                    See also the node: <a
+                    href="http://www.knime.com/files/node-documentation/org.knime.json.node.patch.create.JSONPatchCreateNodeFactory.html">JSON
+                    Diff</a>.</p><p> Given <tt>{"a":"b","c":{"d":"e","f": "g"} }</tt> let us assume the target is
+                    <tt>{"a":"z","c":{"d":"e"} }</tt> (changing <tt>a</tt>'s value to <tt>z</tt> and removing <tt>f</tt>).
+                    To achieve this, either the following patch should be applied:
+                    <tt>[{"op":"replace","path":"/a","value":"z"},{"op":"remove","path":"/c/f"}]</tt> or this merge and
+                    patch: <tt>{"a":"z","c":{"f": null} }</tt></p><p> The following operators (<tt>op</tt>) are supported
+                    for patch: <ul> <li><tt>add</tt> (<tt>path</tt>, <tt>value</tt>)</li> <li><tt>remove</tt>
+                    (<tt>path</tt>)</li> <li><tt>replace</tt> (<tt>path</tt>, <tt>value</tt>)</li> <li><tt>move</tt>
+                    (<tt>from</tt>, <tt>path</tt>)</li> <li><tt>copy</tt> (<tt>from</tt>, <tt>path</tt>)</li>
+                    <li><tt>test</tt> (<tt>path</tt>, <tt>value</tt>)</li> </ul></p><p> The merge and patch format
+                    reconstructs the parts that need to be changed (changes included), all else can be omitted.</p><p> It
+                    uses the <a href="https://github.com/fge/json-patch">fge/json-patch</a> implementation.</p> <p>To refer
+                    to flow variables, use the <tt>$${TflowVarName}$$</tt> syntax (where <tt>T</tt> is <tt>S</tt> for String
+                    type, <tt>D</tt> for floating point numbers and <tt>I</tt> for integer numbers).</p> <p>To refer to
+                    columns (boolean, numeric, String, JSON), use the <tt>$columnName$</tt> syntax.</p> <p>References to
+                    (<tt>0</tt>-based) row index (<tt>$$ROWINDEX$$</tt>), row count (<tt>$$ROWCOUNT$$</tt>) and row keys
+                    (<tt>$$ROWID$$</tt>) can also be used in values.</p>
+                """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(fixedPort("table with JSON", """
+            A table with JSON column to transform
+            """));
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(fixedPort("table with JSON", """
+            Table with the transformed JSON values
+            """));
 
     @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
-    }
-
-    @Override
-    public NodeDialog createNodeDialog() {
+    public AbstractDefaultScriptingNodeDialog createNodeDialog() {
         return new JSONPatchApplyScriptingNodeDialog();
-    }
-
-    @Override
-    public NodeDescription createNodeDescription() {
-        return DefaultNodeDescriptionUtil.createNodeDescription( //
-            NODE_NAME, //
-            NODE_ICON, //
-            INPUT_PORTS, //
-            OUTPUT_PORTS, //
-            SHORT_DESCRIPTION, //
-            FULL_DESCRIPTION, //
-            List.of(), //
-            JSONPatchApplyNodeParameters.class, //
-            null, //
-            NodeType.Manipulator, //
-            List.of(), //
-            null //
-        );
     }
 
     @Override
     public KaiNodeInterface createKaiNodeInterface() {
         return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONPatchApplyNodeParameters.class));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeDialogPane createLegacyNodeDialogPane() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
