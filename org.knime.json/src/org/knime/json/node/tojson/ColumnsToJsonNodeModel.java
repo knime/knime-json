@@ -118,28 +118,37 @@ public class ColumnsToJsonNodeModel extends SimpleStreamableFunctionNodeModel {
                 final String[] includes = result.getIncludes();
                 int customKeyDataBoundValueLength = m_settings.getDataBoundKeyColumns().length;
                 m_indices = new int[customKeyDataBoundValueLength + includes.length];
-                for (int i = customKeyDataBoundValueLength; i-- > 0;) {
-                    String colName = m_settings.getDataBoundKeyColumns()[i];
-                    m_indices[i] = spec.findColumnIndex(colName);
+                for (int i = customKeyDataBoundValueLength - 1; i >= 0; i--) {
+                    final var colName = m_settings.getDataBoundKeyColumns()[i];
+                    final var index = spec.findColumnIndex(colName);
+                    CheckUtils.checkSetting(index >= 0,
+                        "Could not determine the index of column \"%s\", it is not available anymore. "
+                            + "Ensure that \"%s\" is present in the input.", colName, colName);
+                    m_indices[i] = index;
                 }
                 m_dataBoundKeys = new String[customKeyDataBoundValueLength + includes.length];
                 System.arraycopy(m_settings.getDataBoundKeyNames(), 0, m_dataBoundKeys, 0,
                     customKeyDataBoundValueLength);
-                for (int i = customKeyDataBoundValueLength; i-->0;) {
+                for (int i = customKeyDataBoundValueLength - 1; i >= 0; i--) {
                     if (m_dataBoundKeys[i] == null || m_dataBoundKeys[i].isEmpty()) {
                         m_dataBoundKeys[i] = m_settings.getDataBoundKeyColumns()[i];
                     }
                 }
-                for (int i = includes.length; i-- > 0;) {
-                    m_indices[customKeyDataBoundValueLength + i] = spec.findColumnIndex(includes[i]);
-                    m_dataBoundKeys[customKeyDataBoundValueLength + i] = includes[i];
+                for (int i = includes.length - 1; i >= 0; i--) {
+                    final var colName = includes[i];
+                    final var index = spec.findColumnIndex(colName);
+                    CheckUtils.checkSetting(index >= 0,
+                        "Could not determine the index of column \"%s\", it is not available anymore. "
+                            + "Ensure that \"%s\" is present in the input.", colName, colName);
+                    m_indices[customKeyDataBoundValueLength + i] = index;
+                    m_dataBoundKeys[customKeyDataBoundValueLength + i] = colName;
                 }
-                for (int i = m_indices.length; i-- > 0;) {
-                    Pair<OutputType, Integer> pair = outputType(spec.getColumnSpec(m_indices[i]));
-                    if (pair.getFirst() == null) {
-                        throw new IllegalStateException("Could not figure out the output type for "
-                            + spec.getColumnSpec(m_indices[i]));
-                    }
+                for (int i = m_indices.length - 1; i >= 0; i--) {
+                    final var colSpec = spec.getColumnSpec(m_indices[i]);
+                    Pair<OutputType, Integer> pair = outputType(colSpec);
+                    CheckUtils.checkNotNull(pair.getFirst(),
+                        "Could not determine the output type (as JSON) for the column \"%s\". "
+                            + "The input type \"%s\" may not be supported.", colSpec.getName(), colSpec.getType());
                     m_types.put(m_indices[i], pair.getFirst());
                     m_depths.put(m_indices[i], pair.getSecond());
                 }
