@@ -87,6 +87,7 @@ import org.knime.node.parameters.widget.text.TextInputWidgetValidation.PatternVa
  * @author AI Migration Pipeline v1.2
  */
 @LoadDefaultsForAbsentFields
+@SuppressWarnings("restriction")
 class JSONPatchApplyNodeParameters implements NodeParameters {
 
     static final String SCRIPT_FIELD_KEY = "jsonPatch";

@@ -46,16 +46,15 @@
  */
 package org.knime.json.node.patch.apply;
 
-import java.util.Arrays;
-
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 
-import org.knime.base.node.util.JSnippetPanel;
-import org.knime.base.node.util.JavaScriptingCompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.knime.base.node.util.JSnippetPanel;
+import org.knime.base.node.util.JavaScriptingCompletionProvider;
+import org.knime.base.node.util.ManipulatorProvider;
 import org.knime.core.node.NodeLogger;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.FromManipulator;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.RemoveManipulator;

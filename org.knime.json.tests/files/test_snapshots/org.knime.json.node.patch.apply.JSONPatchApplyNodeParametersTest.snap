@@ -76,7 +76,17 @@
       }
     }, {
       "type" : "Control",
-      "scope" : "#/properties/model/properties/newColumn"
+      "scope" : "#/properties/model/properties/newColumn",
+      "options" : {
+        "validation" : {
+          "minLength" : {
+            "errorMessage" : "The field cannot be empty (it must contain at least one character).",
+            "parameters" : {
+              "minLength" : 1
+            }
+          }
+        }
+      }
     }, {
       "type" : "Control",
       "scope" : "#/properties/model/properties/patchType",
