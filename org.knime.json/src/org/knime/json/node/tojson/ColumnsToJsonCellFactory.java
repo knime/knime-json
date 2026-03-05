@@ -91,21 +91,21 @@ import com.github.fge.jackson.JacksonUtils;
  */
 final class ColumnsToJsonCellFactory extends SingleCellFactory {
 
-    private JacksonConversions m_conv = JacksonConversions.getInstance();
+    private static final JacksonConversions JSON_CONVERTER = JacksonConversions.getInstance();
 
-    private JsonNodeFactory m_nodeFactory = JacksonUtils.nodeFactory();
+    private static final JsonNodeFactory JSON_FACTORY = JacksonUtils.nodeFactory();
 
     //sparse, from column indices to output types.
-    private Map<Integer, OutputType> m_types = new TreeMap<>();
+    private final Map<Integer, OutputType> m_types = new TreeMap<>();
 
     //sparse, from column indices to expected depths.
-    private Map<Integer, Integer> m_depths = new TreeMap<>();
+    private final Map<Integer, Integer> m_depths = new TreeMap<>();
 
-    private String[] m_dataBoundKeys;
+    private final String[] m_dataBoundKeys;
 
-    private int[] m_indices;
+    private final int[] m_indices;
 
-    private int m_keyIndex;
+    private final int m_keyIndex;
 
     private final ColumnsToJsonSettings m_settings;
 
@@ -163,7 +163,7 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
             case DataBound -> row.getCell(m_keyIndex).toString();
             case Unnamed -> null;
         };
-        final var json = m_nodeFactory.objectNode();
+        final var json = JSON_FACTORY.objectNode();
         final var inner = json.objectNode();
         for (var i = 0; i < m_indices.length; ++i) {
             final var cell = row.getCell(m_indices[i]);
@@ -176,10 +176,10 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
             inner.put(m_settings.getKeyNames()[i], m_settings.getKeyValues()[i]);
         }
         if (m_settings.getRootKeyType() == RootKeyType.Unnamed) {
-            return JSONCellFactory.create(m_conv.toJSR353(inner));
+            return JSONCellFactory.create(JSON_CONVERTER.toJSR353(inner));
         }
         json.set(rootKey, inner);
-        return JSONCellFactory.create(m_conv.toJSR353(json));
+        return JSONCellFactory.create(JSON_CONVERTER.toJSR353(json));
     }
 
     /**
@@ -192,13 +192,13 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
      * @param outputType The expected output type.
      * @param depth The expected output depth.
      */
-    private void setValue(final ObjectNode json, final DataCell cell, final String key,
+    private static void setValue(final ObjectNode json, final DataCell cell, final String key,
         final OutputType outputType, final int depth) {
         if (depth == 0) {
             switch (outputType) {
                 case Base64:
                     if (cell.isMissing()) {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     } else if (cell instanceof ByteVectorValue bvv) {
                         byte[] bytes = JsonPathUtils.toBytes(bvv);
                         json.put(key, bytes);
@@ -209,43 +209,42 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
                             throw new RuntimeException(e.getMessage(), e);
                         }
                     } else {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     }
                     break;
                 case Boolean:
                     if (cell.isMissing() || !(cell instanceof BooleanValue)) {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     } else {
                         json.put(key, ((BooleanValue)cell).getBooleanValue());
                     }
                     break;
-                case Long: // intentional fall-through
-                case Integer:
+                case Long, Integer:
                     if (cell.isMissing() || !(cell instanceof LongValue)) {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     } else {
                         json.put(key, ((LongValue)cell).getLongValue());
                     }
                     break;
                 case Double:
                     if (cell.isMissing() || !(cell instanceof DoubleValue)) {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     } else {
                         json.put(key, ((DoubleValue)cell).getDoubleValue());
                     }
                     break;
                 case String:
                     if (cell.isMissing() || !(cell instanceof StringValue)) {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     } else {
                         json.put(key, ((StringValue)cell).getStringValue());
                     }
                     break;
                 case Json:
                     if (cell.isMissing() || !(cell instanceof JSONValue)) {
-                        json.set(key, m_nodeFactory.nullNode());
+                        json.set(key, JSON_FACTORY.nullNode());
                     } else {
-                        json.set(key, m_conv.toJackson(((JSONValue)cell).getJsonValue()));
+                        json.set(key, JSON_CONVERTER.toJackson(((JSONValue)cell).getJsonValue()));
                     }
                     break;
                 default:
@@ -253,10 +252,10 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
             }
         } else {
             if (cell.isMissing() || !(cell instanceof CollectionDataValue)) {
-                json.set(key, m_nodeFactory.nullNode());
+                json.set(key, JSON_FACTORY.nullNode());
             } else {
                 final var cdv = (CollectionDataValue)cell;
-                final var array = m_nodeFactory.arrayNode();
+                final var array = JSON_FACTORY.arrayNode();
                 json.set(key, array);
                 setArrayValue(array, cdv, outputType, depth - 1);
             }
@@ -272,7 +271,7 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
      * @param outputType Expected output type.
      * @param depth The expected depth.
      */
-    private void setArrayValue(final ArrayNode array, final CollectionDataValue dataCell,
+    private static void setArrayValue(final ArrayNode array, final CollectionDataValue dataCell,
         final OutputType outputType, final int depth) {
         for (DataCell cell : dataCell) {
             if (cell.isMissing()) {
@@ -281,7 +280,7 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
                 switch (outputType) {
                     case Base64:
                         if (cell.isMissing()) {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         } else if (cell instanceof ByteVectorValue bvv) {
                             byte[] bytes = JsonPathUtils.toBytes(bvv);
                             array.add(bytes);
@@ -292,41 +291,40 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
                                 throw new RuntimeException(e.getMessage(), e);
                             }
                         } else {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         }
                         break;
                     case Boolean:
                         if (cell.isMissing() || !(cell instanceof BooleanValue)) {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         } else {
                             array.add(((BooleanValue)cell).getBooleanValue());
                         }
                         break;
-                    case Long: // intentional fall-through
-                    case Integer:
+                    case Long, Integer:
                         if (cell.isMissing() || !(cell instanceof LongValue)) {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         } else {
                             array.add(((LongValue)cell).getLongValue());
                         }
                         break;
                     case Json:
                         if (cell.isMissing() || !(cell instanceof JSONValue)) {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         } else {
-                            array.add(m_conv.toJackson(((JSONValue)cell).getJsonValue()));
+                            array.add(JSON_CONVERTER.toJackson(((JSONValue)cell).getJsonValue()));
                         }
                         break;
                     case Double:
                         if (cell.isMissing() || !(cell instanceof DoubleValue)) {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         } else {
                             array.add(((DoubleValue)cell).getDoubleValue());
                         }
                         break;
                     case String:
                         if (cell.isMissing() || !(cell instanceof StringValue)) {
-                            array.add(m_nodeFactory.nullNode());
+                            array.add(JSON_FACTORY.nullNode());
                         } else {
                             array.add(((StringValue)cell).getStringValue());
                         }
@@ -336,7 +334,7 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
                 }
             } else {
                 if (cell instanceof CollectionDataValue cdv) {
-                    final var newArray = m_nodeFactory.arrayNode();
+                    final var newArray = JSON_FACTORY.arrayNode();
                     array.add(newArray);
                     setArrayValue(newArray, cdv, outputType, depth - 1);
                 } else {
@@ -345,4 +343,5 @@ final class ColumnsToJsonCellFactory extends SingleCellFactory {
             }
         }
     }
+
 }
