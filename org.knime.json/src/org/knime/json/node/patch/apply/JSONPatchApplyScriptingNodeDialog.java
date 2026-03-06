@@ -45,8 +45,9 @@
  */
 package org.knime.json.node.patch.apply;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.knime.base.node.util.ManipulatorProvider;
 import org.knime.base.node.util.WebUIDialogUtils;
@@ -58,17 +59,42 @@ import org.knime.core.webui.node.dialog.scripting.WorkflowControl;
 /**
  * Scripting dialog for the JSON Transformer node with code editor and autocompletion.
  *
- * @author Jannik Eurich, KNIME GmbH, Berlin, Germany
+ * @author Jannik Eurich, KNIME GmbH, Konstanz, Germany
  */
 @SuppressWarnings("restriction")
 final class JSONPatchApplyScriptingNodeDialog extends AbstractDefaultScriptingNodeDialog {
 
     private static final ManipulatorProvider JSON_PATCH_MANIPULATOR_PROVIDER =
-        JsonPatchManipulator.createManipulatorProvider();
+        JsonPatchManipulator.MANIPULATOR_PROVIDER;
 
     JSONPatchApplyScriptingNodeDialog() {
         super(JSONPatchApplyNodeParameters.class);
     }
+
+    //This method is needed to allow correct auto completion in a json format.
+    public static StaticCompletionItem[] getCompletionItemsPatch(final WorkflowControl workflowControl,
+    final ManipulatorProvider manipulatorProvider, final boolean includeColumns) {
+    Set<StaticCompletionItem> items = new HashSet<>();
+
+    // For this node: insert the full JSON template on completion.
+    if (manipulatorProvider != null) {
+        manipulatorProvider.getCategories().forEach(c ->
+            manipulatorProvider.getManipulators(c).forEach(m ->
+                items.add(new StaticCompletionItem(
+                    m.getDisplayName(), // inserted text
+                    null,
+                    m.getDescription(),
+                    m.getReturnType().getSimpleName()
+                ))
+            )
+        );
+    }
+
+    // Reuse default flow-variable + column completions.
+    Collections.addAll(items, WebUIDialogUtils.getCompletionItems(workflowControl, null, includeColumns));
+
+    return items.toArray(StaticCompletionItem[]::new);
+}
 
     @Override
     protected GenericInitialDataBuilder getInitialData(final NodeContext context) {
@@ -80,12 +106,12 @@ final class JSONPatchApplyScriptingNodeDialog extends AbstractDefaultScriptingNo
                 () -> WebUIDialogUtils.getFlowVariablesInputOutputModel(workflowControl)) //
             .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_OUTPUT_OBJECTS, Collections::emptyList) //
             .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_LANGUAGE,
-                () -> WebUIDialogUtils.DEFAULT_SCRIPT_LANGUAGE) //
+                () -> "json") //
             .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_FILE_NAME,
-                () -> WebUIDialogUtils.DEFAULT_SCRIPT_FILE_NAME) //
+                () -> "file.json") //
             .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_MAIN_SCRIPT_CONFIG_KEY,
                 () -> JSONPatchApplyNodeParameters.SCRIPT_FIELD_KEY) //
             .addDataSupplier(WebUIDialogUtils.DATA_SUPPLIER_KEY_STATIC_COMPLETION_ITEMS,
-                () -> WebUIDialogUtils.getCompletionItems(workflowControl, JSON_PATCH_MANIPULATOR_PROVIDER, true));
+                () -> getCompletionItemsPatch(workflowControl, JSON_PATCH_MANIPULATOR_PROVIDER, true));
     }
 }
