@@ -62,41 +62,31 @@ import org.knime.base.node.util.ManipulatorProvider;
  */
 @FunctionalInterface
 interface JsonPatchManipulator extends Manipulator {
-    /**
-     * The JSON Patch category name.
-     */
+
     public static final String JSON_PATCH_CATEGORY = "JSON Patch";
 
-    public static final String OP_ADD = "add";
-
-    public static final String OP_REPLACE = "replace";
-
-    public static final String OP_REMOVE = "remove";
-
-    public static final String OP_COPY = "copy";
-
-    public static final String OP_MOVE = "move";
-
-    public static final String OP_TEST = "test";
-
     static Collection<? extends Manipulator> createManipulators() {
-        return List.of(new ValueManipulator(OP_ADD), new ValueManipulator(OP_REPLACE), new RemoveManipulator(),
-            new FromManipulator(OP_COPY), new FromManipulator(OP_MOVE), new ValueManipulator(OP_TEST));
+        return List.of(new ValueManipulator("add"), new ValueManipulator("replace"), new RemoveManipulator(),
+            new FromManipulator("copy"), new FromManipulator("move"), new ValueManipulator("test"));
     }
 
-    static ManipulatorProvider createManipulatorProvider() {
-        return new ManipulatorProvider() {
+    public static final JsonManipulatorProvider MANIPULATOR_PROVIDER = new JsonManipulatorProvider();
 
-            @Override
-            public Collection<? extends Manipulator> getManipulators(final String category) {
-                return createManipulators();
-            }
+    static class JsonManipulatorProvider implements ManipulatorProvider {
 
-            @Override
-            public Collection<String> getCategories() {
-                return Collections.singleton(JSON_PATCH_CATEGORY);
-            }
-        };
+        @Override
+        public Collection<? extends Manipulator> getManipulators(final String category){
+            return List.of(new ValueManipulator("add"), new ValueManipulator("replace"),
+                new RemoveManipulator(), new FromManipulator("copy"), new FromManipulator("move"),
+                new ValueManipulator("test"));
+        }
+
+        @Override
+        public Collection<String> getCategories(){
+            return Collections.singleton(JSON_PATCH_CATEGORY);
+        }
+
+
     }
 
     static class ValueManipulator implements JsonPatchManipulator {
@@ -142,7 +132,7 @@ interface JsonPatchManipulator extends Manipulator {
 
         @Override
         public String getName() {
-            return OP_REMOVE;
+            return "remove";
         }
 
         @Override
