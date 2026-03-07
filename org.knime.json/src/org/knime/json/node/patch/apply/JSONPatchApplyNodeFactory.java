@@ -48,55 +48,57 @@
  */
 package org.knime.json.node.patch.apply;
 
+import java.util.Map;
+
 import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.core.webui.node.dialog.scripting.AbstractDefaultScriptingNodeDialog;
+import org.knime.core.webui.node.dialog.scripting.AbstractFallbackScriptingNodeFactory;
 
 /**
  * <code>NodeFactory</code> for the "JSONTransformer" Node. Changes JSON values.
  *
  * @author Gabor Bakos
+ * @author Jannik Eurich, KNIME GmbH, Berlin, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public final class JSONPatchApplyNodeFactory extends NodeFactory<JSONPatchApplyNodeModel> {
+@SuppressWarnings("restriction")
+public final class JSONPatchApplyNodeFactory extends AbstractFallbackScriptingNodeFactory<JSONPatchApplyNodeModel>
+    implements KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public JSONPatchApplyNodeModel createNodeModel() {
         return new JSONPatchApplyNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public NodeView<JSONPatchApplyNodeModel>
-        createNodeView(final int viewIndex, final JSONPatchApplyNodeModel nodeModel) {
+    public NodeView<JSONPatchApplyNodeModel> createNodeView(final int viewIndex,
+        final JSONPatchApplyNodeModel nodeModel) {
         throw new UnsupportedOperationException("No views yet.");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public boolean hasDialog() {
-        return true;
+    public AbstractDefaultScriptingNodeDialog createNodeDialog() {
+        return new JSONPatchApplyScriptingNodeDialog();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public NodeDialogPane createNodeDialogPane() {
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, JSONPatchApplyNodeParameters.class));
+    }
+
+    @Override
+    public NodeDialogPane createLegacyNodeDialogPane() {
+
         return new JSONPatchApplyNodeDialog();
     }
 }

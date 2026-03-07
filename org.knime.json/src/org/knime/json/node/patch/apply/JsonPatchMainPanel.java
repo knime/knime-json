@@ -46,20 +46,14 @@
  */
 package org.knime.json.node.patch.apply;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
-import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
 import org.knime.base.node.util.JSnippetPanel;
 import org.knime.base.node.util.JavaScriptingCompletionProvider;
-import org.knime.base.node.util.ManipulatorProvider;
 import org.knime.core.node.NodeLogger;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.FromManipulator;
 import org.knime.json.node.patch.apply.JsonPatchManipulator.RemoveManipulator;
@@ -80,25 +74,10 @@ class JsonPatchMainPanel extends JSnippetPanel {
      * Constucts the main panel.
      */
     JsonPatchMainPanel() {
-        super(new ManipulatorProvider() {
-
-            @Override
-            public Collection<? extends Manipulator> getManipulators(final String category) {
-                return Arrays.asList(new ValueManipulator("add"), new ValueManipulator("replace"),
-                    new RemoveManipulator(), new FromManipulator("copy"), new FromManipulator("move"),
-                    new ValueManipulator("test"));
-            }
-
-            @Override
-            public Collection<String> getCategories() {
-                return Collections.singleton(JsonPatchManipulator.JSON_PATCH_CATEGORY);
-            }
-        }, new JavaScriptingCompletionProvider());
+        super(JsonPatchManipulator.MANIPULATOR_PROVIDER, new JavaScriptingCompletionProvider());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     protected JComponent createEditorComponent() {
         final RTextScrollPane scrollPane = (RTextScrollPane)super.createEditorComponent();
@@ -109,9 +88,7 @@ class JsonPatchMainPanel extends JSnippetPanel {
         return scrollPane;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     protected RSyntaxTextArea createTextArea() {
         final RSyntaxTextArea textArea = new KnimeSyntaxTextArea(20, 60);
@@ -119,9 +96,7 @@ class JsonPatchMainPanel extends JSnippetPanel {
         return textArea;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     protected void onSelectionInManipulatorList(final Object selected) {
         if (selected instanceof JsonPatchManipulator) {
@@ -167,7 +142,8 @@ class JsonPatchMainPanel extends JSnippetPanel {
                     position = ("{ \"op\": \"" + patch.getName() + "\", \"path\": \"").length();
                 }
             } else if (patch instanceof RemoveManipulator) {
-                textToInsert = "{ \"op\": \"remove\", \"path\": " + valueOrEmpty(selectedString) + " }";
+                textToInsert = "{ \"op\": \"" + "remove" + "\", \"path\": "
+                    + valueOrEmpty(selectedString) + " }";
                 position = textToInsert.length() - 2;
             } else if (patch instanceof FromManipulator) {
                 textToInsert = "{ \"op\": \"" + patch.getName() + "\", \"from\": " + valueOrEmpty(selectedString)

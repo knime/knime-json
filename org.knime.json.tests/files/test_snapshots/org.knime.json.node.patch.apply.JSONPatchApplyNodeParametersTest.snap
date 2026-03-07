@@ -1,0 +1,184 @@
+{
+  "data" : {
+    "model" : {
+      "removeSourceColumn" : true,
+      "newColumn" : "",
+      "patchType" : "PATCH",
+      "keepOriginalWhenTestFails" : false,
+      "jsonPatch" : "[ { \"op\": \"move\", \"from\": \"/a\", \"path\": \"/c\" } ]"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "type" : "string",
+            "title" : "JSON column",
+            "description" : "The column containing the JSON values to transform."
+          },
+          "jsonPatch" : {
+            "type" : "string",
+            "default" : "[ { \"op\": \"move\", \"from\": \"/a\", \"path\": \"/c\" } ]"
+          },
+          "keepOriginalWhenTestFails" : {
+            "type" : "boolean",
+            "title" : "Keep original value when 'test' operation fails",
+            "description" : "When enabled, failed 'test' operations keep the original JSON value instead of inserting a missing value.",
+            "default" : false
+          },
+          "newColumn" : {
+            "type" : "string",
+            "title" : "New column",
+            "description" : "Name of the output JSON column that contains the transformed values.",
+            "default" : ""
+          },
+          "patchType" : {
+            "oneOf" : [ {
+              "const" : "PATCH",
+              "title" : "Patch"
+            }, {
+              "const" : "MERGE_AND_PATCH",
+              "title" : "Merge and patch"
+            } ],
+            "title" : "Patch type",
+            "description" : "Choose whether to apply a JSON Patch (RFC 6902) or a JSON Merge Patch (RFC 7386).\n<ul>\n<li><b>Patch</b>: Apply a JSON Patch (RFC 6902) with operations like add, remove, replace, move, copy, and test</li>\n<li><b>Merge and patch</b>: Apply a JSON Merge Patch (RFC 7386) using a partial JSON document</li>\n</ul>",
+            "default" : "PATCH"
+          },
+          "removeSourceColumn" : {
+            "type" : "boolean",
+            "title" : "Remove source column",
+            "description" : "If selected, the source column is removed and only the transformed output column remains.",
+            "default" : true
+          },
+          "textMessage" : {
+            "type" : "object"
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/inputColumn",
+      "options" : {
+        "format" : "dropDown"
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeSourceColumn",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/newColumn",
+      "options" : {
+        "validation" : {
+          "minLength" : {
+            "errorMessage" : "The field cannot be empty (it must contain at least one character).",
+            "parameters" : {
+              "minLength" : 1
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/patchType",
+      "options" : {
+        "format" : "valueSwitch"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/keepOriginalWhenTestFails",
+      "options" : {
+        "format" : "checkbox"
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/patchType",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "PATCH"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "id" : "#/properties/model/properties/textMessage",
+      "options" : {
+        "format" : "textMessage"
+      },
+      "providedOptions" : [ "message" ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "inputColumn" : {
+            "configKey" : "input<dot>column"
+          },
+          "removeSourceColumn" : {
+            "configKey" : "remove<dot>input<dot>column"
+          },
+          "newColumn" : {
+            "configKey" : "new<dot>column<dot>name"
+          },
+          "patchType" : {
+            "configPaths" : [ [ "patch<dot>type" ] ]
+          },
+          "keepOriginalWhenTestFails" : {
+            "configKey" : "keep original when test fails"
+          },
+          "jsonPatch" : {
+            "configPaths" : [ [ "json<dot>patch" ] ]
+          },
+          "textMessage" : { }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/inputColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "json",
+        "text" : "json",
+        "type" : {
+          "id" : "org.knime.core.data.json.JSONValue",
+          "text" : "JSON"
+        }
+      } ]
+    } ]
+  }, {
+    "id" : "#/properties/model/properties/textMessage",
+    "providedOptionName" : "message",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "title" : "Access to available functions",
+        "description" : "While working in the code editor, press Ctrl+Space to see a list of all available functions. Press the shortcut again to show the description of each item. Press Enter to insert the selected item.",
+        "type" : "INFO"
+      }
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/inputColumn" ]
+  } ]
+}

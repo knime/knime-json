@@ -48,7 +48,12 @@
  */
 package org.knime.json.node.patch.apply;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
+import org.knime.base.node.util.ManipulatorProvider;
 
 /**
  * Common interface for the JSON Patch {@link Manipulator}s.
@@ -57,24 +62,42 @@ import org.knime.base.node.preproc.stringmanipulation.manipulator.Manipulator;
  */
 @FunctionalInterface
 interface JsonPatchManipulator extends Manipulator {
-    /**
-     * The JSON Patch category name.
-     */
+
     public static final String JSON_PATCH_CATEGORY = "JSON Patch";
+
+    static Collection<? extends Manipulator> createManipulators() {
+        return List.of(new ValueManipulator("add"), new ValueManipulator("replace"), new RemoveManipulator(),
+            new FromManipulator("copy"), new FromManipulator("move"), new ValueManipulator("test"));
+    }
+
+    public static final JsonManipulatorProvider MANIPULATOR_PROVIDER = new JsonManipulatorProvider();
+
+    static class JsonManipulatorProvider implements ManipulatorProvider {
+
+        @Override
+        public Collection<? extends Manipulator> getManipulators(final String category){
+            return List.of(new ValueManipulator("add"), new ValueManipulator("replace"),
+                new RemoveManipulator(), new FromManipulator("copy"), new FromManipulator("move"),
+                new ValueManipulator("test"));
+        }
+
+        @Override
+        public Collection<String> getCategories(){
+            return Collections.singleton(JSON_PATCH_CATEGORY);
+        }
+
+
+    }
 
     static class ValueManipulator implements JsonPatchManipulator {
         private String m_name;
 
-        /**
-         *
-         */
+
         ValueManipulator(final String name) {
             m_name = name;
         }
 
-        /**
-         * {@inheritDoc}
-         */
+
         @Override
         public String getName() {
             return m_name;
@@ -83,31 +106,22 @@ interface JsonPatchManipulator extends Manipulator {
     static class FromManipulator implements JsonPatchManipulator {
         private String m_name;
 
-        /**
-         *
-         */
         FromManipulator(final String name) {
             m_name = name;
         }
 
-        /**
-         * {@inheritDoc}
-         */
+
         @Override
         public String getName() {
             return m_name;
         }
 
-        /**
-         * {@inheritDoc}
-         */
+
         @Override
         public String getDisplayName() {
             return "{ \"op\": \"" +getName()+ "\", \"from\": \"\" , \"path\": \"\"}";
         }
-        /**
-         * {@inheritDoc}
-         */
+
         @Override
         public String getDescription() {
             return getName() + "s from (a JSON Pointer expression) to the path (which is also a JSON Pointer expression)".replaceAll("ys", "ies");
@@ -115,63 +129,46 @@ interface JsonPatchManipulator extends Manipulator {
     }
 
     static class RemoveManipulator implements JsonPatchManipulator {
-        /**
-         * {@inheritDoc}
-         */
+
         @Override
         public String getName() {
             return "remove";
         }
-        /**
-         * {@inheritDoc}
-         */
+
         @Override
         public int getNrArgs() {
             return 1;
         }
-        /**
-         * {@inheritDoc}
-         */
+
+
         @Override
         public String getDisplayName() {
             return "{ \"op\": \"" +getName()+ "\", \"path\": \"\" }";
         }
     }
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     default String getCategory() {
         return JSON_PATCH_CATEGORY;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     default int getNrArgs() {
         return 2;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     default Class<?> getReturnType() {
         return String.class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     default String getDisplayName() {
         return "{ \"op\": \"" +getName()+ "\", \"path\": \"\", \"value\": \"\" }";
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     default String getDescription() {
         return getName() + "s the path (which is a JSON Pointer expression) with value";
