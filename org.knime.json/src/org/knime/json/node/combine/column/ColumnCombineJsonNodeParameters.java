@@ -179,7 +179,6 @@ class ColumnCombineJsonNodeParameters implements NodeParameters {
 
         @Override
         public void init(final StateProviderInitializer initializer) {
-            initializer.computeAfterOpenDialog();
             m_rootKeyTypeSupplier = initializer.computeFromValueSupplier(RootKeyTypeReference.class);
             m_keyColumnSupplier = initializer.getValueSupplier(DataBoundKeyColumnReference.class);
         }
