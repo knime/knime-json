@@ -241,6 +241,36 @@ final class JSONOutputConfiguration {
     }
 
     /**
+     * Loads the default settings from the associated {@link JSONOutputNodeParameters} object.
+     *
+     * @return the default configuration
+     */
+    JSONOutputConfiguration loadDefaults() {
+        final var nodeParams = new JSONOutputNodeParameters();
+        try {
+            setParameterName(nodeParams.m_parameterName, true);
+        } catch (InvalidSettingsException e) {
+            m_parameterName = SubNodeContainer.getDialogNodeParameterNameDefault(JSONOutputNodeModel.class);
+        }
+        setUseFQNParamName(nodeParams.m_useFullyQualifiedName); // added in 4.3
+
+        m_jsonColumnName = nodeParams.m_jsonColumnName;
+
+        setKeepOneRowTablesSimple(nodeParams.m_keepOneRowTablesSimple);
+
+        final String jsonString = nodeParams.m_exampleJson;
+        try {
+            m_exampleJson = JSONUtil.parseJSONValue(jsonString);
+        } catch (IOException e) {
+            // Should always be valid, as not saved otherwise. Therefore must be some other invalid settings.
+            m_exampleJson = null;
+        }
+
+        setDescription(nodeParams.m_description);
+        return this;
+    }
+
+    /**
      * Saves the current configuration to the given settings object.
      *
      * @param settings a settings object

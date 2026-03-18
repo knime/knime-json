@@ -22,6 +22,7 @@ package org.knime.json.node.output;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
@@ -54,7 +55,7 @@ import jakarta.json.JsonValue;
  * @author Bernd Wiswedel, KNIME AG, Zurich, Switzerland
  */
 final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHolder, OutputNode {
-    private JSONOutputConfiguration m_configuration;
+    private JSONOutputConfiguration m_configuration = new JSONOutputConfiguration().loadDefaults();
     private BufferedDataTable m_table;
 
     JSONOutputNodeModel() {
@@ -66,6 +67,19 @@ final class JSONOutputNodeModel extends NodeModel implements BufferedDataTableHo
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         CheckUtils.checkSetting(m_configuration != null, "No configuration set - confirm in dialog");
+        // Auto-guess json column name (first JSON-compatible column) if not set
+        final var jsonColName = m_configuration.getJsonColumnName();
+        if (jsonColName == null || jsonColName.isEmpty()) {
+            final var jsonColumnGuess = Optional.ofNullable(inSpecs[0]).stream() //
+                    .flatMap(spec -> spec.stream()) //
+                    .filter(col -> col.getType().isCompatible(JSONValue.class)) //
+                    .map(DataColumnSpec::getName) //
+                    .findFirst()
+                    .orElse(null);
+            if (jsonColumnGuess != null) {
+                m_configuration.setJsonColumnName(jsonColumnGuess);
+            }
+        }
         DataColumnSpec jsonCol = inSpecs[0].getColumnSpec(m_configuration.getJsonColumnName());
         CheckUtils.checkSetting(jsonCol != null,
                 "Selected column '%s' does not exist", m_configuration.getJsonColumnName());
