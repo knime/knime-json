@@ -123,7 +123,7 @@ final class JSONWriterNodeParametersTest extends DefaultNodeSettingsSnapshotTest
         parameters.m_fileNameColumn = new StringOrEnum<>((String)null);
         final var simulator = new DialogUpdateSimulator(Map.of(SettingsType.MODEL, parameters), context);
 
-        final var result = simulator.simulateAfterOpenDialog();
+        final var result = simulator.simulateComputeOnParametersLoaded();
 
         final var valueUpdate = result.getValueUpdateAt("fileNameColumn");
         assertThat(valueUpdate).isEqualTo(new StringOrEnum<>(RowIDChoice.ROW_ID));
@@ -142,7 +142,7 @@ final class JSONWriterNodeParametersTest extends DefaultNodeSettingsSnapshotTest
         parameters.m_fileNameColumn = new StringOrEnum<>((String)null);
         final var simulator = new DialogUpdateSimulator(Map.of(SettingsType.MODEL, parameters), context);
 
-        final var result = simulator.simulateAfterOpenDialog();
+        final var result = simulator.simulateComputeOnParametersLoaded();
 
         final var valueUpdate = result.getValueUpdateAt("fileNameColumn");
         assertThat(valueUpdate).isEqualTo(new StringOrEnum<RowIDChoice>("first_string"));
