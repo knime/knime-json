@@ -362,12 +362,6 @@
   } ],
   "globalUpdates" : [ {
     "trigger" : {
-      "id" : "after-open-dialog"
-    },
-    "triggerInitially" : true,
-    "dependencies" : [ "#/properties/model/properties/inputColumn" ]
-  }, {
-    "trigger" : {
       "scope" : "#/properties/model/properties/outputFile"
     },
     "dependencies" : [ "#/properties/model/properties/outputFile" ]
