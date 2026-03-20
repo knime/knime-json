@@ -501,12 +501,6 @@
   } ],
   "globalUpdates" : [ {
     "trigger" : {
-      "id" : "after-open-dialog"
-    },
-    "triggerInitially" : true,
-    "dependencies" : [ "#/properties/model/properties/dataBoundKeyColumn", "#/properties/model/properties/rootKeyType" ]
-  }, {
-    "trigger" : {
       "scope" : "#/properties/model/properties/manualSelection"
     },
     "dependencies" : [ "#/properties/model/properties/manualSelection" ]

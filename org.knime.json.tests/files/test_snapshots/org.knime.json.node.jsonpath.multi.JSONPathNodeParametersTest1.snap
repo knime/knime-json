@@ -277,7 +277,7 @@
       "id" : "after-open-dialog"
     },
     "triggerInitially" : true,
-    "dependencies" : [ "#/properties/model/properties/inputColumn", "#/properties/model/properties/outputSettings/items/properties/outputMode", "#/properties/model/properties/outputSettings/items/properties/resultIsList" ]
+    "dependencies" : [ "#/properties/model/properties/outputSettings/items/properties/outputMode", "#/properties/model/properties/outputSettings/items/properties/resultIsList" ]
   }, {
     "trigger" : {
       "scope" : "#/properties/model/properties/outputSettings/items/properties/outputMode"

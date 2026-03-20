@@ -169,12 +169,6 @@
   } ],
   "globalUpdates" : [ {
     "trigger" : {
-      "id" : "after-open-dialog"
-    },
-    "triggerInitially" : true,
-    "dependencies" : [ "#/properties/model/properties/jsonColumnName" ]
-  }, {
-    "trigger" : {
       "id" : "org.knime.json.node.output.JSONOutputNodeParameters$FillExampleRef"
     },
     "dependencies" : [ "#/properties/model/properties/jsonColumnName", "#/properties/model/properties/keepOneRowTablesSimple" ]

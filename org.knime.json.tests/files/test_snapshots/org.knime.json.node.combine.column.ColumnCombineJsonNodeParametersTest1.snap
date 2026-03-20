@@ -310,12 +310,6 @@
   } ],
   "globalUpdates" : [ {
     "trigger" : {
-      "id" : "after-open-dialog"
-    },
-    "triggerInitially" : true,
-    "dependencies" : [ "#/properties/model/properties/keyNameColumn", "#/properties/model/properties/rootKeyType" ]
-  }, {
-    "trigger" : {
       "scope" : "#/properties/model/properties/rootKeyType"
     },
     "dependencies" : [ "#/properties/model/properties/keyNameColumn", "#/properties/model/properties/rootKeyType" ]
